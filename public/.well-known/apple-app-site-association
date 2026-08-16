@@ -1,0 +1,18 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAM_ID.rs.auto.autoRs"],
+        "components": [
+          {
+            "/": "/car/*",
+            "comment": "Карточка объявления — открывается в приложении"
+          }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["TEAM_ID.rs.auto.autoRs"]
+  }
+}

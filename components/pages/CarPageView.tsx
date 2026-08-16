@@ -1,0 +1,204 @@
+// ============================================================
+// RS AUTO — Содержимое карточки объявления, общее для sr и ru.
+// ============================================================
+
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+
+import AppQr from '@/components/AppQr';
+import CarCard from '@/components/CarCard';
+import CarGallery from '@/components/CarGallery';
+import ShareButton from '@/components/ShareButton';
+import SiteFooter from '@/components/SiteFooter';
+import SiteHeader from '@/components/SiteHeader';
+import SmartBanner from '@/components/SmartBanner';
+import {
+  carTitle,
+  formatDate,
+  formatMileage,
+  formatPrice,
+  labelBodyType,
+  labelFuel,
+  labelTransmission,
+} from '@/lib/format';
+import type { Locale } from '@/lib/i18n';
+import { getT, localeHref } from '@/lib/i18n';
+import {
+  fetchCarDetails,
+  fetchCarImages,
+  fetchSimilarCars,
+} from '@/lib/queries';
+import { buildVehicleJsonLd } from '@/lib/seo';
+import { siteBaseUrl } from '@/lib/supabase';
+
+export default async function CarPageView({
+  locale,
+  id,
+}: {
+  locale: Locale;
+  id: string;
+}) {
+  const t = getT(locale);
+
+  const car = await fetchCarDetails(id);
+  // RPC вернула пусто — объявление не существует либо недоступно публично
+  // (модерация, отклонено, архив). В обоих случаях это 404.
+  if (!car) notFound();
+
+  // Фото и похожие грузятся параллельно: последовательные запросы удвоили
+  // бы время ответа страницы.
+  const [images, similar] = await Promise.all([
+    fetchCarImages(id),
+    fetchSimilarCars(id),
+  ]);
+
+  const title = carTitle(car);
+  // Канонический адрес берём из БД (site_url) — это единая точка сборки
+  // ссылки, совпадающая с тем, что отдаёт приложение при шаринге.
+  const canonicalUrl = car.site_url || `${siteBaseUrl}/car/${id}`;
+
+  const jsonLd = buildVehicleJsonLd({
+    car,
+    url: canonicalUrl,
+    images: images.map((i) => i.image_url),
+  });
+
+  const specs = [
+    { label: t('car_year'), value: String(car.year) },
+    { label: t('car_mileage'), value: formatMileage(car.mileage, locale) },
+    { label: t('car_body'), value: labelBodyType(car.body_type, locale) },
+    {
+      label: t('car_transmission'),
+      value: labelTransmission(car.transmission, locale),
+    },
+    { label: t('car_fuel'), value: labelFuel(car.fuel, locale) },
+    { label: t('car_city'), value: car.city },
+  ];
+
+  return (
+    <>
+      {/* JSON-LD (Vehicle + Offer) для расширенного сниппета в поиске. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      {/* На мобильных ведём в приложение по каноническому адресу: при
+          установленном приложении App Link перехватит ссылку. */}
+      <SmartBanner locale={locale} deepLink={canonicalUrl} />
+      <SiteHeader locale={locale} pathname={`/car/${id}`} />
+
+      <main className="mx-auto max-w-6xl px-4 py-6">
+        <nav className="mb-4 text-sm text-black/50">
+          <Link href={localeHref(locale, '/cars')} className="hover:underline">
+            {t('nav_catalog')}
+          </Link>
+          <span className="mx-1">/</span>
+          <span>{title}</span>
+        </nav>
+
+        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+          <div>
+            <CarGallery images={images} alt={title} />
+
+            <h1 className="mt-5 text-2xl font-bold">{title}</h1>
+
+            {car.status === 'sold' && (
+              <div className="mt-2 inline-block rounded-control bg-brand-red px-3 py-1 text-sm font-semibold text-white">
+                {t('car_sold')}
+              </div>
+            )}
+
+            <section className="mt-6">
+              <h2 className="mb-3 text-lg font-semibold">{t('car_specs')}</h2>
+              <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
+                {specs.map((s) => (
+                  <div key={s.label}>
+                    <dt className="text-sm text-black/50">{s.label}</dt>
+                    <dd className="font-medium">{s.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+
+            {car.description && (
+              <section className="mt-6">
+                <h2 className="mb-2 text-lg font-semibold">
+                  {t('car_description')}
+                </h2>
+                {/* whitespace-pre-line сохраняет переносы строк, которые
+                    продавец сделал при вводе описания. */}
+                <p className="whitespace-pre-line text-black/80">
+                  {car.description}
+                </p>
+              </section>
+            )}
+
+            <div className="mt-6 text-sm text-black/40">
+              {t('car_published')}: {formatDate(car.created_at, locale)}
+            </div>
+          </div>
+
+          {/* Правая колонка: цена и воронка в приложение. */}
+          <aside className="lg:sticky lg:top-20 lg:self-start">
+            <div className="rounded-card border border-black/10 p-4">
+              <div className="text-3xl font-bold text-brand-primary">
+                {formatPrice(car.sale_price, car.currency, locale)}
+              </div>
+
+              <div className="mt-4 border-t border-black/10 pt-4">
+                <div className="text-sm text-black/50">{t('car_seller')}</div>
+                <div className="font-semibold">{car.seller_name}</div>
+                <div className="text-sm text-black/50">
+                  {car.seller_kind === 'dealer'
+                    ? t('car_seller_dealer')
+                    : t('car_seller_private')}
+                </div>
+              </div>
+
+              {/* Контакты продавца — только в приложении. Это осознанное
+                  продуктовое решение: чат и звонки живут в приложении,
+                  сайт работает как воронка в него. */}
+              <div className="mt-4 border-t border-black/10 pt-4">
+                <div className="font-semibold">{t('car_contact_title')}</div>
+                <p className="mt-1 text-sm text-black/60">
+                  {t('car_contact_text')}
+                </p>
+
+                <a
+                  href={canonicalUrl}
+                  className="mt-3 block rounded-control bg-brand-green px-4 py-3 text-center font-semibold text-white"
+                >
+                  {t('car_open_in_app')}
+                </a>
+
+                <div className="mt-3">
+                  <ShareButton locale={locale} url={canonicalUrl} title={title} />
+                </div>
+              </div>
+
+              {/* QR — путь в приложение с десктопа, где смарт-баннера нет. */}
+              <div className="mt-4 hidden border-t border-black/10 pt-4 lg:block">
+                <AppQr url={canonicalUrl} />
+                <p className="mt-2 text-xs text-black/50">{t('car_qr_hint')}</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        {similar.length > 0 && (
+          <section className="mt-10">
+            <h2 className="mb-4 text-xl font-semibold">{t('car_similar')}</h2>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {similar.map((s) => (
+                <CarCard key={s.id} locale={locale} car={s} />
+              ))}
+            </div>
+          </section>
+        )}
+      </main>
+
+      <SiteFooter locale={locale} />
+    </>
+  );
+}

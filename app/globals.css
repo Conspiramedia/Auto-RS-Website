@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   RS AUTO — базовые стили.
+   Цвета продублированы CSS-переменными, чтобы их можно было
+   использовать там, где классы Tailwind неудобны (inline-SVG,
+   градиенты). Значения синхронизированы с lib/brand.ts.
+   ============================================================ */
+
+:root {
+  --brand-primary: #1565c0;
+  --brand-green: #22c063;
+  --brand-blue: #1e9af0;
+  --brand-red: #e01e23;
+  --brand-dark: #2b2b2e;
+  --brand-gold: #e8a73c;
+  --brand-bg: #ffffff;
+}
+
+body {
+  background: var(--brand-bg);
+  color: var(--brand-dark);
+  /* Montserrat подключается через next/font в app/layout.tsx */
+  font-family: var(--font-montserrat), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Убираем спиннеры у числовых полей фильтров: стрелки в полях «цена от/до»
+   мешают на мобильных и не несут смысла при ручном вводе. */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+/* Горизонтальная лента чипсов и галереи: прокрутка без видимой полосы. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
