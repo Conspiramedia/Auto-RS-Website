@@ -10,16 +10,22 @@ import Link from 'next/link';
 import { brand } from '@/lib/brand';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
+import type { ListingType } from '@/lib/types';
 import LocaleSwitch from './LocaleSwitch';
+import ModeSwitch from './ModeSwitch';
 
 type Props = {
   locale: Locale;
   // Путь текущей страницы без префикса локали — нужен переключателю языка,
   // чтобы остаться на том же месте при смене языка.
   pathname: string;
+  // Активная витрина для переключателя «Продажа | Аренда».
+  // Не передаётся на страницах вне каталога (/sell, /dealers, /app):
+  // там переключатель не показывается, чтобы не сбивать с шага формы.
+  mode?: Exclude<ListingType, 'both'>;
 };
 
-export default function SiteHeader({ locale, pathname }: Props) {
+export default function SiteHeader({ locale, pathname, mode }: Props) {
   const t = getT(locale);
 
   return (
@@ -33,17 +39,29 @@ export default function SiteHeader({ locale, pathname }: Props) {
           {brand.name}
         </Link>
 
-        <nav className="hidden flex-1 items-center gap-5 text-sm sm:flex">
-          <Link href={localeHref(locale, '/cars')} className="hover:underline">
-            {t('nav_catalog')}
-          </Link>
-          <Link href={localeHref(locale, '/dealers')} className="hover:underline">
-            {t('nav_dealers')}
-          </Link>
-          <Link href={localeHref(locale, '/app')} className="hover:underline">
-            {t('nav_app')}
-          </Link>
-        </nav>
+        {/* В каталоге место основной навигации занимает переключатель
+            витрин: он важнее ссылок на второстепенные разделы и должен
+            быть виден в том числе на мобильных. */}
+        {mode ? (
+          <div className="flex flex-1 items-center">
+            <ModeSwitch locale={locale} active={mode} />
+          </div>
+        ) : (
+          <nav className="hidden flex-1 items-center gap-5 text-sm sm:flex">
+            <Link href={localeHref(locale, '/cars')} className="hover:underline">
+              {t('nav_catalog')}
+            </Link>
+            <Link href={localeHref(locale, '/rent')} className="hover:underline">
+              {t('nav_rent')}
+            </Link>
+            <Link href={localeHref(locale, '/dealers')} className="hover:underline">
+              {t('nav_dealers')}
+            </Link>
+            <Link href={localeHref(locale, '/app')} className="hover:underline">
+              {t('nav_app')}
+            </Link>
+          </nav>
+        )}
 
         <div className="ml-auto flex items-center gap-3">
           <LocaleSwitch locale={locale} pathname={pathname} />

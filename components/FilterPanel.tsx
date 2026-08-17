@@ -18,17 +18,20 @@ import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import type { CatalogFilters } from '@/lib/queries';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
-import type { SiteBrand, SiteCity } from '@/lib/types';
+import type { ListingType, SiteBrand, SiteCity } from '@/lib/types';
 
 type Props = {
   locale: Locale;
   filters: CatalogFilters;
   brands: SiteBrand[];
   cities: SiteCity[];
-  // Куда отправлять форму: '/cars' или SEO-страница с уже заданной маркой.
+  // Куда отправлять форму: '/cars', '/rent' или SEO-страница с маркой.
   action: string;
   // Число применённых фильтров для счётчика на кнопке.
   activeCount: number;
+  // Витрина: в аренде фильтр цены работает по суточной ставке, поэтому
+  // подпись поля обязана это отражать — иначе «до 50» выглядит абсурдом.
+  mode?: Exclude<ListingType, 'both'>;
 };
 
 export default function FilterPanel({
@@ -38,6 +41,7 @@ export default function FilterPanel({
   cities,
   action,
   activeCount,
+  mode = 'sale',
 }: Props) {
   const t = getT(locale);
   const [open, setOpen] = useState(false);
@@ -123,7 +127,9 @@ export default function FilterPanel({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-sm text-black/60">
-                    {t('filter_price')}, €
+                    {mode === 'rent'
+                      ? `${t('rent_price')}, €`
+                      : `${t('filter_price')}, €`}
                   </label>
                   <div className="flex gap-2">
                     <input

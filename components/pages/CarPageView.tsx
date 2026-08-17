@@ -15,8 +15,10 @@ import SmartBanner from '@/components/SmartBanner';
 import {
   carTitle,
   formatDate,
+  formatDeposit,
   formatMileage,
   formatPrice,
+  formatRentPrice,
   labelBodyType,
   labelFuel,
   labelTransmission,
@@ -63,6 +65,13 @@ export default async function CarPageView({
     images: images.map((i) => i.image_url),
   });
 
+  // Витрина, к которой относится объявление. Машина, выставленная только
+  // в аренду, принадлежит разделу /rent — туда же ведут крошки и
+  // переключатель в шапке. Для «и то и другое» считаем основной продажу.
+  const mode: 'sale' | 'rent' = car.is_for_sale ? 'sale' : 'rent';
+  const catalogPath = mode === 'rent' ? '/rent' : '/cars';
+  const catalogLabel = mode === 'rent' ? t('rent_title') : t('nav_catalog');
+
   const specs = [
     { label: t('car_year'), value: String(car.year) },
     { label: t('car_mileage'), value: formatMileage(car.mileage, locale) },
@@ -86,12 +95,15 @@ export default async function CarPageView({
       {/* На мобильных ведём в приложение по каноническому адресу: при
           установленном приложении App Link перехватит ссылку. */}
       <SmartBanner locale={locale} deepLink={canonicalUrl} />
-      <SiteHeader locale={locale} pathname={`/car/${id}`} />
+      <SiteHeader locale={locale} pathname={`/car/${id}`} mode={mode} />
 
       <main className="mx-auto max-w-6xl px-4 py-6">
         <nav className="mb-4 text-sm text-black/50">
-          <Link href={localeHref(locale, '/cars')} className="hover:underline">
-            {t('nav_catalog')}
+          <Link
+            href={localeHref(locale, catalogPath)}
+            className="hover:underline"
+          >
+            {catalogLabel}
           </Link>
           <span className="mx-1">/</span>
           <span>{title}</span>
@@ -121,6 +133,48 @@ export default async function CarPageView({
               </dl>
             </section>
 
+            {/* Условия аренды — только у арендных объявлений. Отвечает на
+                вопросы, которые иначе ушли бы в переписку: залог, срок,
+                что входит. */}
+            {car.is_for_rent && (
+              <section className="mt-6 rounded-card border border-black/10 p-4">
+                <h2 className="mb-3 text-lg font-semibold">{t('rent_terms')}</h2>
+
+                <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
+                  <div>
+                    <dt className="text-sm text-black/50">{t('rent_price')}</dt>
+                    <dd className="font-medium">
+                      {formatRentPrice(
+                        car.rent_price_daily,
+                        car.currency,
+                        locale,
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-black/50">
+                      {t('rent_deposit')}
+                    </dt>
+                    <dd className="font-medium">
+                      {formatDeposit(car.deposit_amount, car.currency, locale)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-black/50">
+                      {t('rent_min_period')}
+                    </dt>
+                    <dd className="font-medium">
+                      {t('rent_min_period_value')}
+                    </dd>
+                  </div>
+                </dl>
+
+                <p className="mt-3 text-sm text-black/60">
+                  {t('rent_terms_text')}
+                </p>
+              </section>
+            )}
+
             {car.description && (
               <section className="mt-6">
                 <h2 className="mb-2 text-lg font-semibold">
@@ -142,9 +196,36 @@ export default async function CarPageView({
           {/* Правая колонка: цена и воронка в приложение. */}
           <aside className="lg:sticky lg:top-20 lg:self-start">
             <div className="rounded-card border border-black/10 p-4">
-              <div className="text-3xl font-bold text-brand-primary">
-                {formatPrice(car.sale_price, car.currency, locale)}
-              </div>
+              {/* Блок цен. У объявления может быть две цены сразу
+                  (продажа и аренда) — тогда показываем обе, потому что
+                  выбрать сделку должен пользователь, а не мы за него. */}
+              {car.is_for_sale && (
+                <div className="text-3xl font-bold text-brand-primary">
+                  {formatPrice(car.sale_price, car.currency, locale)}
+                </div>
+              )}
+
+              {car.is_for_rent && (
+                <div className={car.is_for_sale ? 'mt-2' : ''}>
+                  <div
+                    className={
+                      car.is_for_sale
+                        ? 'text-xl font-semibold text-brand-blue'
+                        : 'text-3xl font-bold text-brand-primary'
+                    }
+                  >
+                    {formatRentPrice(
+                      car.rent_price_daily,
+                      car.currency,
+                      locale,
+                    )}
+                  </div>
+                  <div className="mt-1 text-sm text-black/60">
+                    {t('rent_deposit')}:{' '}
+                    {formatDeposit(car.deposit_amount, car.currency, locale)}
+                  </div>
+                </div>
+              )}
 
               <div className="mt-4 border-t border-black/10 pt-4">
                 <div className="text-sm text-black/50">{t('car_seller')}</div>
@@ -191,7 +272,7 @@ export default async function CarPageView({
             <h2 className="mb-4 text-xl font-semibold">{t('car_similar')}</h2>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {similar.map((s) => (
-                <CarCard key={s.id} locale={locale} car={s} />
+                <CarCard key={s.id} locale={locale} car={s} mode={mode} />
               ))}
             </div>
           </section>

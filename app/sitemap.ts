@@ -41,6 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries: MetadataRoute.Sitemap = [
     { path: '/', priority: 1.0, changeFrequency: 'daily' as const },
     { path: '/cars', priority: 0.9, changeFrequency: 'hourly' as const },
+    { path: '/rent', priority: 0.9, changeFrequency: 'hourly' as const },
     { path: '/sell', priority: 0.8, changeFrequency: 'monthly' as const },
     { path: '/dealers', priority: 0.6, changeFrequency: 'monthly' as const },
     { path: '/app', priority: 0.5, changeFrequency: 'monthly' as const },
@@ -53,30 +54,49 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // ---------- Страницы марок и моделей ----------
-  const brands = await fetchSiteBrands();
+  // Обе витрины: у продажи и аренды свои наборы марок и свои адреса.
+  const [saleBrands, rentBrands] = await Promise.all([
+    fetchSiteBrands('sale'),
+    fetchSiteBrands('rent'),
+  ]);
 
-  const brandEntries: MetadataRoute.Sitemap = brands.map((b) => ({
-    url: `${siteBaseUrl}/cars/${b.brand_slug}`,
-    lastModified: now,
-    changeFrequency: 'daily',
-    priority: 0.8,
-    alternates: alternates(`/cars/${b.brand_slug}`),
-  }));
+  // Сборка записей для одной витрины. Вынесена в функцию, чтобы логика
+  // обхода марок и моделей не дублировалась для /cars и /rent.
+  async function sectionEntries(
+    root: '/cars' | '/rent',
+    brandList: typeof saleBrands,
+    listingType: 'sale' | 'rent',
+  ): Promise<MetadataRoute.Sitemap> {
+    const brandUrls: MetadataRoute.Sitemap = brandList.map((b) => ({
+      url: `${siteBaseUrl}${root}/${b.brand_slug}`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 0.8,
+      alternates: alternates(`${root}/${b.brand_slug}`),
+    }));
 
-  // Модели запрашиваем параллельно по всем маркам: последовательный обход
-  // при полусотне марок занял бы десятки секунд.
-  const modelGroups = await Promise.all(
-    brands.map(async (b) => {
-      const models = await fetchSiteModels(b.brand);
-      return models.map((m) => ({
-        url: `${siteBaseUrl}/cars/${b.brand_slug}/${m.model_slug}`,
-        lastModified: now,
-        changeFrequency: 'daily' as const,
-        priority: 0.7,
-        alternates: alternates(`/cars/${b.brand_slug}/${m.model_slug}`),
-      }));
-    }),
-  );
+    // Модели запрашиваем параллельно по всем маркам: последовательный
+    // обход при полусотне марок занял бы десятки секунд.
+    const modelGroups = await Promise.all(
+      brandList.map(async (b) => {
+        const models = await fetchSiteModels(b.brand, listingType);
+        return models.map((m) => ({
+          url: `${siteBaseUrl}${root}/${b.brand_slug}/${m.model_slug}`,
+          lastModified: now,
+          changeFrequency: 'daily' as const,
+          priority: 0.7,
+          alternates: alternates(`${root}/${b.brand_slug}/${m.model_slug}`),
+        }));
+      }),
+    );
+
+    return [...brandUrls, ...modelGroups.flat()];
+  }
+
+  const [saleEntries, rentEntries] = await Promise.all([
+    sectionEntries('/cars', saleBrands, 'sale'),
+    sectionEntries('/rent', rentBrands, 'rent'),
+  ]);
 
   // ---------- Карточки объявлений ----------
   const cars = await fetchSitemapCars(0, 45000);
@@ -91,10 +111,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/car/${car.id}`),
   }));
 
-  return [
-    ...staticEntries,
-    ...brandEntries,
-    ...modelGroups.flat(),
-    ...carEntries,
-  ];
+  return [...staticEntries, ...saleEntries, ...rentEntries, ...carEntries];
 }

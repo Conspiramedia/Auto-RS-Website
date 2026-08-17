@@ -148,6 +148,36 @@ export const dict = {
     dealers_offer: 'Prva 3 meseca besplatno',
     dealers_cta: 'Pošalji zahtev',
 
+    // Аренда
+    nav_rent: 'Rent-a-car',
+    mode_sale: 'Prodaja',
+    mode_rent: 'Izdavanje',
+    rent_title: 'Automobili za izdavanje',
+    rent_per_day: 'dan',
+    rent_price: 'Cena po danu',
+    rent_deposit: 'Depozit',
+    rent_deposit_none: 'Bez depozita',
+    rent_terms: 'Uslovi izdavanja',
+    rent_terms_text:
+      'Depozit se vraća po vraćanju vozila bez oštećenja. Uslove osiguranja, kilometražu i minimalni period zakupa potvrdite sa vlasnikom u aplikaciji.',
+    rent_also_sale: 'Ovaj automobil je i na prodaju',
+    rent_also_rent: 'Ovaj automobil se može i iznajmiti',
+    rent_empty_title: 'Nema automobila za izdavanje',
+    rent_min_period: 'Minimalni period zakupa',
+    rent_min_period_value: '1 dan',
+
+    // Подача: тип объявления
+    sell_type: 'Tip oglasa',
+    sell_type_sale: 'Prodajem',
+    sell_type_rent: 'Izdajem',
+    sell_type_both: 'Prodajem i izdajem',
+    sell_sale_price: 'Cena prodaje',
+    sell_rent_price: 'Cena po danu',
+    sell_deposit: 'Depozit',
+    sell_err_rent_price: 'Za izdavanje je obavezna cena po danu.',
+    sell_err_price_positive: 'Cena mora biti veća od nule.',
+    sell_err_deposit: 'Depozit ne može biti negativan.',
+
     // Общее
     common_all: 'Sve',
     common_more: 'Prikaži još',
@@ -248,6 +278,36 @@ export const dict = {
     dealers_title: 'Автосалонам',
     dealers_offer: 'Первые 3 месяца бесплатно',
     dealers_cta: 'Оставить заявку',
+
+    // Аренда
+    nav_rent: 'Аренда',
+    mode_sale: 'Продажа',
+    mode_rent: 'Аренда',
+    rent_title: 'Автомобили в аренду',
+    rent_per_day: 'сутки',
+    rent_price: 'Цена за сутки',
+    rent_deposit: 'Залог',
+    rent_deposit_none: 'Без залога',
+    rent_terms: 'Условия аренды',
+    rent_terms_text:
+      'Залог возвращается после сдачи автомобиля без повреждений. Условия страховки, лимит пробега и минимальный срок аренды уточните у владельца в приложении.',
+    rent_also_sale: 'Этот автомобиль также продаётся',
+    rent_also_rent: 'Этот автомобиль также сдаётся в аренду',
+    rent_empty_title: 'Нет автомобилей в аренду',
+    rent_min_period: 'Минимальный срок аренды',
+    rent_min_period_value: '1 сутки',
+
+    // Подача: тип объявления
+    sell_type: 'Тип объявления',
+    sell_type_sale: 'Продаю',
+    sell_type_rent: 'Сдаю',
+    sell_type_both: 'Продаю и сдаю',
+    sell_sale_price: 'Цена продажи',
+    sell_rent_price: 'Цена за сутки',
+    sell_deposit: 'Залог',
+    sell_err_rent_price: 'Для аренды обязательна цена за сутки.',
+    sell_err_price_positive: 'Цена должна быть больше нуля.',
+    sell_err_deposit: 'Залог не может быть отрицательным.',
 
     common_all: 'Все',
     common_more: 'Показать ещё',

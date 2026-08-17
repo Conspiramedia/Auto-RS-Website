@@ -38,8 +38,16 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 
 // Базовый адрес сайта. Нужен для canonical, OG-тегов и sitemap —
 // все они требуют абсолютных URL.
-// Домен ещё не куплен, поэтому значение живёт в переменной окружения
-// и меняется без правки кода.
+//
+// Источник истины — переменная окружения: при переезде на собственный
+// домен правится она, а не код. Значение в ?? — лишь запасной вариант
+// на случай, если переменную забыли задать в окружении сборки; оно
+// совпадает с текущим боевым адресом, чтобы такая ошибка не приводила
+// к canonical и OG-ссылкам на несуществующий домен.
+//
+// ВАЖНО: тот же адрес хранится на сервере в app_settings и участвует в
+// сборке site_url (миграция 0048). При смене домена его нужно обновить
+// и там: select public.set_site_base_url('https://новый-домен');
 export const siteBaseUrl = (
-  process.env.NEXT_PUBLIC_SITE_BASE_URL ?? 'https://rsauto.placeholder'
+  process.env.NEXT_PUBLIC_SITE_BASE_URL ?? 'https://rsauto-rs.vercel.app'
 ).replace(/\/$/, '');

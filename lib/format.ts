@@ -36,6 +36,32 @@ export function formatPrice(
   }).format(value);
 }
 
+// Цена аренды за сутки: «45 € / dan». Единица измерения обязательна —
+// без неё суточная ставка читается как полная цена автомобиля.
+export function formatRentPrice(
+  value: number | null,
+  currency: string,
+  locale: Locale,
+): string {
+  if (value === null || value === undefined) {
+    return dict[locale].car_price_negotiable;
+  }
+  return `${formatPrice(value, currency, locale)} / ${dict[locale].rent_per_day}`;
+}
+
+// Залог. Ноль — это не «не указано», а осмысленное «без залога»:
+// для арендатора это важное преимущество, поэтому пишем словами.
+export function formatDeposit(
+  value: number | null,
+  currency: string,
+  locale: Locale,
+): string {
+  if (value === null || value === undefined || value === 0) {
+    return dict[locale].rent_deposit_none;
+  }
+  return formatPrice(value, currency, locale);
+}
+
 // Пробег. null — продавец не указал, показываем прочерк вместо «0 км»,
 // который читался бы как «новая машина».
 export function formatMileage(value: number | null, locale: Locale): string {

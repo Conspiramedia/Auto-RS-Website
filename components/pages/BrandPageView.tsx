@@ -24,8 +24,8 @@ import { siteBaseUrl } from '@/lib/supabase';
 
 // Поиск марки по слагу. Возвращает отображаемое название из БД:
 // в заголовке нужно «Mercedes-Benz», а не «mercedes-benz» из адреса.
-export async function resolveBrand(slug: string) {
-  const brands = await fetchSiteBrands();
+export async function resolveBrand(slug: string, mode: 'sale' | 'rent' = 'sale') {
+  const brands = await fetchSiteBrands(mode);
   return brands.find((b) => b.brand_slug === slug) ?? null;
 }
 
@@ -33,31 +33,44 @@ export default async function BrandPageView({
   locale,
   slug,
   searchParams,
+  mode = 'sale',
 }: {
   locale: Locale;
   slug: string;
   searchParams: SearchParams;
+  mode?: 'sale' | 'rent';
 }) {
   const t = getT(locale);
+  const root = mode === 'rent' ? '/rent' : '/cars';
 
-  const brand = await resolveBrand(slug);
-  // Марки нет среди активных — страницы не существует.
+  const brand = await resolveBrand(slug, mode);
+  // Марки нет среди активных объявлений этой витрины — страницы не
+  // существует. Марка может продаваться, но не сдаваться: тогда
+  // /cars/bmw открывается, а /rent/bmw отдаёт 404. Это верно —
+  // иначе в индекс попала бы страница с пустой выдачей.
   if (!brand) notFound();
 
-  // Марка задаётся адресом страницы и переопределяет параметр из query:
+  // Марка и витрина задаются адресом страницы и переопределяют query:
   // /cars/bmw?brand=audi должен показывать BMW, иначе адрес врёт.
-  const filters = { ...parseFilters(searchParams), brand: brand.brand };
+  const filters = {
+    ...parseFilters(searchParams),
+    brand: brand.brand,
+    listingType: mode,
+  };
 
   const [result, brands, cities, models] = await Promise.all([
     fetchCatalog(filters),
-    fetchSiteBrands(),
-    fetchSiteCities(),
-    fetchSiteModels(brand.brand),
+    fetchSiteBrands(mode),
+    fetchSiteCities(mode),
+    fetchSiteModels(brand.brand, mode),
   ]);
 
   const breadcrumb = buildBreadcrumbJsonLd([
-    { name: t('nav_catalog'), url: `${siteBaseUrl}/cars` },
-    { name: brand.brand, url: `${siteBaseUrl}/cars/${slug}` },
+    {
+      name: mode === 'rent' ? t('rent_title') : t('nav_catalog'),
+      url: `${siteBaseUrl}${root}`,
+    },
+    { name: brand.brand, url: `${siteBaseUrl}${root}/${slug}` },
   ]);
 
   return (
@@ -68,12 +81,12 @@ export default async function BrandPageView({
       />
 
       <SmartBanner locale={locale} />
-      <SiteHeader locale={locale} pathname={`/cars/${slug}`} />
+      <SiteHeader locale={locale} pathname={`${root}/${slug}`} mode={mode} />
 
       <main className="mx-auto max-w-6xl px-4 py-6">
         <nav className="mb-4 text-sm text-black/50">
-          <Link href={localeHref(locale, '/cars')} className="hover:underline">
-            {t('nav_catalog')}
+          <Link href={localeHref(locale, root)} className="hover:underline">
+            {mode === 'rent' ? t('rent_title') : t('nav_catalog')}
           </Link>
           <span className="mx-1">/</span>
           <span>{brand.brand}</span>
@@ -81,12 +94,13 @@ export default async function BrandPageView({
 
         <CatalogView
           locale={locale}
-          title={`${brand.brand} — ${t('catalog_title').toLowerCase()}`}
+          title={`${brand.brand} — ${(mode === 'rent' ? t('rent_title') : t('catalog_title')).toLowerCase()}`}
           filters={filters}
           result={result}
           brands={brands}
           cities={cities}
-          basePath={`/cars/${slug}`}
+          basePath={`${root}/${slug}`}
+          mode={mode}
         />
 
         {/* Перелинковка на страницы моделей: главный источник внутренних
@@ -100,7 +114,7 @@ export default async function BrandPageView({
               {models.map((m) => (
                 <Link
                   key={m.model_slug}
-                  href={localeHref(locale, `/cars/${slug}/${m.model_slug}`)}
+                  href={localeHref(locale, `${root}/${slug}/${m.model_slug}`)}
                   className="rounded-control border border-black/15 px-3 py-1.5 text-sm hover:bg-black/[0.03]"
                 >
                   {m.model}{' '}
@@ -112,7 +126,7 @@ export default async function BrandPageView({
         )}
       </main>
 
-      <SiteFooter locale={locale} brands={brands.slice(0, 12)} />
+      <SiteFooter locale={locale} brands={brands.slice(0, 12)} mode={mode} />
     </>
   );
 }

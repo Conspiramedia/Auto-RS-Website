@@ -41,11 +41,19 @@ export default function SellForm({ locale, brands }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
+  // Тип объявления. Определяет, какие поля цен показываются и что
+  // уходит в create_car_v3. По умолчанию продажа — самый частый случай.
+  const [listingType, setListingType] = useState<'sale' | 'rent' | 'both'>(
+    'sale',
+  );
+
   // Шаг 1–2: данные автомобиля.
   const [brand, setBrand] = useState('');
   const [model, setModel] = useState('');
   const [year, setYear] = useState('');
   const [price, setPrice] = useState('');
+  const [rentPrice, setRentPrice] = useState('');
+  const [deposit, setDeposit] = useState('');
   const [mileage, setMileage] = useState('');
   const [city, setCity] = useState('');
   const [bodyType, setBodyType] = useState('');
@@ -166,22 +174,32 @@ export default function SellForm({ locale, brands }: Props) {
         photoUrls.push(pub.publicUrl);
       }
 
-      // 3) Создание объявления. Сигнатура — из миграции 0036.
-      // listing_type = 'sale': сайт работает только с продажей.
-      const { error: createError } = await supabase.rpc('create_car_v2', {
-        listing_type: 'sale',
-        brand: brand.trim(),
-        model: model.trim(),
-        year: Number(year),
+      // 3) Создание объявления. create_car_v3 (миграция 0055) — у неё
+      // РАЗДЕЛЬНЫЕ цены продажи и аренды и есть залог. Прежняя v2
+      // принимала одну цену и при 'both' копировала её в обе колонки,
+      // из-за чего цена продажи равнялась суточной ставке.
+      const { error: createError } = await supabase.rpc('create_car_v3', {
+        p_listing_type: listingType,
+        p_brand: brand.trim(),
+        p_model: model.trim(),
+        p_year: Number(year),
         // Пустые необязательные поля уходят как null, а не как 0:
         // ноль пробега БД поймёт как «новая машина».
-        mileage: mileage ? Number(mileage) : null,
-        price: price ? Number(price) : null,
-        currency: 'EUR',
-        city: city.trim(),
-        lat: null,
-        lng: null,
-        photo_urls: photoUrls,
+        p_mileage: mileage ? Number(mileage) : null,
+        // Цена продажи нужна только продающим объявлениям, суточная
+        // ставка — только сдающимся. Лишние значения не отправляем,
+        // чтобы в базе не осталось цены от неактуального типа.
+        p_sale_price:
+          listingType !== 'rent' && price ? Number(price) : null,
+        p_rent_price_daily:
+          listingType !== 'sale' && rentPrice ? Number(rentPrice) : null,
+        p_deposit_amount:
+          listingType !== 'sale' && deposit ? Number(deposit) : 0,
+        p_currency: 'EUR',
+        p_city: city.trim(),
+        p_lat: null,
+        p_lng: null,
+        p_photo_urls: photoUrls,
         p_body_type: bodyType || null,
         p_transmission: transmission || null,
         p_fuel: fuel || null,
@@ -213,6 +231,38 @@ export default function SellForm({ locale, brands }: Props) {
   const canNext1 = brand.trim() && model.trim() && year && city.trim();
   const canSubmit = codeSent && code.trim().length >= 4;
 
+  // Проверка шага «Детали». Дублирует серверную валидацию create_car_v3
+  // намеренно: сервер — источник истины, но сообщить об ошибке до
+  // загрузки фотографий и отправки SMS гораздо дешевле для пользователя.
+  function validateDetails(): string | null {
+    const needsRent = listingType !== 'sale';
+
+    if (needsRent) {
+      if (!rentPrice.trim()) return t('sell_err_rent_price');
+      if (Number(rentPrice) <= 0) return t('sell_err_price_positive');
+      if (deposit.trim() && Number(deposit) < 0) return t('sell_err_deposit');
+    }
+
+    // Цена продажи может отсутствовать («Договорная»), но если указана —
+    // должна быть положительной.
+    if (listingType !== 'rent' && price.trim() && Number(price) <= 0) {
+      return t('sell_err_price_positive');
+    }
+
+    return null;
+  }
+
+  // Переход со второго шага с проверкой.
+  function goToPhotos() {
+    const problem = validateDetails();
+    if (problem) {
+      setError(problem);
+      return;
+    }
+    setError(null);
+    setStep(3);
+  }
+
   return (
     <div className="rounded-card border border-black/10 p-4 sm:p-6">
       <div className="mb-4 text-sm text-black/50">
@@ -223,6 +273,36 @@ export default function SellForm({ locale, brands }: Props) {
       {step === 1 && (
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">{t('sell_step_car')}</h2>
+
+          {/* Тип объявления — первый вопрос: от него зависит, какие поля
+              цен появятся на следующем шаге. */}
+          <div>
+            <label className="mb-1 block text-sm text-black/60">
+              {t('sell_type')}
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {(
+                [
+                  ['sale', t('sell_type_sale')],
+                  ['rent', t('sell_type_rent')],
+                  ['both', t('sell_type_both')],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setListingType(value)}
+                  className={
+                    listingType === value
+                      ? 'rounded-control bg-brand-dark px-3 py-2.5 text-sm font-semibold text-white'
+                      : 'rounded-control border border-black/15 px-3 py-2.5 text-sm hover:bg-black/[0.03]'
+                  }
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div>
             <label className="mb-1 block text-sm text-black/60">
@@ -299,10 +379,12 @@ export default function SellForm({ locale, brands }: Props) {
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">{t('sell_step_details')}</h2>
 
-          <div className="grid grid-cols-2 gap-3">
+          {/* Цена продажи — только когда объявление продаётся.
+              Пустое значение допустимо: это «Договорная». */}
+          {listingType !== 'rent' && (
             <div>
               <label className="mb-1 block text-sm text-black/60">
-                {t('filter_price')}, €
+                {t('sell_sale_price')}, €
               </label>
               <input
                 type="number"
@@ -313,18 +395,53 @@ export default function SellForm({ locale, brands }: Props) {
                 className={field}
               />
             </div>
-            <div>
-              <label className="mb-1 block text-sm text-black/60">
-                {t('car_mileage')}, {t('common_km')}
-              </label>
-              <input
-                type="number"
-                value={mileage}
-                onChange={(e) => setMileage(e.target.value)}
-                min={0}
-                className={field}
-              />
+          )}
+
+          {/* Цена аренды и залог — только когда объявление сдаётся.
+              Суточная ставка обязательна: без неё объявление аренды
+              бессмысленно, и того же требует constraint в БД. */}
+          {listingType !== 'sale' && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="mb-1 block text-sm text-black/60">
+                  {t('sell_rent_price')}, € *
+                </label>
+                <input
+                  type="number"
+                  value={rentPrice}
+                  onChange={(e) => setRentPrice(e.target.value)}
+                  min={1}
+                  required
+                  className={field}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-black/60">
+                  {t('sell_deposit')}, €
+                </label>
+                <input
+                  type="number"
+                  value={deposit}
+                  onChange={(e) => setDeposit(e.target.value)}
+                  min={0}
+                  placeholder="0"
+                  className={field}
+                />
+              </div>
             </div>
+          )}
+
+          <div>
+            <label className="mb-1 block text-sm text-black/60">
+              {t('car_mileage')}, {t('common_km')}
+            </label>
+            <input
+              type="number"
+              value={mileage}
+              onChange={(e) => setMileage(e.target.value)}
+              min={0}
+              className={field}
+            />
           </div>
 
           <div className="grid grid-cols-3 gap-3">
@@ -404,7 +521,7 @@ export default function SellForm({ locale, brands }: Props) {
             </button>
             <button
               type="button"
-              onClick={() => setStep(3)}
+              onClick={goToPhotos}
               className="flex-1 rounded-control bg-brand-green px-4 py-3 font-semibold text-white"
             >
               {t('sell_next')}

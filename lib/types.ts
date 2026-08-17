@@ -10,7 +10,12 @@
 // видно на уровне компиляции, а не только в рантайме.
 // ============================================================
 
-// Строка каталога. Источник: RPC search_cars_public (миграция 0051).
+// Режим витрины. Значение уходит в p_listing_type RPC search_cars_public
+// (миграция 0055) — набор строк обязан совпадать с миграцией.
+// 'both' используется общим поиском; отдельной страницы у него нет.
+export type ListingType = 'sale' | 'rent' | 'both';
+
+// Строка каталога. Источник: RPC search_cars_public (миграции 0051, 0055).
 export type CatalogCar = {
   id: string;
   brand: string;
@@ -23,6 +28,13 @@ export type CatalogCar = {
   currency: string;
   // null означает «Договорная» — цена не указана продавцом.
   sale_price: number | null;
+  // Суточная ставка аренды. Для объявлений только на продажу — null.
+  rent_price_daily: number | null;
+  // Залог. Осмыслен только для аренды; в продаже всегда 0.
+  deposit_amount: number | null;
+  // Одно объявление может быть и продажей, и арендой одновременно.
+  is_for_sale: boolean;
+  is_for_rent: boolean;
   city: string;
   status: string;
   // Действующее продвижение (is_vip + не истёкший boosted_until).
@@ -79,7 +91,7 @@ export type CarImage = {
   order_index: number;
 };
 
-// Похожее объявление. Источник: RPC get_similar_cars (миграция 0051).
+// Похожее объявление. Источник: RPC get_similar_cars (миграции 0051, 0055).
 export type SimilarCar = {
   id: string;
   brand: string;
@@ -88,6 +100,9 @@ export type SimilarCar = {
   mileage: number | null;
   currency: string;
   sale_price: number | null;
+  rent_price_daily: number | null;
+  is_for_sale: boolean;
+  is_for_rent: boolean;
   city: string;
   site_url: string;
   photo_url: string | null;
@@ -116,9 +131,12 @@ export type SiteCity = {
   cars_count: number;
 };
 
-// Счётчики главной. Источник: RPC get_site_stats (миграция 0052).
+// Счётчики главной. Источник: RPC get_site_stats (миграции 0052, 0055).
 export type SiteStats = {
+  // Объявления о продаже.
   cars_total: number;
+  // Объявления об аренде.
+  rent_total: number;
   brands_total: number;
   cities_total: number;
   dealers_total: number;

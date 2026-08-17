@@ -96,6 +96,9 @@ export function buildVehicleJsonLd(params: {
     transmission: string | null;
     body_type: string | null;
     sale_price: number | null;
+    rent_price_daily?: number | null;
+    is_for_sale?: boolean;
+    is_for_rent?: boolean;
     currency: string;
     city: string;
     description: string | null;
@@ -106,9 +109,52 @@ export function buildVehicleJsonLd(params: {
 }) {
   const { car, url, images } = params;
 
+  // Объявление, выставленное ТОЛЬКО в аренду, описывается как аренда:
+  // цена за сутки в Offer с unitCode DAY. Помечать суточную ставку как
+  // цену продажи нельзя — поисковик показал бы «Golf за 35 €».
+  const rentOnly = car.is_for_rent === true && car.is_for_sale !== true;
+
+  // Машина, доступная и к продаже, и к аренде, получает ДВА Offer:
+  // schema.org это допускает, и каждый описывает свою сделку честно.
+  const saleOffer = {
+    '@type': 'Offer',
+    url,
+    priceCurrency: car.currency || 'EUR',
+    price: car.sale_price ?? undefined,
+    availability:
+      car.status === 'sold'
+        ? 'https://schema.org/SoldOut'
+        : 'https://schema.org/InStock',
+    itemCondition: 'https://schema.org/UsedCondition',
+    areaServed: car.city,
+  };
+
+  const rentOffer = {
+    '@type': 'Offer',
+    url,
+    priceCurrency: car.currency || 'EUR',
+    // priceSpecification с unitCode DAY — стандартный способ выразить
+    // «за сутки»; голое price здесь означало бы полную стоимость.
+    priceSpecification: {
+      '@type': 'UnitPriceSpecification',
+      price: car.rent_price_daily ?? undefined,
+      priceCurrency: car.currency || 'EUR',
+      unitCode: 'DAY',
+    },
+    availability: 'https://schema.org/InStock',
+    itemCondition: 'https://schema.org/UsedCondition',
+    areaServed: car.city,
+  };
+
+  const offers: unknown[] = [];
+  if (car.is_for_sale !== false) offers.push(saleOffer);
+  if (car.is_for_rent === true) offers.push(rentOffer);
+
   return {
     '@context': 'https://schema.org',
-    '@type': 'Vehicle',
+    // Для чистой аренды тип Car: он точнее описывает предложение проката,
+    // тогда как Vehicle — общий родитель. Оба валидны для schema.org.
+    '@type': rentOnly ? 'Car' : 'Vehicle',
     name: `${car.brand} ${car.model}, ${car.year}`,
     brand: { '@type': 'Brand', name: car.brand },
     model: car.model,
@@ -126,22 +172,11 @@ export function buildVehicleJsonLd(params: {
     fuelType: car.fuel ?? undefined,
     vehicleTransmission: car.transmission ?? undefined,
     bodyType: car.body_type ?? undefined,
-    offers: {
-      '@type': 'Offer',
-      url,
-      priceCurrency: car.currency || 'EUR',
-      // Договорная цена (null) в разметке не указывается: выдумывать
-      // число нельзя, а price: 0 поисковик прочитает как «бесплатно».
-      price: car.sale_price ?? undefined,
-      // Проданное объявление остаётся доступным по прямой ссылке, и его
-      // статус обязан быть отражён честно.
-      availability:
-        car.status === 'sold'
-          ? 'https://schema.org/SoldOut'
-          : 'https://schema.org/InStock',
-      itemCondition: 'https://schema.org/UsedCondition',
-      areaServed: car.city,
-    },
+    // Один Offer отдаём объектом, два — массивом: так разметку читают
+    // и валидаторы, и поисковые системы.
+    // Договорная цена (null) не подставляется: выдумывать число нельзя,
+    // а price: 0 поисковик прочитает как «бесплатно».
+    offers: offers.length === 1 ? offers[0] : offers,
   };
 }
 

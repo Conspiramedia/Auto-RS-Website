@@ -15,39 +15,49 @@ import { parseFilters } from '@/lib/searchParams';
 export default async function CatalogPageView({
   locale,
   searchParams,
+  // Витрина: один компонент обслуживает и /cars, и /rent.
+  mode = 'sale',
 }: {
   locale: Locale;
   searchParams: SearchParams;
+  mode?: 'sale' | 'rent';
 }) {
   const t = getT(locale);
-  const filters = parseFilters(searchParams);
+  const basePath = mode === 'rent' ? '/rent' : '/cars';
+
+  // Тип витрины задаётся страницей, а не пользователем: он определяется
+  // адресом раздела и не может прийти из query-параметров.
+  const filters = { ...parseFilters(searchParams), listingType: mode };
 
   // Три независимых запроса — параллельно: последовательные утроили бы
   // время ответа страницы.
   const [result, brands, cities] = await Promise.all([
     fetchCatalog(filters),
-    fetchSiteBrands(),
-    fetchSiteCities(),
+    fetchSiteBrands(mode),
+    fetchSiteCities(mode),
   ]);
 
   return (
     <>
       <SmartBanner locale={locale} />
-      <SiteHeader locale={locale} pathname="/cars" />
+      <SiteHeader locale={locale} pathname={basePath} mode={mode} />
 
       <main className="mx-auto max-w-6xl px-4 py-6">
         <CatalogView
           locale={locale}
-          title={t('catalog_title')}
+          title={mode === 'rent' ? t('rent_title') : t('catalog_title')}
           filters={filters}
           result={result}
           brands={brands}
           cities={cities}
-          basePath="/cars"
+          basePath={basePath}
+          mode={mode}
         />
       </main>
 
-      <SiteFooter locale={locale} brands={brands.slice(0, 12)} />
+      {/* Ссылки в подвале ведут в тот же раздел, в котором находится
+          пользователь: из аренды — на арендные страницы марок. */}
+      <SiteFooter locale={locale} brands={brands.slice(0, 12)} mode={mode} />
     </>
   );
 }

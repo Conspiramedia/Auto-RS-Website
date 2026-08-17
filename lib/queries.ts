@@ -15,6 +15,7 @@ import type {
   CarDetails,
   CarImage,
   CatalogCar,
+  ListingType,
   SimilarCar,
   SiteBrand,
   SiteCity,
@@ -41,6 +42,9 @@ export type CatalogFilters = {
   sort?: SortKey;
   page?: number;
   perPage?: number;
+  // Витрина: продажа или аренда. Задаётся не пользователем, а самой
+  // страницей (/cars или /rent), поэтому в query-параметры не попадает.
+  listingType?: ListingType;
 };
 
 export type CatalogResult = {
@@ -77,6 +81,7 @@ export async function fetchCatalog(
     // Postgres принимает смещение, а не номер страницы.
     p_offset: (page - 1) * perPage,
     p_limit: perPage,
+    p_listing_type: filters.listingType ?? 'sale',
   });
 
   if (error) {
@@ -115,9 +120,11 @@ export async function fetchCarDetails(id: string): Promise<CarDetails | null> {
   if (rows.length === 0) return null;
 
   const car = rows[0];
-  // Страховка продуктового правила: сайт показывает только продажу.
-  // Объявление, выставленное исключительно в аренду, на сайте не существует.
-  if (!car.is_for_sale) return null;
+  // Объявление должно быть выставлено хотя бы в одну витрину сайта.
+  // Такого состояния в БД быть не может (constraint chk_purpose требует
+  // is_for_sale or is_for_rent), но проверка защищает от битых данных,
+  // если ограничение когда-нибудь ослабят.
+  if (!car.is_for_sale && !car.is_for_rent) return null;
 
   return car;
 }
@@ -143,10 +150,14 @@ export async function fetchCarImages(id: string): Promise<CarImage[]> {
 export async function fetchSimilarCars(
   id: string,
   limit = 8,
+  // 'auto' — режим определяется по самому объявлению на стороне БД:
+  // арендному подбираются арендные, остальным — продаваемые.
+  listingType: ListingType | 'auto' = 'auto',
 ): Promise<SimilarCar[]> {
   const { data, error } = await supabase.rpc('get_similar_cars', {
     p_car_id: id,
     p_limit: limit,
+    p_listing_type: listingType,
   });
 
   // Блок «похожие» второстепенен: если он не загрузился, карточка обязана
@@ -159,17 +170,25 @@ export async function fetchSimilarCars(
 // ------------------------------------------------------------
 // Справочники для SEO-страниц и фильтров (миграция 0052).
 // ------------------------------------------------------------
-export async function fetchSiteBrands(): Promise<SiteBrand[]> {
-  const { data, error } = await supabase.rpc('get_site_brands');
+export async function fetchSiteBrands(
+  listingType: ListingType = 'sale',
+): Promise<SiteBrand[]> {
+  const { data, error } = await supabase.rpc('get_site_brands', {
+    p_listing_type: listingType,
+  });
   if (error) {
     throw new Error(`Ошибка загрузки марок: ${error.message}`);
   }
   return (data ?? []) as SiteBrand[];
 }
 
-export async function fetchSiteModels(brand: string): Promise<SiteModel[]> {
+export async function fetchSiteModels(
+  brand: string,
+  listingType: ListingType = 'sale',
+): Promise<SiteModel[]> {
   const { data, error } = await supabase.rpc('get_site_models', {
     p_brand: brand,
+    p_listing_type: listingType,
   });
   if (error) {
     throw new Error(`Ошибка загрузки моделей: ${error.message}`);
@@ -177,8 +196,12 @@ export async function fetchSiteModels(brand: string): Promise<SiteModel[]> {
   return (data ?? []) as SiteModel[];
 }
 
-export async function fetchSiteCities(): Promise<SiteCity[]> {
-  const { data, error } = await supabase.rpc('get_site_cities');
+export async function fetchSiteCities(
+  listingType: ListingType = 'sale',
+): Promise<SiteCity[]> {
+  const { data, error } = await supabase.rpc('get_site_cities', {
+    p_listing_type: listingType,
+  });
   if (error) {
     throw new Error(`Ошибка загрузки городов: ${error.message}`);
   }
@@ -192,7 +215,13 @@ export async function fetchSiteStats(): Promise<SiteStats> {
   }
   const rows = (data ?? []) as SiteStats[];
   return (
-    rows[0] ?? { cars_total: 0, brands_total: 0, cities_total: 0, dealers_total: 0 }
+    rows[0] ?? {
+      cars_total: 0,
+      rent_total: 0,
+      brands_total: 0,
+      cities_total: 0,
+      dealers_total: 0,
+    }
   );
 }
 
@@ -202,14 +231,31 @@ export async function fetchSiteStats(): Promise<SiteStats> {
 export async function fetchSitemapCars(
   offset = 0,
   limit = 5000,
-): Promise<{ id: string; site_url: string; updated_at: string }[]> {
+  // В карту сайта попадают обе витрины: у аренды те же адреса /car/{id}.
+  listingType: ListingType = 'both',
+): Promise<
+  {
+    id: string;
+    site_url: string;
+    updated_at: string;
+    is_for_sale: boolean;
+    is_for_rent: boolean;
+  }[]
+> {
   const { data, error } = await supabase.rpc('get_sitemap_cars', {
     p_offset: offset,
     p_limit: limit,
+    p_listing_type: listingType,
   });
 
   // Sitemap не должен ронять сборку: при ошибке отдаём статические разделы.
   if (error) return [];
 
-  return (data ?? []) as { id: string; site_url: string; updated_at: string }[];
+  return (data ?? []) as {
+    id: string;
+    site_url: string;
+    updated_at: string;
+    is_for_sale: boolean;
+    is_for_rent: boolean;
+  }[];
 }

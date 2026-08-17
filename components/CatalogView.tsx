@@ -17,7 +17,7 @@ import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import type { CatalogFilters, CatalogResult } from '@/lib/queries';
 import { hasActiveFilters } from '@/lib/searchParams';
-import type { SiteBrand, SiteCity } from '@/lib/types';
+import type { ListingType, SiteBrand, SiteCity } from '@/lib/types';
 
 type Props = {
   locale: Locale;
@@ -28,8 +28,11 @@ type Props = {
   result: CatalogResult;
   brands: SiteBrand[];
   cities: SiteCity[];
-  // Базовый путь без префикса локали: '/cars' | '/cars/bmw' | '/cars/bmw/x5'.
+  // Базовый путь без префикса локали: '/cars' | '/rent/bmw' | '/cars/bmw/x5'.
   basePath: string;
+  // Витрина: определяет, какая цена показывается в карточках и какой
+  // раздел считается корневым при сбросе фильтров.
+  mode?: Exclude<ListingType, 'both'>;
 };
 
 export default function CatalogView({
@@ -41,13 +44,15 @@ export default function CatalogView({
   brands,
   cities,
   basePath,
+  mode = 'sale',
 }: Props) {
   const t = getT(locale);
 
   // Счётчик на кнопке фильтров считает только те фильтры, которые
   // пользователь применил сам. Марка и модель, заданные самим адресом
   // SEO-страницы, в счётчик не входят — их нельзя снять, не уйдя со страницы.
-  const isBrandPage = basePath !== '/cars';
+  const rootPath = mode === 'rent' ? '/rent' : '/cars';
+  const isBrandPage = basePath !== rootPath;
   const countable: CatalogFilters = isBrandPage
     ? { ...filters, brand: undefined, model: undefined }
     : filters;
@@ -81,6 +86,7 @@ export default function CatalogView({
             cities={cities}
             action={basePath}
             activeCount={activeCount}
+            mode={mode}
           />
           <span className="text-sm text-black/50">
             {t('catalog_found')}: {result.total}
@@ -100,6 +106,7 @@ export default function CatalogView({
             locale={locale}
             resetPath={basePath}
             showReset={hasActiveFilters(countable)}
+            mode={mode}
           />
         </div>
       ) : (
@@ -110,6 +117,7 @@ export default function CatalogView({
                 key={car.id}
                 locale={locale}
                 car={car}
+                mode={mode}
                 // Первые четыре карточки — над сгибом, грузим приоритетно.
                 priority={i < 4}
               />

@@ -22,14 +22,27 @@ type Props = {
   // Показывать ли кнопку сброса: если фильтров нет, сбрасывать нечего
   // (например, в каталоге пока вообще нет объявлений).
   showReset: boolean;
+  // Витрина: заголовок «Нет автомобилей в аренду» точнее общего
+  // «Ничего не нашли», когда раздел аренды пуст целиком.
+  mode?: 'sale' | 'rent';
 };
 
-export default function EmptyState({ locale, resetPath, showReset }: Props) {
+export default function EmptyState({
+  locale,
+  resetPath,
+  showReset,
+  mode = 'sale',
+}: Props) {
   const t = getT(locale);
+
+  // Без фильтров пустая выдача означает, что раздел пуст сам по себе —
+  // для аренды об этом говорим прямо.
+  const title =
+    mode === 'rent' && !showReset ? t('rent_empty_title') : t('empty_title');
 
   return (
     <div className="rounded-card border border-black/10 px-6 py-12 text-center">
-      <h2 className="text-xl font-semibold">{t('empty_title')}</h2>
+      <h2 className="text-xl font-semibold">{title}</h2>
       <p className="mx-auto mt-2 max-w-md text-black/60">{t('empty_reason')}</p>
 
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">

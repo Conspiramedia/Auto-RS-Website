@@ -20,9 +20,12 @@ import { fetchCatalog, fetchSiteBrands, fetchSiteStats } from '@/lib/queries';
 export default async function HomeView({ locale }: { locale: Locale }) {
   const t = getT(locale);
 
-  const [fresh, brands, stats] = await Promise.all([
+  const [fresh, rent, brands, stats] = await Promise.all([
     // Дефолтная сортировка 'fresh' — новые объявления первыми.
     fetchCatalog({ perPage: 8 }),
+    // Витрина аренды на главной: раздел новый, и без неё пользователь
+    // о нём не узнает.
+    fetchCatalog({ perPage: 4, listingType: 'rent' }),
     fetchSiteBrands(),
     fetchSiteStats(),
   ]);
@@ -96,6 +99,31 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                   locale={locale}
                   car={car}
                   priority={i < 4}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {rent.cars.length > 0 && (
+          <section className="mx-auto max-w-6xl px-4 pb-10">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-semibold">{t('rent_title')}</h2>
+              <Link
+                href={localeHref(locale, '/rent')}
+                className="text-sm font-semibold text-brand-primary hover:underline"
+              >
+                {t('nav_rent')} →
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {rent.cars.map((car) => (
+                <CarCard
+                  key={car.id}
+                  locale={locale}
+                  car={car}
+                  mode="rent"
                 />
               ))}
             </div>

@@ -17,11 +17,18 @@ type Props = {
   // сходила за ними в БД, — подвал сам в базу не ходит, иначе каждый рендер
   // любой страницы делал бы лишний запрос.
   brands?: { brand: string; brand_slug: string }[];
+  // Раздел, в который ведут ссылки на марки: продажа или аренда.
+  mode?: 'sale' | 'rent';
 };
 
-export default function SiteFooter({ locale, brands = [] }: Props) {
+export default function SiteFooter({
+  locale,
+  brands = [],
+  mode = 'sale',
+}: Props) {
   const t = getT(locale);
   const year = new Date().getFullYear();
+  const brandRoot = mode === 'rent' ? '/rent' : '/cars';
 
   return (
     <footer className="mt-12 border-t border-black/10 bg-black/[0.02]">
@@ -33,7 +40,7 @@ export default function SiteFooter({ locale, brands = [] }: Props) {
               {brands.map((b) => (
                 <Link
                   key={b.brand_slug}
-                  href={localeHref(locale, `/cars/${b.brand_slug}`)}
+                  href={localeHref(locale, `${brandRoot}/${b.brand_slug}`)}
                   className="hover:text-brand-primary hover:underline"
                 >
                   {b.brand}
@@ -46,6 +53,9 @@ export default function SiteFooter({ locale, brands = [] }: Props) {
         <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
           <Link href={localeHref(locale, '/cars')} className="hover:underline">
             {t('nav_catalog')}
+          </Link>
+          <Link href={localeHref(locale, '/rent')} className="hover:underline">
+            {t('nav_rent')}
           </Link>
           <Link href={localeHref(locale, '/sell')} className="hover:underline">
             {t('nav_sell')}
