@@ -7,6 +7,9 @@ import { notFound } from 'next/navigation';
 
 import AppQr from '@/components/AppQr';
 import CarCard from '@/components/CarCard';
+import Badge from '@/components/ui/Badge';
+import Button from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
 import CarGallery from '@/components/CarGallery';
 import ShareButton from '@/components/ShareButton';
 import SiteFooter from '@/components/SiteFooter';
@@ -116,9 +119,15 @@ export default async function CarPageView({
             <h1 className="mt-5 text-2xl font-bold">{title}</h1>
 
             {car.status === 'sold' && (
-              <div className="mt-2 inline-block rounded-control bg-brand-red px-3 py-1 text-sm font-semibold text-white">
+              // Бейдж на карточке крупнее, чем на плитке каталога:
+              // здесь это ключевой факт об объявлении, а не пометка
+              // поверх фотографии.
+              <Badge
+                tone="sold"
+                className="mt-2 rounded-control px-3 py-1 text-sm"
+              >
                 {t('car_sold')}
-              </div>
+              </Badge>
             )}
 
             <section className="mt-6">
@@ -137,7 +146,7 @@ export default async function CarPageView({
                 вопросы, которые иначе ушли бы в переписку: залог, срок,
                 что входит. */}
             {car.is_for_rent && (
-              <section className="mt-6 rounded-card border border-neutral-10 p-4">
+              <Card padding="none" className="mt-6 p-4">
                 <h2 className="mb-3 text-lg font-semibold">{t('rent_terms')}</h2>
 
                 <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
@@ -172,7 +181,7 @@ export default async function CarPageView({
                 <p className="mt-3 text-sm text-neutral-60">
                   {t('rent_terms_text')}
                 </p>
-              </section>
+              </Card>
             )}
 
             {car.description && (
@@ -195,7 +204,7 @@ export default async function CarPageView({
 
           {/* Правая колонка: цена и воронка в приложение. */}
           <aside className="lg:sticky lg:top-20 lg:self-start">
-            <div className="rounded-card border border-neutral-10 p-4">
+            <Card padding="none" className="p-4">
               {/* Блок цен. У объявления может быть две цены сразу
                   (продажа и аренда) — тогда показываем обе, потому что
                   выбрать сделку должен пользователь, а не мы за него. */}
@@ -246,12 +255,18 @@ export default async function CarPageView({
                   {t('car_contact_text')}
                 </p>
 
-                <a
+                {/* Внешняя ссылка (external): канонический адрес
+                    перехватывается App Link на телефоне с установленным
+                    приложением. Через next/link это не сработает —
+                    клиентская навигация не отдаёт переход системе. */}
+                <Button
                   href={canonicalUrl}
-                  className="mt-3 block rounded-control bg-brand-green px-4 py-3 text-center font-semibold text-white"
+                  external
+                  fullWidth
+                  className="mt-3"
                 >
                   {t('car_open_in_app')}
-                </a>
+                </Button>
 
                 <div className="mt-3">
                   <ShareButton locale={locale} url={canonicalUrl} title={title} />
@@ -263,7 +278,7 @@ export default async function CarPageView({
                 <AppQr url={canonicalUrl} />
                 <p className="mt-2 text-xs text-neutral-50">{t('car_qr_hint')}</p>
               </div>
-            </div>
+            </Card>
           </aside>
         </div>
 

@@ -24,7 +24,8 @@
 import Link from 'next/link';
 
 import LocaleSwitch from '@/components/LocaleSwitch';
-import { brand } from '@/lib/brand';
+import Button from '@/components/ui/Button';
+import Logo from '@/components/ui/Logo';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 
@@ -44,12 +45,8 @@ export default function ErrorView({ locale, reset }: Props) {
           по разделам — только выход в каталог и переключатель языка. */}
       <header className="border-b border-neutral-10 bg-white">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:gap-4 sm:px-4">
-          <Link
-            href={localeHref(locale, '/')}
-            className="shrink-0 text-base font-bold sm:text-lg"
-            style={{ color: brand.colors.primary }}
-          >
-            {brand.name}
+          <Link href={localeHref(locale, '/')} className="shrink-0">
+            <Logo className="text-base sm:text-lg" />
           </Link>
 
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-3">
@@ -58,12 +55,13 @@ export default function ErrorView({ locale, reset }: Props) {
                 страницу, а не на копию упавшей. */}
             <LocaleSwitch locale={locale} pathname="/" />
 
-            <Link
+            <Button
+              size="xs"
               href={localeHref(locale, '/cars')}
-              className="whitespace-nowrap rounded-control bg-brand-green px-2.5 py-2 text-xs font-semibold text-white sm:px-3 sm:text-sm"
+              className="whitespace-nowrap"
             >
               {t('nf_catalog')}
-            </Link>
+            </Button>
           </div>
         </div>
       </header>
@@ -76,25 +74,19 @@ export default function ErrorView({ locale, reset }: Props) {
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           {/* Основное действие — повторить. Ошибки этого класса чаще
               всего сетевые и снимаются повторным рендером. */}
-          <button
-            type="button"
-            onClick={reset}
-            className="rounded-control bg-brand-green px-5 py-3 font-semibold text-white"
-          >
+          <Button size="lg" onClick={reset}>
             {t('err_retry')}
-          </button>
-          <Link
+          </Button>
+          <Button
+            variant="secondary"
+            size="lg"
             href={localeHref(locale, '/cars')}
-            className="rounded-control border border-neutral-15 px-5 py-3 font-semibold"
           >
             {t('nf_catalog')}
-          </Link>
-          <Link
-            href={localeHref(locale, '/')}
-            className="rounded-control border border-neutral-15 px-5 py-3 font-semibold"
-          >
+          </Button>
+          <Button variant="secondary" size="lg" href={localeHref(locale, '/')}>
             {t('nf_home')}
-          </Link>
+          </Button>
         </div>
       </main>
     </>

@@ -22,6 +22,7 @@ import Logo from './ui/Logo';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import LocaleSwitch from './LocaleSwitch';
+import Button from './ui/Button';
 
 type Props = {
   locale: Locale;
@@ -67,12 +68,13 @@ export default function SiteHeader({ locale, pathname }: Props) {
               единственный акцентный элемент в шапке.
               whitespace-nowrap обязателен: «Prodaj auto» в две строки
               ломает высоту шапки. */}
-          <Link
+          <Button
+            size="xs"
             href={localeHref(locale, '/sell')}
-            className="whitespace-nowrap rounded-control bg-brand-green px-2.5 py-2 text-xs font-semibold text-white sm:px-3 sm:text-sm"
+            className="whitespace-nowrap"
           >
             {t('nav_sell')}
-          </Link>
+          </Button>
         </div>
       </div>
     </header>

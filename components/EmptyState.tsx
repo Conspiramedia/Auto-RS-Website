@@ -10,7 +10,8 @@
 // push_queue) и работает именно там.
 // ============================================================
 
-import Link from 'next/link';
+import Button from './ui/Button';
+import Card from './ui/Card';
 
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
@@ -41,31 +42,36 @@ export default function EmptyState({
     mode === 'rent' && !showReset ? t('rent_empty_title') : t('empty_title');
 
   return (
-    <div className="rounded-card border border-neutral-10 px-6 py-12 text-center">
+    // padding="none": у пустого состояния свой крупный вертикальный
+    // отступ (py-12) — это единственный блок на экране, и он должен
+    // дышать сильнее обычной карточки.
+    <Card padding="none" className="px-6 py-12 text-center">
       <h2 className="text-xl font-semibold">{title}</h2>
       <p className="mx-auto mt-2 max-w-md text-neutral-60">{t('empty_reason')}</p>
 
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         {showReset && (
-          <Link
+          <Button
+            variant="dark"
+            size="sm"
             href={localeHref(locale, resetPath)}
-            className="rounded-control bg-brand-dark px-4 py-2.5 text-sm font-semibold text-white"
           >
             {t('empty_reset')}
-          </Link>
+          </Button>
         )}
 
-        <Link
+        <Button
+          variant="secondary"
+          size="sm"
           href={localeHref(locale, '/app')}
-          className="rounded-control border border-neutral-15 px-4 py-2.5 text-sm font-semibold hover:bg-surface-hover"
         >
           {t('empty_notify')}
-        </Link>
+        </Button>
       </div>
 
       <p className="mx-auto mt-3 max-w-md text-sm text-neutral-50">
         {t('empty_notify_hint')}
       </p>
-    </div>
+    </Card>
   );
 }

@@ -10,7 +10,7 @@
 // Все ссылки здесь собираются через localeHref — как и везде на сайте.
 // ============================================================
 
-import Link from 'next/link';
+import Button from '@/components/ui/Button';
 
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
@@ -33,18 +33,12 @@ export default function NotFoundView({ locale }: { locale: Locale }) {
         <p className="mt-3 max-w-md text-neutral-60">{t('nf_text')}</p>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href={localeHref(locale, '/cars')}
-            className="rounded-control bg-brand-green px-5 py-3 font-semibold text-white"
-          >
+          <Button size="lg" href={localeHref(locale, '/cars')}>
             {t('nf_catalog')}
-          </Link>
-          <Link
-            href={localeHref(locale, '/')}
-            className="rounded-control border border-neutral-15 px-5 py-3 font-semibold"
-          >
+          </Button>
+          <Button variant="secondary" size="lg" href={localeHref(locale, '/')}>
             {t('nf_home')}
-          </Link>
+          </Button>
         </div>
       </main>
 

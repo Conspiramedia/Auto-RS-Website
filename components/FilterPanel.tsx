@@ -34,6 +34,7 @@ import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import type { ListingType, SiteBrand, SiteCity } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
 import { fieldClassCompact } from './ui/Field';
+import Button from './ui/Button';
 
 type Props = {
   locale: Locale;
@@ -423,12 +424,9 @@ export default function FilterPanel({
                 <input type="hidden" name="sort" value={filters.sort} />
               )}
 
-              <button
-                type="submit"
-                className="w-full rounded-control bg-brand-green px-4 py-3 font-semibold text-white"
-              >
+              <Button type="submit" fullWidth>
                 {t('catalog_apply')}
-              </button>
+              </Button>
             </form>
           </div>
         </div>

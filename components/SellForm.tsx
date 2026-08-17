@@ -26,6 +26,8 @@ import { BRANDS, CITIES, YEAR_MIN, yearMax } from '@/lib/referenceData';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
 import { fieldClass } from './ui/Field';
+import Button from './ui/Button';
+import Card from './ui/Card';
 
 type Props = {
   locale: Locale;
@@ -361,27 +363,25 @@ export default function SellForm({ locale }: Props) {
       // Личного кабинета на сайте нет намеренно: управление объявлениями
       // живёт в приложении. Поэтому после подачи — экран модерации и
       // выход в каталог, а не «мои объявления».
-      <div className="rounded-card border border-neutral-10 p-6 text-center">
+      <Card padding="none" className="p-6 text-center">
         <h2 className="text-xl font-semibold">{t('sell_success_title')}</h2>
         <p className="mx-auto mt-2 max-w-md text-neutral-60">
           {t('sell_success_text')}
         </p>
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href={localeHref(locale, '/cars')}
-            className="rounded-control bg-brand-green px-5 py-3 font-semibold text-white"
-          >
+          <Button size="lg" href={localeHref(locale, '/cars')}>
             {t('nf_catalog')}
-          </Link>
-          <Link
+          </Button>
+          <Button
+            variant="secondary"
+            size="lg"
             href={localeHref(locale, '/app')}
-            className="rounded-control border border-neutral-15 px-5 py-3 font-semibold"
           >
             {t('nav_app')}
-          </Link>
+          </Button>
         </div>
-      </div>
+      </Card>
     );
   }
 
@@ -421,7 +421,7 @@ export default function SellForm({ locale }: Props) {
   }
 
   return (
-    <div className="rounded-card border border-neutral-10 p-4 sm:p-6">
+    <Card>
       <div className="mb-4 text-sm text-neutral-50">
         {t('sell_step')} {step} / 4
       </div>
@@ -525,14 +525,9 @@ export default function SellForm({ locale }: Props) {
             />
           </div>
 
-          <button
-            type="button"
-            disabled={!canNext1}
-            onClick={() => setStep(2)}
-            className="w-full rounded-control bg-brand-green px-4 py-3 font-semibold text-white disabled:opacity-40"
-          >
+          <Button disabled={!canNext1} onClick={() => setStep(2)} fullWidth>
             {t('sell_next')}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -669,20 +664,14 @@ export default function SellForm({ locale }: Props) {
           </div>
 
           <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="rounded-control border border-neutral-15 px-4 py-3 font-semibold"
-            >
+            <Button variant="secondary" onClick={() => setStep(1)}>
               {t('sell_back')}
-            </button>
-            <button
-              type="button"
-              onClick={goToPhotos}
-              className="flex-1 rounded-control bg-brand-green px-4 py-3 font-semibold text-white"
-            >
+            </Button>
+            {/* flex-1: «Далее» занимает всё оставшееся место — главное
+                действие шага должно быть заметно шире «Назад». */}
+            <Button onClick={goToPhotos} className="flex-1">
               {t('sell_next')}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -707,20 +696,12 @@ export default function SellForm({ locale }: Props) {
           </p>
 
           <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => setStep(2)}
-              className="rounded-control border border-neutral-15 px-4 py-3 font-semibold"
-            >
+            <Button variant="secondary" onClick={() => setStep(2)}>
               {t('sell_back')}
-            </button>
-            <button
-              type="button"
-              onClick={() => setStep(4)}
-              className="flex-1 rounded-control bg-brand-green px-4 py-3 font-semibold text-white"
-            >
+            </Button>
+            <Button onClick={() => setStep(4)} className="flex-1">
               {t('sell_next')}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -801,16 +782,16 @@ export default function SellForm({ locale }: Props) {
                 </span>
               </label>
 
-              <button
-                type="button"
+              <Button
                 onClick={() => sendCode()}
                 // Кнопка неактивна без согласия: отправлять SMS раньше
                 // принятия документов нельзя.
                 disabled={busy || !phone.trim() || !agreed}
-                className="w-full rounded-control bg-brand-blue px-4 py-3 font-semibold text-white disabled:opacity-40"
+                variant="info"
+                fullWidth
               >
                 {busy ? t('otp_sending') : t('sell_send_code')}
-              </button>
+              </Button>
             </>
           ) : (
             <>
@@ -861,28 +842,23 @@ export default function SellForm({ locale }: Props) {
                 </button>
               </div>
 
-              <button
-                type="button"
+              <Button
                 onClick={submit}
                 disabled={busy || !canSubmit}
-                className="w-full rounded-control bg-brand-green px-4 py-3 font-semibold text-white disabled:opacity-40"
+                fullWidth
               >
                 {busy
                   ? phoneVerified
                     ? t('sell_submit')
                     : t('otp_verifying')
                   : t('sell_submit')}
-              </button>
+              </Button>
             </>
           )}
 
-          <button
-            type="button"
-            onClick={() => setStep(3)}
-            className="w-full rounded-control border border-neutral-15 px-4 py-3 font-semibold"
-          >
+          <Button variant="secondary" onClick={() => setStep(3)} fullWidth>
             {t('sell_back')}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -899,6 +875,6 @@ export default function SellForm({ locale }: Props) {
           {error}
         </p>
       )}
-    </div>
+    </Card>
   );
 }

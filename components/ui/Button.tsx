@@ -19,13 +19,31 @@
 //   destructive — сброс фильтров и деструктивные действия. Красный.
 //   dark        — нейтральная тёмная плашка: «Сбросить фильтры»
 //                 в пустом состоянии, кнопка фильтров, активный чипс.
+//   info        — связь и вспомогательные шаги: «Отправить код».
+//                 Синий, как в приложении: он не конкурирует с зелёным
+//                 «Опубликовать», хотя стоит на том же экране.
 // ============================================================
 
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'destructive' | 'dark';
-type Size = 'sm' | 'md' | 'lg';
+type Variant =
+  | 'primary'
+  | 'secondary'
+  | 'ghost'
+  | 'destructive'
+  | 'dark'
+  | 'info';
+// Размеры покрывают ВСЕ высоты кнопок, которые реально есть на сайте.
+// Вводить «примерно похожий» размер вместо точного нельзя: замена
+// хардкода на компонент обязана быть визуально неотличимой.
+//   xs — компактный CTA в шапке на мобильном (там дорог каждый пиксель);
+//   sm — действия в пустом состоянии и чипсы сортировки;
+//   md — поля форм и кнопки шагов подачи;
+//   lg — главные действия на экранах 404/500 и в герое.
+//   xl — парные CTA в герое главной: они шире прочих, потому что
+//        стоят на пустом поле и должны читаться как главный вход.
+type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 // Базовые классы: общие для всех вариантов и размеров.
 // transition + duration-fast дают отклик на наведение — раньше его
@@ -39,13 +57,18 @@ const VARIANTS: Record<Variant, string> = {
   ghost: 'text-brand-blue hover:bg-surface-hover',
   destructive: 'bg-brand-red text-white hover:brightness-95',
   dark: 'bg-brand-dark text-white hover:brightness-110',
+  info: 'bg-brand-blue text-white hover:brightness-95',
 };
 
 // Размеры. md — размер по умолчанию, совпадает с прежним px-4 py-3.
+// Значения перенесены из разметки без изменений: text-caption = text-sm,
+// text-small = text-xs (одна и та же пара размер/интерлиньяж).
 const SIZES: Record<Size, string> = {
-  sm: 'px-3 py-1.5 text-caption',
+  xs: 'px-2.5 py-2 text-small sm:px-3 sm:text-caption',
+  sm: 'px-4 py-2.5 text-caption',
   md: 'px-4 py-3',
   lg: 'px-5 py-3',
+  xl: 'px-6 py-3',
 };
 
 type CommonProps = {

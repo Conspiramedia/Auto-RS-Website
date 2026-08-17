@@ -10,6 +10,7 @@
 import Link from 'next/link';
 
 import CarCard from '@/components/CarCard';
+import Button from '@/components/ui/Button';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
 import SmartBanner from '@/components/SmartBanner';
@@ -48,18 +49,19 @@ export default async function HomeView({ locale }: { locale: Locale }) {
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link
-                href={localeHref(locale, '/sell')}
-                className="rounded-control bg-brand-green px-6 py-3 font-semibold text-white"
-              >
+              <Button size="xl" href={localeHref(locale, '/sell')}>
                 {t('home_hero_cta')}
-              </Link>
-              <Link
+              </Button>
+              {/* Герой лежит на серой подложке, поэтому вторичная кнопка
+                  здесь белая, а не прозрачная: на bg-surface-subtle
+                  контурная кнопка без заливки теряется. */}
+              <Button
+                variant="secondary"
+                size="xl"
                 href={localeHref(locale, '/cars')}
-                className="rounded-control border border-neutral-15 bg-white px-6 py-3 font-semibold"
               >
                 {t('home_all_cars')}
-              </Link>
+              </Button>
             </div>
 
             {/* Подписи склоняются по числу: «29 автомобилей», но
@@ -140,6 +142,11 @@ export default async function HomeView({ locale }: { locale: Locale }) {
             <h2 className="mb-4 text-xl font-semibold">{t('home_brands')}</h2>
             <div className="flex flex-wrap gap-2">
               {brands.slice(0, 24).map((b) => (
+                // Ярлык марки остаётся обычной ссылкой, а не Chip:
+                // у чипса свой вес (font-medium) и запрет переноса, а
+                // здесь список из 24 названий должен переноситься и не
+                // выделяться жирным. Подгонять Chip под этот случай
+                // означало бы размыть сам паттерн.
                 <Link
                   key={b.brand_slug}
                   href={localeHref(locale, `/cars/${b.brand_slug}`)}
@@ -160,12 +167,13 @@ export default async function HomeView({ locale }: { locale: Locale }) {
               <h2 className="text-xl font-semibold">{t('dealers_title')}</h2>
               <p className="mt-1 text-neutral-60">{t('dealers_offer')}</p>
             </div>
-            <Link
+            <Button
+              variant="dark"
+              size="lg"
               href={localeHref(locale, '/dealers')}
-              className="rounded-control bg-brand-dark px-5 py-3 font-semibold text-white"
             >
               {t('dealers_cta')}
-            </Link>
+            </Button>
           </div>
         </section>
       </main>
