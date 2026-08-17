@@ -31,6 +31,72 @@ export function localeHref(locale: Locale, path: string): string {
   return `${localePrefix(locale)}${clean}` || '/';
 }
 
+// ------------------------------------------------------------
+// Единая точка сборки внутренних адресов.
+// ------------------------------------------------------------
+// ПРАВИЛО ПРОЕКТА: ни один внутренний переход не собирает путь строкой.
+// Любая ссылка, action формы, redirect и router.push обязаны проходить
+// через localeHref/localePath — иначе с /ru/* пользователь молча
+// проваливается на сербское зеркало (баг «язык сбрасывается»).
+
+// Путь + query с префиксом локали. Отличается от localeHref тем, что
+// принимает уже собранную строку запроса: каталог, фильтры и пагинация
+// строят query отдельно (lib/searchParams), и склеивать её вручную в
+// каждом компоненте — ровно тот источник ошибок, который мы убираем.
+export function localePath(
+  locale: Locale,
+  path: string,
+  query = '',
+): string {
+  return `${localeHref(locale, path)}${query}`;
+}
+
+// Снятие префикса локали с пути. Нужно там, где известен лишь полный
+// адрес (например, usePathname в клиентских компонентах), а собрать
+// ссылку требуется заново — для переключателя языка и hreflang.
+export function stripLocale(pathname: string): {
+  locale: Locale;
+  path: string;
+} {
+  for (const code of LOCALES) {
+    if (code === DEFAULT_LOCALE) continue;
+    const prefix = `/${code}`;
+    if (pathname === prefix) return { locale: code, path: '/' };
+    if (pathname.startsWith(`${prefix}/`)) {
+      return { locale: code, path: pathname.slice(prefix.length) };
+    }
+  }
+  return { locale: DEFAULT_LOCALE, path: pathname || '/' };
+}
+
+// Имя cookie с выбранным языком. NEXT_LOCALE — конвенция Next.js;
+// используем её, чтобы не плодить второе имя под ту же сущность.
+export const LOCALE_COOKIE = 'NEXT_LOCALE';
+
+// Срок жизни cookie — год: выбор языка не должен «протухать» между
+// визитами, иначе вернувшийся русскоязычный пользователь снова
+// попадёт на сербское зеркало.
+export const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
+// Маркер явного выбора языка в адресе. Нужен ровно одному месту —
+// ссылке на сербскую версию в переключателе. Сербское зеркало живёт
+// в корне без префикса, поэтому без маркера middleware не отличил бы
+// «пользователь выбрал сербский» от «пользователь пришёл по старой
+// ссылке» и вернул бы его на прежнее зеркало. Маркер снимается тем же
+// редиректом и в адресной строке не остаётся.
+export const LOCALE_PARAM = 'setlang';
+
+// Ссылка переключателя языка. Для сербского добавляет маркер явного
+// выбора, для остальных достаточно префикса пути — по нему middleware
+// и запоминает язык.
+export function localeSwitchHref(target: Locale, path: string): string {
+  const href = localeHref(target, path);
+  if (target !== DEFAULT_LOCALE) return href;
+
+  const separator = href.includes('?') ? '&' : '?';
+  return `${href}${separator}${LOCALE_PARAM}=${DEFAULT_LOCALE}`;
+}
+
 // Языковой тег для атрибута lang и hreflang.
 // sr-Latn явно сообщает, что это сербский латиницей, — при одной латинской
 // версии это снимает неоднозначность для поисковых систем.
@@ -191,6 +257,42 @@ export const dict = {
     picker_model_no_brand: 'Prvo izaberite marku',
     picker_model_empty: 'Nema modela za ovu marku',
 
+    // Страница 404
+    nf_title: 'Stranica nije pronađena',
+    nf_text:
+      'Oglas je možda prodat i uklonjen, ili je adresa netačna. Pogledajte druge automobile u katalogu.',
+    nf_catalog: 'Idi na katalog',
+    nf_home: 'Na početnu',
+
+    // Согласие с условиями (перед отправкой SMS) — формулировки
+    // приложения (features/legal), перенесённые на сайт.
+    legal_terms_title: 'Uslovi korišćenja',
+    legal_privacy_title: 'Politika privatnosti',
+    legal_updated: 'Ažurirano',
+    legal_consent_before:
+      'Slanjem koda potvrđujem da imam 18 godina i prihvatam ',
+    legal_consent_terms: 'Uslove korišćenja',
+    legal_consent_and: ' i ',
+    legal_consent_privacy: 'Politiku privatnosti',
+    legal_consent_required:
+      'Da biste dobili kod, potrebno je prihvatiti uslove i politiku privatnosti.',
+
+    // OTP: повторная отправка и ошибки — тексты из приложения
+    // (login_screen.dart), в обеих локалях.
+    otp_sent_to: 'Kod smo poslali na broj',
+    otp_resend: 'Pošalji ponovo',
+    otp_resend_in: 'Pošalji ponovo',
+    otp_resent: 'Kod je ponovo poslat',
+    otp_change_number: 'Promeni broj',
+    otp_sending: 'Šaljemo…',
+    otp_verifying: 'Proveravamo kod…',
+    otp_err_phone: 'Unesite ispravan broj telefona',
+    otp_err_expired: 'Kod je istekao. Zatražite novi',
+    otp_err_invalid: 'Pogrešan kod iz SMS-a',
+    otp_err_failed: 'Nije uspelo potvrđivanje koda. Pokušajte ponovo',
+    otp_err_quota:
+      'Prekoračen je dnevni limit SMS poruka za ovaj broj. Pokušajte sutra.',
+
     // Общее
     common_all: 'Sve',
     common_more: 'Prikaži još',
@@ -334,6 +436,42 @@ export const dict = {
     picker_nothing: 'Ничего не найдено',
     picker_model_no_brand: 'Сначала выберите марку',
     picker_model_empty: 'Нет моделей для этой марки',
+
+    // Страница 404
+    nf_title: 'Страница не найдена',
+    nf_text:
+      'Возможно, объявление продано и снято, либо адрес указан неверно. Посмотрите другие автомобили в каталоге.',
+    nf_catalog: 'Перейти в каталог',
+    nf_home: 'На главную',
+
+    // Согласие с условиями (перед отправкой SMS) — формулировки
+    // приложения (features/legal), перенесённые на сайт.
+    legal_terms_title: 'Условия использования',
+    legal_privacy_title: 'Политика конфиденциальности',
+    legal_updated: 'Обновлено',
+    legal_consent_before:
+      'Отправляя код, подтверждаю, что мне есть 18 лет, и принимаю ',
+    legal_consent_terms: 'Условия использования',
+    legal_consent_and: ' и ',
+    legal_consent_privacy: 'Политику конфиденциальности',
+    legal_consent_required:
+      'Чтобы получить код, примите условия и политику конфиденциальности.',
+
+    // OTP: повторная отправка и ошибки — тексты из приложения
+    // (login_screen.dart), в обеих локалях.
+    otp_sent_to: 'Мы отправили код на номер',
+    otp_resend: 'Отправить снова',
+    otp_resend_in: 'Отправить снова',
+    otp_resent: 'Код отправлен повторно',
+    otp_change_number: 'Изменить номер',
+    otp_sending: 'Отправляем…',
+    otp_verifying: 'Проверяем код…',
+    otp_err_phone: 'Введите корректный номер телефона',
+    otp_err_expired: 'Срок действия кода истёк. Запросите новый',
+    otp_err_invalid: 'Неверный код из SMS',
+    otp_err_failed: 'Не удалось подтвердить код. Попробуйте ещё раз',
+    otp_err_quota:
+      'Превышен суточный лимит SMS на этот номер. Попробуйте завтра.',
 
     common_all: 'Все',
     common_more: 'Показать ещё',

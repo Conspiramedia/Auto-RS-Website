@@ -12,7 +12,7 @@
 import Link from 'next/link';
 
 import type { Locale } from '@/lib/i18n';
-import { LOCALES, localeHref } from '@/lib/i18n';
+import { LOCALES, localeSwitchHref } from '@/lib/i18n';
 
 const LABEL: Record<Locale, string> = {
   sr: 'SR',
@@ -33,7 +33,11 @@ export default function LocaleSwitch({ locale, pathname }: Props) {
         return (
           <Link
             key={code}
-            href={localeHref(code, pathname)}
+            // Выбор языка сохраняется в cookie (middleware). Для
+            // сербского адрес несёт маркер явного выбора: его зеркало
+            // живёт в корне без префикса, и иначе middleware вернул бы
+            // пользователя на прежний язык.
+            href={localeSwitchHref(code, pathname)}
             hrefLang={code}
             className={
               active

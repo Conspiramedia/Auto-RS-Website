@@ -68,6 +68,22 @@ export default function SiteFooter({
           </Link>
         </div>
 
+        {/* Юридические документы. Отдельной строкой и приглушённо: они
+            обязаны быть доступны с любой страницы (на них ссылается
+            согласие при входе по SMS), но конкурировать с разделами
+            каталога им незачем. */}
+        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-black/50">
+          <Link href={localeHref(locale, '/terms')} className="hover:underline">
+            {t('legal_terms_title')}
+          </Link>
+          <Link
+            href={localeHref(locale, '/privacy')}
+            className="hover:underline"
+          >
+            {t('legal_privacy_title')}
+          </Link>
+        </div>
+
         <div className="mt-6 text-xs text-black/40">
           © {year} {brand.name}. {t('site_tagline')}.
         </div>

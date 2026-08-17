@@ -45,6 +45,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/sell', priority: 0.8, changeFrequency: 'monthly' as const },
     { path: '/dealers', priority: 0.6, changeFrequency: 'monthly' as const },
     { path: '/app', priority: 0.5, changeFrequency: 'monthly' as const },
+    // Юридические документы: приоритет низкий (трафика они не приносят),
+    // но в карте нужны — на них ссылается согласие при подаче объявления,
+    // и краулер должен видеть, что страницы существуют.
+    { path: '/terms', priority: 0.2, changeFrequency: 'yearly' as const },
+    { path: '/privacy', priority: 0.2, changeFrequency: 'yearly' as const },
   ].map((entry) => ({
     url: `${siteBaseUrl}${localeHref('sr', entry.path)}`,
     lastModified: now,

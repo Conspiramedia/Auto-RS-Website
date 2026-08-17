@@ -16,11 +16,12 @@
 // появляется в каталоге только после approve_car администратором.
 // ============================================================
 
-import { useState } from 'react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 import { getBrowserClient } from '@/lib/supabaseClient';
 import type { Locale } from '@/lib/i18n';
-import { getT } from '@/lib/i18n';
+import { getT, localeHref } from '@/lib/i18n';
 import { BRANDS, CITIES, YEAR_MIN, yearMax } from '@/lib/referenceData';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
@@ -74,6 +75,43 @@ export default function SellForm({ locale }: Props) {
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
+  // Номер, на который реально ушёл код, в формате E.164. Держим отдельно
+  // от поля ввода: verifyOtp обязан получить ТОТ ЖЕ номер, что и
+  // signInWithOtp, иначе Supabase не найдёт код.
+  const [sentTo, setSentTo] = useState('');
+  // Успешное подтверждение номера. Между verifyOtp и публикацией есть
+  // загрузка фотографий — на это время пользователю нужен признак, что
+  // код принят, иначе долгая загрузка выглядит как зависшая проверка.
+  const [phoneVerified, setPhoneVerified] = useState(false);
+
+  // Согласие с условиями и политикой. Без него код не отправляется —
+  // тот же порядок, что в приложении (login_screen.dart: политика
+  // принимается ДО sendOtp, а не после).
+  const [agreed, setAgreed] = useState(false);
+
+  // Обратный отсчёт до повторной отправки, 60 секунд — как в приложении.
+  // Хранится момент, когда отправка снова разрешена: при возврате на
+  // вкладку из фона таймер по «оставшимся секундам» отстал бы, а по
+  // метке времени пересчёт всегда верный.
+  const RESEND_DELAY_SEC = 60;
+  const [resendAt, setResendAt] = useState(0);
+  const [resendIn, setResendIn] = useState(0);
+  // Сообщение об успешной повторной отправке (в приложении — снек).
+  const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (resendAt === 0) return;
+
+    // Пересчёт остатка от метки времени. Один интервал на весь отсчёт.
+    const tick = () => {
+      const left = Math.ceil((resendAt - Date.now()) / 1000);
+      setResendIn(left > 0 ? left : 0);
+    };
+
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [resendAt]);
 
   // Honeypot: поле скрыто от человека и пустое у него всегда. Заполненное
   // значение — признак бота, и такую отправку мы молча не публикуем.
@@ -111,21 +149,55 @@ export default function SellForm({ locale }: Props) {
     return `+${digits}`;
   }
 
-  // ---------- Отправка SMS-кода ----------
-  async function sendCode() {
-    setError(null);
-    const e164 = normalizePhone(phone);
+  // Человеческие тексты типичных ошибок OTP — перенос _humanOtpError
+  // из приложения (login_screen.dart). Supabase отдаёт эти сообщения
+  // по-английски, и показывать их продавцу нельзя.
+  function humanOtpError(e: unknown): string {
+    const raw = e instanceof Error ? e.message : String(e);
+    const s = raw.toLowerCase();
 
-    if (e164.length < 9) {
-      setError(
-        locale === 'ru' ? 'Проверьте номер телефона' : 'Proverite broj telefona',
-      );
+    if (s.includes('expired')) return t('otp_err_expired');
+    if (s.includes('invalid') || s.includes('incorrect')) {
+      return t('otp_err_invalid');
+    }
+    // Серверный лимит Supabase на частоту отправки (отдельный от нашей
+    // суточной квоты) — сообщаем как о лимите, а не англоязычной ошибкой.
+    if (s.includes('rate limit') || s.includes('too many')) {
+      return t('otp_err_quota');
+    }
+    return raw;
+  }
+
+  // ---------- Отправка SMS-кода ----------
+  // resend = true — повторная отправка на уже подтверждённый номер:
+  // квоту проверяем так же (каждая SMS платная и считается сервером).
+  async function sendCode(resend = false) {
+    setError(null);
+    setNotice(null);
+
+    // Согласие — обязательное условие ДО отправки SMS, как в приложении:
+    // аккаунт создаётся самим входом, поэтому политика принимается здесь.
+    if (!agreed) {
+      setError(t('legal_consent_required'));
+      return;
+    }
+
+    const e164 = normalizePhone(resend && sentTo ? sentTo : phone);
+
+    // Сербский мобильный в E.164 — это +381 и 8–9 цифр номера, то есть
+    // минимум 12 символов вместе с '+381'. Прежний порог в 9 символов
+    // пропускал заведомо короткие номера, и SMS уходила в никуда,
+    // списывая квоту.
+    if (!/^\+\d{9,15}$/.test(e164)) {
+      setError(t('otp_err_phone'));
       return;
     }
 
     setBusy(true);
     try {
       // Квота проверяется ДО отправки: RPC сама пишет журнал и экономит SMS.
+      // Лимит — 5 SMS на номер за 24 часа (миграция 0035), сервер здесь
+      // источник истины, клиент только показывает результат.
       const { data: quota, error: quotaError } = await supabase.rpc(
         'rpc_check_otp_quota',
         { p_phone: e164 },
@@ -134,11 +206,7 @@ export default function SellForm({ locale }: Props) {
       if (quotaError) throw new Error(quotaError.message);
 
       if (quota && quota.allowed === false) {
-        setError(
-          locale === 'ru'
-            ? 'Превышен суточный лимит SMS на этот номер. Попробуйте завтра.'
-            : 'Prekoračen je dnevni limit SMS poruka za ovaj broj. Pokušajte sutra.',
-        );
+        setError(t('otp_err_quota'));
         return;
       }
 
@@ -147,12 +215,27 @@ export default function SellForm({ locale }: Props) {
       });
       if (otpError) throw new Error(otpError.message);
 
+      setSentTo(e164);
       setCodeSent(true);
+      // Запускаем отсчёт до следующей отправки.
+      setResendAt(Date.now() + RESEND_DELAY_SEC * 1000);
+      if (resend) setNotice(t('otp_resent'));
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(humanOtpError(e));
     } finally {
       setBusy(false);
     }
+  }
+
+  // Возврат к вводу номера — как «Изменить номер» в приложении.
+  function changeNumber() {
+    setCodeSent(false);
+    setCode('');
+    setSentTo('');
+    setResendAt(0);
+    setResendIn(0);
+    setError(null);
+    setNotice(null);
   }
 
   // ---------- Подтверждение кода и публикация ----------
@@ -168,7 +251,10 @@ export default function SellForm({ locale }: Props) {
 
     setBusy(true);
     try {
-      const e164 = normalizePhone(phone);
+      // Номер берём тот, на который реально ушёл код. Пересчитывать его
+      // из поля ввода нельзя: пользователь мог поправить текст после
+      // отправки, и verifyOtp ушёл бы с другим номером.
+      const e164 = sentTo || normalizePhone(phone);
 
       // 1) Вход по коду из SMS.
       const { data: auth, error: verifyError } = await supabase.auth.verifyOtp({
@@ -179,7 +265,28 @@ export default function SellForm({ locale }: Props) {
       if (verifyError) throw new Error(verifyError.message);
 
       const uid = auth.user?.id;
-      if (!uid) throw new Error('Не удалось получить идентификатор пользователя');
+      // Сессия обязана появиться: без неё RLS отклонит и загрузку фото,
+      // и create_car_v3 — объявление осталось бы без владельца.
+      if (!auth.session || !uid) {
+        throw new Error(t('otp_err_failed'));
+      }
+
+      // Диагностика живого прогона OTP. Пишется только в консоль
+      // браузера, в интерфейс не попадает: по этим строкам сверяется,
+      // что после verifyOtp сессия действительно создана и объявление
+      // уйдёт от имени auth.uid(), а не анонима.
+      // Токены НЕ логируем — в консоли им не место.
+      console.info('[RS Auto OTP] verifyOtp: сессия получена', {
+        uid,
+        phone: auth.user?.phone,
+        // Признак, что номер подтверждён на стороне Supabase.
+        phoneConfirmedAt: auth.user?.phone_confirmed_at ?? null,
+        expiresAt: auth.session.expires_at,
+        // Роль из JWT: для вошедшего по SMS обязана быть 'authenticated'.
+        role: auth.user?.role,
+      });
+
+      setPhoneVerified(true);
 
       // 2) Загрузка фотографий. Путь ОБЯЗАН начинаться с uid: политика
       // car_images_insert_own разрешает запись только в свою папку.
@@ -233,9 +340,21 @@ export default function SellForm({ locale }: Props) {
       });
       if (createError) throw new Error(createError.message);
 
+      // Подтверждение прогона: сессия жива и после публикации, объявление
+      // создано от имени того же uid. Пользователь этого не видит.
+      const { data: after } = await supabase.auth.getSession();
+      console.info('[RS Auto OTP] create_car_v3: объявление создано', {
+        uid,
+        photos: photoUrls.length,
+        sessionAlive: Boolean(after.session),
+        // Совпадение uid сессии с тем, под которым грузились фото, —
+        // признак, что токен не подменился между шагами.
+        sameUser: after.session?.user.id === uid,
+      });
+
       setDone(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(humanOtpError(e));
     } finally {
       setBusy(false);
     }
@@ -244,11 +363,29 @@ export default function SellForm({ locale }: Props) {
   // ---------- Экран успеха ----------
   if (done) {
     return (
+      // Личного кабинета на сайте нет намеренно: управление объявлениями
+      // живёт в приложении. Поэтому после подачи — экран модерации и
+      // выход в каталог, а не «мои объявления».
       <div className="rounded-card border border-black/10 p-6 text-center">
         <h2 className="text-xl font-semibold">{t('sell_success_title')}</h2>
         <p className="mx-auto mt-2 max-w-md text-black/60">
           {t('sell_success_text')}
         </p>
+
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            href={localeHref(locale, '/cars')}
+            className="rounded-control bg-brand-green px-5 py-3 font-semibold text-white"
+          >
+            {t('nf_catalog')}
+          </Link>
+          <Link
+            href={localeHref(locale, '/app')}
+            className="rounded-control border border-black/15 px-5 py-3 font-semibold"
+          >
+            {t('nav_app')}
+          </Link>
+        </div>
       </div>
     );
   }
@@ -632,16 +769,60 @@ export default function SellForm({ locale }: Props) {
           </div>
 
           {!codeSent ? (
-            <button
-              type="button"
-              onClick={sendCode}
-              disabled={busy || !phone.trim()}
-              className="w-full rounded-control bg-brand-blue px-4 py-3 font-semibold text-white disabled:opacity-40"
-            >
-              {t('sell_send_code')}
-            </button>
+            <>
+              {/* Согласие с условиями и политикой — ОБЯЗАТЕЛЬНО до кнопки
+                  «Получить код». Тот же порядок, что в приложении: аккаунт
+                  создаётся самим входом по SMS, поэтому документы
+                  принимаются здесь, а не после публикации.
+                  Ссылки ведут на страницы сайта и открываются в новой
+                  вкладке — иначе продавец потеряет заполненную форму. */}
+              <label className="flex cursor-pointer items-start gap-2.5 text-sm text-black/70">
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-brand-green"
+                />
+                <span>
+                  {t('legal_consent_before')}
+                  <Link
+                    href={localeHref(locale, '/terms')}
+                    target="_blank"
+                    rel="noopener"
+                    className="font-semibold text-brand-blue underline"
+                  >
+                    {t('legal_consent_terms')}
+                  </Link>
+                  {t('legal_consent_and')}
+                  <Link
+                    href={localeHref(locale, '/privacy')}
+                    target="_blank"
+                    rel="noopener"
+                    className="font-semibold text-brand-blue underline"
+                  >
+                    {t('legal_consent_privacy')}
+                  </Link>
+                  .
+                </span>
+              </label>
+
+              <button
+                type="button"
+                onClick={() => sendCode()}
+                // Кнопка неактивна без согласия: отправлять SMS раньше
+                // принятия документов нельзя.
+                disabled={busy || !phone.trim() || !agreed}
+                className="w-full rounded-control bg-brand-blue px-4 py-3 font-semibold text-white disabled:opacity-40"
+              >
+                {busy ? t('otp_sending') : t('sell_send_code')}
+              </button>
+            </>
           ) : (
             <>
+              <p className="text-sm text-black/60">
+                {t('otp_sent_to')} {sentTo}
+              </p>
+
               <div>
                 <label className="mb-1 block text-sm text-black/60">
                   {t('sell_code')}
@@ -649,10 +830,40 @@ export default function SellForm({ locale }: Props) {
                 <input
                   type="text"
                   inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
                   value={code}
-                  onChange={(e) => setCode(e.target.value)}
+                  onChange={(e) =>
+                    // Только цифры: в приложении поле кода тоже
+                    // ограничено digitsOnly.
+                    setCode(e.target.value.replace(/\D/g, ''))
+                  }
                   className={field}
                 />
+              </div>
+
+              {/* «Изменить номер» и «Отправить снова» — как в приложении.
+                  Повторная отправка блокируется на 60 секунд: без таймера
+                  продавец выжжет суточную квоту в пять SMS за минуту. */}
+              <div className="flex items-center justify-between text-sm">
+                <button
+                  type="button"
+                  onClick={changeNumber}
+                  disabled={busy}
+                  className="font-semibold text-brand-blue disabled:opacity-40"
+                >
+                  {t('otp_change_number')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => sendCode(true)}
+                  disabled={busy || resendIn > 0}
+                  className="font-semibold text-brand-blue disabled:opacity-40"
+                >
+                  {resendIn > 0
+                    ? `${t('otp_resend_in')} (${resendIn})`
+                    : t('otp_resend')}
+                </button>
               </div>
 
               <button
@@ -661,7 +872,11 @@ export default function SellForm({ locale }: Props) {
                 disabled={busy || !canSubmit}
                 className="w-full rounded-control bg-brand-green px-4 py-3 font-semibold text-white disabled:opacity-40"
               >
-                {t('sell_submit')}
+                {busy
+                  ? phoneVerified
+                    ? t('sell_submit')
+                    : t('otp_verifying')
+                  : t('sell_submit')}
               </button>
             </>
           )}
@@ -674,6 +889,14 @@ export default function SellForm({ locale }: Props) {
             {t('sell_back')}
           </button>
         </div>
+      )}
+
+      {/* Успешная повторная отправка. В приложении это зелёный снек;
+          на сайте — та же роль, но без всплывающего слоя. */}
+      {notice && !error && (
+        <p className="mt-4 rounded-control bg-brand-green/10 px-3 py-2 text-sm text-brand-green">
+          {notice}
+        </p>
       )}
 
       {error && (

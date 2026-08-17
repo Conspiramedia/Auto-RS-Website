@@ -14,7 +14,7 @@ import FilterPanel from './FilterPanel';
 import Pagination from './Pagination';
 import SortSelect from './SortSelect';
 import type { Locale } from '@/lib/i18n';
-import { getT } from '@/lib/i18n';
+import { getT, localeHref } from '@/lib/i18n';
 import { countNoun } from '@/lib/plural';
 import type { CatalogFilters, CatalogResult } from '@/lib/queries';
 import { hasActiveFilters } from '@/lib/searchParams';
@@ -109,13 +109,17 @@ export default function CatalogView({
           на счётчик — ровно то, что было видно на скриншоте. */}
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none sm:gap-3">
+          {/* action ОБЯЗАН нести префикс локали: форма фильтров уходит
+              методом GET, и голый basePath уводил пользователя с
+              /ru/cars на сербское зеркало — язык сбрасывался ровно по
+              кнопке «Показать результаты». */}
           <FilterPanel
             locale={locale}
             filters={filters}
             brands={brands}
             cities={cities}
             models={models}
-            action={basePath}
+            action={localeHref(locale, basePath)}
             activeCount={activeCount}
             mode={pageMode}
             lockedType={lockedType}
