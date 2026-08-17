@@ -178,6 +178,14 @@ export const dict = {
     sell_err_price_positive: 'Cena mora biti veća od nule.',
     sell_err_deposit: 'Depozit ne može biti negativan.',
 
+    // Пикер (выбор из списка)
+    picker_search: 'Pretraga…',
+    picker_custom: 'Unesi',
+    picker_custom_hint: 'unesi svoje',
+    picker_nothing: 'Nema rezultata',
+    picker_model_no_brand: 'Prvo izaberite marku',
+    picker_model_empty: 'Nema modela za ovu marku',
+
     // Общее
     common_all: 'Sve',
     common_more: 'Prikaži još',
@@ -308,6 +316,14 @@ export const dict = {
     sell_err_rent_price: 'Для аренды обязательна цена за сутки.',
     sell_err_price_positive: 'Цена должна быть больше нуля.',
     sell_err_deposit: 'Залог не может быть отрицательным.',
+
+    // Пикер (выбор из списка)
+    picker_search: 'Поиск…',
+    picker_custom: 'Указать',
+    picker_custom_hint: 'ввод своего',
+    picker_nothing: 'Ничего не найдено',
+    picker_model_no_brand: 'Сначала выберите марку',
+    picker_model_empty: 'Нет моделей для этой марки',
 
     common_all: 'Все',
     common_more: 'Показать ещё',

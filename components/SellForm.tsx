@@ -23,6 +23,7 @@ import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import { BRANDS, CITIES, YEAR_MIN, yearMax } from '@/lib/referenceData';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
+import ListPicker, { type PickerOption } from './ListPicker';
 
 type Props = {
   locale: Locale;
@@ -49,6 +50,10 @@ export default function SellForm({ locale }: Props) {
   // Шаг 1–2: данные автомобиля.
   const [brand, setBrand] = useState('');
   const [model, setModel] = useState('');
+  // Модели выбранной марки. Грузятся из get_car_models — той же RPC,
+  // что вызывает приложение, поэтому списки совпадают.
+  const [modelList, setModelList] = useState<{ id: string; name: string }[]>([]);
+  const [loadingModels, setLoadingModels] = useState(false);
   const [year, setYear] = useState('');
   const [price, setPrice] = useState('');
   const [rentPrice, setRentPrice] = useState('');
@@ -74,6 +79,25 @@ export default function SellForm({ locale }: Props) {
 
   const field =
     'w-full rounded-control border border-black/15 px-3 py-2.5 outline-none focus:border-brand-primary';
+
+  // Выбор марки: сбрасывает модель и подтягивает её список — тот же
+  // порядок действий, что в create_car_screen.dart приложения.
+  async function handleBrandChange(next: string) {
+    setBrand(next);
+    setModel('');
+    setModelList([]);
+
+    if (!next) return;
+
+    setLoadingModels(true);
+    const { data, error: rpcError } = await supabase.rpc('get_car_models', {
+      p_brand_name: next,
+    });
+    // Ошибку не показываем: модель — необязательное уточнение, и без
+    // списка продавец сможет ввести своё значение через «Указать».
+    setModelList(rpcError ? [] : ((data ?? []) as { id: string; name: string }[]));
+    setLoadingModels(false);
+  }
 
   // Нормализация номера в E.164: пробелы, скобки и дефисы убираем, иначе
   // квота по номеру и вход посчитают «+381 60 123» и «+38160123» разными.
@@ -303,40 +327,40 @@ export default function SellForm({ locale }: Props) {
             </div>
           </div>
 
-          <div>
-            <label className="mb-1 block text-sm text-black/60">
-              {t('filter_brand')}
-            </label>
-            {/* list даёт подсказки из справочника, но не запрещает ввести
-                свою марку: справочник пополняется триггером по факту подачи. */}
-            <input
-              type="text"
-              value={brand}
-              onChange={(e) => setBrand(e.target.value)}
-              list="brands-list"
-              className={field}
-            />
-            {/* Полный справочник марок — тот же, что в приложении.
-                datalist подсказывает, но не запрещает своё значение:
-                справочник БД пополняется триггером при подаче. */}
-            <datalist id="brands-list">
-              {BRANDS.map((b) => (
-                <option key={b} value={b} />
-              ))}
-            </datalist>
-          </div>
+          {/* Марка — выбор из полного справочника с поиском.
+              allowCustom повторяет приложение (allowCustom: true в
+              create_car_screen.dart): редкую марку можно добавить явным
+              действием «Указать», справочник car_brands пополнит триггер. */}
+          <ListPicker
+            locale={locale}
+            name="brand"
+            label={t('filter_brand')}
+            options={BRANDS.map((b): PickerOption => ({ value: b, label: b }))}
+            value={brand}
+            allowCustom
+            onChange={handleBrandChange}
+          />
 
-          <div>
-            <label className="mb-1 block text-sm text-black/60">
-              {t('filter_model')}
-            </label>
-            <input
-              type="text"
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              className={field}
-            />
-          </div>
+          {/* Модель — каскадом от марки, как в приложении. */}
+          <ListPicker
+            locale={locale}
+            name="model"
+            label={t('filter_model')}
+            options={modelList.map(
+              (m): PickerOption => ({ value: m.name, label: m.name }),
+            )}
+            value={model}
+            disabled={!brand || loadingModels}
+            emptyHint={
+              !brand
+                ? t('picker_model_no_brand')
+                : loadingModels
+                  ? t('picker_search')
+                  : t('picker_model_empty')
+            }
+            allowCustom
+            onChange={setModel}
+          />
 
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -352,26 +376,18 @@ export default function SellForm({ locale }: Props) {
                 className={field}
               />
             </div>
-            <div>
-              <label className="mb-1 block text-sm text-black/60">
-                {t('filter_city')}
-              </label>
-              {/* Города из того же списка, что в онбординге приложения.
-                  Свободный ввод оставлен: продавец может быть из города,
-                  которого нет в списке крупных. */}
-              <input
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                list="cities-list"
-                className={field}
-              />
-              <datalist id="cities-list">
-                {CITIES.map((c) => (
-                  <option key={c} value={c} />
-                ))}
-              </datalist>
-            </div>
+            {/* Город — тот же список, что в онбординге приложения.
+                allowCustom оставлен, как в приложении: продавец может
+                быть из города, которого нет в списке 18 крупных. */}
+            <ListPicker
+              locale={locale}
+              name="city"
+              label={t('filter_city')}
+              options={CITIES.map((c): PickerOption => ({ value: c, label: c }))}
+              value={city}
+              allowCustom
+              onChange={setCity}
+            />
           </div>
 
           <button
@@ -455,58 +471,53 @@ export default function SellForm({ locale }: Props) {
             />
           </div>
 
+          {/* Кузов, коробка и топливо — те же полные enum, что в
+              приложении. Поиск не нужен: пунктов не больше десяти. */}
           <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="mb-1 block text-sm text-black/60">
-                {t('filter_body')}
-              </label>
-              <select
-                value={bodyType}
-                onChange={(e) => setBodyType(e.target.value)}
-                className={field}
-              >
-                <option value="">{t('filter_any')}</option>
-                {Object.entries(BODY_TYPES).map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label[locale]}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-black/60">
-                {t('filter_transmission')}
-              </label>
-              <select
-                value={transmission}
-                onChange={(e) => setTransmission(e.target.value)}
-                className={field}
-              >
-                <option value="">{t('filter_any')}</option>
-                {Object.entries(TRANSMISSIONS).map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label[locale]}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-black/60">
-                {t('filter_fuel')}
-              </label>
-              <select
-                value={fuel}
-                onChange={(e) => setFuel(e.target.value)}
-                className={field}
-              >
-                <option value="">{t('filter_any')}</option>
-                {Object.entries(FUELS).map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label[locale]}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <ListPicker
+              locale={locale}
+              name="body_type"
+              label={t('filter_body')}
+              options={Object.entries(BODY_TYPES).map(
+                ([key, labels]): PickerOption => ({
+                  value: key,
+                  label: labels[locale],
+                }),
+              )}
+              value={bodyType}
+              searchable={false}
+              onChange={setBodyType}
+            />
+
+            <ListPicker
+              locale={locale}
+              name="transmission"
+              label={t('filter_transmission')}
+              options={Object.entries(TRANSMISSIONS).map(
+                ([key, labels]): PickerOption => ({
+                  value: key,
+                  label: labels[locale],
+                }),
+              )}
+              value={transmission}
+              searchable={false}
+              onChange={setTransmission}
+            />
+
+            <ListPicker
+              locale={locale}
+              name="fuel"
+              label={t('filter_fuel')}
+              options={Object.entries(FUELS).map(
+                ([key, labels]): PickerOption => ({
+                  value: key,
+                  label: labels[locale],
+                }),
+              )}
+              value={fuel}
+              searchable={false}
+              onChange={setFuel}
+            />
           </div>
 
           <div>

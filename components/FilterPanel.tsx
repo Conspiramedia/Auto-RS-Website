@@ -7,32 +7,44 @@
 // (паттерн из требований проекта). Mobile-first: на телефоне — шторка
 // на весь экран, на десктопе — выпадающая панель.
 //
-// Форма отправляется методом GET на тот же адрес: фильтры оказываются в
-// query-параметрах, страница перерисовывается на сервере. Никакого
-// клиентского состояния выдачи — это и даёт работающий SSR и шаринг ссылки.
+// ВСЕ СПРАВОЧНЫЕ ПОЛЯ — ВЫБОР ИЗ СПИСКА, как в приложении
+// (filters_screen.dart): марка, модель, город, кузов, коробка, топливо.
+// Свободного текста нет нигде, кроме поиска по объявлениям.
+// Цена, год и пробег остаются числовыми полями — в приложении это тоже
+// TextField, а не список.
+//
+// Форма отправляется методом GET на тот же адрес: значения пикеров
+// уходят в query-параметры через скрытые input, страница
+// перерисовывается на сервере. Никакого клиентского состояния выдачи —
+// это и даёт работающий SSR и шаринг ссылки.
+//
+// КАСКАД «МАРКА → МОДЕЛЬ» повторяет приложение: при смене марки модель
+// сбрасывается, список моделей грузится с сервера (get_car_models —
+// та же RPC, что вызывает приложение).
 // ============================================================
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import type { CatalogFilters } from '@/lib/queries';
 import { BRANDS, CITIES, YEAR_MIN, yearMax } from '@/lib/referenceData';
+import { getBrowserClient } from '@/lib/supabaseClient';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import type { ListingType, SiteBrand, SiteCity } from '@/lib/types';
+import ListPicker, { type PickerOption } from './ListPicker';
 
 type Props = {
   locale: Locale;
   filters: CatalogFilters;
-  // Марки и города с активными объявлениями. Используются НЕ как источник
-  // списка, а как источник счётчиков: полный справочник берётся из
-  // lib/referenceData (как в приложении), а счётчик показывается только
-  // там, где объявления действительно есть.
+  // Марки и города с активными объявлениями — источник СЧЁТЧИКОВ.
+  // Сами списки берутся из полного справочника (lib/referenceData),
+  // чтобы совпадать с приложением.
   brands: SiteBrand[];
   cities: SiteCity[];
-  // Модели выбранной марки из полного справочника (get_car_models).
-  // Пустой массив, когда марка не выбрана: без неё список моделей
-  // был бы на несколько тысяч пунктов и бесполезен.
+  // Модели выбранной марки, отрендеренные сервером. Нужны, чтобы при
+  // открытии страницы с уже выбранной маркой список был доступен сразу,
+  // без ожидания клиентского запроса.
   models: { id: string; name: string }[];
   // Куда отправлять форму: '/cars', '/rent' или SEO-страница с маркой.
   action: string;
@@ -56,12 +68,52 @@ export default function FilterPanel({
   const t = getT(locale);
   const [open, setOpen] = useState(false);
 
+  // Выбранная марка и модели для каскада. Стартуют из фильтров страницы.
+  const [brand, setBrand] = useState(filters.brand ?? '');
+  const [modelList, setModelList] =
+    useState<{ id: string; name: string }[]>(models);
+  const [loadingModels, setLoadingModels] = useState(false);
+  // Ключ для перемонтирования пикера модели: при смене марки прежнее
+  // значение обязано сброситься, иначе останется модель от другой марки.
+  const [modelKey, setModelKey] = useState(0);
+
   const field =
     'w-full rounded-control border border-black/15 px-3 py-2 text-sm outline-none focus:border-brand-primary';
 
-  // Счётчики объявлений по марке и городу — для подписи «(12)» рядом с
-  // пунктом списка. Ключ нормализован, чтобы «BMW» из справочника нашёл
-  // счётчик для «bmw» из базы.
+  // Догрузка моделей при смене марки прямо в панели. На сервере модели
+  // уже пришли для марки из URL — повторный запрос делаем только когда
+  // пользователь выбрал другую марку.
+  useEffect(() => {
+    if (!brand) {
+      setModelList([]);
+      return;
+    }
+
+    if (brand === (filters.brand ?? '')) {
+      setModelList(models);
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingModels(true);
+
+    getBrowserClient()
+      .rpc('get_car_models', { p_brand_name: brand })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        // Ошибку не показываем: список моделей — уточняющий фильтр,
+        // и без него панель должна остаться работоспособной.
+        setModelList(error ? [] : ((data ?? []) as { id: string; name: string }[]));
+        setLoadingModels(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [brand, filters.brand, models]);
+
+  // Счётчики объявлений по марке и городу. Ключ нормализован, чтобы
+  // «BMW» из справочника нашёл счётчик для «bmw» из базы.
   const brandCounts = new Map(
     brands.map((b) => [b.brand.trim().toLowerCase(), b.cars_count]),
   );
@@ -69,24 +121,43 @@ export default function FilterPanel({
     cities.map((c) => [c.city.trim().toLowerCase(), c.cars_count]),
   );
 
-  // Подпись пункта: с числом объявлений, если они есть, и без него,
-  // если марка сейчас не представлена. Прятать такие пункты нельзя —
-  // это и есть расхождение с приложением, которое чинит эта правка.
-  const withCount = (name: string, counts: Map<string, number>) => {
-    const n = counts.get(name.trim().toLowerCase());
-    return n ? `${name} (${n})` : name;
-  };
-
-  // Марка из адреса SEO-страницы может отсутствовать в справочнике
-  // (продавец ввёл своё название — справочник БД пополняется триггером).
-  // Добавляем её в список, иначе выбранное значение не отобразится.
-  const brandOptions = filters.brand && !BRANDS.includes(filters.brand)
+  // Марка или город из адреса SEO-страницы может отсутствовать в
+  // справочнике (продавец ввёл своё название). Добавляем в список,
+  // иначе выбранное значение не отобразится.
+  const brandNames = filters.brand && !BRANDS.includes(filters.brand)
     ? [...BRANDS, filters.brand].sort((a, b) => a.localeCompare(b))
     : BRANDS;
 
-  const cityOptions = filters.city && !CITIES.includes(filters.city)
+  const cityNames = filters.city && !CITIES.includes(filters.city)
     ? [...CITIES, filters.city].sort((a, b) => a.localeCompare(b))
     : CITIES;
+
+  const brandOptions: PickerOption[] = brandNames.map((b) => ({
+    value: b,
+    label: b,
+    count: brandCounts.get(b.trim().toLowerCase()),
+  }));
+
+  const cityOptions: PickerOption[] = cityNames.map((c) => ({
+    value: c,
+    label: c,
+    count: cityCounts.get(c.trim().toLowerCase()),
+  }));
+
+  const modelOptions: PickerOption[] = modelList.map((m) => ({
+    value: m.name,
+    label: m.name,
+  }));
+
+  // Подписи enum'ов берём из общих справочников — они совпадают
+  // со значениями в БД и с приложением.
+  const enumOptions = (
+    dict: Record<string, { sr: string; ru: string }>,
+  ): PickerOption[] =>
+    Object.entries(dict).map(([value, labels]) => ({
+      value,
+      label: labels[locale],
+    }));
 
   return (
     <>
@@ -118,8 +189,26 @@ export default function FilterPanel({
               </button>
             </div>
 
-            {/* GET-форма: значения уходят в query-параметры адреса. */}
-            <form method="get" action={action} className="space-y-3">
+            {/* GET-форма: значения уходят в query-параметры адреса.
+                Перед отправкой пустые поля отключаются, иначе браузер
+                добавит в адрес «?q=&price_from=&year_to=» — мусор в
+                ссылке, которой пользователь делится, и лишние варианты
+                одного URL для краулера. */}
+            <form
+              method="get"
+              action={action}
+              className="space-y-3"
+              onSubmit={(e) => {
+                const form = e.currentTarget;
+                form
+                  .querySelectorAll<HTMLInputElement>('input[name]')
+                  .forEach((input) => {
+                    if (input.value.trim() === '') input.disabled = true;
+                  });
+              }}
+            >
+              {/* Единственное поле свободного ввода — поиск по тексту
+                  объявления. В приложении он тоже отдельной строкой. */}
               <div>
                 <label className="mb-1 block text-sm text-black/60">
                   {t('filter_search')}
@@ -134,57 +223,46 @@ export default function FilterPanel({
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-sm text-black/60">
-                    {t('filter_brand')}
-                  </label>
-                  <select name="brand" defaultValue={filters.brand ?? ''} className={field}>
-                    <option value="">{t('filter_any')}</option>
-                    {brandOptions.map((b) => (
-                      <option key={b} value={b}>
-                        {withCount(b, brandCounts)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <ListPicker
+                  locale={locale}
+                  name="brand"
+                  label={t('filter_brand')}
+                  options={brandOptions}
+                  value={brand}
+                  onChange={(v) => {
+                    setBrand(v);
+                    // Сброс модели при смене марки — как в приложении.
+                    setModelKey((k) => k + 1);
+                  }}
+                />
 
-                {/* Модель — каскадом от марки, как в приложении. Список
-                    приходит с сервера для уже выбранной марки; пока марка
-                    не выбрана, поле неактивно: перечислять модели всех
-                    124 марок разом бессмысленно. */}
-                <div>
-                  <label className="mb-1 block text-sm text-black/60">
-                    {t('filter_model')}
-                  </label>
-                  <select
-                    name="model"
-                    defaultValue={filters.model ?? ''}
-                    className={field}
-                    disabled={!filters.brand}
-                  >
-                    <option value="">{t('filter_any')}</option>
-                    {models.map((m) => (
-                      <option key={m.id} value={m.name}>
-                        {m.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {/* Модель доступна только после выбора марки: перечислять
+                    модели всех 124 марок разом бессмысленно. */}
+                <ListPicker
+                  key={modelKey}
+                  locale={locale}
+                  name="model"
+                  label={t('filter_model')}
+                  options={modelOptions}
+                  value={modelKey === 0 ? (filters.model ?? '') : ''}
+                  disabled={!brand || loadingModels || modelOptions.length === 0}
+                  emptyHint={
+                    !brand
+                      ? t('picker_model_no_brand')
+                      : loadingModels
+                        ? t('picker_search')
+                        : t('picker_model_empty')
+                  }
+                />
               </div>
 
-              <div>
-                <label className="mb-1 block text-sm text-black/60">
-                  {t('filter_city')}
-                </label>
-                <select name="city" defaultValue={filters.city ?? ''} className={field}>
-                  <option value="">{t('filter_any')}</option>
-                  {cityOptions.map((c) => (
-                    <option key={c} value={c}>
-                      {withCount(c, cityCounts)}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <ListPicker
+                locale={locale}
+                name="city"
+                label={t('filter_city')}
+                options={cityOptions}
+                value={filters.city ?? ''}
+              />
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -256,51 +334,34 @@ export default function FilterPanel({
               </div>
 
               <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="mb-1 block text-sm text-black/60">
-                    {t('filter_body')}
-                  </label>
-                  <select name="body" defaultValue={filters.bodyType ?? ''} className={field}>
-                    <option value="">{t('filter_any')}</option>
-                    {Object.entries(BODY_TYPES).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label[locale]}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <ListPicker
+                  locale={locale}
+                  name="body"
+                  label={t('filter_body')}
+                  options={enumOptions(BODY_TYPES)}
+                  value={filters.bodyType ?? ''}
+                  // Десять пунктов — поиск не нужен, как и в приложении,
+                  // где короткие списки показываются без него.
+                  searchable={false}
+                />
 
-                <div>
-                  <label className="mb-1 block text-sm text-black/60">
-                    {t('filter_transmission')}
-                  </label>
-                  <select
-                    name="gearbox"
-                    defaultValue={filters.transmission ?? ''}
-                    className={field}
-                  >
-                    <option value="">{t('filter_any')}</option>
-                    {Object.entries(TRANSMISSIONS).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label[locale]}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <ListPicker
+                  locale={locale}
+                  name="gearbox"
+                  label={t('filter_transmission')}
+                  options={enumOptions(TRANSMISSIONS)}
+                  value={filters.transmission ?? ''}
+                  searchable={false}
+                />
 
-                <div>
-                  <label className="mb-1 block text-sm text-black/60">
-                    {t('filter_fuel')}
-                  </label>
-                  <select name="fuel" defaultValue={filters.fuel ?? ''} className={field}>
-                    <option value="">{t('filter_any')}</option>
-                    {Object.entries(FUELS).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label[locale]}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <ListPicker
+                  locale={locale}
+                  name="fuel"
+                  label={t('filter_fuel')}
+                  options={enumOptions(FUELS)}
+                  value={filters.fuel ?? ''}
+                  searchable={false}
+                />
               </div>
 
               {/* Сортировку переносим скрытым полем: иначе при применении
