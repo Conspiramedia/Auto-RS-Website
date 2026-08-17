@@ -27,9 +27,10 @@ export async function generateMetadata({
   return buildMetadata({
     locale,
     path: '/cars',
-    title: t('catalog_title'),
+    // Каталог — смешанный фид (продажа и аренда), заголовок это отражает.
+    title: t('catalog_mixed_title'),
     description:
-      'Автомобили на продажу в Сербии: поиск по марке, модели, городу и цене.',
+      'Автомобили в Сербии: продажа и аренда. Поиск по марке, модели, городу и цене.',
     noindex: hasActiveFilters(filters) || (filters.page ?? 1) > 1,
   });
 }

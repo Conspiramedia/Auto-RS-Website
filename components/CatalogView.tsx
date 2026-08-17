@@ -35,7 +35,11 @@ type Props = {
   basePath: string;
   // Витрина: определяет, какая цена показывается в карточках и какой
   // раздел считается корневым при сбросе фильтров.
-  mode?: Exclude<ListingType, 'both'>;
+  // 'both' — смешанный фид каталога: цена берётся из самого объявления.
+  mode?: ListingType;
+  // Тип объявления зафиксирован адресом (SEO-лендинг /rent): сегмент
+  // выбора типа в фильтрах скрывается.
+  lockedType?: boolean;
 };
 
 export default function CatalogView({
@@ -49,8 +53,15 @@ export default function CatalogView({
   models = [],
   basePath,
   mode = 'sale',
+  lockedType = false,
 }: Props) {
   const t = getT(locale);
+
+  // Витрина для компонентов, которые различают только продажу и аренду
+  // (подписи цены в фильтрах, заголовок пустого состояния). Смешанный
+  // фид ведёт себя как продажа: цены там в евро за автомобиль.
+  const pageMode: Exclude<ListingType, 'both'> =
+    mode === 'rent' ? 'rent' : 'sale';
 
   // Счётчик на кнопке фильтров считает только те фильтры, которые
   // пользователь применил сам. Марка и модель, заданные самим адресом
@@ -62,6 +73,11 @@ export default function CatalogView({
     : filters;
 
   const activeCount = [
+    // Тип объявления считается применённым фильтром, только когда он
+    // сужает выдачу: 'both' — состояние по умолчанию.
+    countable.listingType && countable.listingType !== 'both'
+      ? countable.listingType
+      : undefined,
     countable.q,
     countable.brand,
     countable.model,
@@ -81,8 +97,12 @@ export default function CatalogView({
       <h1 className="text-2xl font-bold">{title}</h1>
       {intro && <p className="mt-2 max-w-3xl text-black/60">{intro}</p>}
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+      {/* Панель управления выдачей. На мобильном — одна строка:
+          «Фильтры» + компактный select сортировки; счётчик уходит
+          на строку ниже, чтобы ничего не переносилось и не растягивало
+          страницу. На десктопе всё в один ряд. */}
+      <div className="mt-4 flex items-center gap-2 sm:justify-between">
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none sm:gap-3">
           <FilterPanel
             locale={locale}
             filters={filters}
@@ -91,14 +111,20 @@ export default function CatalogView({
             models={models}
             action={basePath}
             activeCount={activeCount}
-            mode={mode}
+            mode={pageMode}
+            lockedType={lockedType}
           />
-          <span className="text-sm text-black/50">
+          <span className="hidden shrink-0 text-sm text-black/50 sm:inline">
             {t('catalog_found')}: {result.total}
           </span>
         </div>
 
         <SortSelect locale={locale} filters={filters} basePath={basePath} />
+      </div>
+
+      {/* Счётчик результатов на мобильном — отдельной строкой. */}
+      <div className="mt-2 text-sm text-black/50 sm:hidden">
+        {t('catalog_found')}: {result.total}
       </div>
 
       <div className="mt-3">
@@ -111,7 +137,7 @@ export default function CatalogView({
             locale={locale}
             resetPath={basePath}
             showReset={hasActiveFilters(countable)}
-            mode={mode}
+            mode={pageMode}
           />
         </div>
       ) : (

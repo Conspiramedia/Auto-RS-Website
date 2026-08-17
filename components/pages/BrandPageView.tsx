@@ -87,7 +87,7 @@ export default async function BrandPageView({
       />
 
       <SmartBanner locale={locale} />
-      <SiteHeader locale={locale} pathname={`${root}/${slug}`} mode={mode} />
+      <SiteHeader locale={locale} pathname={`${root}/${slug}`} />
 
       <main className="mx-auto max-w-6xl px-4 py-6">
         <nav className="mb-4 text-sm text-black/50">
@@ -108,6 +108,8 @@ export default async function BrandPageView({
           models={allModels}
           basePath={`${root}/${slug}`}
           mode={mode}
+          // Тип задан адресом SEO-страницы — сегмент скрыт.
+          lockedType
         />
 
         {/* Перелинковка на страницы моделей: главный источник внутренних

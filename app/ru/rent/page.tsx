@@ -40,5 +40,5 @@ export default async function RuRentPage({
   searchParams: Promise<SearchParams>;
 }) {
   const sp = await searchParams;
-  return <CatalogPageView locale={locale} searchParams={sp} mode="rent" />;
+  return <CatalogPageView locale={locale} searchParams={sp} section="rent" />;
 }

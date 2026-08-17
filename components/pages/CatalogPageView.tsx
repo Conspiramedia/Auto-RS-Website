@@ -16,57 +16,81 @@ import {
 } from '@/lib/queries';
 import type { SearchParams } from '@/lib/searchParams';
 import { parseFilters } from '@/lib/searchParams';
+import type { ListingType } from '@/lib/types';
 
 export default async function CatalogPageView({
   locale,
   searchParams,
-  // Витрина: один компонент обслуживает и /cars, и /rent.
-  mode = 'sale',
+  // Раздел:
+  //   'catalog' — /cars, СМЕШАННЫЙ фид. Тип объявления выбирается
+  //     фильтром и приходит из query (?type=), по умолчанию «Всё»;
+  //   'rent' — SEO-лендинг /rent. Тип зафиксирован адресом, сегмент
+  //     выбора типа в фильтрах скрыт.
+  section = 'catalog',
 }: {
   locale: Locale;
   searchParams: SearchParams;
-  mode?: 'sale' | 'rent';
+  section?: 'catalog' | 'rent';
 }) {
   const t = getT(locale);
-  const basePath = mode === 'rent' ? '/rent' : '/cars';
+  const isRentLanding = section === 'rent';
+  const basePath = isRentLanding ? '/rent' : '/cars';
 
-  // Тип витрины задаётся страницей, а не пользователем: он определяется
-  // адресом раздела и не может прийти из query-параметров.
-  const filters = { ...parseFilters(searchParams), listingType: mode };
+  const parsed = parseFilters(searchParams);
 
-  // Три независимых запроса — параллельно: последовательные утроили бы
-  // время ответа страницы.
+  // На лендинге аренды тип задан адресом и перекрывает query.
+  // В каталоге тип берётся из фильтра, по умолчанию — смешанная выдача.
+  const listingType: ListingType = isRentLanding
+    ? 'rent'
+    : (parsed.listingType ?? 'both');
+
+  const filters = { ...parsed, listingType };
+
+  // Справочники марок и городов строятся по тому же типу, что и выдача:
+  // в смешанном режиме показываем всё, что вообще есть на площадке.
   const [result, brands, cities, models] = await Promise.all([
     fetchCatalog(filters),
-    fetchSiteBrands(mode),
-    fetchSiteCities(mode),
+    fetchSiteBrands(listingType),
+    fetchSiteCities(listingType),
     // Модели грузим только когда марка выбрана: иначе список пуст и
     // лишний запрос к БД не нужен.
     filters.brand ? fetchCatalogModels(filters.brand) : Promise.resolve([]),
   ]);
 
+  // Витрина для карточек. Когда пользователь явно отфильтровал выдачу
+  // по типу, карточки показывают цену этой сделки: в списке «только
+  // аренда» суточная ставка должна быть основной даже у объявления,
+  // которое заодно продаётся. При «Всё» цену выбирает само объявление.
+  const cardMode: ListingType = listingType;
+
   return (
     <>
       <SmartBanner locale={locale} />
-      <SiteHeader locale={locale} pathname={basePath} mode={mode} />
+      <SiteHeader locale={locale} pathname={basePath} />
 
       <main className="mx-auto max-w-6xl px-4 py-6">
         <CatalogView
           locale={locale}
-          title={mode === 'rent' ? t('rent_title') : t('catalog_title')}
+          title={isRentLanding ? t('rent_title') : t('catalog_mixed_title')}
           filters={filters}
           result={result}
           brands={brands}
           cities={cities}
           models={models}
           basePath={basePath}
-          mode={mode}
+          mode={cardMode}
+          // На лендинге аренды тип задан адресом — сегмент скрыт.
+          lockedType={isRentLanding}
         />
       </main>
 
       {/* Ссылки в подвале ведут в тот же раздел, в котором находится
           пользователь: из аренды — на арендные страницы марок. */}
-      <SiteFooter locale={locale} brands={brands.slice(0, 12)} mode={mode} />
+      <SiteFooter
+        locale={locale}
+        brands={brands.slice(0, 12)}
+        mode={isRentLanding ? 'rent' : 'sale'}
+      />
     </>
   );
 }

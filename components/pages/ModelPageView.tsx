@@ -99,7 +99,6 @@ export default async function ModelPageView({
       <SiteHeader
         locale={locale}
         pathname={`${root}/${brandSlug}/${modelSlug}`}
-        mode={mode}
       />
 
       <main className="mx-auto max-w-6xl px-4 py-6">
@@ -128,6 +127,8 @@ export default async function ModelPageView({
           models={allModels}
           basePath={`${root}/${brandSlug}/${modelSlug}`}
           mode={mode}
+          // Тип задан адресом SEO-страницы — сегмент скрыт.
+          lockedType
         />
       </main>
 

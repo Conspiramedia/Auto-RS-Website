@@ -53,6 +53,9 @@ type Props = {
   // Витрина: в аренде фильтр цены работает по суточной ставке, поэтому
   // подпись поля обязана это отражать — иначе «до 50» выглядит абсурдом.
   mode?: Exclude<ListingType, 'both'>;
+  // Тип объявления зафиксирован адресом страницы (SEO-лендинг /rent) —
+  // сегмент выбора типа скрывается.
+  lockedType?: boolean;
 };
 
 export default function FilterPanel({
@@ -64,9 +67,17 @@ export default function FilterPanel({
   action,
   activeCount,
   mode = 'sale',
+  lockedType = false,
 }: Props) {
   const t = getT(locale);
   const [open, setOpen] = useState(false);
+
+  // Тип объявления. Витрина каталога смешанная, поэтому по умолчанию
+  // 'both' — «Всё». На SEO-лендинге /rent тип задан адресом и сегмент
+  // не показывается: сменить его там означало бы уйти со страницы.
+  const [listingType, setListingType] = useState<ListingType>(
+    filters.listingType ?? 'both',
+  );
 
   // Выбранная марка и модели для каскада. Стартуют из фильтров страницы.
   const [brand, setBrand] = useState(filters.brand ?? '');
@@ -207,6 +218,45 @@ export default function FilterPanel({
                   });
               }}
             >
+              {/* Тип объявления — сегмент из трёх кнопок. Первым полем:
+                  он определяет саму выдачу, а не сужает её по признаку.
+                  На лендинге /rent тип задан адресом и сегмент скрыт. */}
+              {!lockedType && (
+                <div>
+                  <label className="mb-1 block text-sm text-black/60">
+                    {t('filter_listing_type')}
+                  </label>
+                  <div className="grid grid-cols-3 gap-1 rounded-control bg-black/[0.06] p-1">
+                    {(
+                      [
+                        ['both', t('filter_type_all')],
+                        ['sale', t('mode_sale')],
+                        ['rent', t('mode_rent')],
+                      ] as const
+                    ).map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setListingType(value)}
+                        className={
+                          'rounded-control px-2 py-2 text-sm font-semibold transition-colors ' +
+                          (listingType === value
+                            ? 'bg-white text-brand-dark shadow-sm'
+                            : 'text-black/55 hover:text-brand-dark')
+                        }
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Значение уходит в URL. 'both' — состояние по
+                      умолчанию, его в адрес не пишем. */}
+                  {listingType !== 'both' && (
+                    <input type="hidden" name="type" value={listingType} />
+                  )}
+                </div>
+              )}
+
               {/* Единственное поле свободного ввода — поиск по тексту
                   объявления. В приложении он тоже отдельной строкой. */}
               <div>

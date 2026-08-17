@@ -95,7 +95,7 @@ export default async function CarPageView({
       {/* На мобильных ведём в приложение по каноническому адресу: при
           установленном приложении App Link перехватит ссылку. */}
       <SmartBanner locale={locale} deepLink={canonicalUrl} />
-      <SiteHeader locale={locale} pathname={`/car/${id}`} mode={mode} />
+      <SiteHeader locale={locale} pathname={`/car/${id}`} />
 
       <main className="mx-auto max-w-6xl px-4 py-6">
         <nav className="mb-4 text-sm text-black/50">

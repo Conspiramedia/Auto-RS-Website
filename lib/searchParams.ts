@@ -10,6 +10,7 @@
 
 import type { CatalogFilters } from './queries';
 import { isSortKey } from './types';
+import type { ListingType } from './types';
 
 // Тип, в котором Next отдаёт query-параметры страницы.
 export type SearchParams = Record<string, string | string[] | undefined>;
@@ -31,11 +32,23 @@ function num(value: string | string[] | undefined): number | undefined {
   return parsed;
 }
 
+// Тип объявления из URL. Значение 'both' («Всё») в адрес не пишется —
+// это состояние по умолчанию, и явный параметр создал бы второй URL
+// для той же выдачи.
+function parseListingType(
+  value: string | string[] | undefined,
+): ListingType | undefined {
+  const raw = one(value);
+  if (raw === 'sale' || raw === 'rent' || raw === 'both') return raw;
+  return undefined;
+}
+
 // Разбор query-параметров в фильтры каталога.
 export function parseFilters(sp: SearchParams): CatalogFilters {
   const sort = one(sp.sort);
 
   return {
+    listingType: parseListingType(sp.type),
     q: one(sp.q) || undefined,
     brand: one(sp.brand) || undefined,
     model: one(sp.model) || undefined,
@@ -64,6 +77,11 @@ export function buildQuery(
   const merged = { ...filters, ...overrides };
   const params = new URLSearchParams();
 
+  // 'both' — состояние по умолчанию, в адрес не пишется: '/cars' и
+  // '/cars?type=both' должны быть одной страницей, а не двумя.
+  if (merged.listingType && merged.listingType !== 'both') {
+    params.set('type', merged.listingType);
+  }
   if (merged.q) params.set('q', merged.q);
   if (merged.brand) params.set('brand', merged.brand);
   if (merged.model) params.set('model', merged.model);
@@ -89,7 +107,11 @@ export function buildQuery(
 // решения о noindex: отфильтрованные выдачи в индекс не отдаём.
 export function hasActiveFilters(filters: CatalogFilters): boolean {
   return Boolean(
-    filters.q ||
+    // Выбранный тип объявления сужает выдачу так же, как любой другой
+    // фильтр, поэтому '/cars?type=rent' в индекс не отдаём: за арендой
+    // закреплён отдельный лендинг /rent.
+    (filters.listingType && filters.listingType !== 'both') ||
+      filters.q ||
       filters.brand ||
       filters.model ||
       filters.city ||

@@ -178,6 +178,11 @@ export const dict = {
     sell_err_price_positive: 'Cena mora biti veća od nule.',
     sell_err_deposit: 'Depozit ne može biti negativan.',
 
+    filter_listing_type: 'Tip oglasa',
+    filter_type_all: 'Sve',
+    catalog_mixed_title: 'Automobili u Srbiji',
+    badge_rent: 'Izdavanje',
+
     // Пикер (выбор из списка)
     picker_search: 'Pretraga…',
     picker_custom: 'Unesi',
@@ -316,6 +321,11 @@ export const dict = {
     sell_err_rent_price: 'Для аренды обязательна цена за сутки.',
     sell_err_price_positive: 'Цена должна быть больше нуля.',
     sell_err_deposit: 'Залог не может быть отрицательным.',
+
+    filter_listing_type: 'Тип объявления',
+    filter_type_all: 'Всё',
+    catalog_mixed_title: 'Автомобили в Сербии',
+    badge_rent: 'Аренда',
 
     // Пикер (выбор из списка)
     picker_search: 'Поиск…',

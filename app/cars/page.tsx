@@ -31,9 +31,10 @@ export async function generateMetadata({
   return buildMetadata({
     locale,
     path: '/cars',
-    title: t('catalog_title'),
+    // Каталог — смешанный фид (продажа и аренда), заголовок это отражает.
+    title: t('catalog_mixed_title'),
     description:
-      'Automobili na prodaju u Srbiji: pretraga po marki, modelu, gradu i ceni.',
+      'Automobili u Srbiji: prodaja i izdavanje. Pretraga po marki, modelu, gradu i ceni.',
     // Отфильтрованные выдачи и страницы пагинации в индекс не отдаём:
     // это тысячи почти одинаковых URL, размывающих вес каталога.
     // Ссылки при этом остаются проходимыми (follow) — краулер дойдёт

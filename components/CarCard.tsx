@@ -30,9 +30,12 @@ type Props = {
     photo_url: string | null;
     is_promoted?: boolean;
   };
-  // Витрина, в которой показана карточка. Определяет, какая цена главная:
-  // в каталоге аренды на первом месте суточная ставка, а не цена продажи.
-  mode?: Exclude<ListingType, 'both'>;
+  // Витрина, в которой показана карточка.
+  //   'sale' | 'rent' — специализированный раздел: показываем цену
+  //     соответствующей сделки;
+  //   'both' — смешанный фид каталога: цена выбирается по САМОМУ
+  //     объявлению, потому что рядом стоят и продажа, и аренда.
+  mode?: ListingType;
   // Первые карточки в выдаче грузятся с приоритетом: изображение над
   // сгибом влияет на LCP, а он входит в Core Web Vitals.
   priority?: boolean;
@@ -46,9 +49,16 @@ export default function CarCard({
 }: Props) {
   const t = getT(locale);
 
-  // Цену аренды показываем, когда карточка в арендной витрине и ставка
-  // действительно есть. Иначе — цена продажи.
-  const showRent = mode === 'rent' && car.rent_price_daily != null;
+  // Какую цену считать главной.
+  //   * в разделе аренды — всегда суточную ставку;
+  //   * в смешанном фиде — ту, что соответствует объявлению: у машины,
+  //     которая только сдаётся, суточную. Объявление, доступное и к
+  //     продаже, и к аренде, показывает цену продажи основной, а ставку
+  //     аренды — второй строкой.
+  const rentOnly = car.is_for_rent === true && car.is_for_sale !== true;
+  const showRent =
+    car.rent_price_daily != null &&
+    (mode === 'rent' || (mode === 'both' && rentOnly));
 
   return (
     <Link
@@ -79,6 +89,16 @@ export default function CarCard({
             {t('car_promoted')}
           </span>
         )}
+
+        {/* Бейдж аренды в смешанном фиде: рядом стоят продажа и аренда,
+            и различить их только по «€ / dan» в строке цены трудно —
+            цвет и слово читаются с первого взгляда. В самом разделе
+            аренды бейдж не нужен: там всё объявления одного типа. */}
+        {mode === 'both' && car.is_for_rent && (
+          <span className="absolute right-2 top-2 rounded-control bg-brand-blue px-2 py-1 text-xs font-semibold text-white">
+            {t('badge_rent')}
+          </span>
+        )}
       </div>
 
       <div className="p-3">
@@ -92,17 +112,23 @@ export default function CarCard({
             : formatPrice(car.sale_price, car.currency, locale)}
         </div>
 
-        {/* Пометка о второй витрине: в каталоге продажи сообщаем, что
-            машину можно и арендовать, и наоборот. Это заметно расширяет
-            выбор, но не должно спорить с основной ценой — поэтому мелко. */}
-        {mode === 'sale' && car.is_for_rent && (
-          <div className="mt-0.5 text-xs font-medium text-brand-blue">
-            {t('mode_rent')}
+        {/* Вторая цена. Объявление, доступное и к продаже, и к аренде,
+            показывает обе: сверху основная сделка, ниже — вторая с её
+            собственной ценой. Просто слово «Аренда» без суммы заставляло
+            бы открывать карточку, чтобы узнать ставку. */}
+        {car.is_for_sale && car.is_for_rent && car.rent_price_daily != null && (
+          <div className="mt-0.5 text-sm font-medium text-brand-blue">
+            {showRent
+              ? formatPrice(car.sale_price, car.currency, locale)
+              : formatRentPrice(car.rent_price_daily, car.currency, locale)}
           </div>
         )}
-        {mode === 'rent' && car.is_for_sale && (
+
+        {/* В специализированном разделе — короткая пометка о второй
+            витрине без цены: она уже показана выше. */}
+        {mode === 'sale' && car.is_for_rent && car.rent_price_daily == null && (
           <div className="mt-0.5 text-xs font-medium text-brand-blue">
-            {t('mode_sale')}
+            {t('mode_rent')}
           </div>
         )}
 
