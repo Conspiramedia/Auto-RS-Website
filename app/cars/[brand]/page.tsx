@@ -13,6 +13,7 @@ import type { Metadata } from 'next';
 import BrandPageView, { resolveBrand } from '@/components/pages/BrandPageView';
 import type { Locale } from '@/lib/i18n';
 import { fetchSiteBrands } from '@/lib/queries';
+import { countNoun } from '@/lib/plural';
 import { buildMetadata } from '@/lib/seo';
 import type { SearchParams } from '@/lib/searchParams';
 import { hasActiveFilters, parseFilters } from '@/lib/searchParams';
@@ -54,7 +55,7 @@ export async function generateMetadata({
     locale,
     path: `/cars/${slug}`,
     title: `${brand.brand} — automobili na prodaju u Srbiji`,
-    description: `${brand.brand}: ${brand.cars_count} oglasa na prodaju u Srbiji. Pretraga po modelu, godištu, ceni i gradu.`,
+    description: `${brand.brand}: ${countNoun(brand.cars_count, 'listing', locale)} na prodaju u Srbiji. Pretraga po modelu, godištu, ceni i gradu.`,
     noindex: hasActiveFilters(filters) || (filters.page ?? 1) > 1,
   });
 }

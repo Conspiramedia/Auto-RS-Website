@@ -11,6 +11,7 @@ import type { Metadata } from 'next';
 import BrandPageView, { resolveBrand } from '@/components/pages/BrandPageView';
 import type { Locale } from '@/lib/i18n';
 import { fetchSiteBrands } from '@/lib/queries';
+import { countNoun } from '@/lib/plural';
 import { buildMetadata } from '@/lib/seo';
 import type { SearchParams } from '@/lib/searchParams';
 import { hasActiveFilters, parseFilters } from '@/lib/searchParams';
@@ -49,7 +50,7 @@ export async function generateMetadata({
     locale,
     path: `/rent/${slug}`,
     title: `${brand.brand} rent-a-car — iznajmljivanje u Srbiji`,
-    description: `${brand.brand} za izdavanje: ${brand.cars_count} oglasa. Cena po danu, depozit i uslovi iznajmljivanja.`,
+    description: `${brand.brand} za izdavanje: ${countNoun(brand.cars_count, 'listing', locale)}. Cena po danu, depozit i uslovi iznajmljivanja.`,
     noindex: hasActiveFilters(filters) || (filters.page ?? 1) > 1,
   });
 }

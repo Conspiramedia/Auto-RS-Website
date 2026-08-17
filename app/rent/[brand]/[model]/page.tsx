@@ -7,6 +7,7 @@ import type { Metadata } from 'next';
 import ModelPageView, { resolvePair } from '@/components/pages/ModelPageView';
 import type { Locale } from '@/lib/i18n';
 import { fetchSiteBrands, fetchSiteModels } from '@/lib/queries';
+import { countNoun } from '@/lib/plural';
 import { buildMetadata } from '@/lib/seo';
 import type { SearchParams } from '@/lib/searchParams';
 import { hasActiveFilters, parseFilters } from '@/lib/searchParams';
@@ -56,7 +57,7 @@ export async function generateMetadata({
     locale,
     path: `/rent/${brandSlug}/${modelSlug}`,
     title: `${name} rent-a-car — iznajmljivanje po danu`,
-    description: `${name} za izdavanje: ${pair.model.cars_count} oglasa. Cena po danu, depozit, preuzimanje u gradu.`,
+    description: `${name} za izdavanje: ${countNoun(pair.model.cars_count, 'listing', locale)}. Cena po danu, depozit, preuzimanje u gradu.`,
     noindex: hasActiveFilters(filters) || (filters.page ?? 1) > 1,
   });
 }

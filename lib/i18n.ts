@@ -58,7 +58,7 @@ export const dict = {
     catalog_filters: 'Filteri',
     catalog_sort: 'Sortiranje',
     catalog_reset: 'Poništi filtere',
-    catalog_found: 'Pronađeno oglasa',
+    catalog_found: 'Pronađeno',
     catalog_apply: 'Prikaži rezultate',
     catalog_page: 'Strana',
 
@@ -209,7 +209,7 @@ export const dict = {
     catalog_filters: 'Фильтры',
     catalog_sort: 'Сортировка',
     catalog_reset: 'Сбросить фильтры',
-    catalog_found: 'Найдено объявлений',
+    catalog_found: 'Найдено',
     catalog_apply: 'Показать результаты',
     catalog_page: 'Страница',
 

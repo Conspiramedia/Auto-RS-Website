@@ -15,6 +15,7 @@ import Pagination from './Pagination';
 import SortSelect from './SortSelect';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
+import { countNoun } from '@/lib/plural';
 import type { CatalogFilters, CatalogResult } from '@/lib/queries';
 import { hasActiveFilters } from '@/lib/searchParams';
 import type { ListingType, SiteBrand, SiteCity } from '@/lib/types';
@@ -120,7 +121,7 @@ export default function CatalogView({
             lockedType={lockedType}
           />
           <span className="hidden shrink-0 text-sm text-black/50 sm:inline">
-            {t('catalog_found')}: {result.total}
+            {t('catalog_found')}: {countNoun(result.total, 'listing', locale)}
           </span>
         </div>
 

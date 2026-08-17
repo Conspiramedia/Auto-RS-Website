@@ -46,12 +46,21 @@ export default function SiteHeader({ locale, pathname }: Props) {
           {brand.name}
         </Link>
 
-        {/* Каталог — единственная ссылка в шапке: это основной раздел,
-            и с любой страницы к нему нужен путь в один клик. Скрыт на
-            самых узких экранах, где важнее CTA. */}
+        {/* Разделы сайта. Показываются только на десктопе (sm:flex):
+            на мобильном места нет, там навигация живёт в подвале, а в
+            шапке остаётся лого + язык + CTA. */}
         <nav className="hidden flex-1 items-center gap-5 text-sm sm:flex">
           <Link href={localeHref(locale, '/cars')} className="hover:underline">
             {t('nav_catalog')}
+          </Link>
+          <Link href={localeHref(locale, '/rent')} className="hover:underline">
+            {t('nav_rent')}
+          </Link>
+          <Link href={localeHref(locale, '/dealers')} className="hover:underline">
+            {t('nav_dealers')}
+          </Link>
+          <Link href={localeHref(locale, '/app')} className="hover:underline">
+            {t('nav_app')}
           </Link>
         </nav>
 

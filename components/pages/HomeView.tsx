@@ -15,6 +15,7 @@ import SiteHeader from '@/components/SiteHeader';
 import SmartBanner from '@/components/SmartBanner';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
+import { nounFor } from '@/lib/plural';
 import { fetchCatalog, fetchSiteBrands, fetchSiteStats } from '@/lib/queries';
 
 export default async function HomeView({ locale }: { locale: Locale }) {
@@ -61,19 +62,23 @@ export default async function HomeView({ locale }: { locale: Locale }) {
               </Link>
             </div>
 
+            {/* Подписи склоняются по числу: «29 автомобилей», но
+                «21 автомобиль» и «11 городов». Раньше сюда подставлялись
+                названия разделов меню («Автомобили», «Город»), из-за чего
+                получалось «11 город». */}
             {stats.cars_total > 0 && (
               <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3 text-sm text-black/60">
                 <span>
                   <strong className="text-brand-dark">{stats.cars_total}</strong>{' '}
-                  {t('nav_catalog').toLowerCase()}
+                  {nounFor(stats.cars_total, 'car', locale)}
                 </span>
                 <span>
                   <strong className="text-brand-dark">{stats.brands_total}</strong>{' '}
-                  {t('home_brands').toLowerCase()}
+                  {nounFor(stats.brands_total, 'brand', locale)}
                 </span>
                 <span>
                   <strong className="text-brand-dark">{stats.cities_total}</strong>{' '}
-                  {t('filter_city').toLowerCase()}
+                  {nounFor(stats.cities_total, 'city', locale)}
                 </span>
               </div>
             )}

@@ -7,6 +7,7 @@ import type { Metadata } from 'next';
 import BrandPageView, { resolveBrand } from '@/components/pages/BrandPageView';
 import type { Locale } from '@/lib/i18n';
 import { fetchSiteBrands } from '@/lib/queries';
+import { countNoun } from '@/lib/plural';
 import { buildMetadata } from '@/lib/seo';
 import type { SearchParams } from '@/lib/searchParams';
 import { hasActiveFilters, parseFilters } from '@/lib/searchParams';
@@ -45,7 +46,7 @@ export async function generateMetadata({
     locale,
     path: `/rent/${slug}`,
     title: `${brand.brand} в аренду — прокат автомобилей в Сербии`,
-    description: `${brand.brand} в аренду: ${brand.cars_count} объявлений. Цена за сутки, залог и условия проката.`,
+    description: `${brand.brand} в аренду: ${countNoun(brand.cars_count, 'listing', locale)}. Цена за сутки, залог и условия проката.`,
     noindex: hasActiveFilters(filters) || (filters.page ?? 1) > 1,
   });
 }

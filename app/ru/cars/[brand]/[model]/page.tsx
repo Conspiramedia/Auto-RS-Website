@@ -7,6 +7,7 @@ import type { Metadata } from 'next';
 import ModelPageView, { resolvePair } from '@/components/pages/ModelPageView';
 import type { Locale } from '@/lib/i18n';
 import { fetchSiteBrands, fetchSiteModels } from '@/lib/queries';
+import { countNoun } from '@/lib/plural';
 import { buildMetadata } from '@/lib/seo';
 import type { SearchParams } from '@/lib/searchParams';
 import { hasActiveFilters, parseFilters } from '@/lib/searchParams';
@@ -55,7 +56,7 @@ export async function generateMetadata({
     locale,
     path: `/cars/${brandSlug}/${modelSlug}`,
     title: `${name} — подержанные автомобили в Сербии`,
-    description: `${name}: ${pair.model.cars_count} объявлений о продаже. Цены, год выпуска и пробег — поиск по городу.`,
+    description: `${name}: ${countNoun(pair.model.cars_count, 'listing', locale)} о продаже. Цены, год выпуска и пробег — поиск по городу.`,
     noindex: hasActiveFilters(filters) || (filters.page ?? 1) > 1,
   });
 }
