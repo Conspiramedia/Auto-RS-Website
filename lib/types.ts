@@ -201,3 +201,44 @@ export type SortKey = (typeof SORT_OPTIONS)[number]['key'];
 export function isSortKey(value: string | undefined): value is SortKey {
   return SORT_OPTIONS.some((o) => o.key === value);
 }
+
+// ------------------------------------------------------------
+// Публичная карточка продавца/автосалона.
+// ------------------------------------------------------------
+// Возвращает RPC get_dealer_profile (миграция 0043). Одна и та же
+// структура для частника и салона: у дилера display_name — название
+// компании и есть logo_url, у частника — имя и аватар.
+export type DealerProfile = {
+  id: string;
+  seller_kind: string;
+  // Имя витрины: название салона либо имя частного продавца.
+  // Пустым не бывает — RPC подставляет запасное значение.
+  display_name: string;
+  logo_url: string | null;
+  avatar_url: string | null;
+  member_since: string;
+  active_cars: number;
+  sold_cars: number;
+};
+
+// Объявление в витрине продавца. RPC get_seller_listings (миграция 0050).
+// Отличается от CatalogCar набором полей: здесь нет характеристик
+// (кузов, коробка, топливо) — витрине они не нужны.
+export type SellerListing = {
+  id: string;
+  brand: string;
+  model: string;
+  year: number;
+  mileage: number | null;
+  city: string;
+  currency: string;
+  sale_price: number | null;
+  rent_price_daily: number | null;
+  is_for_sale: boolean;
+  is_for_rent: boolean;
+  status: string;
+  is_promoted: boolean;
+  site_url: string;
+  photo_url: string | null;
+  created_at: string;
+};

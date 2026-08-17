@@ -91,7 +91,7 @@ export default function SmartBanner({ locale, deepLink }: Props) {
           setVisible(false);
         }}
         className="shrink-0 px-1 text-xl leading-none text-white/60"
-        aria-label="Zatvori"
+        aria-label={t('banner_close')}
       >
         ×
       </button>

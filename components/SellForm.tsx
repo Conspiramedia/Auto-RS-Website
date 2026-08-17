@@ -36,6 +36,7 @@ import {
 } from '@/lib/inputFormat';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
+import PhotoPicker from './PhotoPicker';
 import { fieldClass, fieldClassTextarea } from './ui/Field';
 import Button from './ui/Button';
 import Card from './ui/Card';
@@ -84,6 +85,11 @@ export default function SellForm({ locale }: Props) {
 
   // Шаг 3: фотографии.
   const [files, setFiles] = useState<File[]>([]);
+  // Прогресс отправки фотографий в хранилище, 0..100. Считается по
+  // числу загруженных файлов, а не по байтам: Supabase Storage не
+  // отдаёт события прогресса отдельного запроса, а по файлам
+  // индикатор всё равно движется предсказуемо.
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // Шаг 4: телефон и код.
   const [phone, setPhone] = useState('');
@@ -315,8 +321,13 @@ export default function SellForm({ locale }: Props) {
       // 2) Загрузка фотографий. Путь ОБЯЗАН начинаться с uid: политика
       // car_images_insert_own разрешает запись только в свою папку.
       const photoUrls: string[] = [];
+      setUploadProgress(0);
+
       for (const [i, file] of files.entries()) {
         const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+        // Индекс в имени файла сохраняет ПОРЯДОК, который продавец
+        // задал в PhotoPicker: photoUrls уходит в create_car_v3 массивом,
+        // и первая ссылка становится обложкой объявления.
         const path = `${uid}/${Date.now()}_${i}.${ext}`;
 
         const { error: uploadError } = await supabase.storage
@@ -328,6 +339,10 @@ export default function SellForm({ locale }: Props) {
           .from('car-images')
           .getPublicUrl(path);
         photoUrls.push(pub.publicUrl);
+
+        // Прогресс после КАЖДОГО файла: при 15 снимках это единственная
+        // обратная связь на протяжении десятков секунд.
+        setUploadProgress(Math.round(((i + 1) / files.length) * 100));
       }
 
       stage = 'create';
@@ -456,6 +471,16 @@ export default function SellForm({ locale }: Props) {
     }
 
     return null;
+  }
+
+  // Переход с шага фотографий на шаг контактов.
+  function goToContacts() {
+    if (files.length === 0) {
+      setError(t('sell_err_photos_required'));
+      return;
+    }
+    setError(null);
+    setStep(4);
   }
 
   // Переход со второго шага с проверкой.
@@ -742,25 +767,23 @@ export default function SellForm({ locale }: Props) {
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">{t('sell_step_photos')}</h2>
 
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={(e) => {
-              const picked = Array.from(e.target.files ?? []);
-              setFiles(picked.slice(0, MAX_PHOTOS));
-            }}
-            className={field}
+          <PhotoPicker
+            locale={locale}
+            files={files}
+            onChange={setFiles}
+            maxPhotos={MAX_PHOTOS}
           />
-          <p className="text-sm text-neutral-50">
-            {files.length} / {MAX_PHOTOS}
-          </p>
 
           <div className="flex gap-3">
             <Button variant="secondary" onClick={() => setStep(2)}>
               {t('sell_back')}
             </Button>
-            <Button onClick={() => setStep(4)} className="flex-1">
+            {/* Без единой фотографии дальше не пускаем: объявление без
+                снимков в каталоге показывается серой заглушкой и почти
+                не получает откликов. Проверка именно здесь, а не при
+                отправке, — иначе продавец узнал бы о ней после ввода
+                телефона и SMS-кода. */}
+            <Button onClick={goToContacts} className="flex-1">
               {t('sell_next')}
             </Button>
           </div>
@@ -918,6 +941,25 @@ export default function SellForm({ locale }: Props) {
                     : t('otp_verifying')
                   : t('sell_submit')}
               </Button>
+
+              {/* Прогресс отправки фотографий. Загрузка идёт ПОСЛЕ
+                  подтверждения кода (нужна сессия для RLS), то есть
+                  на этом шаге, а не на шаге выбора файлов. Без него
+                  публикация 15 снимков выглядит как зависшая кнопка. */}
+              {busy && phoneVerified && files.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between text-caption text-neutral-60">
+                    <span>{t('sell_photos_uploading')}</span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                  <div className="mt-1.5 h-2 overflow-hidden rounded-pill bg-surface-muted">
+                    <div
+                      className="h-full rounded-pill bg-brand-green transition-[width] duration-normal ease-out"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
             </>
           )}
 

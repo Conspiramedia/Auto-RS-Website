@@ -9,39 +9,16 @@ import SmartBanner from '@/components/SmartBanner';
 import { appIds, brand } from '@/lib/brand';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
+import type { DictKey } from '@/lib/i18n';
 import { siteBaseUrl } from '@/lib/supabase';
 
-// Преимущества приложения. Тексты специфичны для этой страницы.
-const FEATURES: Record<Locale, { title: string; text: string }[]> = {
-  sr: [
-    {
-      title: 'Poruke i pozivi',
-      text: 'Kontaktirajte prodavca direktno — bez deljenja ličnog broja.',
-    },
-    {
-      title: 'Obaveštenja',
-      text: 'Sačuvajte pretragu i saznajte prvi kada se pojavi odgovarajući automobil.',
-    },
-    {
-      title: 'Sniženja cena',
-      text: 'Obavestićemo vas kada prodavac snizi cenu automobila koji pratite.',
-    },
-  ],
-  ru: [
-    {
-      title: 'Сообщения и звонки',
-      text: 'Свяжитесь с продавцом напрямую — не раскрывая личный номер.',
-    },
-    {
-      title: 'Уведомления',
-      text: 'Сохраните поиск и узнайте первым, когда появится подходящий автомобиль.',
-    },
-    {
-      title: 'Снижение цены',
-      text: 'Сообщим, когда продавец снизит цену на отслеживаемый автомобиль.',
-    },
-  ],
-};
+// Преимущества приложения. Ключи словаря — по той же причине, что и
+// выгоды на /dealers: тексты интерфейса живут в одном месте.
+const FEATURES: { title: DictKey; text: DictKey }[] = [
+  { title: 'app_feature_1_title', text: 'app_feature_1_text' },
+  { title: 'app_feature_2_title', text: 'app_feature_2_text' },
+  { title: 'app_feature_3_title', text: 'app_feature_3_text' },
+];
 
 export default function AppPageView({ locale }: { locale: Locale }) {
   const t = getT(locale);
@@ -59,10 +36,10 @@ export default function AppPageView({ locale }: { locale: Locale }) {
 
         <div className="mt-8 grid gap-8 sm:grid-cols-[1fr_auto]">
           <div className="space-y-5">
-            {FEATURES[locale].map((f) => (
+            {FEATURES.map((f) => (
               <div key={f.title}>
-                <h2 className="font-semibold">{f.title}</h2>
-                <p className="text-neutral-60">{f.text}</p>
+                <h2 className="font-semibold">{t(f.title)}</h2>
+                <p className="text-neutral-60">{t(f.text)}</p>
               </div>
             ))}
 

@@ -8,39 +8,17 @@ import SiteHeader from '@/components/SiteHeader';
 import SmartBanner from '@/components/SmartBanner';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
+import type { DictKey } from '@/lib/i18n';
 
-// Выгоды для салона. Держим здесь: они специфичны для оффера и в общий
-// словарь интерфейса не просятся.
-const BENEFITS: Record<Locale, { title: string; text: string }[]> = {
-  sr: [
-    {
-      title: 'Prva 3 meseca besplatno',
-      text: 'Objavite ceo vozni park bez naknade i procenite rezultat.',
-    },
-    {
-      title: 'Stranica autosalona',
-      text: 'Svi vaši automobili na jednom mestu, sa logotipom i nazivom salona.',
-    },
-    {
-      title: 'Kupci iz cele Srbije',
-      text: 'Oglasi su vidljivi i na sajtu i u mobilnoj aplikaciji.',
-    },
-  ],
-  ru: [
-    {
-      title: 'Первые 3 месяца бесплатно',
-      text: 'Разместите весь автопарк без оплаты и оцените результат.',
-    },
-    {
-      title: 'Страница автосалона',
-      text: 'Все ваши автомобили в одном месте, с логотипом и названием салона.',
-    },
-    {
-      title: 'Покупатели со всей Сербии',
-      text: 'Объявления видны и на сайте, и в мобильном приложении.',
-    },
-  ],
-};
+// Выгоды для салона. Ключи словаря, а не готовый текст: раньше здесь
+// лежал объект с обеими локалями, и правка формулировки требовала
+// открывать компонент вместо словаря — то есть строки жили в двух
+// разных местах проекта.
+const BENEFITS: { title: DictKey; text: DictKey }[] = [
+  { title: 'dealers_benefit_1_title', text: 'dealers_benefit_1_text' },
+  { title: 'dealers_benefit_2_title', text: 'dealers_benefit_2_text' },
+  { title: 'dealers_benefit_3_title', text: 'dealers_benefit_3_text' },
+];
 
 export default function DealersPageView({ locale }: { locale: Locale }) {
   const t = getT(locale);
@@ -57,10 +35,10 @@ export default function DealersPageView({ locale }: { locale: Locale }) {
         </p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          {BENEFITS[locale].map((b) => (
+          {BENEFITS.map((b) => (
             <div key={b.title} className="rounded-card border border-neutral-10 p-4">
-              <h2 className="font-semibold">{b.title}</h2>
-              <p className="mt-1 text-sm text-neutral-60">{b.text}</p>
+              <h2 className="font-semibold">{t(b.title)}</h2>
+              <p className="mt-1 text-sm text-neutral-60">{t(b.text)}</p>
             </div>
           ))}
         </div>

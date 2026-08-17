@@ -347,6 +347,84 @@ export const dict = {
     nav_faq: 'Česta pitanja',
     nav_menu: 'Meni',
     nav_menu_close: 'Zatvori meni',
+    // Закрытие смарт-баннера. Раньше строка была зашита по-сербски
+    // прямо в компоненте и в русской локали читалась как чужая.
+    banner_close: 'Zatvori',
+
+    // ------------------------------------------------------------
+    // /dealers — выгоды для автосалона.
+    // ------------------------------------------------------------
+    dealers_benefit_1_title: 'Prva 3 meseca besplatno',
+    dealers_benefit_1_text:
+      'Objavite ceo vozni park bez naknade i procenite rezultat.',
+    dealers_benefit_2_title: 'Stranica autosalona',
+    dealers_benefit_2_text:
+      'Svi vaši automobili na jednom mestu, sa logotipom i nazivom salona.',
+    dealers_benefit_3_title: 'Kupci iz cele Srbije',
+    dealers_benefit_3_text:
+      'Oglasi su vidljivi i na sajtu i u mobilnoj aplikaciji.',
+
+    // Форма заявки автосалона.
+    dealers_company: 'Naziv autosalona',
+    dealers_contact: 'Kontakt osoba',
+    dealers_comment: 'Komentar',
+    dealers_sent_title: 'Zahtev je poslat',
+    dealers_sent_text: 'Kontaktiraćemo vas u najkraćem roku.',
+    dealers_err_company: 'Unesite naziv autosalona.',
+    dealers_err_contact: 'Unesite ime kontakt osobe.',
+    dealers_err_phone: 'Proverite broj telefona.',
+    dealers_err_too_long: 'Neko od polja je predugačko.',
+    dealers_err_rate:
+      'Već ste poslali zahtev sa ovog broja. Pokušajte ponovo sutra.',
+    dealers_err_unknown: 'Došlo je do greške. Pokušajte ponovo.',
+
+    // ------------------------------------------------------------
+    // /app — преимущества приложения.
+    // ------------------------------------------------------------
+    app_feature_1_title: 'Poruke i pozivi',
+    app_feature_1_text:
+      'Kontaktirajte prodavca direktno — bez deljenja ličnog broja.',
+    app_feature_2_title: 'Obaveštenja',
+    app_feature_2_text:
+      'Sačuvajte pretragu i saznajte prvi kada se pojavi odgovarajući automobil.',
+    app_feature_3_title: 'Sniženja cena',
+    app_feature_3_text:
+      'Obavestićemo vas kada prodavac snizi cenu automobila koji pratite.',
+
+    // ------------------------------------------------------------
+    // Страница продавца / автосалона.
+    // ------------------------------------------------------------
+    dealer_page_since: 'Na platformi od',
+    dealer_page_active: 'Aktivnih oglasa',
+    dealer_page_sold: 'Prodato',
+    dealer_page_listings: 'Oglasi',
+    dealer_page_sold_title: 'Nedavno prodato',
+    dealer_page_empty_title: 'Nema aktivnih oglasa',
+    dealer_page_empty_text:
+      'Ovaj prodavac trenutno nema objavljenih automobila. Pogledajte druge oglase u katalogu.',
+    dealer_page_meta_desc_prefix: 'Automobili prodavca',
+
+    // ------------------------------------------------------------
+    // Недавно просмотренные объявления.
+    // ------------------------------------------------------------
+    recent_title: 'Nedavno pregledano',
+    recent_clear: 'Obriši istoriju',
+
+    // ------------------------------------------------------------
+    // Фотографии в форме подачи.
+    // ------------------------------------------------------------
+    sell_photos_add: 'Dodaj fotografije',
+    sell_photos_hint:
+      'JPG, PNG ili WebP, do 10 MB. Prva fotografija je naslovna.',
+    sell_photos_cover: 'Naslovna',
+    sell_photos_move_left: 'Pomeri levo',
+    sell_photos_move_right: 'Pomeri desno',
+    sell_photos_remove: 'Ukloni fotografiju',
+    sell_photos_uploading: 'Otpremanje fotografija',
+    sell_err_photos_required: 'Dodajte bar jednu fotografiju automobila.',
+    sell_err_photo_type: 'Podržani su samo JPG, PNG i WebP formati.',
+    sell_err_photo_size: 'Fotografija je prevelika — najviše 10 MB.',
+    sell_err_photos_max: 'Najviše 15 fotografija.',
 
     // ------------------------------------------------------------
     // /about — о площадке.
@@ -705,6 +783,81 @@ export const dict = {
     nav_faq: 'Вопросы',
     nav_menu: 'Меню',
     nav_menu_close: 'Закрыть меню',
+    banner_close: 'Закрыть',
+
+    // ------------------------------------------------------------
+    // /dealers — выгоды для автосалона.
+    // ------------------------------------------------------------
+    dealers_benefit_1_title: 'Первые 3 месяца бесплатно',
+    dealers_benefit_1_text:
+      'Разместите весь автопарк без оплаты и оцените результат.',
+    dealers_benefit_2_title: 'Страница автосалона',
+    dealers_benefit_2_text:
+      'Все ваши автомобили в одном месте, с логотипом и названием салона.',
+    dealers_benefit_3_title: 'Покупатели со всей Сербии',
+    dealers_benefit_3_text:
+      'Объявления видны и на сайте, и в мобильном приложении.',
+
+    // Форма заявки автосалона.
+    dealers_company: 'Название автосалона',
+    dealers_contact: 'Контактное лицо',
+    dealers_comment: 'Комментарий',
+    dealers_sent_title: 'Заявка отправлена',
+    dealers_sent_text: 'Свяжемся с вами в ближайшее время.',
+    dealers_err_company: 'Укажите название автосалона.',
+    dealers_err_contact: 'Укажите имя контактного лица.',
+    dealers_err_phone: 'Проверьте номер телефона.',
+    dealers_err_too_long: 'Одно из полей слишком длинное.',
+    dealers_err_rate: 'С этого номера заявка уже отправлена. Попробуйте завтра.',
+    dealers_err_unknown: 'Произошла ошибка. Попробуйте ещё раз.',
+
+    // ------------------------------------------------------------
+    // /app — преимущества приложения.
+    // ------------------------------------------------------------
+    app_feature_1_title: 'Сообщения и звонки',
+    app_feature_1_text:
+      'Свяжитесь с продавцом напрямую — не раскрывая личный номер.',
+    app_feature_2_title: 'Уведомления',
+    app_feature_2_text:
+      'Сохраните поиск и узнайте первым, когда появится подходящий автомобиль.',
+    app_feature_3_title: 'Снижение цены',
+    app_feature_3_text:
+      'Сообщим, когда продавец снизит цену на отслеживаемый автомобиль.',
+
+    // ------------------------------------------------------------
+    // Страница продавца / автосалона.
+    // ------------------------------------------------------------
+    dealer_page_since: 'На площадке с',
+    dealer_page_active: 'Активных объявлений',
+    dealer_page_sold: 'Продано',
+    dealer_page_listings: 'Объявления',
+    dealer_page_sold_title: 'Недавно продано',
+    dealer_page_empty_title: 'Нет активных объявлений',
+    dealer_page_empty_text:
+      'У этого продавца сейчас нет опубликованных автомобилей. Посмотрите другие объявления в каталоге.',
+    dealer_page_meta_desc_prefix: 'Автомобили продавца',
+
+    // ------------------------------------------------------------
+    // Недавно просмотренные объявления.
+    // ------------------------------------------------------------
+    recent_title: 'Недавно просмотренные',
+    recent_clear: 'Очистить историю',
+
+    // ------------------------------------------------------------
+    // Фотографии в форме подачи.
+    // ------------------------------------------------------------
+    sell_photos_add: 'Добавить фотографии',
+    sell_photos_hint:
+      'JPG, PNG или WebP, до 10 МБ. Первая фотография — главная.',
+    sell_photos_cover: 'Главная',
+    sell_photos_move_left: 'Сдвинуть влево',
+    sell_photos_move_right: 'Сдвинуть вправо',
+    sell_photos_remove: 'Удалить фотографию',
+    sell_photos_uploading: 'Загрузка фотографий',
+    sell_err_photos_required: 'Добавьте хотя бы одну фотографию автомобиля.',
+    sell_err_photo_type: 'Поддерживаются только форматы JPG, PNG и WebP.',
+    sell_err_photo_size: 'Фотография слишком большая — не больше 10 МБ.',
+    sell_err_photos_max: 'Не больше 15 фотографий.',
 
     // ------------------------------------------------------------
     // /about — о площадке.

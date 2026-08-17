@@ -10,6 +10,7 @@
 import Link from 'next/link';
 
 import CarCard from '@/components/CarCard';
+import RecentlyViewed from '@/components/RecentlyViewed';
 import Button from '@/components/ui/Button';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
@@ -195,6 +196,11 @@ export default async function HomeView({ locale }: { locale: Locale }) {
             </div>
           </section>
         )}
+
+        {/* Недавно просмотренные. Рендерится только у тех, кто уже
+            открывал объявления, — у нового посетителя блок пуст и
+            не появляется вовсе. */}
+        <RecentlyViewed locale={locale} />
 
         {/* Оффер дилерам — вторая аудитория продавцов. */}
         <section className="border-t border-neutral-10 bg-surface-subtle">

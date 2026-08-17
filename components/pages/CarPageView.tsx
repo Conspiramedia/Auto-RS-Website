@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation';
 
 import AppQr from '@/components/AppQr';
 import CarCard from '@/components/CarCard';
+import RecentlyViewed from '@/components/RecentlyViewed';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
@@ -111,10 +112,23 @@ export default async function CarPageView({
         }}
       />
 
-      {/* Отметка просмотра. Ничего не рендерит — только событие. */}
+      {/* Отметка просмотра: событие аналитики и запись в историю.
+          Ничего не рендерит. */}
       <TrackCardView
-        brand={car.brand}
-        model={car.model}
+        car={{
+          id: car.id,
+          brand: car.brand,
+          model: car.model,
+          year: car.year,
+          mileage: car.mileage,
+          currency: car.currency,
+          sale_price: car.sale_price,
+          rent_price_daily: car.rent_price_daily,
+          is_for_sale: car.is_for_sale,
+          is_for_rent: car.is_for_rent,
+          city: car.city,
+          photo_url: images[0]?.image_url ?? null,
+        }}
         listingType={mode}
       />
 
@@ -273,7 +287,16 @@ export default async function CarPageView({
 
               <div className="mt-4 border-t border-neutral-10 pt-4">
                 <div className="text-sm text-neutral-50">{t('car_seller')}</div>
-                <div className="font-semibold">{car.seller_name}</div>
+                {/* Имя продавца ведёт на его витрину: у салона там весь
+                    автопарк, и это заметно увеличивает глубину просмотра.
+                    Ссылка нужна и краулеру — иначе страницы /dealer/{id}
+                    не имели бы ни одной входящей ссылки с сайта. */}
+                <Link
+                  href={localeHref(locale, `/dealer/${car.user_id}`)}
+                  className="font-semibold hover:text-brand-primary hover:underline"
+                >
+                  {car.seller_name}
+                </Link>
                 <div className="text-sm text-neutral-50">
                   {car.seller_kind === 'dealer'
                     ? t('car_seller_dealer')
@@ -328,6 +351,12 @@ export default async function CarPageView({
           </section>
         )}
       </main>
+
+      {/* Недавно просмотренные. Текущее объявление исключается: ссылка
+          на страницу, где человек находится, бесполезна. Блок вне
+          <main> — он не часть содержимого этой страницы, а навигация
+          по личной истории. */}
+      <RecentlyViewed locale={locale} excludeId={car.id} />
 
       <SiteFooter locale={locale} />
     </>

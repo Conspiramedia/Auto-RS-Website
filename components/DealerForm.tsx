@@ -12,36 +12,28 @@ import { useState } from 'react';
 
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
+import type { DictKey } from '@/lib/i18n';
+import { CITIES } from '@/lib/referenceData';
 import { getBrowserClient } from '@/lib/supabaseClient';
 import { trackEvent } from '@/lib/analytics';
 import { formatSerbianPhone, serbianPhoneToE164 } from '@/lib/inputFormat';
 import { fieldClass, fieldClassTextarea } from './ui/Field';
 import Button from './ui/Button';
+import ListPicker, { type PickerOption } from './ListPicker';
 
 type Props = {
   locale: Locale;
 };
 
-// Тексты ошибок по кодам, которые возвращает RPC.
-const ERRORS: Record<Locale, Record<string, string>> = {
-  sr: {
-    invalid_company: 'Unesite naziv autosalona.',
-    invalid_contact: 'Unesite ime kontakt osobe.',
-    invalid_phone: 'Proverite broj telefona.',
-    too_long: 'Neko od polja je predugačko.',
-    rate_limited:
-      'Već ste poslali zahtev sa ovog broja. Pokušajte ponovo sutra.',
-    unknown: 'Došlo je do greške. Pokušajte ponovo.',
-  },
-  ru: {
-    invalid_company: 'Укажите название автосалона.',
-    invalid_contact: 'Укажите имя контактного лица.',
-    invalid_phone: 'Проверьте номер телефона.',
-    too_long: 'Одно из полей слишком длинное.',
-    rate_limited:
-      'С этого номера заявка уже отправлена. Попробуйте завтра.',
-    unknown: 'Произошла ошибка. Попробуйте ещё раз.',
-  },
+// Код ошибки RPC → ключ словаря. Раньше здесь лежала своя таблица
+// переводов на обе локали — вторая система локализации рядом с dict.
+// Теперь как в ContactForm: одна таблица соответствий, тексты в словаре.
+const ERROR_KEY: Record<string, DictKey> = {
+  invalid_company: 'dealers_err_company',
+  invalid_contact: 'dealers_err_contact',
+  invalid_phone: 'dealers_err_phone',
+  too_long: 'dealers_err_too_long',
+  rate_limited: 'dealers_err_rate',
 };
 
 export default function DealerForm({ locale }: Props) {
@@ -96,7 +88,7 @@ export default function DealerForm({ locale }: Props) {
       if (rpcError) throw new Error(rpcError.message);
 
       if (data && data.ok === false) {
-        setError(ERRORS[locale][data.error] ?? ERRORS[locale].unknown);
+        setError(t(ERROR_KEY[data.error] ?? 'dealers_err_unknown'));
         return;
       }
 
@@ -104,7 +96,7 @@ export default function DealerForm({ locale }: Props) {
       trackEvent('dealer_lead_submitted');
       setSent(true);
     } catch {
-      setError(ERRORS[locale].unknown);
+      setError(t('dealers_err_unknown'));
     } finally {
       setBusy(false);
     }
@@ -114,12 +106,10 @@ export default function DealerForm({ locale }: Props) {
     return (
       <div className="rounded-card border border-neutral-10 p-6 text-center">
         <h2 className="text-lg font-semibold">
-          {locale === 'ru' ? 'Заявка отправлена' : 'Zahtev je poslat'}
+          {t('dealers_sent_title')}
         </h2>
         <p className="mt-2 text-neutral-60">
-          {locale === 'ru'
-            ? 'Свяжемся с вами в ближайшее время.'
-            : 'Kontaktiraćemo vas u najkraćem roku.'}
+          {t('dealers_sent_text')}
         </p>
       </div>
     );
@@ -150,7 +140,7 @@ export default function DealerForm({ locale }: Props) {
 
       <div>
         <label className="mb-1 block text-sm text-neutral-60">
-          {locale === 'ru' ? 'Название автосалона' : 'Naziv autosalona'}
+          {t('dealers_company')}
         </label>
         <input
           type="text"
@@ -165,7 +155,7 @@ export default function DealerForm({ locale }: Props) {
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className="mb-1 block text-sm text-neutral-60">
-            {locale === 'ru' ? 'Контактное лицо' : 'Kontakt osoba'}
+            {t('dealers_contact')}
           </label>
           <input
             type="text"
@@ -208,23 +198,24 @@ export default function DealerForm({ locale }: Props) {
           />
         </div>
 
-        <div>
-          <label className="mb-1 block text-sm text-neutral-60">
-            {t('filter_city')}
-          </label>
-          <input
-            type="text"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            maxLength={100}
-            className={field}
-          />
-        </div>
+        {/* Город — выбор из списка, как в остальных формах сайта и в
+            приложении. Свободный ввод давал разнописания одного города
+            («Beograd», «beograd», «Белград»), и заявки салонов из одного
+            места переставали группироваться при разборе. */}
+        <ListPicker
+          locale={locale}
+          name="dealer_city"
+          label={t('filter_city')}
+          options={CITIES.map((c): PickerOption => ({ value: c, label: c }))}
+          value={city}
+          allowCustom
+          onChange={setCity}
+        />
       </div>
 
       <div>
         <label className="mb-1 block text-sm text-neutral-60">
-          {locale === 'ru' ? 'Комментарий' : 'Komentar'}
+          {t('dealers_comment')}
         </label>
         <textarea
           value={comment}

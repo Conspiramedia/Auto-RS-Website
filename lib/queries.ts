@@ -22,6 +22,8 @@ import type {
   SiteModel,
   SiteStats,
   SortKey,
+  DealerProfile,
+  SellerListing,
 } from './types';
 
 // Набор фильтров каталога. Все поля необязательны: пустой объект —
@@ -307,4 +309,50 @@ export async function fetchSitemapCars(
     is_for_sale: boolean;
     is_for_rent: boolean;
   }[];
+}
+
+// ------------------------------------------------------------
+// Публичная карточка продавца. RPC get_dealer_profile (миграция 0043).
+// ------------------------------------------------------------
+// null — профиля нет: страница отдаст 404. Ошибку RPC не глушим:
+// пустая страница дилера вместо ошибки скрыла бы поломку бэкенда.
+export async function fetchDealerProfile(
+  userId: string,
+): Promise<DealerProfile | null> {
+  const { data, error } = await supabase.rpc('get_dealer_profile', {
+    p_user_id: userId,
+  });
+
+  if (error) {
+    throw new Error(`Ошибка загрузки профиля продавца: ${error.message}`);
+  }
+
+  const rows = (data ?? []) as DealerProfile[];
+  return rows[0] ?? null;
+}
+
+// ------------------------------------------------------------
+// Витрина продавца. RPC get_seller_listings (миграция 0050).
+// ------------------------------------------------------------
+// status: 'active' — витрина, 'sold' — блок «недавно продано».
+// Белый список статусов зашит в самой RPC, поэтому передать
+// 'moderation' и увидеть чужие непроверенные объявления нельзя.
+export async function fetchSellerListings(
+  userId: string,
+  status: 'active' | 'sold' = 'active',
+  limit = 24,
+  offset = 0,
+): Promise<SellerListing[]> {
+  const { data, error } = await supabase.rpc('get_seller_listings', {
+    p_user_id: userId,
+    p_status: status,
+    p_limit: limit,
+    p_offset: offset,
+  });
+
+  // Блок «недавно продано» второстепенен: если он не загрузился,
+  // витрина обязана открыться. Поэтому ошибку не бросаем.
+  if (error) return [];
+
+  return (data ?? []) as SellerListing[];
 }
