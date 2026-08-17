@@ -13,6 +13,7 @@ import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import {
   fetchCatalog,
+  fetchCatalogModels,
   fetchSiteBrands,
   fetchSiteCities,
   fetchSiteModels,
@@ -68,10 +69,12 @@ export default async function ModelPageView({
     listingType: mode,
   };
 
-  const [result, brands, cities] = await Promise.all([
+  const [result, brands, cities, allModels] = await Promise.all([
     fetchCatalog(filters),
     fetchSiteBrands(mode),
     fetchSiteCities(mode),
+    // Полный справочник моделей марки — для выпадающего фильтра.
+    fetchCatalogModels(brand.brand),
   ]);
 
   const name = `${brand.brand} ${model.model}`;
@@ -122,6 +125,7 @@ export default async function ModelPageView({
           result={result}
           brands={brands}
           cities={cities}
+          models={allModels}
           basePath={`${root}/${brandSlug}/${modelSlug}`}
           mode={mode}
         />

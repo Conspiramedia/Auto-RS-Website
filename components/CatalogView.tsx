@@ -28,6 +28,9 @@ type Props = {
   result: CatalogResult;
   brands: SiteBrand[];
   cities: SiteCity[];
+  // Модели выбранной марки для каскадного фильтра. Пусто, когда марка
+  // не выбрана.
+  models?: { id: string; name: string }[];
   // Базовый путь без префикса локали: '/cars' | '/rent/bmw' | '/cars/bmw/x5'.
   basePath: string;
   // Витрина: определяет, какая цена показывается в карточках и какой
@@ -43,6 +46,7 @@ export default function CatalogView({
   result,
   brands,
   cities,
+  models = [],
   basePath,
   mode = 'sale',
 }: Props) {
@@ -84,6 +88,7 @@ export default function CatalogView({
             filters={filters}
             brands={brands}
             cities={cities}
+            models={models}
             action={basePath}
             activeCount={activeCount}
             mode={mode}

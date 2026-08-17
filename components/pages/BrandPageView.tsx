@@ -13,6 +13,7 @@ import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import {
   fetchCatalog,
+  fetchCatalogModels,
   fetchSiteBrands,
   fetchSiteCities,
   fetchSiteModels,
@@ -58,11 +59,16 @@ export default async function BrandPageView({
     listingType: mode,
   };
 
-  const [result, brands, cities, models] = await Promise.all([
+  const [result, brands, cities, models, allModels] = await Promise.all([
     fetchCatalog(filters),
     fetchSiteBrands(mode),
     fetchSiteCities(mode),
+    // models — для блока перелинковки: только модели с объявлениями
+    // (страницы без контента создавать нельзя).
     fetchSiteModels(brand.brand, mode),
+    // allModels — для выпадающего фильтра: полный справочник марки,
+    // как в приложении.
+    fetchCatalogModels(brand.brand),
   ]);
 
   const breadcrumb = buildBreadcrumbJsonLd([
@@ -99,6 +105,7 @@ export default async function BrandPageView({
           result={result}
           brands={brands}
           cities={cities}
+          models={allModels}
           basePath={`${root}/${slug}`}
           mode={mode}
         />

@@ -8,7 +8,12 @@ import SiteHeader from '@/components/SiteHeader';
 import SmartBanner from '@/components/SmartBanner';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
-import { fetchCatalog, fetchSiteBrands, fetchSiteCities } from '@/lib/queries';
+import {
+  fetchCatalog,
+  fetchCatalogModels,
+  fetchSiteBrands,
+  fetchSiteCities,
+} from '@/lib/queries';
 import type { SearchParams } from '@/lib/searchParams';
 import { parseFilters } from '@/lib/searchParams';
 
@@ -31,10 +36,13 @@ export default async function CatalogPageView({
 
   // Три независимых запроса — параллельно: последовательные утроили бы
   // время ответа страницы.
-  const [result, brands, cities] = await Promise.all([
+  const [result, brands, cities, models] = await Promise.all([
     fetchCatalog(filters),
     fetchSiteBrands(mode),
     fetchSiteCities(mode),
+    // Модели грузим только когда марка выбрана: иначе список пуст и
+    // лишний запрос к БД не нужен.
+    filters.brand ? fetchCatalogModels(filters.brand) : Promise.resolve([]),
   ]);
 
   return (
@@ -50,6 +58,7 @@ export default async function CatalogPageView({
           result={result}
           brands={brands}
           cities={cities}
+          models={models}
           basePath={basePath}
           mode={mode}
         />

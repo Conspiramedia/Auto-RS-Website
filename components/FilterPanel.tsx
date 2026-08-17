@@ -17,14 +17,23 @@ import { useState } from 'react';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import type { CatalogFilters } from '@/lib/queries';
+import { BRANDS, CITIES, YEAR_MIN, yearMax } from '@/lib/referenceData';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import type { ListingType, SiteBrand, SiteCity } from '@/lib/types';
 
 type Props = {
   locale: Locale;
   filters: CatalogFilters;
+  // Марки и города с активными объявлениями. Используются НЕ как источник
+  // списка, а как источник счётчиков: полный справочник берётся из
+  // lib/referenceData (как в приложении), а счётчик показывается только
+  // там, где объявления действительно есть.
   brands: SiteBrand[];
   cities: SiteCity[];
+  // Модели выбранной марки из полного справочника (get_car_models).
+  // Пустой массив, когда марка не выбрана: без неё список моделей
+  // был бы на несколько тысяч пунктов и бесполезен.
+  models: { id: string; name: string }[];
   // Куда отправлять форму: '/cars', '/rent' или SEO-страница с маркой.
   action: string;
   // Число применённых фильтров для счётчика на кнопке.
@@ -39,6 +48,7 @@ export default function FilterPanel({
   filters,
   brands,
   cities,
+  models,
   action,
   activeCount,
   mode = 'sale',
@@ -48,6 +58,35 @@ export default function FilterPanel({
 
   const field =
     'w-full rounded-control border border-black/15 px-3 py-2 text-sm outline-none focus:border-brand-primary';
+
+  // Счётчики объявлений по марке и городу — для подписи «(12)» рядом с
+  // пунктом списка. Ключ нормализован, чтобы «BMW» из справочника нашёл
+  // счётчик для «bmw» из базы.
+  const brandCounts = new Map(
+    brands.map((b) => [b.brand.trim().toLowerCase(), b.cars_count]),
+  );
+  const cityCounts = new Map(
+    cities.map((c) => [c.city.trim().toLowerCase(), c.cars_count]),
+  );
+
+  // Подпись пункта: с числом объявлений, если они есть, и без него,
+  // если марка сейчас не представлена. Прятать такие пункты нельзя —
+  // это и есть расхождение с приложением, которое чинит эта правка.
+  const withCount = (name: string, counts: Map<string, number>) => {
+    const n = counts.get(name.trim().toLowerCase());
+    return n ? `${name} (${n})` : name;
+  };
+
+  // Марка из адреса SEO-страницы может отсутствовать в справочнике
+  // (продавец ввёл своё название — справочник БД пополняется триггером).
+  // Добавляем её в список, иначе выбранное значение не отобразится.
+  const brandOptions = filters.brand && !BRANDS.includes(filters.brand)
+    ? [...BRANDS, filters.brand].sort((a, b) => a.localeCompare(b))
+    : BRANDS;
+
+  const cityOptions = filters.city && !CITIES.includes(filters.city)
+    ? [...CITIES, filters.city].sort((a, b) => a.localeCompare(b))
+    : CITIES;
 
   return (
     <>
@@ -101,27 +140,50 @@ export default function FilterPanel({
                   </label>
                   <select name="brand" defaultValue={filters.brand ?? ''} className={field}>
                     <option value="">{t('filter_any')}</option>
-                    {brands.map((b) => (
-                      <option key={b.brand_slug} value={b.brand}>
-                        {b.brand} ({b.cars_count})
+                    {brandOptions.map((b) => (
+                      <option key={b} value={b}>
+                        {withCount(b, brandCounts)}
                       </option>
                     ))}
                   </select>
                 </div>
 
+                {/* Модель — каскадом от марки, как в приложении. Список
+                    приходит с сервера для уже выбранной марки; пока марка
+                    не выбрана, поле неактивно: перечислять модели всех
+                    124 марок разом бессмысленно. */}
                 <div>
                   <label className="mb-1 block text-sm text-black/60">
-                    {t('filter_city')}
+                    {t('filter_model')}
                   </label>
-                  <select name="city" defaultValue={filters.city ?? ''} className={field}>
+                  <select
+                    name="model"
+                    defaultValue={filters.model ?? ''}
+                    className={field}
+                    disabled={!filters.brand}
+                  >
                     <option value="">{t('filter_any')}</option>
-                    {cities.map((c) => (
-                      <option key={c.city_slug} value={c.city}>
-                        {c.city} ({c.cars_count})
+                    {models.map((m) => (
+                      <option key={m.id} value={m.name}>
+                        {m.name}
                       </option>
                     ))}
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm text-black/60">
+                  {t('filter_city')}
+                </label>
+                <select name="city" defaultValue={filters.city ?? ''} className={field}>
+                  <option value="">{t('filter_any')}</option>
+                  {cityOptions.map((c) => (
+                    <option key={c} value={c}>
+                      {withCount(c, cityCounts)}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -155,11 +217,14 @@ export default function FilterPanel({
                   <label className="mb-1 block text-sm text-black/60">
                     {t('filter_year')}
                   </label>
+                  {/* Границы совпадают с constraint chk_year таблицы cars:
+                      от 1900 до следующего года включительно. */}
                   <div className="flex gap-2">
                     <input
                       type="number"
                       name="year_from"
-                      min={1900}
+                      min={YEAR_MIN}
+                      max={yearMax()}
                       defaultValue={filters.yearFrom ?? ''}
                       placeholder={t('filter_from')}
                       className={field}
@@ -167,7 +232,8 @@ export default function FilterPanel({
                     <input
                       type="number"
                       name="year_to"
-                      min={1900}
+                      min={YEAR_MIN}
+                      max={yearMax()}
                       defaultValue={filters.yearTo ?? ''}
                       placeholder={t('filter_to')}
                       className={field}

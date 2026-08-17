@@ -149,15 +149,23 @@ export type SiteStats = {
 // значение — подписи для двух локалей сайта.
 // Списки повторяют миграцию 0001_extensions_and_enums.sql приложения.
 
+// Порядок и набор ключей повторяют enum body_type в БД
+// (миграция 0001) и ReferenceData.bodyTypes приложения — все 10 значений.
+//
+// Ключ 'convertible', а НЕ 'cabrio': значение уходит в фильтр как есть и
+// сравнивается с enum. Прежний 'cabrio' в enum отсутствовал, поэтому
+// выбор «Kabriolet» молча давал пустую выдачу вместо кабриолетов.
 export const BODY_TYPES: Record<string, { sr: string; ru: string }> = {
   sedan: { sr: 'Limuzina', ru: 'Седан' },
   hatchback: { sr: 'Hečbek', ru: 'Хэтчбек' },
   suv: { sr: 'Džip / SUV', ru: 'Внедорожник' },
+  crossover: { sr: 'Krosover', ru: 'Кроссовер' },
   coupe: { sr: 'Kupe', ru: 'Купе' },
   wagon: { sr: 'Karavan', ru: 'Универсал' },
   minivan: { sr: 'Monovolumen', ru: 'Минивэн' },
   pickup: { sr: 'Pikap', ru: 'Пикап' },
-  cabrio: { sr: 'Kabriolet', ru: 'Кабриолет' },
+  convertible: { sr: 'Kabriolet', ru: 'Кабриолет' },
+  van: { sr: 'Kombi', ru: 'Фургон' },
 };
 
 export const TRANSMISSIONS: Record<string, { sr: string; ru: string }> = {

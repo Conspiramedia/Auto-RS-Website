@@ -8,11 +8,9 @@ import SiteHeader from '@/components/SiteHeader';
 import SmartBanner from '@/components/SmartBanner';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
-import { fetchSiteBrands } from '@/lib/queries';
 
-export default async function SellPageView({ locale }: { locale: Locale }) {
+export default function SellPageView({ locale }: { locale: Locale }) {
   const t = getT(locale);
-  const brands = await fetchSiteBrands();
 
   return (
     <>
@@ -24,7 +22,7 @@ export default async function SellPageView({ locale }: { locale: Locale }) {
         <p className="mt-2 text-black/60">{t('sell_subtitle')}</p>
 
         <div className="mt-6">
-          <SellForm locale={locale} brands={brands} />
+          <SellForm locale={locale} />
         </div>
       </main>
 

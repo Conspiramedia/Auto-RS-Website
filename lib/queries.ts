@@ -196,6 +196,27 @@ export async function fetchSiteModels(
   return (data ?? []) as SiteModel[];
 }
 
+// ------------------------------------------------------------
+// Полный справочник моделей марки. RPC get_car_models (миграция 0029).
+// ------------------------------------------------------------
+// Та же функция, которую вызывает приложение (fetchModelsByBrand), —
+// поэтому списки моделей на сайте и в приложении совпадают.
+// В отличие от fetchSiteModels здесь НЕТ фильтра по наличию объявлений:
+// это справочник для выпадающего списка, а не источник SEO-страниц.
+export async function fetchCatalogModels(
+  brand: string,
+): Promise<{ id: string; name: string }[]> {
+  const { data, error } = await supabase.rpc('get_car_models', {
+    p_brand_name: brand,
+  });
+
+  // Список моделей второстепенен: если он не загрузился, фильтр должен
+  // остаться работоспособным без него, а не ронять страницу.
+  if (error) return [];
+
+  return (data ?? []) as { id: string; name: string }[];
+}
+
 export async function fetchSiteCities(
   listingType: ListingType = 'sale',
 ): Promise<SiteCity[]> {

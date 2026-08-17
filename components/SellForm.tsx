@@ -21,18 +21,17 @@ import { useState } from 'react';
 import { getBrowserClient } from '@/lib/supabaseClient';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
+import { BRANDS, CITIES, YEAR_MIN, yearMax } from '@/lib/referenceData';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
-import type { SiteBrand } from '@/lib/types';
 
 type Props = {
   locale: Locale;
-  brands: SiteBrand[];
 };
 
 // Максимум фотографий — как в приложении (AppConstants.maxCarImages).
 const MAX_PHOTOS = 15;
 
-export default function SellForm({ locale, brands }: Props) {
+export default function SellForm({ locale }: Props) {
   const t = getT(locale);
   const supabase = getBrowserClient();
 
@@ -317,9 +316,12 @@ export default function SellForm({ locale, brands }: Props) {
               list="brands-list"
               className={field}
             />
+            {/* Полный справочник марок — тот же, что в приложении.
+                datalist подсказывает, но не запрещает своё значение:
+                справочник БД пополняется триггером при подаче. */}
             <datalist id="brands-list">
-              {brands.map((b) => (
-                <option key={b.brand_slug} value={b.brand} />
+              {BRANDS.map((b) => (
+                <option key={b} value={b} />
               ))}
             </datalist>
           </div>
@@ -345,8 +347,8 @@ export default function SellForm({ locale, brands }: Props) {
                 type="number"
                 value={year}
                 onChange={(e) => setYear(e.target.value)}
-                min={1900}
-                max={new Date().getFullYear() + 1}
+                min={YEAR_MIN}
+                max={yearMax()}
                 className={field}
               />
             </div>
@@ -354,12 +356,21 @@ export default function SellForm({ locale, brands }: Props) {
               <label className="mb-1 block text-sm text-black/60">
                 {t('filter_city')}
               </label>
+              {/* Города из того же списка, что в онбординге приложения.
+                  Свободный ввод оставлен: продавец может быть из города,
+                  которого нет в списке крупных. */}
               <input
                 type="text"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
+                list="cities-list"
                 className={field}
               />
+              <datalist id="cities-list">
+                {CITIES.map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
             </div>
           </div>
 
