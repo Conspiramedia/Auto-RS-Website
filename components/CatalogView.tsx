@@ -97,11 +97,16 @@ export default function CatalogView({
       <h1 className="text-2xl font-bold">{title}</h1>
       {intro && <p className="mt-2 max-w-3xl text-black/60">{intro}</p>}
 
-      {/* Панель управления выдачей. На мобильном — одна строка:
-          «Фильтры» + компактный select сортировки; счётчик уходит
-          на строку ниже, чтобы ничего не переносилось и не растягивало
-          страницу. На десктопе всё в один ряд. */}
-      <div className="mt-4 flex items-center gap-2 sm:justify-between">
+      {/* Панель управления выдачей.
+          Десктоп — как было до редизайна: «Фильтры» и счётчик слева,
+          сортировка прижата вправо (justify-between), всё в один ряд.
+          Мобильный — «Фильтры» + компактный select сортировки в строку,
+          счётчик уходит ниже отдельной строкой. */}
+      {/* flex-wrap только на мобильном (по умолчанию), на десктопе
+          sm:flex-nowrap: иначе широкий блок сортировки не помещается
+          рядом с фильтрами и переносится на вторую строку, наезжая
+          на счётчик — ровно то, что было видно на скриншоте. */}
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none sm:gap-3">
           <FilterPanel
             locale={locale}

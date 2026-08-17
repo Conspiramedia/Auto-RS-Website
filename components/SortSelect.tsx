@@ -57,11 +57,17 @@ export default function SortSelect({ locale, filters, basePath }: Props) {
         ))}
       </select>
 
-      {/* Десктоп: чипсы-ссылки. */}
-      <div className="hidden items-center gap-2 text-sm sm:flex">
-        <span className="text-black/50">{t('catalog_sort')}:</span>
+      {/* Десктоп: чипсы-ссылки в один ряд.
+          flex-wrap здесь НЕЛЬЗЯ: шесть вариантов переносятся на вторую
+          строку и наезжают на счётчик слева. Вместо переноса — лента с
+          прокруткой, как было до редизайна. */}
+      <div className="hidden min-w-0 items-center gap-2 text-sm sm:flex">
+        <span className="shrink-0 text-black/50">{t('catalog_sort')}:</span>
 
-        <div className="flex flex-wrap gap-1">
+        {/* min-w-0 + overflow-x-auto: лента сжимается по доступному
+            месту и прокручивается внутри себя, вместо того чтобы
+            распирать панель и уезжать на вторую строку. */}
+        <div className="no-scrollbar flex min-w-0 gap-1 overflow-x-auto">
           {SORT_OPTIONS.map((opt) => {
             const active = opt.key === current;
             return (
