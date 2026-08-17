@@ -57,7 +57,7 @@ export default function Pagination({
       aria-label={t('catalog_page')}
     >
       {page > 1 && (
-        <Link href={href(page - 1)} className={`${base} border border-black/15`} rel="prev">
+        <Link href={href(page - 1)} className={`${base} border border-neutral-15`} rel="prev">
           ‹
         </Link>
       )}
@@ -65,10 +65,10 @@ export default function Pagination({
       {/* Ссылка на первую страницу, если окно начинается не с неё. */}
       {pages[0] > 1 && (
         <>
-          <Link href={href(1)} className={`${base} border border-black/15`}>
+          <Link href={href(1)} className={`${base} border border-neutral-15`}>
             1
           </Link>
-          {pages[0] > 2 && <span className="px-1 text-black/40">…</span>}
+          {pages[0] > 2 && <span className="px-1 text-neutral-40">…</span>}
         </>
       )}
 
@@ -79,7 +79,7 @@ export default function Pagination({
           className={
             p === page
               ? `${base} bg-brand-dark font-semibold text-white`
-              : `${base} border border-black/15 hover:bg-black/[0.04]`
+              : `${base} border border-neutral-15 hover:bg-surface-hoverStrong`
           }
           aria-current={p === page ? 'page' : undefined}
         >
@@ -90,16 +90,16 @@ export default function Pagination({
       {pages[pages.length - 1] < totalPages && (
         <>
           {pages[pages.length - 1] < totalPages - 1 && (
-            <span className="px-1 text-black/40">…</span>
+            <span className="px-1 text-neutral-40">…</span>
           )}
-          <Link href={href(totalPages)} className={`${base} border border-black/15`}>
+          <Link href={href(totalPages)} className={`${base} border border-neutral-15`}>
             {totalPages}
           </Link>
         </>
       )}
 
       {page < totalPages && (
-        <Link href={href(page + 1)} className={`${base} border border-black/15`} rel="next">
+        <Link href={href(page + 1)} className={`${base} border border-neutral-15`} rel="next">
           ›
         </Link>
       )}

@@ -12,13 +12,13 @@
 // Ссылки на второстепенные разделы (аренда, дилерам, приложение) —
 // в подвале: в шапке они конкурировали с единственным акцентом.
 //
-// Логотипа в векторе нет, поэтому знак собирается из текста в брендовых
-// цветах. Когда появится SVG — меняется только этот компонент.
+// Логотип рендерит components/ui/Logo — там же он и меняется, когда
+// появится векторный файл. Здесь знак только вставляется в шапку.
 // ============================================================
 
 import Link from 'next/link';
 
-import { brand } from '@/lib/brand';
+import Logo from './ui/Logo';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import LocaleSwitch from './LocaleSwitch';
@@ -34,16 +34,12 @@ export default function SiteHeader({ locale, pathname }: Props) {
   const t = getT(locale);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-black/10 bg-white">
+    <header className="sticky top-0 z-header border-b border-neutral-10 bg-white">
       {/* gap-2 на мобильных и gap-4 с sm: на 360px каждый пиксель между
           элементами решает, поместится CTA или уедет за край. */}
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:gap-4 sm:px-4">
-        <Link
-          href={localeHref(locale, '/')}
-          className="shrink-0 text-base font-bold sm:text-lg"
-          style={{ color: brand.colors.primary }}
-        >
-          {brand.name}
+        <Link href={localeHref(locale, '/')} className="shrink-0">
+          <Logo className="text-base sm:text-lg" />
         </Link>
 
         {/* Разделы сайта. Показываются только на десктопе (sm:flex):

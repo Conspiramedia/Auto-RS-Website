@@ -48,7 +48,7 @@ export default function SortSelect({ locale, filters, basePath }: Props) {
         value={current}
         onChange={(e) => router.push(hrefFor(e.target.value as never))}
         aria-label={t('catalog_sort')}
-        className="max-w-[52vw] truncate rounded-control border border-black/15 bg-white px-2.5 py-2 text-sm outline-none focus:border-brand-primary sm:hidden"
+        className="max-w-[52vw] truncate rounded-control border border-neutral-15 bg-white px-2.5 py-2 text-sm outline-none focus:border-brand-primary sm:hidden"
       >
         {SORT_OPTIONS.map((opt) => (
           <option key={opt.key} value={opt.key}>
@@ -62,7 +62,7 @@ export default function SortSelect({ locale, filters, basePath }: Props) {
           строку и наезжают на счётчик слева. Вместо переноса — лента с
           прокруткой, как было до редизайна. */}
       <div className="hidden min-w-0 items-center gap-2 text-sm sm:flex">
-        <span className="shrink-0 text-black/50">{t('catalog_sort')}:</span>
+        <span className="shrink-0 text-neutral-50">{t('catalog_sort')}:</span>
 
         {/* min-w-0 + overflow-x-auto: лента сжимается по доступному
             месту и прокручивается внутри себя, вместо того чтобы
@@ -77,7 +77,7 @@ export default function SortSelect({ locale, filters, basePath }: Props) {
                 className={
                   active
                     ? 'whitespace-nowrap rounded-control bg-brand-dark px-3 py-1.5 font-semibold text-white'
-                    : 'whitespace-nowrap rounded-control px-3 py-1.5 text-black/60 hover:bg-black/[0.05]'
+                    : 'whitespace-nowrap rounded-control px-3 py-1.5 text-neutral-60 hover:bg-surface-hoverChip'
                 }
                 // Варианты сортировки — одна и та же выдача в другом
                 // порядке. Индексировать их все не нужно.

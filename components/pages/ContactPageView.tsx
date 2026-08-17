@@ -29,22 +29,22 @@ export default function ContactPageView({ locale }: { locale: Locale }) {
 
       <main className="mx-auto max-w-3xl px-4 py-8">
         <h1 className="text-2xl font-bold sm:text-3xl">{t('contact_title')}</h1>
-        <p className="mt-2 max-w-xl text-black/60">{t('contact_subtitle')}</p>
+        <p className="mt-2 max-w-xl text-neutral-60">{t('contact_subtitle')}</p>
 
         {/* Реквизиты и способы связи. Идут ПЕРЕД формой: человеку,
             которому нужен просто адрес почты, не следует пролистывать
             ради него всю форму. */}
-        <section className="mt-8 rounded-card border border-black/10 p-4 sm:p-6">
+        <section className="mt-8 rounded-card border border-neutral-10 p-4 sm:p-6">
           <h2 className="text-lg font-semibold">{t('contact_details')}</h2>
 
           <dl className="mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2">
             <div>
-              <dt className="text-sm text-black/50">{t('contact_details')}</dt>
+              <dt className="text-sm text-neutral-50">{t('contact_details')}</dt>
               <dd className="font-medium">{OPERATOR.legalName}</dd>
             </div>
 
             <div>
-              <dt className="text-sm text-black/50">{t('contact_email')}</dt>
+              <dt className="text-sm text-neutral-50">{t('contact_email')}</dt>
               <dd className="font-medium">
                 <a
                   href={`mailto:${OPERATOR.email}`}
@@ -59,7 +59,7 @@ export default function ContactPageView({ locale }: { locale: Locale }) {
                 «Телефон поддержки: —» выглядит как неработающий сервис. */}
             {OPERATOR.phone && (
               <div>
-                <dt className="text-sm text-black/50">{t('contact_phone')}</dt>
+                <dt className="text-sm text-neutral-50">{t('contact_phone')}</dt>
                 <dd className="font-medium">
                   <a
                     href={`tel:${OPERATOR.phone.replace(/\s/g, '')}`}
@@ -72,7 +72,7 @@ export default function ContactPageView({ locale }: { locale: Locale }) {
             )}
 
             <div>
-              <dt className="text-sm text-black/50">{t('contact_hours')}</dt>
+              <dt className="text-sm text-neutral-50">{t('contact_hours')}</dt>
               <dd className="font-medium">{t('contact_hours_value')}</dd>
             </div>
 
@@ -81,13 +81,13 @@ export default function ContactPageView({ locale }: { locale: Locale }) {
             {OPERATOR_VERIFIED && (
               <>
                 <div>
-                  <dt className="text-sm text-black/50">
+                  <dt className="text-sm text-neutral-50">
                     {t('contact_address')}
                   </dt>
                   <dd className="font-medium">{OPERATOR.address}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm text-black/50">MB / PIB</dt>
+                  <dt className="text-sm text-neutral-50">MB / PIB</dt>
                   <dd className="font-medium">
                     {OPERATOR.registrationNumber} / {OPERATOR.taxNumber}
                   </dd>
@@ -99,7 +99,7 @@ export default function ContactPageView({ locale }: { locale: Locale }) {
           {/* Автосалоны уводим на свою страницу: там оффер и форма,
               рассчитанная на их сценарий, — иначе заявки салонов
               попадут в общую поддержку и потеряются. */}
-          <p className="mt-5 border-t border-black/10 pt-4 text-sm text-black/60">
+          <p className="mt-5 border-t border-neutral-10 pt-4 text-sm text-neutral-60">
             {t('contact_dealers_hint')}{' '}
             <Link
               href={localeHref(locale, '/dealers')}
@@ -116,7 +116,7 @@ export default function ContactPageView({ locale }: { locale: Locale }) {
 
         {/* Ссылки на документы: раздел «Контакты» в них ведёт сюда,
             обратный путь тоже должен существовать. */}
-        <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-black/50">
+        <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-neutral-50">
           <Link href={localeHref(locale, '/terms')} className="hover:underline">
             {t('legal_terms_title')}
           </Link>

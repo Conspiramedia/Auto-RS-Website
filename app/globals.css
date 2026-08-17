@@ -17,6 +17,17 @@
   --brand-dark: #2b2b2e;
   --brand-gold: #e8a73c;
   --brand-bg: #ffffff;
+
+  /* Нейтральная шкала и заливки — те же значения, что в lib/brand.ts.
+     Нужны там, где классы Tailwind неудобны: инлайновые стили
+     аварийного экрана, SVG, градиенты. */
+  --neutral-60: rgba(0, 0, 0, 0.6);
+  --neutral-50: rgba(0, 0, 0, 0.5);
+  --neutral-40: rgba(0, 0, 0, 0.4);
+  --neutral-15: rgba(0, 0, 0, 0.15);
+  --neutral-10: rgba(0, 0, 0, 0.1);
+  --surface-subtle: rgba(0, 0, 0, 0.02);
+  --surface-muted: rgba(0, 0, 0, 0.05);
 }
 
 body {

@@ -144,7 +144,7 @@ export default function ListPicker({
 
   return (
     <div ref={boxRef} className="relative">
-      <label className="mb-1 block text-sm text-black/60">{label}</label>
+      <label className="mb-1 block text-sm text-neutral-60">{label}</label>
 
       {/* Скрытое поле — то, что реально уходит в GET-форму и в URL.
           Когда значение не выбрано, поле НЕ рендерится: иначе браузер
@@ -162,23 +162,26 @@ export default function ListPicker({
         aria-expanded={open}
         aria-controls={open ? listId : undefined}
         className={
-          'flex w-full items-center justify-between gap-2 rounded-control border border-black/15 px-3 py-2 text-left text-sm ' +
+          'flex w-full items-center justify-between gap-2 rounded-control border border-neutral-15 px-3 py-2 text-left text-sm ' +
           (disabled
-            ? 'cursor-not-allowed bg-black/[0.03] text-black/30'
-            : 'hover:border-black/30')
+            ? 'cursor-not-allowed bg-surface-hover text-neutral-30'
+            : 'hover:border-neutral-30')
         }
       >
-        <span className={selected ? 'truncate' : 'truncate text-black/40'}>
+        <span className={selected ? 'truncate' : 'truncate text-neutral-40'}>
           {disabled && emptyHint ? emptyHint : currentLabel}
         </span>
-        <span className="shrink-0 text-black/40">▾</span>
+        <span className="shrink-0 text-neutral-40">▾</span>
       </button>
 
       {open && !disabled && (
         <>
           {/* Затемнение — только на мобильных, где панель занимает экран. */}
           <div
-            className="fixed inset-0 z-40 bg-black/40 sm:hidden"
+            // Слой modal, а не header: пикер открывается ВНУТРИ шторки
+            // фильтров (z-filter-sheet), и затемнение обязано лежать выше
+            // неё — иначе шторка просвечивает поверх открытого списка.
+            className="fixed inset-0 z-modal bg-surface-overlay sm:hidden"
             onClick={() => setOpen(false)}
             aria-hidden="true"
           />
@@ -189,16 +192,18 @@ export default function ListPicker({
             aria-label={label}
             className={
               // Мобильные: шит снизу. Десктоп: панель под полем.
-              'fixed inset-x-0 bottom-0 z-50 max-h-[75vh] overflow-hidden rounded-t-card bg-white shadow-xl ' +
-              'sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-0 sm:top-full sm:mt-1 sm:max-h-80 sm:w-full sm:rounded-card sm:border sm:border-black/15'
+              // z-tooltip — самый верхний слой: сам список должен быть
+              // над собственным затемнением (z-modal).
+              'fixed inset-x-0 bottom-0 z-tooltip max-h-[75vh] overflow-hidden rounded-t-card bg-white shadow-modal ' +
+              'sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-0 sm:top-full sm:mt-1 sm:max-h-80 sm:w-full sm:rounded-card sm:border sm:border-neutral-15'
             }
           >
-            <div className="flex items-center justify-between border-b border-black/10 px-4 py-3 sm:hidden">
+            <div className="flex items-center justify-between border-b border-neutral-10 px-4 py-3 sm:hidden">
               <span className="font-semibold">{label}</span>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="px-2 text-2xl leading-none text-black/40"
+                className="px-2 text-2xl leading-none text-neutral-40"
                 aria-label="×"
               >
                 ×
@@ -206,7 +211,7 @@ export default function ListPicker({
             </div>
 
             {searchable && (
-              <div className="border-b border-black/10 p-2">
+              <div className="border-b border-neutral-10 p-2">
                 <input
                   type="text"
                   value={query}
@@ -216,7 +221,7 @@ export default function ListPicker({
                       ? `${t('picker_search')} / ${t('picker_custom_hint')}`
                       : t('picker_search')
                   }
-                  className="w-full rounded-control border border-black/15 px-3 py-2 text-sm outline-none focus:border-brand-primary"
+                  className="w-full rounded-control border border-neutral-15 px-3 py-2 text-sm outline-none focus:border-brand-primary"
                   // autoFocus только на десктопе: на мобильном он поднимает
                   // клавиатуру поверх списка ещё до того, как пользователь
                   // увидел варианты.
@@ -233,7 +238,7 @@ export default function ListPicker({
                 <button
                   type="button"
                   onClick={() => pick(trimmed)}
-                  className="flex w-full items-center gap-2 border-b border-black/10 px-4 py-3 text-left text-sm hover:bg-black/[0.04]"
+                  className="flex w-full items-center gap-2 border-b border-neutral-10 px-4 py-3 text-left text-sm hover:bg-surface-hoverStrong"
                 >
                   <span className="text-brand-green">+</span>
                   <span>
@@ -250,7 +255,7 @@ export default function ListPicker({
                   aria-selected={selected === ''}
                   onClick={() => pick('')}
                   className={
-                    'flex w-full items-center justify-between px-4 py-3 text-left text-sm hover:bg-black/[0.04] ' +
+                    'flex w-full items-center justify-between px-4 py-3 text-left text-sm hover:bg-surface-hoverStrong ' +
                     (selected === '' ? 'font-semibold' : '')
                   }
                 >
@@ -267,14 +272,14 @@ export default function ListPicker({
                   aria-selected={selected === o.value}
                   onClick={() => pick(o.value)}
                   className={
-                    'flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm hover:bg-black/[0.04] ' +
+                    'flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm hover:bg-surface-hoverStrong ' +
                     (selected === o.value ? 'font-semibold' : '')
                   }
                 >
                   <span className="truncate">{o.label}</span>
                   <span className="flex shrink-0 items-center gap-2">
                     {o.count !== undefined && o.count > 0 && (
-                      <span className="text-black/40">{o.count}</span>
+                      <span className="text-neutral-40">{o.count}</span>
                     )}
                     {selected === o.value && (
                       <span className="text-brand-primary">✓</span>
@@ -284,7 +289,7 @@ export default function ListPicker({
               ))}
 
               {filtered.length === 0 && !showCustom && (
-                <div className="px-4 py-6 text-center text-sm text-black/40">
+                <div className="px-4 py-6 text-center text-sm text-neutral-40">
                   {t('picker_nothing')}
                 </div>
               )}

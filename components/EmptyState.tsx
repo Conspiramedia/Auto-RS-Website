@@ -41,9 +41,9 @@ export default function EmptyState({
     mode === 'rent' && !showReset ? t('rent_empty_title') : t('empty_title');
 
   return (
-    <div className="rounded-card border border-black/10 px-6 py-12 text-center">
+    <div className="rounded-card border border-neutral-10 px-6 py-12 text-center">
       <h2 className="text-xl font-semibold">{title}</h2>
-      <p className="mx-auto mt-2 max-w-md text-black/60">{t('empty_reason')}</p>
+      <p className="mx-auto mt-2 max-w-md text-neutral-60">{t('empty_reason')}</p>
 
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         {showReset && (
@@ -57,13 +57,13 @@ export default function EmptyState({
 
         <Link
           href={localeHref(locale, '/app')}
-          className="rounded-control border border-black/15 px-4 py-2.5 text-sm font-semibold hover:bg-black/[0.03]"
+          className="rounded-control border border-neutral-15 px-4 py-2.5 text-sm font-semibold hover:bg-surface-hover"
         >
           {t('empty_notify')}
         </Link>
       </div>
 
-      <p className="mx-auto mt-3 max-w-md text-sm text-black/50">
+      <p className="mx-auto mt-3 max-w-md text-sm text-neutral-50">
         {t('empty_notify_hint')}
       </p>
     </div>

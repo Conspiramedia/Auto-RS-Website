@@ -30,7 +30,7 @@ export default function NotFoundView({ locale }: { locale: Locale }) {
       <main className="mx-auto flex max-w-2xl flex-col items-center px-4 py-16 text-center">
         <p className="text-5xl font-bold text-brand-dark/20">404</p>
         <h1 className="mt-4 text-2xl font-bold">{t('nf_title')}</h1>
-        <p className="mt-3 max-w-md text-black/60">{t('nf_text')}</p>
+        <p className="mt-3 max-w-md text-neutral-60">{t('nf_text')}</p>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
@@ -41,7 +41,7 @@ export default function NotFoundView({ locale }: { locale: Locale }) {
           </Link>
           <Link
             href={localeHref(locale, '/')}
-            className="rounded-control border border-black/15 px-5 py-3 font-semibold"
+            className="rounded-control border border-neutral-15 px-5 py-3 font-semibold"
           >
             {t('nf_home')}
           </Link>

@@ -19,7 +19,7 @@ export default function SellPageView({ locale }: { locale: Locale }) {
 
       <main className="mx-auto max-w-2xl px-4 py-6">
         <h1 className="text-2xl font-bold">{t('sell_title')}</h1>
-        <p className="mt-2 text-black/60">{t('sell_subtitle')}</p>
+        <p className="mt-2 text-neutral-60">{t('sell_subtitle')}</p>
 
         <div className="mt-6">
           <SellForm locale={locale} />

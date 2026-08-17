@@ -96,7 +96,7 @@ export default function CatalogView({
   return (
     <>
       <h1 className="text-2xl font-bold">{title}</h1>
-      {intro && <p className="mt-2 max-w-3xl text-black/60">{intro}</p>}
+      {intro && <p className="mt-2 max-w-3xl text-neutral-60">{intro}</p>}
 
       {/* Панель управления выдачей.
           Десктоп — как было до редизайна: «Фильтры» и счётчик слева,
@@ -124,7 +124,7 @@ export default function CatalogView({
             mode={pageMode}
             lockedType={lockedType}
           />
-          <span className="hidden shrink-0 text-sm text-black/50 sm:inline">
+          <span className="hidden shrink-0 text-sm text-neutral-50 sm:inline">
             {t('catalog_found')}: {countNoun(result.total, 'listing', locale)}
           </span>
         </div>
@@ -133,7 +133,7 @@ export default function CatalogView({
       </div>
 
       {/* Счётчик результатов на мобильном — отдельной строкой. */}
-      <div className="mt-2 text-sm text-black/50 sm:hidden">
+      <div className="mt-2 text-sm text-neutral-50 sm:hidden">
         {t('catalog_found')}: {result.total}
       </div>
 

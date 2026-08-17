@@ -90,7 +90,7 @@ export default async function BrandPageView({
       <SiteHeader locale={locale} pathname={`${root}/${slug}`} />
 
       <main className="mx-auto max-w-6xl px-4 py-6">
-        <nav className="mb-4 text-sm text-black/50">
+        <nav className="mb-4 text-sm text-neutral-50">
           <Link href={localeHref(locale, root)} className="hover:underline">
             {mode === 'rent' ? t('rent_title') : t('nav_catalog')}
           </Link>
@@ -124,10 +124,10 @@ export default async function BrandPageView({
                 <Link
                   key={m.model_slug}
                   href={localeHref(locale, `${root}/${slug}/${m.model_slug}`)}
-                  className="rounded-control border border-black/15 px-3 py-1.5 text-sm hover:bg-black/[0.03]"
+                  className="rounded-control border border-neutral-15 px-3 py-1.5 text-sm hover:bg-surface-hover"
                 >
                   {m.model}{' '}
-                  <span className="text-black/40">({m.cars_count})</span>
+                  <span className="text-neutral-40">({m.cars_count})</span>
                 </Link>
               ))}
             </div>

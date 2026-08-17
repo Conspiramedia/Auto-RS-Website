@@ -41,7 +41,7 @@ export default function LegalPageView({
       <main className="mx-auto max-w-3xl px-4 py-8">
         <h1 className="text-2xl font-bold sm:text-3xl">{title}</h1>
 
-        <p className="mt-2 text-sm text-black/50">
+        <p className="mt-2 text-sm text-neutral-50">
           {t('legal_updated')}: {POLICY_UPDATED[locale]} • {POLICY_VERSION}
         </p>
 
@@ -55,7 +55,7 @@ export default function LegalPageView({
               )}
               <div className="space-y-3">
                 {section.paragraphs.map((p, j) => (
-                  <p key={j} className="leading-relaxed text-black/75">
+                  <p key={j} className="leading-relaxed text-neutral-75">
                     {p}
                   </p>
                 ))}

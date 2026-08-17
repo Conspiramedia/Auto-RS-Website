@@ -33,6 +33,7 @@ import { getBrowserClient } from '@/lib/supabaseClient';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import type { ListingType, SiteBrand, SiteCity } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
+import { fieldClassCompact } from './ui/Field';
 
 type Props = {
   locale: Locale;
@@ -88,8 +89,9 @@ export default function FilterPanel({
   // значение обязано сброситься, иначе останется модель от другой марки.
   const [modelKey, setModelKey] = useState(0);
 
-  const field =
-    'w-full rounded-control border border-black/15 px-3 py-2 text-sm outline-none focus:border-brand-primary';
+  // Компактный вариант поля из общего паттерна: в панели фильтров
+  // полей много, и они плотнее, чем в формах подачи.
+  const field = fieldClassCompact;
 
   // Догрузка моделей при смене марки прямо в панели. На сервере модели
   // уже пришли для марки из URL — повторный запрос делаем только когда
@@ -186,14 +188,14 @@ export default function FilterPanel({
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center">
+        <div className="fixed inset-0 z-filter-sheet flex items-end justify-center bg-surface-overlay sm:items-center">
           <div className="max-h-[90vh] w-full overflow-y-auto rounded-t-card bg-white p-4 sm:max-w-lg sm:rounded-card">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold">{t('catalog_filters')}</h2>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="px-2 text-2xl leading-none text-black/40"
+                className="px-2 text-2xl leading-none text-neutral-40"
                 aria-label="×"
               >
                 ×
@@ -223,10 +225,10 @@ export default function FilterPanel({
                   На лендинге /rent тип задан адресом и сегмент скрыт. */}
               {!lockedType && (
                 <div>
-                  <label className="mb-1 block text-sm text-black/60">
+                  <label className="mb-1 block text-sm text-neutral-60">
                     {t('filter_listing_type')}
                   </label>
-                  <div className="grid grid-cols-3 gap-1 rounded-control bg-black/[0.06] p-1">
+                  <div className="grid grid-cols-3 gap-1 rounded-control bg-surface-active p-1">
                     {(
                       [
                         ['both', t('filter_type_all')],
@@ -241,8 +243,8 @@ export default function FilterPanel({
                         className={
                           'rounded-control px-2 py-2 text-sm font-semibold transition-colors ' +
                           (listingType === value
-                            ? 'bg-white text-brand-dark shadow-sm'
-                            : 'text-black/55 hover:text-brand-dark')
+                            ? 'bg-white text-brand-dark shadow-sticky'
+                            : 'text-neutral-55 hover:text-brand-dark')
                         }
                       >
                         {label}
@@ -260,7 +262,7 @@ export default function FilterPanel({
               {/* Единственное поле свободного ввода — поиск по тексту
                   объявления. В приложении он тоже отдельной строкой. */}
               <div>
-                <label className="mb-1 block text-sm text-black/60">
+                <label className="mb-1 block text-sm text-neutral-60">
                   {t('filter_search')}
                 </label>
                 <input
@@ -316,7 +318,7 @@ export default function FilterPanel({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1 block text-sm text-black/60">
+                  <label className="mb-1 block text-sm text-neutral-60">
                     {mode === 'rent'
                       ? `${t('rent_price')}, €`
                       : `${t('filter_price')}, €`}
@@ -342,7 +344,7 @@ export default function FilterPanel({
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-sm text-black/60">
+                  <label className="mb-1 block text-sm text-neutral-60">
                     {t('filter_year')}
                   </label>
                   {/* Границы совпадают с constraint chk_year таблицы cars:
@@ -371,7 +373,7 @@ export default function FilterPanel({
               </div>
 
               <div>
-                <label className="mb-1 block text-sm text-black/60">
+                <label className="mb-1 block text-sm text-neutral-60">
                   {t('filter_mileage')}, {t('common_km')}
                 </label>
                 <input

@@ -13,6 +13,8 @@ import { useState } from 'react';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import { getBrowserClient } from '@/lib/supabaseClient';
+import { fieldClass } from './ui/Field';
+import Button from './ui/Button';
 
 type Props = {
   locale: Locale;
@@ -57,8 +59,8 @@ export default function DealerForm({ locale }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
 
-  const field =
-    'w-full rounded-control border border-black/15 px-3 py-2.5 outline-none focus:border-brand-primary';
+  // Классы поля ввода — из общего паттерна (components/ui/Field).
+  const field = fieldClass;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -101,11 +103,11 @@ export default function DealerForm({ locale }: Props) {
 
   if (sent) {
     return (
-      <div className="rounded-card border border-black/10 p-6 text-center">
+      <div className="rounded-card border border-neutral-10 p-6 text-center">
         <h2 className="text-lg font-semibold">
           {locale === 'ru' ? 'Заявка отправлена' : 'Zahtev je poslat'}
         </h2>
-        <p className="mt-2 text-black/60">
+        <p className="mt-2 text-neutral-60">
           {locale === 'ru'
             ? 'Свяжемся с вами в ближайшее время.'
             : 'Kontaktiraćemo vas u najkraćem roku.'}
@@ -117,7 +119,7 @@ export default function DealerForm({ locale }: Props) {
   return (
     <form
       onSubmit={submit}
-      className="space-y-3 rounded-card border border-black/10 p-4 sm:p-6"
+      className="space-y-3 rounded-card border border-neutral-10 p-4 sm:p-6"
     >
       {/* Honeypot: скрыт от людей, виден ботам. */}
       <input
@@ -138,7 +140,7 @@ export default function DealerForm({ locale }: Props) {
       />
 
       <div>
-        <label className="mb-1 block text-sm text-black/60">
+        <label className="mb-1 block text-sm text-neutral-60">
           {locale === 'ru' ? 'Название автосалона' : 'Naziv autosalona'}
         </label>
         <input
@@ -153,7 +155,7 @@ export default function DealerForm({ locale }: Props) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm text-black/60">
+          <label className="mb-1 block text-sm text-neutral-60">
             {locale === 'ru' ? 'Контактное лицо' : 'Kontakt osoba'}
           </label>
           <input
@@ -167,7 +169,7 @@ export default function DealerForm({ locale }: Props) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm text-black/60">
+          <label className="mb-1 block text-sm text-neutral-60">
             {t('sell_phone')}
           </label>
           <input
@@ -183,7 +185,7 @@ export default function DealerForm({ locale }: Props) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm text-black/60">Email</label>
+          <label className="mb-1 block text-sm text-neutral-60">Email</label>
           <input
             type="email"
             value={email}
@@ -194,7 +196,7 @@ export default function DealerForm({ locale }: Props) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm text-black/60">
+          <label className="mb-1 block text-sm text-neutral-60">
             {t('filter_city')}
           </label>
           <input
@@ -208,7 +210,7 @@ export default function DealerForm({ locale }: Props) {
       </div>
 
       <div>
-        <label className="mb-1 block text-sm text-black/60">
+        <label className="mb-1 block text-sm text-neutral-60">
           {locale === 'ru' ? 'Комментарий' : 'Komentar'}
         </label>
         <textarea
@@ -220,13 +222,9 @@ export default function DealerForm({ locale }: Props) {
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={busy}
-        className="w-full rounded-control bg-brand-green px-4 py-3 font-semibold text-white disabled:opacity-40"
-      >
+      <Button type="submit" disabled={busy} fullWidth>
         {t('dealers_cta')}
-      </button>
+      </Button>
 
       {error && (
         <p className="rounded-control bg-brand-red/10 px-3 py-2 text-sm text-brand-red">

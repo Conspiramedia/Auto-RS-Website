@@ -25,6 +25,7 @@ import { getT, localeHref } from '@/lib/i18n';
 import { BRANDS, CITIES, YEAR_MIN, yearMax } from '@/lib/referenceData';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
+import { fieldClass } from './ui/Field';
 
 type Props = {
   locale: Locale;
@@ -117,8 +118,9 @@ export default function SellForm({ locale }: Props) {
   // значение — признак бота, и такую отправку мы молча не публикуем.
   const [website, setWebsite] = useState('');
 
-  const field =
-    'w-full rounded-control border border-black/15 px-3 py-2.5 outline-none focus:border-brand-primary';
+  // Классы поля ввода — из общего паттерна (components/ui/Field).
+  // Раньше эта строка была скопирована в четырёх формах.
+  const field = fieldClass;
 
   // Выбор марки: сбрасывает модель и подтягивает её список — тот же
   // порядок действий, что в create_car_screen.dart приложения.
@@ -359,9 +361,9 @@ export default function SellForm({ locale }: Props) {
       // Личного кабинета на сайте нет намеренно: управление объявлениями
       // живёт в приложении. Поэтому после подачи — экран модерации и
       // выход в каталог, а не «мои объявления».
-      <div className="rounded-card border border-black/10 p-6 text-center">
+      <div className="rounded-card border border-neutral-10 p-6 text-center">
         <h2 className="text-xl font-semibold">{t('sell_success_title')}</h2>
-        <p className="mx-auto mt-2 max-w-md text-black/60">
+        <p className="mx-auto mt-2 max-w-md text-neutral-60">
           {t('sell_success_text')}
         </p>
 
@@ -374,7 +376,7 @@ export default function SellForm({ locale }: Props) {
           </Link>
           <Link
             href={localeHref(locale, '/app')}
-            className="rounded-control border border-black/15 px-5 py-3 font-semibold"
+            className="rounded-control border border-neutral-15 px-5 py-3 font-semibold"
           >
             {t('nav_app')}
           </Link>
@@ -419,8 +421,8 @@ export default function SellForm({ locale }: Props) {
   }
 
   return (
-    <div className="rounded-card border border-black/10 p-4 sm:p-6">
-      <div className="mb-4 text-sm text-black/50">
+    <div className="rounded-card border border-neutral-10 p-4 sm:p-6">
+      <div className="mb-4 text-sm text-neutral-50">
         {t('sell_step')} {step} / 4
       </div>
 
@@ -432,7 +434,7 @@ export default function SellForm({ locale }: Props) {
           {/* Тип объявления — первый вопрос: от него зависит, какие поля
               цен появятся на следующем шаге. */}
           <div>
-            <label className="mb-1 block text-sm text-black/60">
+            <label className="mb-1 block text-sm text-neutral-60">
               {t('sell_type')}
             </label>
             {/* Два варианта вместо трёх: у объявления один тип сделки.
@@ -451,7 +453,7 @@ export default function SellForm({ locale }: Props) {
                   className={
                     listingType === value
                       ? 'rounded-control bg-brand-dark px-3 py-2.5 text-sm font-semibold text-white'
-                      : 'rounded-control border border-black/15 px-3 py-2.5 text-sm hover:bg-black/[0.03]'
+                      : 'rounded-control border border-neutral-15 px-3 py-2.5 text-sm hover:bg-surface-hover'
                   }
                 >
                   {label}
@@ -497,7 +499,7 @@ export default function SellForm({ locale }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm text-black/60">
+              <label className="mb-1 block text-sm text-neutral-60">
                 {t('filter_year')}
               </label>
               <input
@@ -543,7 +545,7 @@ export default function SellForm({ locale }: Props) {
               Пустое значение допустимо: это «Договорная». */}
           {listingType === 'sale' && (
             <div>
-              <label className="mb-1 block text-sm text-black/60">
+              <label className="mb-1 block text-sm text-neutral-60">
                 {t('sell_sale_price')}, €
               </label>
               <input
@@ -563,7 +565,7 @@ export default function SellForm({ locale }: Props) {
           {listingType === 'rent' && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-sm text-black/60">
+                <label className="mb-1 block text-sm text-neutral-60">
                   {t('sell_rent_price')}, € *
                 </label>
                 <input
@@ -576,7 +578,7 @@ export default function SellForm({ locale }: Props) {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm text-black/60">
+                <label className="mb-1 block text-sm text-neutral-60">
                   {t('sell_deposit')}, €
                 </label>
                 <input
@@ -592,7 +594,7 @@ export default function SellForm({ locale }: Props) {
           )}
 
           <div>
-            <label className="mb-1 block text-sm text-black/60">
+            <label className="mb-1 block text-sm text-neutral-60">
               {t('car_mileage')}, {t('common_km')}
             </label>
             <input
@@ -654,7 +656,7 @@ export default function SellForm({ locale }: Props) {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-black/60">
+            <label className="mb-1 block text-sm text-neutral-60">
               {t('car_description')}
             </label>
             <textarea
@@ -670,7 +672,7 @@ export default function SellForm({ locale }: Props) {
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="rounded-control border border-black/15 px-4 py-3 font-semibold"
+              className="rounded-control border border-neutral-15 px-4 py-3 font-semibold"
             >
               {t('sell_back')}
             </button>
@@ -700,7 +702,7 @@ export default function SellForm({ locale }: Props) {
             }}
             className={field}
           />
-          <p className="text-sm text-black/50">
+          <p className="text-sm text-neutral-50">
             {files.length} / {MAX_PHOTOS}
           </p>
 
@@ -708,7 +710,7 @@ export default function SellForm({ locale }: Props) {
             <button
               type="button"
               onClick={() => setStep(2)}
-              className="rounded-control border border-black/15 px-4 py-3 font-semibold"
+              className="rounded-control border border-neutral-15 px-4 py-3 font-semibold"
             >
               {t('sell_back')}
             </button>
@@ -748,7 +750,7 @@ export default function SellForm({ locale }: Props) {
           />
 
           <div>
-            <label className="mb-1 block text-sm text-black/60">
+            <label className="mb-1 block text-sm text-neutral-60">
               {t('sell_phone')}
             </label>
             <input
@@ -769,7 +771,7 @@ export default function SellForm({ locale }: Props) {
                   принимаются здесь, а не после публикации.
                   Ссылки ведут на страницы сайта и открываются в новой
                   вкладке — иначе продавец потеряет заполненную форму. */}
-              <label className="flex cursor-pointer items-start gap-2.5 text-sm text-black/70">
+              <label className="flex cursor-pointer items-start gap-2.5 text-sm text-neutral-70">
                 <input
                   type="checkbox"
                   checked={agreed}
@@ -812,12 +814,12 @@ export default function SellForm({ locale }: Props) {
             </>
           ) : (
             <>
-              <p className="text-sm text-black/60">
+              <p className="text-sm text-neutral-60">
                 {t('otp_sent_to')} {sentTo}
               </p>
 
               <div>
-                <label className="mb-1 block text-sm text-black/60">
+                <label className="mb-1 block text-sm text-neutral-60">
                   {t('sell_code')}
                 </label>
                 <input
@@ -877,7 +879,7 @@ export default function SellForm({ locale }: Props) {
           <button
             type="button"
             onClick={() => setStep(3)}
-            className="w-full rounded-control border border-black/15 px-4 py-3 font-semibold"
+            className="w-full rounded-control border border-neutral-15 px-4 py-3 font-semibold"
           >
             {t('sell_back')}
           </button>

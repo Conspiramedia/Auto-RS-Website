@@ -14,7 +14,8 @@
 
 import { useEffect, useState } from 'react';
 
-import { appIds, brand } from '@/lib/brand';
+import { appIds } from '@/lib/brand';
+import Logo from './ui/Logo';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 
@@ -69,13 +70,7 @@ export default function SmartBanner({ locale, deepLink }: Props) {
 
   return (
     <div className="flex items-center gap-3 bg-brand-dark px-4 py-2 text-white">
-      <div
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-sm font-bold"
-        style={{ background: brand.colors.primary }}
-        aria-hidden="true"
-      >
-        RS
-      </div>
+      <Logo variant="mark" />
 
       <div className="min-w-0 flex-1 leading-tight">
         <div className="truncate text-sm font-semibold">{t('banner_title')}</div>

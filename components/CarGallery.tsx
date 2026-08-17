@@ -25,7 +25,7 @@ export default function CarGallery({ images, alt }: Props) {
 
   if (images.length === 0) {
     return (
-      <div className="flex aspect-[4/3] items-center justify-center rounded-card bg-black/5 text-black/30">
+      <div className="flex aspect-[4/3] items-center justify-center rounded-card bg-surface-muted text-neutral-30">
         {alt}
       </div>
     );
@@ -33,7 +33,7 @@ export default function CarGallery({ images, alt }: Props) {
 
   return (
     <div>
-      <div className="relative aspect-[4/3] overflow-hidden rounded-card bg-black/5">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-card bg-surface-muted">
         {images.map((img, i) => (
           <Image
             key={img.id}

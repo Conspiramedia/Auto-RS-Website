@@ -38,12 +38,12 @@ export default async function HomeView({ locale }: { locale: Locale }) {
 
       <main>
         {/* Оффер продавцу — главный экран и единственный акцентный CTA. */}
-        <section className="border-b border-black/10 bg-black/[0.02]">
+        <section className="border-b border-neutral-10 bg-surface-subtle">
           <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
             <h1 className="max-w-2xl text-3xl font-bold sm:text-4xl">
               {t('home_hero_title')}
             </h1>
-            <p className="mt-3 max-w-xl text-lg text-black/60">
+            <p className="mt-3 max-w-xl text-lg text-neutral-60">
               {t('home_hero_text')}
             </p>
 
@@ -56,7 +56,7 @@ export default async function HomeView({ locale }: { locale: Locale }) {
               </Link>
               <Link
                 href={localeHref(locale, '/cars')}
-                className="rounded-control border border-black/15 bg-white px-6 py-3 font-semibold"
+                className="rounded-control border border-neutral-15 bg-white px-6 py-3 font-semibold"
               >
                 {t('home_all_cars')}
               </Link>
@@ -67,7 +67,7 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                 названия разделов меню («Автомобили», «Город»), из-за чего
                 получалось «11 город». */}
             {stats.cars_total > 0 && (
-              <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3 text-sm text-black/60">
+              <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3 text-sm text-neutral-60">
                 <span>
                   <strong className="text-brand-dark">{stats.cars_total}</strong>{' '}
                   {nounFor(stats.cars_total, 'car', locale)}
@@ -143,10 +143,10 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                 <Link
                   key={b.brand_slug}
                   href={localeHref(locale, `/cars/${b.brand_slug}`)}
-                  className="rounded-control border border-black/15 px-3 py-2 text-sm hover:bg-black/[0.03]"
+                  className="rounded-control border border-neutral-15 px-3 py-2 text-sm hover:bg-surface-hover"
                 >
                   {b.brand}{' '}
-                  <span className="text-black/40">({b.cars_count})</span>
+                  <span className="text-neutral-40">({b.cars_count})</span>
                 </Link>
               ))}
             </div>
@@ -154,11 +154,11 @@ export default async function HomeView({ locale }: { locale: Locale }) {
         )}
 
         {/* Оффер дилерам — вторая аудитория продавцов. */}
-        <section className="border-t border-black/10 bg-black/[0.02]">
+        <section className="border-t border-neutral-10 bg-surface-subtle">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-10">
             <div>
               <h2 className="text-xl font-semibold">{t('dealers_title')}</h2>
-              <p className="mt-1 text-black/60">{t('dealers_offer')}</p>
+              <p className="mt-1 text-neutral-60">{t('dealers_offer')}</p>
             </div>
             <Link
               href={localeHref(locale, '/dealers')}

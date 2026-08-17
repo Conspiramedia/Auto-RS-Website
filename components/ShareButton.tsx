@@ -54,7 +54,7 @@ export default function ShareButton({ locale, url, title }: Props) {
     <button
       type="button"
       onClick={handleShare}
-      className="rounded-control border border-black/15 px-4 py-2.5 text-sm font-semibold hover:bg-black/[0.03]"
+      className="rounded-control border border-neutral-15 px-4 py-2.5 text-sm font-semibold hover:bg-surface-hover"
     >
       {copied ? t('car_share_copied') : t('car_share')}
     </button>

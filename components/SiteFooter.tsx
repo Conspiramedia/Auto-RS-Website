@@ -31,12 +31,12 @@ export default function SiteFooter({
   const brandRoot = mode === 'rent' ? '/rent' : '/cars';
 
   return (
-    <footer className="mt-12 border-t border-black/10 bg-black/[0.02]">
+    <footer className="mt-12 border-t border-neutral-10 bg-surface-subtle">
       <div className="mx-auto max-w-6xl px-4 py-8">
         {brands.length > 0 && (
           <div className="mb-6">
             <div className="mb-2 text-sm font-semibold">{t('home_brands')}</div>
-            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-black/60">
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-neutral-60">
               {brands.map((b) => (
                 <Link
                   key={b.brand_slug}
@@ -72,7 +72,7 @@ export default function SiteFooter({
             обязаны быть доступны с любой страницы (на них ссылается
             согласие при входе по SMS), но конкурировать с разделами
             каталога им незачем. */}
-        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-black/50">
+        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-neutral-50">
           {/* Контакты стоят рядом с документами не случайно: именно
               документы на них ссылаются, и путь должен быть доступен
               с любой страницы сайта. */}
@@ -93,7 +93,7 @@ export default function SiteFooter({
           </Link>
         </div>
 
-        <div className="mt-6 text-xs text-black/40">
+        <div className="mt-6 text-xs text-neutral-40">
           © {year} {brand.name}. {t('site_tagline')}.
         </div>
       </div>

@@ -63,9 +63,9 @@ export default function CarCard({
   return (
     <Link
       href={localeHref(locale, `/car/${car.id}`)}
-      className="group block overflow-hidden rounded-card border border-black/10 transition-shadow hover:shadow-md"
+      className="group block overflow-hidden rounded-card border border-neutral-10 transition-shadow hover:shadow-card"
     >
-      <div className="relative aspect-[4/3] bg-black/5">
+      <div className="relative aspect-[4/3] bg-surface-muted">
         {car.photo_url ? (
           <Image
             src={car.photo_url}
@@ -79,7 +79,7 @@ export default function CarCard({
             priority={priority}
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-black/30">
+          <div className="flex h-full items-center justify-center text-sm text-neutral-30">
             {car.brand}
           </div>
         )}
@@ -132,11 +132,11 @@ export default function CarCard({
           </div>
         )}
 
-        <div className="mt-1 text-sm text-black/60">
+        <div className="mt-1 text-sm text-neutral-60">
           {car.year} · {formatMileage(car.mileage, locale)}
         </div>
 
-        <div className="mt-0.5 truncate text-sm text-black/50">{car.city}</div>
+        <div className="mt-0.5 truncate text-sm text-neutral-50">{car.city}</div>
       </div>
     </Link>
   );

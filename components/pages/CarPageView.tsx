@@ -98,7 +98,7 @@ export default async function CarPageView({
       <SiteHeader locale={locale} pathname={`/car/${id}`} />
 
       <main className="mx-auto max-w-6xl px-4 py-6">
-        <nav className="mb-4 text-sm text-black/50">
+        <nav className="mb-4 text-sm text-neutral-50">
           <Link
             href={localeHref(locale, catalogPath)}
             className="hover:underline"
@@ -126,7 +126,7 @@ export default async function CarPageView({
               <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
                 {specs.map((s) => (
                   <div key={s.label}>
-                    <dt className="text-sm text-black/50">{s.label}</dt>
+                    <dt className="text-sm text-neutral-50">{s.label}</dt>
                     <dd className="font-medium">{s.value}</dd>
                   </div>
                 ))}
@@ -137,12 +137,12 @@ export default async function CarPageView({
                 вопросы, которые иначе ушли бы в переписку: залог, срок,
                 что входит. */}
             {car.is_for_rent && (
-              <section className="mt-6 rounded-card border border-black/10 p-4">
+              <section className="mt-6 rounded-card border border-neutral-10 p-4">
                 <h2 className="mb-3 text-lg font-semibold">{t('rent_terms')}</h2>
 
                 <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
                   <div>
-                    <dt className="text-sm text-black/50">{t('rent_price')}</dt>
+                    <dt className="text-sm text-neutral-50">{t('rent_price')}</dt>
                     <dd className="font-medium">
                       {formatRentPrice(
                         car.rent_price_daily,
@@ -152,7 +152,7 @@ export default async function CarPageView({
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-sm text-black/50">
+                    <dt className="text-sm text-neutral-50">
                       {t('rent_deposit')}
                     </dt>
                     <dd className="font-medium">
@@ -160,7 +160,7 @@ export default async function CarPageView({
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-sm text-black/50">
+                    <dt className="text-sm text-neutral-50">
                       {t('rent_min_period')}
                     </dt>
                     <dd className="font-medium">
@@ -169,7 +169,7 @@ export default async function CarPageView({
                   </div>
                 </dl>
 
-                <p className="mt-3 text-sm text-black/60">
+                <p className="mt-3 text-sm text-neutral-60">
                   {t('rent_terms_text')}
                 </p>
               </section>
@@ -182,20 +182,20 @@ export default async function CarPageView({
                 </h2>
                 {/* whitespace-pre-line сохраняет переносы строк, которые
                     продавец сделал при вводе описания. */}
-                <p className="whitespace-pre-line text-black/80">
+                <p className="whitespace-pre-line text-neutral-80">
                   {car.description}
                 </p>
               </section>
             )}
 
-            <div className="mt-6 text-sm text-black/40">
+            <div className="mt-6 text-sm text-neutral-40">
               {t('car_published')}: {formatDate(car.created_at, locale)}
             </div>
           </div>
 
           {/* Правая колонка: цена и воронка в приложение. */}
           <aside className="lg:sticky lg:top-20 lg:self-start">
-            <div className="rounded-card border border-black/10 p-4">
+            <div className="rounded-card border border-neutral-10 p-4">
               {/* Блок цен. У объявления может быть две цены сразу
                   (продажа и аренда) — тогда показываем обе, потому что
                   выбрать сделку должен пользователь, а не мы за него. */}
@@ -220,17 +220,17 @@ export default async function CarPageView({
                       locale,
                     )}
                   </div>
-                  <div className="mt-1 text-sm text-black/60">
+                  <div className="mt-1 text-sm text-neutral-60">
                     {t('rent_deposit')}:{' '}
                     {formatDeposit(car.deposit_amount, car.currency, locale)}
                   </div>
                 </div>
               )}
 
-              <div className="mt-4 border-t border-black/10 pt-4">
-                <div className="text-sm text-black/50">{t('car_seller')}</div>
+              <div className="mt-4 border-t border-neutral-10 pt-4">
+                <div className="text-sm text-neutral-50">{t('car_seller')}</div>
                 <div className="font-semibold">{car.seller_name}</div>
-                <div className="text-sm text-black/50">
+                <div className="text-sm text-neutral-50">
                   {car.seller_kind === 'dealer'
                     ? t('car_seller_dealer')
                     : t('car_seller_private')}
@@ -240,9 +240,9 @@ export default async function CarPageView({
               {/* Контакты продавца — только в приложении. Это осознанное
                   продуктовое решение: чат и звонки живут в приложении,
                   сайт работает как воронка в него. */}
-              <div className="mt-4 border-t border-black/10 pt-4">
+              <div className="mt-4 border-t border-neutral-10 pt-4">
                 <div className="font-semibold">{t('car_contact_title')}</div>
-                <p className="mt-1 text-sm text-black/60">
+                <p className="mt-1 text-sm text-neutral-60">
                   {t('car_contact_text')}
                 </p>
 
@@ -259,9 +259,9 @@ export default async function CarPageView({
               </div>
 
               {/* QR — путь в приложение с десктопа, где смарт-баннера нет. */}
-              <div className="mt-4 hidden border-t border-black/10 pt-4 lg:block">
+              <div className="mt-4 hidden border-t border-neutral-10 pt-4 lg:block">
                 <AppQr url={canonicalUrl} />
-                <p className="mt-2 text-xs text-black/50">{t('car_qr_hint')}</p>
+                <p className="mt-2 text-xs text-neutral-50">{t('car_qr_hint')}</p>
               </div>
             </div>
           </aside>

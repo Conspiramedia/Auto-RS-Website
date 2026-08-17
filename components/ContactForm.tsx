@@ -18,6 +18,8 @@ import { useState } from 'react';
 import type { Locale } from '@/lib/i18n';
 import { getT, type DictKey } from '@/lib/i18n';
 import { getBrowserClient } from '@/lib/supabaseClient';
+import { fieldClass } from './ui/Field';
+import Button from './ui/Button';
 
 type Props = {
   locale: Locale;
@@ -55,8 +57,8 @@ export default function ContactForm({ locale }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
 
-  const field =
-    'w-full rounded-control border border-black/15 px-3 py-2.5 outline-none focus:border-brand-primary';
+  // Классы поля ввода — из общего паттерна (components/ui/Field).
+  const field = fieldClass;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -105,9 +107,9 @@ export default function ContactForm({ locale }: Props) {
 
   if (sent) {
     return (
-      <div className="rounded-card border border-black/10 p-6 text-center">
+      <div className="rounded-card border border-neutral-10 p-6 text-center">
         <h2 className="text-lg font-semibold">{t('contact_sent_title')}</h2>
-        <p className="mt-2 text-black/60">{t('contact_sent_text')}</p>
+        <p className="mt-2 text-neutral-60">{t('contact_sent_text')}</p>
       </div>
     );
   }
@@ -115,7 +117,7 @@ export default function ContactForm({ locale }: Props) {
   return (
     <form
       onSubmit={submit}
-      className="space-y-3 rounded-card border border-black/10 p-4 sm:p-6"
+      className="space-y-3 rounded-card border border-neutral-10 p-4 sm:p-6"
     >
       <h2 className="text-lg font-semibold">{t('contact_form_title')}</h2>
 
@@ -138,7 +140,7 @@ export default function ContactForm({ locale }: Props) {
       />
 
       <div>
-        <label className="mb-1 block text-sm text-black/60" htmlFor="topic">
+        <label className="mb-1 block text-sm text-neutral-60" htmlFor="topic">
           {t('contact_topic')}
         </label>
         <select
@@ -157,7 +159,7 @@ export default function ContactForm({ locale }: Props) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm text-black/60" htmlFor="name">
+          <label className="mb-1 block text-sm text-neutral-60" htmlFor="name">
             {t('contact_name')}
           </label>
           <input
@@ -173,7 +175,7 @@ export default function ContactForm({ locale }: Props) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm text-black/60" htmlFor="email">
+          <label className="mb-1 block text-sm text-neutral-60" htmlFor="email">
             {t('contact_email')}
           </label>
           <input
@@ -190,7 +192,7 @@ export default function ContactForm({ locale }: Props) {
       </div>
 
       <div>
-        <label className="mb-1 block text-sm text-black/60" htmlFor="message">
+        <label className="mb-1 block text-sm text-neutral-60" htmlFor="message">
           {t('contact_message')}
         </label>
         <textarea
@@ -205,13 +207,9 @@ export default function ContactForm({ locale }: Props) {
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={busy}
-        className="w-full rounded-control bg-brand-green px-4 py-3 font-semibold text-white disabled:opacity-40"
-      >
+      <Button type="submit" disabled={busy} fullWidth>
         {t('contact_send')}
-      </button>
+      </Button>
 
       {error && (
         <p className="rounded-control bg-brand-red/10 px-3 py-2 text-sm text-brand-red">

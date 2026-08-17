@@ -29,7 +29,7 @@ export default async function AppQr({ url, size = 148 }: Props) {
 
   return (
     <div
-      className="inline-block rounded-card border border-black/10 bg-white p-2"
+      className="inline-block rounded-card border border-neutral-10 bg-white p-2"
       // Содержимое — SVG, сгенерированный библиотекой из нашего же URL;
       // пользовательский ввод сюда не попадает.
       dangerouslySetInnerHTML={{ __html: svg }}

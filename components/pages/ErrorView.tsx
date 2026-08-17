@@ -42,7 +42,7 @@ export default function ErrorView({ locale, reset }: Props) {
       {/* Шапка собрана здесь, а не переиспользована из SiteHeader:
           на экране ошибки не должно быть ни CTA подачи, ни навигации
           по разделам — только выход в каталог и переключатель языка. */}
-      <header className="border-b border-black/10 bg-white">
+      <header className="border-b border-neutral-10 bg-white">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:gap-4 sm:px-4">
           <Link
             href={localeHref(locale, '/')}
@@ -71,7 +71,7 @@ export default function ErrorView({ locale, reset }: Props) {
       <main className="mx-auto flex max-w-2xl flex-col items-center px-4 py-16 text-center">
         <p className="text-5xl font-bold text-brand-dark/20">500</p>
         <h1 className="mt-4 text-2xl font-bold">{t('err_title')}</h1>
-        <p className="mt-3 max-w-md text-black/60">{t('err_text')}</p>
+        <p className="mt-3 max-w-md text-neutral-60">{t('err_text')}</p>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           {/* Основное действие — повторить. Ошибки этого класса чаще
@@ -85,13 +85,13 @@ export default function ErrorView({ locale, reset }: Props) {
           </button>
           <Link
             href={localeHref(locale, '/cars')}
-            className="rounded-control border border-black/15 px-5 py-3 font-semibold"
+            className="rounded-control border border-neutral-15 px-5 py-3 font-semibold"
           >
             {t('nf_catalog')}
           </Link>
           <Link
             href={localeHref(locale, '/')}
-            className="rounded-control border border-black/15 px-5 py-3 font-semibold"
+            className="rounded-control border border-neutral-15 px-5 py-3 font-semibold"
           >
             {t('nf_home')}
           </Link>

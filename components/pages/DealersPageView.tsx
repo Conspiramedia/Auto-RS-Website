@@ -58,9 +58,9 @@ export default function DealersPageView({ locale }: { locale: Locale }) {
 
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           {BENEFITS[locale].map((b) => (
-            <div key={b.title} className="rounded-card border border-black/10 p-4">
+            <div key={b.title} className="rounded-card border border-neutral-10 p-4">
               <h2 className="font-semibold">{b.title}</h2>
-              <p className="mt-1 text-sm text-black/60">{b.text}</p>
+              <p className="mt-1 text-sm text-neutral-60">{b.text}</p>
             </div>
           ))}
         </div>

@@ -67,14 +67,14 @@ export default function FilterChips({ locale, filters, basePath }: Props) {
         <Link
           key={chip.key}
           href={chip.href}
-          className="inline-flex items-center gap-1.5 rounded-control bg-black/[0.06] px-3 py-1.5 text-sm hover:bg-black/[0.1]"
+          className="inline-flex items-center gap-1.5 rounded-control bg-surface-active px-3 py-1.5 text-sm hover:bg-surface-activeHover"
           // Ссылки-снятия фильтра не должны обходиться краулером: они ведут
           // на такие же отфильтрованные выдачи и только тратят краулинговый
           // бюджет.
           rel="nofollow"
         >
           <span>{chip.label}</span>
-          <span className="text-black/40">×</span>
+          <span className="text-neutral-40">×</span>
         </Link>
       ))}
 

@@ -102,7 +102,7 @@ export default async function ModelPageView({
       />
 
       <main className="mx-auto max-w-6xl px-4 py-6">
-        <nav className="mb-4 text-sm text-black/50">
+        <nav className="mb-4 text-sm text-neutral-50">
           <Link href={localeHref(locale, root)} className="hover:underline">
             {mode === 'rent' ? t('rent_title') : t('nav_catalog')}
           </Link>

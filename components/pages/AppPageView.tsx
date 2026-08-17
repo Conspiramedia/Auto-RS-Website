@@ -53,7 +53,7 @@ export default function AppPageView({ locale }: { locale: Locale }) {
 
       <main className="mx-auto max-w-4xl px-4 py-10">
         <h1 className="text-3xl font-bold">{brand.name}</h1>
-        <p className="mt-2 max-w-xl text-lg text-black/60">
+        <p className="mt-2 max-w-xl text-lg text-neutral-60">
           {t('site_tagline')}
         </p>
 
@@ -62,7 +62,7 @@ export default function AppPageView({ locale }: { locale: Locale }) {
             {FEATURES[locale].map((f) => (
               <div key={f.title}>
                 <h2 className="font-semibold">{f.title}</h2>
-                <p className="text-black/60">{f.text}</p>
+                <p className="text-neutral-60">{f.text}</p>
               </div>
             ))}
 
@@ -93,7 +93,7 @@ export default function AppPageView({ locale }: { locale: Locale }) {
 
           <div className="hidden text-center sm:block">
             <AppQr url={siteBaseUrl} size={160} />
-            <p className="mt-2 max-w-[180px] text-xs text-black/50">
+            <p className="mt-2 max-w-[180px] text-xs text-neutral-50">
               {t('car_qr_hint')}
             </p>
           </div>
