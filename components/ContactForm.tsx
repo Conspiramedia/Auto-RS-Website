@@ -18,7 +18,7 @@ import { useState } from 'react';
 import type { Locale } from '@/lib/i18n';
 import { getT, type DictKey } from '@/lib/i18n';
 import { getBrowserClient } from '@/lib/supabaseClient';
-import { fieldClass } from './ui/Field';
+import { fieldClass, fieldClassTextarea } from './ui/Field';
 import Button from './ui/Button';
 
 type Props = {
@@ -59,6 +59,7 @@ export default function ContactForm({ locale }: Props) {
 
   // Классы поля ввода — из общего паттерна (components/ui/Field).
   const field = fieldClass;
+  const fieldTextarea = fieldClassTextarea;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -203,7 +204,7 @@ export default function ContactForm({ locale }: Props) {
           minLength={10}
           maxLength={4000}
           rows={6}
-          className={field}
+          className={fieldTextarea}
         />
       </div>
 

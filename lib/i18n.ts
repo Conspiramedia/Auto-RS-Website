@@ -127,6 +127,7 @@ export const dict = {
     catalog_found: 'Pronađeno',
     catalog_apply: 'Prikaži rezultate',
     catalog_page: 'Strana',
+    feed_loading: 'Učitavanje…',
 
     // Фильтры
     filter_brand: 'Marka',
@@ -161,6 +162,10 @@ export const dict = {
     car_fuel: 'Gorivo',
     car_city: 'Grad',
     car_description: 'Opis',
+    // Пометка у описания: текст написан продавцом и не переводится.
+    // В сербской локали не показывается — площадка сербская, и текст
+    // на сербском для местного пользователя ожидаем.
+    car_description_original: 'na jeziku originala',
     car_specs: 'Karakteristike',
     car_similar: 'Slični automobili',
     car_sold: 'Prodato',
@@ -354,6 +359,7 @@ export const dict = {
     catalog_found: 'Найдено',
     catalog_apply: 'Показать результаты',
     catalog_page: 'Страница',
+    feed_loading: 'Загружаем…',
 
     filter_brand: 'Марка',
     filter_model: 'Модель',
@@ -385,6 +391,7 @@ export const dict = {
     car_fuel: 'Топливо',
     car_city: 'Город',
     car_description: 'Описание',
+    car_description_original: 'на языке оригинала',
     car_specs: 'Характеристики',
     car_similar: 'Похожие автомобили',
     car_sold: 'Продано',

@@ -48,8 +48,19 @@ export default async function HomeView({ locale }: { locale: Locale }) {
               {t('home_hero_text')}
             </p>
 
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button size="xl" href={localeHref(locale, '/sell')}>
+            {/* Парные CTA — одного размера и одинаковой ширины.
+                На мобильном это вертикальный стек во всю ширину: две
+                кнопки разной ширины друг под другом выглядят как ошибка
+                вёрстки. На десктопе они встают в ряд, и ширину задаёт
+                более длинная подпись (basis-0 + flex-1 внутри
+                ограниченного контейнера), поэтому обе равны. */}
+            <div className="mt-6 flex max-w-md flex-col gap-3 sm:flex-row">
+              <Button
+                size="xl"
+                href={localeHref(locale, '/sell')}
+                className="sm:flex-1"
+                fullWidth
+              >
                 {t('home_hero_cta')}
               </Button>
               {/* Герой лежит на серой подложке, поэтому вторичная кнопка
@@ -59,6 +70,8 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                 variant="secondary"
                 size="xl"
                 href={localeHref(locale, '/cars')}
+                className="sm:flex-1"
+                fullWidth
               >
                 {t('home_all_cars')}
               </Button>

@@ -45,6 +45,14 @@ export type CatalogFilters = {
   // Витрина: продажа или аренда. Задаётся не пользователем, а самой
   // страницей (/cars или /rent), поэтому в query-параметры не попадает.
   listingType?: ListingType;
+  // ---------- Бесконечная лента (миграция 0059) ----------
+  // Соль перемешки одного «круга». Не задан — сервер использует
+  // current_date, то есть прежний детерминированный порядок. Именно это
+  // нужно SSG-страницам марок/моделей и sitemap: их выдача обязана быть
+  // стабильной для краулера.
+  seed?: number;
+  // Круги 2+: полная перетасовка без блока промо сверху.
+  shuffleAll?: boolean;
 };
 
 export type CatalogResult = {
@@ -53,6 +61,12 @@ export type CatalogResult = {
   page: number;
   perPage: number;
   totalPages: number;
+  // Соль, которой сервер перемешал ЭТУ выдачу. Возвращается наружу,
+  // чтобы бесконечная лента продолжала тот же круг в том же порядке:
+  // возьми клиент свой seed, вторая страница пришла бы из другой
+  // перетасовки, и часть объявлений задвоилась бы, а часть пропала.
+  // null — выдача детерминированная (перемешка по current_date).
+  seed: number | null;
 };
 
 // ------------------------------------------------------------
@@ -82,6 +96,19 @@ export async function fetchCatalog(
     p_offset: (page - 1) * perPage,
     p_limit: perPage,
     p_listing_type: filters.listingType ?? 'sale',
+    // ПАРАМЕТРЫ БЕСКОНЕЧНОЙ ЛЕНТЫ ДОБАВЛЯЮТСЯ ТОЛЬКО КОГДА НУЖНЫ.
+    // supabase-js вызывает RPC по ИМЕНАМ параметров, и лишний ключ в
+    // объекте — это другая сигнатура: пока миграция 0059 не применена,
+    // запрос с p_seed падает с «Could not find the function …».
+    // Обычная выдача (SSG марок, sitemap, первый круг) их не передаёт
+    // и работает на любой версии функции; лента добавляет их сама и
+    // требует применённой 0059.
+    ...(filters.seed != null || filters.shuffleAll
+      ? {
+          p_seed: filters.seed ?? null,
+          p_shuffle_all: filters.shuffleAll ?? false,
+        }
+      : {}),
   });
 
   if (error) {
@@ -99,6 +126,7 @@ export async function fetchCatalog(
     page,
     perPage,
     totalPages: Math.max(Math.ceil(total / perPage), 1),
+    seed: filters.seed ?? null,
   };
 }
 

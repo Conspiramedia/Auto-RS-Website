@@ -94,6 +94,17 @@ export default function FilterPanel({
   // полей много, и они плотнее, чем в формах подачи.
   const field = fieldClassCompact;
 
+  // Числовые поля фильтров (цена, год, пробег) остаются НЕуправляемыми:
+  // они уходят обычной GET-формой, и значение читает браузер, а не React.
+  // Поэтому здесь не форматирование с разделителями тысяч (пробелы
+  // попали бы в URL), а только отсечение нецифр прямо при вводе —
+  // ровно как ограничение digitsOnly в приложении.
+  function onlyDigits(e: React.FormEvent<HTMLInputElement>) {
+    const input = e.currentTarget;
+    const clean = input.value.replace(/[^0-9]/g, '');
+    if (input.value !== clean) input.value = clean;
+  }
+
   // Догрузка моделей при смене марки прямо в панели. На сервере модели
   // уже пришли для марки из URL — повторный запрос делаем только когда
   // пользователь выбрал другую марку.
@@ -277,6 +288,7 @@ export default function FilterPanel({
 
               <div className="grid grid-cols-2 gap-3">
                 <ListPicker
+                  size="compact"
                   locale={locale}
                   name="brand"
                   label={t('filter_brand')}
@@ -292,6 +304,7 @@ export default function FilterPanel({
                 {/* Модель доступна только после выбора марки: перечислять
                     модели всех 124 марок разом бессмысленно. */}
                 <ListPicker
+                  size="compact"
                   key={modelKey}
                   locale={locale}
                   name="model"
@@ -310,6 +323,7 @@ export default function FilterPanel({
               </div>
 
               <ListPicker
+                size="compact"
                 locale={locale}
                 name="city"
                 label={t('filter_city')}
@@ -326,16 +340,22 @@ export default function FilterPanel({
                   </label>
                   <div className="flex gap-2">
                     <input
-                      type="number"
+                      type="text"
+
+                      inputMode="numeric"
                       name="price_from"
+                      onInput={onlyDigits}
                       min={0}
                       defaultValue={filters.priceFrom ?? ''}
                       placeholder={t('filter_from')}
                       className={field}
                     />
                     <input
-                      type="number"
+                      type="text"
+
+                      inputMode="numeric"
                       name="price_to"
+                      onInput={onlyDigits}
                       min={0}
                       defaultValue={filters.priceTo ?? ''}
                       placeholder={t('filter_to')}
@@ -352,8 +372,14 @@ export default function FilterPanel({
                       от 1900 до следующего года включительно. */}
                   <div className="flex gap-2">
                     <input
-                      type="number"
+                      type="text"
+
+                      inputMode="numeric"
+
+                      maxLength={4}
                       name="year_from"
+
+                      onInput={onlyDigits}
                       min={YEAR_MIN}
                       max={yearMax()}
                       defaultValue={filters.yearFrom ?? ''}
@@ -361,8 +387,14 @@ export default function FilterPanel({
                       className={field}
                     />
                     <input
-                      type="number"
+                      type="text"
+
+                      inputMode="numeric"
+
+                      maxLength={4}
                       name="year_to"
+
+                      onInput={onlyDigits}
                       min={YEAR_MIN}
                       max={yearMax()}
                       defaultValue={filters.yearTo ?? ''}
@@ -378,8 +410,11 @@ export default function FilterPanel({
                   {t('filter_mileage')}, {t('common_km')}
                 </label>
                 <input
-                  type="number"
+                  type="text"
+
+                  inputMode="numeric"
                   name="mileage_max"
+                  onInput={onlyDigits}
                   min={0}
                   defaultValue={filters.mileageMax ?? ''}
                   className={field}
@@ -388,6 +423,7 @@ export default function FilterPanel({
 
               <div className="grid grid-cols-3 gap-3">
                 <ListPicker
+                  size="compact"
                   locale={locale}
                   name="body"
                   label={t('filter_body')}
@@ -399,6 +435,7 @@ export default function FilterPanel({
                 />
 
                 <ListPicker
+                  size="compact"
                   locale={locale}
                   name="gearbox"
                   label={t('filter_transmission')}
@@ -408,6 +445,7 @@ export default function FilterPanel({
                 />
 
                 <ListPicker
+                  size="compact"
                   locale={locale}
                   name="fuel"
                   label={t('filter_fuel')}

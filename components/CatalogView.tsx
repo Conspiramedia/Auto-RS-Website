@@ -8,6 +8,7 @@
 // ============================================================
 
 import CarCard from './CarCard';
+import InfiniteCarFeed from './InfiniteCarFeed';
 import EmptyState from './EmptyState';
 import FilterChips from './FilterChips';
 import FilterPanel from './FilterPanel';
@@ -41,6 +42,11 @@ type Props = {
   // Тип объявления зафиксирован адресом (SEO-лендинг /rent): сегмент
   // выбора типа в фильтрах скрывается.
   lockedType?: boolean;
+  // Бесконечная подгрузка при скролле. Включена ТОЛЬКО в основных
+  // витринах (/cars, /rent) и только в дефолтной сортировке.
+  // SEO-страницы марок и моделей остаются на обычной пагинации:
+  // их задача — стабильная индексируемая выдача, а не «живая лента».
+  infinite?: boolean;
 };
 
 export default function CatalogView({
@@ -55,6 +61,7 @@ export default function CatalogView({
   basePath,
   mode = 'sale',
   lockedType = false,
+  infinite = false,
 }: Props) {
   const t = getT(locale);
 
@@ -152,19 +159,39 @@ export default function CatalogView({
         </div>
       ) : (
         <>
-          <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {result.cars.map((car, i) => (
-              <CarCard
-                key={car.id}
-                locale={locale}
-                car={car}
-                mode={mode}
-                // Первые четыре карточки — над сгибом, грузим приоритетно.
-                priority={i < 4}
-              />
-            ))}
-          </div>
+          {infinite ? (
+            // Бесконечная лента: первая порция уже отрисована сервером
+            // (важно для SEO), клиент продолжает её при скролле.
+            // Паттерн перенесён из App Baza — см. шапку InfiniteCarFeed.
+            <InfiniteCarFeed
+              locale={locale}
+              initialCars={result.cars}
+              filters={filters}
+              mode={mode}
+              initialSeed={result.seed}
+              total={result.total}
+            />
+          ) : (
+            <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {result.cars.map((car, i) => (
+                <CarCard
+                  key={car.id}
+                  locale={locale}
+                  car={car}
+                  mode={mode}
+                  // Первые четыре карточки — над сгибом, грузим приоритетно.
+                  priority={i < 4}
+                />
+              ))}
+            </div>
+          )}
 
+          {/* Пагинация-ссылки остаются ВСЕГДА, даже при включённой
+              бесконечной ленте. Причина сугубо поисковая: краулер не
+              выполняет скролл, и без этих ссылок объявления со второй
+              страницы и глубже лишились бы входящих внутренних ссылок.
+              Человеку с работающим скриптом они не мешают — это запасной
+              путь внизу страницы. */}
           <Pagination
             locale={locale}
             filters={filters}

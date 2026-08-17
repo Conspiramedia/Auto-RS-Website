@@ -27,6 +27,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import { normalizeForSearch } from '@/lib/referenceData';
+import { FIELD_HEIGHT, FIELD_HEIGHT_COMPACT, labelClass } from './ui/Field';
 
 export type PickerOption = {
   // Значение, которое уходит в форму и в URL.
@@ -58,6 +59,10 @@ type Props = {
   // Показывать поиск. Для списков из 3-5 пунктов он лишний —
   // приложение в таких случаях показывает компактный лист без поиска.
   searchable?: boolean;
+  // Высота контрола. 'form' (44px) — формы подачи и обратной связи;
+  // 'compact' (40px) — панель фильтров, где полей много и они плотнее.
+  // Обе ступени заданы в components/ui/Field и общие с <input>.
+  size?: 'form' | 'compact';
   // Вызывается при выборе. Нужен для каскада «марка → модель».
   onChange?: (value: string) => void;
 };
@@ -73,6 +78,7 @@ export default function ListPicker({
   emptyHint,
   allowCustom = false,
   searchable = true,
+  size = 'form',
   onChange,
 }: Props) {
   const t = getT(locale);
@@ -144,7 +150,7 @@ export default function ListPicker({
 
   return (
     <div ref={boxRef} className="relative">
-      <label className="mb-1 block text-sm text-neutral-60">{label}</label>
+      <label className={labelClass}>{label}</label>
 
       {/* Скрытое поле — то, что реально уходит в GET-форму и в URL.
           Когда значение не выбрано, поле НЕ рендерится: иначе браузер
@@ -162,10 +168,18 @@ export default function ListPicker({
         aria-expanded={open}
         aria-controls={open ? listId : undefined}
         className={
-          'flex w-full items-center justify-between gap-2 rounded-control border border-neutral-15 px-3 py-2 text-left text-sm ' +
+          // Высота и размер шрифта берутся из тех же токенов, что и
+          // <input> (components/ui/Field). Раньше здесь стояло py-2 +
+          // text-sm, а у input — py-2.5 + text-base, и на шаге 1 подачи
+          // «Год выпуска» и «Город» оказывались разной высоты.
+          `flex w-full items-center justify-between gap-2 rounded-control border border-neutral-15 bg-white px-3 text-left ${
+            size === 'compact'
+              ? `${FIELD_HEIGHT_COMPACT} text-caption`
+              : `${FIELD_HEIGHT} text-base`
+          } ` +
           (disabled
             ? 'cursor-not-allowed bg-surface-hover text-neutral-30'
-            : 'hover:border-neutral-30')
+            : 'transition-colors duration-fast ease-out hover:border-neutral-30')
         }
       >
         <span className={selected ? 'truncate' : 'truncate text-neutral-40'}>

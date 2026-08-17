@@ -13,7 +13,8 @@ import { useState } from 'react';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import { getBrowserClient } from '@/lib/supabaseClient';
-import { fieldClass } from './ui/Field';
+import { formatSerbianPhone, serbianPhoneToE164 } from '@/lib/inputFormat';
+import { fieldClass, fieldClassTextarea } from './ui/Field';
 import Button from './ui/Button';
 
 type Props = {
@@ -61,6 +62,7 @@ export default function DealerForm({ locale }: Props) {
 
   // Классы поля ввода — из общего паттерна (components/ui/Field).
   const field = fieldClass;
+  const fieldTextarea = fieldClassTextarea;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -79,7 +81,11 @@ export default function DealerForm({ locale }: Props) {
         {
           p_company_name: company,
           p_contact_name: contact,
-          p_phone: phone,
+          // В базу уходит E.164 без пробелов: по этому же номеру
+          // работает серверный лимит «3 заявки на номер», и «+381 60 …»
+          // с пробелами считался бы отдельным номером при каждом
+          // варианте расстановки пробелов.
+          p_phone: serbianPhoneToE164(phone) ?? phone,
           p_email: email || null,
           p_city: city || null,
           p_comment: comment || null,
@@ -172,12 +178,16 @@ export default function DealerForm({ locale }: Props) {
           <label className="mb-1 block text-sm text-neutral-60">
             {t('sell_phone')}
           </label>
+          {/* Та же маска, что в форме подачи и в приложении: заявка
+              салона уходит в submit_dealer_lead, где номер проверяется
+              сервером, и присылать туда произвольный текст незачем. */}
           <input
             type="tel"
+            inputMode="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => setPhone(formatSerbianPhone(e.target.value))}
             required
-            placeholder="+381 6X XXX XXXX"
+            placeholder="+381 6X XXX XXX"
             className={field}
           />
         </div>
@@ -218,7 +228,7 @@ export default function DealerForm({ locale }: Props) {
           onChange={(e) => setComment(e.target.value)}
           rows={4}
           maxLength={2000}
-          className={field}
+          className={fieldTextarea}
         />
       </div>
 

@@ -186,8 +186,20 @@ export default async function CarPageView({
 
             {car.description && (
               <section className="mt-6">
-                <h2 className="mb-2 text-lg font-semibold">
+                <h2 className="mb-2 flex flex-wrap items-baseline gap-x-2 text-lg font-semibold">
                   {t('car_description')}
+                  {/* Описание — текст ПРОДАВЦА, а не строка интерфейса:
+                      оно хранится в cars.description одним полем и на
+                      сербском рынке пишется по-сербски. Машинно переводить
+                      его нельзя (цена, состояние и условия сделки — не то,
+                      что стоит доверять автопереводу), поэтому в русской
+                      локали честно помечаем язык. В сербской пометка не
+                      нужна: там текст и так на языке площадки. */}
+                  {locale !== 'sr' && (
+                    <span className="text-caption font-normal text-neutral-50">
+                      · {t('car_description_original')}
+                    </span>
+                  )}
                 </h2>
                 {/* whitespace-pre-line сохраняет переносы строк, которые
                     продавец сделал при вводе описания. */}

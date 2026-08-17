@@ -23,9 +23,19 @@ import { getBrowserClient } from '@/lib/supabaseClient';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { BRANDS, CITIES, YEAR_MIN, yearMax } from '@/lib/referenceData';
+import {
+  MAX_MILEAGE,
+  MAX_PRICE,
+  formatSerbianPhone,
+  handleNumberInput,
+  handleYearInput,
+  parseThousands,
+  serbianPhoneToE164,
+  validateYear,
+} from '@/lib/inputFormat';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
-import { fieldClass } from './ui/Field';
+import { fieldClass, fieldClassTextarea } from './ui/Field';
 import Button from './ui/Button';
 import Card from './ui/Card';
 
@@ -123,6 +133,7 @@ export default function SellForm({ locale }: Props) {
   // Классы поля ввода — из общего паттерна (components/ui/Field).
   // Раньше эта строка была скопирована в четырёх формах.
   const field = fieldClass;
+  const fieldTextarea = fieldClassTextarea;
 
   // Выбор марки: сбрасывает модель и подтягивает её список — тот же
   // порядок действий, что в create_car_screen.dart приложения.
@@ -143,14 +154,13 @@ export default function SellForm({ locale }: Props) {
     setLoadingModels(false);
   }
 
-  // Нормализация номера в E.164: пробелы, скобки и дефисы убираем, иначе
-  // квота по номеру и вход посчитают «+381 60 123» и «+38160123» разными.
+  // Нормализация номера в E.164 живёт в lib/inputFormat — это дословный
+  // перенос serbian_phone.dart из приложения. Своя реализация здесь была
+  // слабее: она принимала любой набор из 9–15 цифр, поэтому «+38112345»
+  // (не мобильный) и номер чужой страны проходили проверку, а SMS
+  // уходила в никуда, списывая квоту.
   function normalizePhone(raw: string): string {
-    const digits = raw.replace(/[^\d+]/g, '');
-    if (digits.startsWith('+')) return digits;
-    // Локальный сербский формат 06x… → +381 6x…
-    if (digits.startsWith('0')) return `+381${digits.slice(1)}`;
-    return `+${digits}`;
+    return serbianPhoneToE164(raw) ?? '';
   }
 
   // Человеческие тексты типичных ошибок OTP — перенос _humanOtpError
@@ -188,11 +198,11 @@ export default function SellForm({ locale }: Props) {
 
     const e164 = normalizePhone(resend && sentTo ? sentTo : phone);
 
-    // Сербский мобильный в E.164 — это +381 и 8–9 цифр номера, то есть
-    // минимум 12 символов вместе с '+381'. Прежний порог в 9 символов
-    // пропускал заведомо короткие номера, и SMS уходила в никуда,
-    // списывая квоту.
-    if (!/^\+\d{9,15}$/.test(e164)) {
+    // Пустая строка означает, что номер не прошёл проверку приложения:
+    // не сербский мобильный (нужно 8–9 цифр национальной части,
+    // начинающихся с 6). Отправлять SMS на такой номер нельзя —
+    // она не дойдёт, но спишет суточную квоту продавца.
+    if (e164 === '') {
       setError(t('otp_err_phone'));
       return;
     }
@@ -316,18 +326,21 @@ export default function SellForm({ locale }: Props) {
         p_brand: brand.trim(),
         p_model: model.trim(),
         p_year: Number(year),
+        // ВАЖНО: поля цен и пробега хранят ФОРМАТИРОВАННУЮ строку
+        // («12 500»), поэтому наружу они идут через parseThousands.
+        // Number('12 500') вернул бы NaN, и объявление ушло бы без цены.
         // Пустые необязательные поля уходят как null, а не как 0:
         // ноль пробега БД поймёт как «новая машина».
-        p_mileage: mileage ? Number(mileage) : null,
+        p_mileage: parseThousands(mileage),
         // Цена продажи нужна только продающим объявлениям, суточная
         // ставка — только сдающимся. Лишние значения не отправляем,
         // чтобы в базе не осталось цены от неактуального типа.
         p_sale_price:
-          listingType === 'sale' && price ? Number(price) : null,
+          listingType === 'sale' ? parseThousands(price) : null,
         p_rent_price_daily:
-          listingType === 'rent' && rentPrice ? Number(rentPrice) : null,
+          listingType === 'rent' ? parseThousands(rentPrice) : null,
         p_deposit_amount:
-          listingType === 'rent' && deposit ? Number(deposit) : 0,
+          listingType === 'rent' ? (parseThousands(deposit) ?? 0) : 0,
         p_currency: 'EUR',
         p_city: city.trim(),
         p_lat: null,
@@ -385,7 +398,15 @@ export default function SellForm({ locale }: Props) {
     );
   }
 
-  const canNext1 = brand.trim() && model.trim() && year && city.trim();
+  // Год проверяется по диапазону (1900 … следующий год) — теми же
+  // границами, что constraint chk_year в БД. Раньше достаточно было
+  // любого непустого значения, и «12» проходило дальше, а объявление
+  // отклонялось уже сервером после отправки SMS.
+  const canNext1 =
+    brand.trim() &&
+    model.trim() &&
+    validateYear(year, YEAR_MIN, yearMax()) &&
+    city.trim();
   const canSubmit = codeSent && code.trim().length >= 4;
 
   // Проверка шага «Детали». Дублирует серверную валидацию create_car_v3
@@ -394,16 +415,21 @@ export default function SellForm({ locale }: Props) {
   function validateDetails(): string | null {
     const needsRent = listingType === 'rent';
 
+    // Сравнения идут по РАСПАРСЕННОМУ значению: поля хранят строку
+    // с разделителями тысяч, и Number('12 500') дал бы NaN, из-за чего
+    // проверка «> 0» молча пропустила бы что угодно.
     if (needsRent) {
-      if (!rentPrice.trim()) return t('sell_err_rent_price');
-      if (Number(rentPrice) <= 0) return t('sell_err_price_positive');
-      if (deposit.trim() && Number(deposit) < 0) return t('sell_err_deposit');
+      const rent = parseThousands(rentPrice);
+      if (rent === null) return t('sell_err_rent_price');
+      if (rent <= 0) return t('sell_err_price_positive');
     }
 
     // Цена продажи может отсутствовать («Договорная»), но если указана —
-    // должна быть положительной.
-    if (listingType === 'sale' && price.trim() && Number(price) <= 0) {
-      return t('sell_err_price_positive');
+    // должна быть положительной. Отрицательной она быть не может в
+    // принципе: поле принимает только цифры.
+    if (listingType === 'sale') {
+      const sale = parseThousands(price);
+      if (sale !== null && sale <= 0) return t('sell_err_price_positive');
     }
 
     return null;
@@ -502,12 +528,16 @@ export default function SellForm({ locale }: Props) {
               <label className="mb-1 block text-sm text-neutral-60">
                 {t('filter_year')}
               </label>
+              {/* inputMode="numeric" вместо type="number": цифровая
+                  клавиатура на телефоне остаётся, но поле принимает
+                  форматированную строку и не показывает стрелки-спиннеры.
+                  Ограничение ввода — handleYearInput (4 цифры). */}
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={year}
-                onChange={(e) => setYear(e.target.value)}
-                min={YEAR_MIN}
-                max={yearMax()}
+                onChange={(e) => setYear(handleYearInput(e.target.value))}
+                placeholder={String(yearMax() - 5)}
                 className={field}
               />
             </div>
@@ -544,10 +574,12 @@ export default function SellForm({ locale }: Props) {
                 {t('sell_sale_price')}, €
               </label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                min={0}
+                onChange={(e) =>
+                  setPrice(handleNumberInput(e.target.value, MAX_PRICE))
+                }
                 placeholder={t('car_price_negotiable')}
                 className={field}
               />
@@ -564,10 +596,12 @@ export default function SellForm({ locale }: Props) {
                   {t('sell_rent_price')}, € *
                 </label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={rentPrice}
-                  onChange={(e) => setRentPrice(e.target.value)}
-                  min={1}
+                  onChange={(e) =>
+                    setRentPrice(handleNumberInput(e.target.value, MAX_PRICE))
+                  }
                   required
                   className={field}
                 />
@@ -577,10 +611,12 @@ export default function SellForm({ locale }: Props) {
                   {t('sell_deposit')}, €
                 </label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={deposit}
-                  onChange={(e) => setDeposit(e.target.value)}
-                  min={0}
+                  onChange={(e) =>
+                    setDeposit(handleNumberInput(e.target.value, MAX_PRICE))
+                  }
                   placeholder="0"
                   className={field}
                 />
@@ -593,10 +629,12 @@ export default function SellForm({ locale }: Props) {
               {t('car_mileage')}, {t('common_km')}
             </label>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={mileage}
-              onChange={(e) => setMileage(e.target.value)}
-              min={0}
+              onChange={(e) =>
+                setMileage(handleNumberInput(e.target.value, MAX_MILEAGE))
+              }
               className={field}
             />
           </div>
@@ -659,7 +697,7 @@ export default function SellForm({ locale }: Props) {
               onChange={(e) => setDescription(e.target.value)}
               rows={5}
               maxLength={6000}
-              className={field}
+              className={fieldTextarea}
             />
           </div>
 
@@ -734,11 +772,15 @@ export default function SellForm({ locale }: Props) {
             <label className="mb-1 block text-sm text-neutral-60">
               {t('sell_phone')}
             </label>
+            {/* Маска «+381 6X XXX XXX(X)» — та же, что в приложении
+                (SerbianPhoneFormatter). Форматирование идёт по мере
+                набора, наружу уходит E.164. */}
             <input
               type="tel"
+              inputMode="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+381 6X XXX XXXX"
+              onChange={(e) => setPhone(formatSerbianPhone(e.target.value))}
+              placeholder="+381 6X XXX XXX"
               className={field}
               disabled={codeSent}
             />
