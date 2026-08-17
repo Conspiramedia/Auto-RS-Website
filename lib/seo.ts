@@ -9,6 +9,7 @@
 
 import type { Metadata } from 'next';
 
+import { brand } from './brand';
 import { siteBaseUrl } from './supabase';
 import type { Locale } from './i18n';
 import { HTML_LANG, LOCALES, localeHref } from './i18n';
@@ -177,6 +178,73 @@ export function buildVehicleJsonLd(params: {
     // Договорная цена (null) не подставляется: выдумывать число нельзя,
     // а price: 0 поисковик прочитает как «бесплатно».
     offers: offers.length === 1 ? offers[0] : offers,
+  };
+}
+
+// ------------------------------------------------------------
+// JSON-LD Organization — сведения об операторе площадки.
+// ------------------------------------------------------------
+// Отдаётся на главной. Даёт поисковику связать сайт с организацией
+// (панель знаний, логотип в выдаче) и служит машиночитаемым источником
+// контактов. Реквизиты берутся из lib/legal — того же места, что и
+// тексты документов и страница /contact: три копии одних и тех же
+// данных разошлись бы при первой же правке.
+export function buildOrganizationJsonLd(params: {
+  legalName: string;
+  email: string;
+  phone?: string;
+  address?: string;
+}) {
+  const { legalName, email, phone, address } = params;
+
+  return {
+    '@context': 'https://schema.org',
+    // AutoDealer был бы неверен: площадка не продаёт автомобили сама.
+    '@type': 'Organization',
+    name: brand.name,
+    legalName,
+    url: siteBaseUrl,
+    // Незаполненные поля не подставляем пустыми строками: разметка с
+    // пустым адресом хуже разметки без адреса.
+    ...(address ? { address } : {}),
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      email,
+      ...(phone ? { telephone: phone } : {}),
+      areaServed: 'RS',
+      availableLanguage: ['sr', 'ru'],
+    },
+  };
+}
+
+// ------------------------------------------------------------
+// JSON-LD WebSite + SearchAction.
+// ------------------------------------------------------------
+// SearchAction сообщает поисковику адрес внутреннего поиска. При
+// достаточной известности сайта Google показывает строку поиска прямо
+// в выдаче (sitelinks searchbox).
+//
+// ВАЖНО: target обязан указывать на РАБОЧИЙ адрес поиска. У нас это
+// каталог с параметром q — тот же, что заполняет форма фильтров.
+export function buildWebSiteJsonLd(locale: Locale) {
+  const base = `${siteBaseUrl}${localeHref(locale, '/cars')}`;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: brand.name,
+    url: siteBaseUrl,
+    inLanguage: HTML_LANG[locale],
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${base}?q={search_term_string}`,
+      },
+      // Имя параметра фиксировано спецификацией schema.org.
+      'query-input': 'required name=search_term_string',
+    },
   };
 }
 

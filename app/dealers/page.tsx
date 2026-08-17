@@ -25,8 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: '/dealers',
     title: t('dealers_title'),
-    description:
-      'Postavite oglase vašeg autosalona na RS Auto. Prva 3 meseca besplatno.',
+    description: t('meta_dealers_desc'),
   });
 }
 

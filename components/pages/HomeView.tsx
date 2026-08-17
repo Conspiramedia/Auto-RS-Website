@@ -18,6 +18,8 @@ import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { nounFor } from '@/lib/plural';
 import { fetchCatalog, fetchSiteBrands, fetchSiteStats } from '@/lib/queries';
+import { OPERATOR, OPERATOR_VERIFIED } from '@/lib/legal';
+import { buildOrganizationJsonLd, buildWebSiteJsonLd } from '@/lib/seo';
 
 export default async function HomeView({ locale }: { locale: Locale }) {
   const t = getT(locale);
@@ -32,8 +34,29 @@ export default async function HomeView({ locale }: { locale: Locale }) {
     fetchSiteStats(),
   ]);
 
+  // Разметка организации и сайта. Реквизиты — из lib/legal, того же
+  // источника, что и юридические документы со страницей /contact.
+  const orgJsonLd = buildOrganizationJsonLd({
+    legalName: OPERATOR.legalName,
+    email: OPERATOR.email,
+    phone: OPERATOR.phone || undefined,
+    address: OPERATOR_VERIFIED ? OPERATOR.address : undefined,
+  });
+
+  const siteJsonLd = buildWebSiteJsonLd(locale);
+
   return (
     <>
+      {/* Organization и WebSite отдаются одним блоком-массивом: это
+          допустимая форма для JSON-LD и она короче двух отдельных
+          <script>, которые пришлось бы держать синхронными. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([orgJsonLd, siteJsonLd]),
+        }}
+      />
+
       <SmartBanner locale={locale} />
       <SiteHeader locale={locale} pathname="/" />
 

@@ -29,8 +29,7 @@ export async function generateMetadata({
     path: '/cars',
     // Каталог — смешанный фид (продажа и аренда), заголовок это отражает.
     title: t('catalog_mixed_title'),
-    description:
-      'Автомобили в Сербии: продажа и аренда. Поиск по марке, модели, городу и цене.',
+    description: t('meta_catalog_desc'),
     noindex: hasActiveFilters(filters) || (filters.page ?? 1) > 1,
   });
 }

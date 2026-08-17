@@ -19,8 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: '/privacy',
     title: t('legal_privacy_title'),
-    description:
-      'Политика конфиденциальности RS Auto — как мы обрабатываем и защищаем персональные данные пользователей.',
+    description: t('meta_privacy_desc'),
   });
 }
 

@@ -24,8 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: '/contact',
     title: t('contact_title'),
-    description:
-      'Kontaktirajte RS Auto: e-pošta, telefon podrške i obrazac za poruku.',
+    description: t('meta_contact_desc'),
   });
 }
 

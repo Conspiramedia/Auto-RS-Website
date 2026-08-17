@@ -13,6 +13,7 @@ import EmptyState from './EmptyState';
 import FilterChips from './FilterChips';
 import FilterPanel from './FilterPanel';
 import Pagination from './Pagination';
+import PaginationLinks from './PaginationLinks';
 import SortSelect from './SortSelect';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
@@ -102,6 +103,16 @@ export default function CatalogView({
 
   return (
     <>
+      {/* rel=prev/next для соседних страниц пагинации. Next поднимает
+          эти <link> в <head> сам. */}
+      <PaginationLinks
+        locale={locale}
+        filters={filters}
+        basePath={basePath}
+        page={result.page}
+        totalPages={result.totalPages}
+      />
+
       <h1 className="text-2xl font-bold">{title}</h1>
       {intro && <p className="mt-2 max-w-3xl text-neutral-60">{intro}</p>}
 

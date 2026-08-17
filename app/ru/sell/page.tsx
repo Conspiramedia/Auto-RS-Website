@@ -20,8 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: '/sell',
     title: t('sell_title'),
-    description:
-      'Разместите объявление о продаже автомобиля бесплатно — без установки приложения.',
+    description: t('meta_sell_desc'),
   });
 }
 

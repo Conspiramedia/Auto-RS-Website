@@ -23,8 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: '/terms',
     title: t('legal_terms_title'),
-    description:
-      'Uslovi korišćenja platforme RS Auto — oglasi za prodaju i izdavanje automobila u Srbiji.',
+    description: t('meta_terms_desc'),
   });
 }
 

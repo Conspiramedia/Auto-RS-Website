@@ -10,6 +10,7 @@
 import type { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
 
+import Analytics from '@/components/Analytics';
 import { brand } from '@/lib/brand';
 import { siteBaseUrl } from '@/lib/supabase';
 import './globals.css';
@@ -41,7 +42,13 @@ export default function RootLayout({
   // сербский, так как он живёт в корне сайта.
   return (
     <html lang="sr-Latn" className={montserrat.variable}>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Аналитика подключается последней и только при заданном
+            домене (см. lib/analytics). Cookie не ставит — баннер
+            согласия не требуется. */}
+        <Analytics />
+      </body>
     </html>
   );
 }

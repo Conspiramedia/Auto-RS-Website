@@ -32,8 +32,7 @@ export async function generateMetadata({
     locale,
     path: '/rent',
     title: t('rent_title'),
-    description:
-      'Rent-a-car u Srbiji: iznajmljivanje automobila po danu. Cene, depozit i uslovi — pretraga po marki i gradu.',
+    description: t('meta_rent_desc'),
     noindex: hasActiveFilters(filters) || (filters.page ?? 1) > 1,
   });
 }

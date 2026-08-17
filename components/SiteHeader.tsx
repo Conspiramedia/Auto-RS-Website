@@ -9,8 +9,9 @@
 // выдачи, а не раздел сайта, и живёт он в панели фильтров. Раньше он
 // стоял в шапке и на узких экранах выдавливал CTA за край.
 //
-// Ссылки на второстепенные разделы (аренда, дилерам, приложение) —
-// в подвале: в шапке они конкурировали с единственным акцентом.
+// На мобильном разделы живут в бургер-меню (MobileMenu), на десктопе —
+// в самой шапке. В подвале они продублированы: это ещё и перелинковка
+// для краулера с любой страницы сайта.
 //
 // Логотип рендерит components/ui/Logo — там же он и меняется, когда
 // появится векторный файл. Здесь знак только вставляется в шапку.
@@ -22,6 +23,7 @@ import Logo from './ui/Logo';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import LocaleSwitch from './LocaleSwitch';
+import MobileMenu from './MobileMenu';
 import Button from './ui/Button';
 
 type Props = {
@@ -63,6 +65,10 @@ export default function SiteHeader({ locale, pathname }: Props) {
 
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-3">
           <LocaleSwitch locale={locale} pathname={pathname} />
+
+          {/* Бургер — только на мобильном: на десктопе разделы стоят
+              в самой шапке (nav выше). */}
+          <MobileMenu locale={locale} />
 
           {/* Сильный CTA продавцу — главная бизнес-цель сайта, поэтому он
               единственный акцентный элемент в шапке.

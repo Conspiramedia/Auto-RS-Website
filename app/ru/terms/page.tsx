@@ -19,8 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: '/terms',
     title: t('legal_terms_title'),
-    description:
-      'Условия использования площадки RS Auto — объявления о продаже и аренде автомобилей в Сербии.',
+    description: t('meta_terms_desc'),
   });
 }
 

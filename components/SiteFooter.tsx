@@ -68,6 +68,26 @@ export default function SiteFooter({
           </Link>
         </div>
 
+        {/* Справочные страницы отдельной строкой: они отвечают на
+            вопросы «что это за площадка» и «как это работает», но не
+            должны конкурировать с разделами каталога выше.
+            Блока соцсетей здесь нет намеренно — аккаунтов пока не
+            существует, а ссылки в никуда хуже их отсутствия. */}
+        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+          <Link href={localeHref(locale, '/about')} className="hover:underline">
+            {t('nav_about')}
+          </Link>
+          <Link
+            href={localeHref(locale, '/how-it-works')}
+            className="hover:underline"
+          >
+            {t('nav_how')}
+          </Link>
+          <Link href={localeHref(locale, '/faq')} className="hover:underline">
+            {t('nav_faq')}
+          </Link>
+        </div>
+
         {/* Юридические документы. Отдельной строкой и приглушённо: они
             обязаны быть доступны с любой страницы (на них ссылается
             согласие при входе по SMS), но конкурировать с разделами

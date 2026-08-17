@@ -13,6 +13,7 @@ import { useState } from 'react';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import { getBrowserClient } from '@/lib/supabaseClient';
+import { trackEvent } from '@/lib/analytics';
 import { formatSerbianPhone, serbianPhoneToE164 } from '@/lib/inputFormat';
 import { fieldClass, fieldClassTextarea } from './ui/Field';
 import Button from './ui/Button';
@@ -99,6 +100,8 @@ export default function DealerForm({ locale }: Props) {
         return;
       }
 
+      // Только после подтверждения сервером, что заявка принята.
+      trackEvent('dealer_lead_submitted');
       setSent(true);
     } catch {
       setError(ERRORS[locale].unknown);

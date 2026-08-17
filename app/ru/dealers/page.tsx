@@ -20,8 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: '/dealers',
     title: t('dealers_title'),
-    description:
-      'Разместите объявления вашего автосалона на RS Auto. Первые 3 месяца бесплатно.',
+    description: t('meta_dealers_desc'),
   });
 }
 

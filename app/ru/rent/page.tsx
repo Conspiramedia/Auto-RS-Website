@@ -28,8 +28,7 @@ export async function generateMetadata({
     locale,
     path: '/rent',
     title: t('rent_title'),
-    description:
-      'Аренда автомобилей в Сербии посуточно. Цены, залог и условия — поиск по марке и городу.',
+    description: t('meta_rent_desc'),
     noindex: hasActiveFilters(filters) || (filters.page ?? 1) > 1,
   });
 }

@@ -20,8 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: '/contact',
     title: t('contact_title'),
-    description:
-      'Свяжитесь с RS Auto: электронная почта, телефон поддержки и форма обращения.',
+    description: t('meta_contact_desc'),
   });
 }
 

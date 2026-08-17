@@ -20,6 +20,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { getBrowserClient } from '@/lib/supabaseClient';
+import { trackEvent } from '@/lib/analytics';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { BRANDS, CITIES, YEAR_MIN, yearMax } from '@/lib/referenceData';
@@ -111,6 +112,13 @@ export default function SellForm({ locale }: Props) {
   const [resendIn, setResendIn] = useState(0);
   // Сообщение об успешной повторной отправке (в приложении — снек).
   const [notice, setNotice] = useState<string | null>(null);
+
+  // Открытие формы подачи — вершина воронки продавца. Считается один
+  // раз за монтирование: пустой список зависимостей, а не при каждом
+  // шаге, иначе одна подача давала бы четыре события.
+  useEffect(() => {
+    trackEvent('sell_start');
+  }, []);
 
   useEffect(() => {
     if (resendAt === 0) return;
@@ -231,6 +239,13 @@ export default function SellForm({ locale }: Props) {
 
       setSentTo(e164);
       setCodeSent(true);
+
+      // Продавец дошёл до подтверждения номера — ключевая точка воронки:
+      // разрыв между sell_start и otp_sent показывает, где теряются люди.
+      // Повторную отправку не считаем: это то же самое событие воронки.
+      // Номер телефона в аналитику НЕ передаётся.
+      if (!resend) trackEvent('otp_sent', { listing_type: listingType });
+
       // Запускаем отсчёт до следующей отправки.
       setResendAt(Date.now() + RESEND_DELAY_SEC * 1000);
       if (resend) setNotice(t('otp_resent'));
@@ -353,6 +368,14 @@ export default function SellForm({ locale }: Props) {
         p_phone: e164,
       });
       if (createError) throw new Error(createError.message);
+
+      // Целевое действие сайта: объявление создано и ушло на модерацию.
+      // Число фотографий — полезный признак качества подачи, по нему
+      // видно, доходят ли продавцы до шага с фото.
+      trackEvent('listing_submitted', {
+        listing_type: listingType,
+        photos: photoUrls.length,
+      });
 
       setDone(true);
     } catch (e) {

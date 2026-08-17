@@ -23,8 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: '/',
     title: `${brand.name} — ${t('site_tagline')}`,
-    description:
-      'Prodajte ili kupite automobil u Srbiji. Besplatno objavljivanje oglasa, hiljade automobila iz cele zemlje.',
+    description: t('meta_home_desc'),
   });
 }
 

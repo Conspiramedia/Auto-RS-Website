@@ -41,16 +41,30 @@ const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
 // а подмена <base> — классический вектор увода ссылок формы подачи.
 const supabaseOrigin = supabaseHost ? `https://${supabaseHost}` : '';
 
+// Источник скрипта аналитики. Добавляется в CSP только когда аналитика
+// настроена: без переменной окружения скрипт не подключается вовсе,
+// и открывать ему доступ незачем. Self-hosted установка Plausible
+// задаётся той же переменной, поэтому origin вычисляется из неё, а не
+// прописывается константой.
+const plausibleOrigin = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN
+  ? new URL(
+      process.env.NEXT_PUBLIC_PLAUSIBLE_SRC ??
+        'https://plausible.io/js/script.js',
+    ).origin
+  : '';
+
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-eval' 'unsafe-inline'${plausibleOrigin ? ` ${plausibleOrigin}` : ''}`,
   "style-src 'self' 'unsafe-inline'",
   // Wildcard *.supabase.co оставлен вдобавок к конкретному origin:
   // фотографии старых объявлений могут отдаваться с других поддоменов
   // проекта (storage/CDN), и жёсткая привязка к одному хосту сломала бы
   // их показ. images.unsplash.com — источник демо-фотографий сида.
   `img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com${supabaseOrigin ? ` ${supabaseOrigin}` : ''}`,
-  `connect-src 'self' https://*.supabase.co${supabaseOrigin ? ` ${supabaseOrigin}` : ''}`,
+  // connect-src нужен аналитике отдельно от script-src: события
+  // отправляются fetch-запросом на /api/event того же origin.
+  `connect-src 'self' https://*.supabase.co${supabaseOrigin ? ` ${supabaseOrigin}` : ''}${plausibleOrigin ? ` ${plausibleOrigin}` : ''}`,
   "font-src 'self' data:",
   "frame-ancestors 'none'",
   "object-src 'none'",

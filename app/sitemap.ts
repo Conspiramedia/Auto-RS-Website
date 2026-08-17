@@ -45,6 +45,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/sell', priority: 0.8, changeFrequency: 'monthly' as const },
     { path: '/dealers', priority: 0.6, changeFrequency: 'monthly' as const },
     { path: '/app', priority: 0.5, changeFrequency: 'monthly' as const },
+    // Контентные страницы. Приоритет средний: трафика они приносят
+    // немного, но отвечают на вопросы «что это за площадка» и «можно ли
+    // ей доверять» — а это влияет на конверсию подачи объявления.
+    // FAQ выше остальных: он ловит длиннохвостые запросы вида
+    // «как продать авто в Сербии» и несёт разметку FAQPage.
+    { path: '/faq', priority: 0.6, changeFrequency: 'monthly' as const },
+    { path: '/how-it-works', priority: 0.5, changeFrequency: 'monthly' as const },
+    { path: '/about', priority: 0.4, changeFrequency: 'monthly' as const },
     // Юридические документы: приоритет низкий (трафика они не приносят),
     // но в карте нужны — на них ссылается согласие при подаче объявления,
     // и краулер должен видеть, что страницы существуют.

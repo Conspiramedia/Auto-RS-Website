@@ -23,8 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: '/',
     title: `${brand.name} — ${t('site_tagline')}`,
-    description:
-      'Продайте или купите автомобиль в Сербии. Бесплатное размещение объявлений, тысячи автомобилей по всей стране.',
+    description: t('meta_home_desc'),
   });
 }
 

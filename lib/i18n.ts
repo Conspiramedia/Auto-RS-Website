@@ -339,6 +339,142 @@ export const dict = {
       'Prekoračen je dnevni limit SMS poruka za ovaj broj. Pokušajte sutra.',
 
     // Общее
+    // ------------------------------------------------------------
+    // Навигация по контентным страницам.
+    // ------------------------------------------------------------
+    nav_about: 'O nama',
+    nav_how: 'Kako funkcioniše',
+    nav_faq: 'Česta pitanja',
+    nav_menu: 'Meni',
+    nav_menu_close: 'Zatvori meni',
+
+    // ------------------------------------------------------------
+    // /about — о площадке.
+    // ------------------------------------------------------------
+    about_title: 'O nama',
+    about_meta_desc:
+      'RS Auto — platforma za kupovinu, prodaju i iznajmljivanje automobila u Srbiji. Oglasi su besplatni, kontakt sa prodavcem ide kroz aplikaciju.',
+    about_lead:
+      'RS Auto je tržište automobila u Srbiji. Povezujemo one koji prodaju ili iznajmljuju vozilo sa onima koji ga traže — bez posrednika i bez provizije na prodaju.',
+
+    about_mission_title: 'Naša misija',
+    about_mission_text:
+      'Kupovina polovnog automobila je odluka od nekoliko hiljada evra, a najčešće se donosi na osnovu nepotpunih podataka. Trudimo se da oglas bude jasan: prava cena, stvarna kilometraža, fotografije vozila i grad u kome se nalazi. Što je oglas iskreniji, to je manje izgubljenog vremena na obe strane.',
+
+    about_how_title: 'Kako je platforma uređena',
+    about_how_1_title: 'Sajt i aplikacija — jedna baza',
+    about_how_1_text:
+      'Oglas postavljen na sajtu odmah je vidljiv i u aplikaciji, i obrnuto. Ne postoje dve odvojene ponude.',
+    about_how_2_title: 'Provera pre objave',
+    about_how_2_text:
+      'Svaki oglas prolazi moderaciju. Vozila sa izmenjenim brojem šasije, lažnim cenama i prevarantski sadržaj se ne objavljuju.',
+    about_how_3_title: 'Kontakt u aplikaciji',
+    about_how_3_text:
+      'Poruke i pozivi idu kroz aplikaciju, pa vaš lični broj telefona ne završi u bazama za neželjene pozive.',
+
+    about_buyer_title: 'Za kupca',
+    about_buyer_1: 'Pretraga po marki, modelu, godištu, ceni i gradu.',
+    about_buyer_2:
+      'Sačuvana pretraga sa obaveštenjem čim se pojavi odgovarajuće vozilo.',
+    about_buyer_3: 'Obaveštenje kada prodavac snizi cenu praćenog automobila.',
+    about_buyer_4: 'Kontakt sa prodavcem bez otkrivanja svog broja telefona.',
+
+    about_seller_title: 'Za prodavca',
+    about_seller_1: 'Objavljivanje oglasa je besplatno, bez provizije na prodaju.',
+    about_seller_2: 'Oglas se postavlja sa sajta — bez instaliranja aplikacije.',
+    about_seller_3: 'Isti oglas vide i posetioci sajta i korisnici aplikacije.',
+    about_seller_4: 'Isticanje oglasa je opcija, a ne uslov za objavljivanje.',
+
+    about_dealer_title: 'Za autosalone',
+    about_dealer_1: 'Posebna stranica salona sa celim voznim parkom.',
+    about_dealer_2: 'Prva 3 meseca bez naknade.',
+    about_dealer_3: 'Oznaka „Autosalon“ na svakom oglasu.',
+    about_dealer_4: 'Kupci iz cele Srbije, sa sajta i iz aplikacije.',
+
+    about_cta_title: 'Imate automobil za prodaju?',
+    about_cta_text: 'Objavite oglas za nekoliko minuta — besplatno.',
+
+    // ------------------------------------------------------------
+    // /how-it-works — как это работает.
+    // ------------------------------------------------------------
+    how_title: 'Kako funkcioniše',
+    how_meta_desc:
+      'Kako da kupite, prodate ili iznajmite automobil na RS Auto: korak po korak za kupce, prodavce i autosalone.',
+    how_lead:
+      'Tri scenarija — kupovina, prodaja i rad autosalona. Izaberite svoj i pratite korake.',
+
+    how_buyer_title: 'Kupujem automobil',
+    how_buyer_1_title: 'Pronađite vozilo',
+    how_buyer_1_text:
+      'Otvorite katalog i suzite izbor filterima: marka, model, godište, cena, kilometraža i grad. Rezultat se može podeliti linkom — filteri ostaju sačuvani u adresi.',
+    how_buyer_2_title: 'Sačuvajte pretragu',
+    how_buyer_2_text:
+      'Ako trenutno nema odgovarajućeg vozila, sačuvajte pretragu u aplikaciji. Poslaćemo obaveštenje čim se pojavi automobil koji odgovara vašim uslovima — i kada prodavac snizi cenu.',
+    how_buyer_3_title: 'Pišite prodavcu',
+    how_buyer_3_text:
+      'Poruke i pozivi idu kroz aplikaciju. Vaš broj telefona ostaje skriven, a cela prepiska je na jednom mestu.',
+
+    how_seller_title: 'Prodajem automobil',
+    how_seller_1_title: 'Postavite oglas',
+    how_seller_1_text:
+      'Popunite formu u četiri koraka: vozilo, detalji, fotografije i broj telefona. Broj se potvrđuje SMS kodom — to je istovremeno i vaša prijava, poseban nalog nije potreban.',
+    how_seller_2_title: 'Sačekajte proveru',
+    how_seller_2_text:
+      'Oglas ide na moderaciju. Obično je gotova u toku dana. Nakon odobrenja pojavljuje se u katalogu sajta i u aplikaciji.',
+    how_seller_3_title: 'Primajte poruke',
+    how_seller_3_text:
+      'Zainteresovani kupci pišu vam u aplikaciju, a vi dobijate push obaveštenje. Kada je vozilo prodato, označite oglas kao prodat.',
+
+    how_dealer_title: 'Imam autosalon',
+    how_dealer_1_title: 'Pošaljite zahtev',
+    how_dealer_1_text:
+      'Popunite kratak obrazac na stranici za autosalone: naziv salona, kontakt osoba i telefon. Javljamo se i dogovaramo detalje.',
+    how_dealer_2_title: 'Dobijate stranicu salona',
+    how_dealer_2_text:
+      'Sva vaša vozila na jednom mestu, sa nazivom i logotipom salona. Svaki oglas nosi oznaku „Autosalon“ — kupci vide da imaju posla sa firmom.',
+    how_dealer_3_title: 'Prva 3 meseca besplatno',
+    how_dealer_3_text:
+      'Testirajte platformu bez naknade i procenite rezultat. O uslovima nakon probnog perioda dogovaramo se pojedinačno.',
+
+    how_step: 'Korak',
+
+    // ------------------------------------------------------------
+    // /faq — вопросы и ответы.
+    // ------------------------------------------------------------
+    faq_title: 'Česta pitanja',
+    faq_meta_desc:
+      'Odgovori na pitanja o objavljivanju oglasa, moderaciji, kontaktu sa prodavcem, iznajmljivanju i uslovima za autosalone na RS Auto.',
+    faq_lead: 'Ako ne nađete odgovor, pišite nam preko stranice Kontakt.',
+    faq_group_general: 'Opšte',
+    faq_group_buyer: 'Za kupce',
+    faq_group_seller: 'Za prodavce',
+    faq_group_dealer: 'Za autosalone',
+    faq_more_title: 'Niste našli odgovor?',
+    faq_more_text: 'Pišite nam — odgovaramo radnim danima.',
+
+    // ------------------------------------------------------------
+    // Метаданные страниц (title/description для поиска).
+    // ------------------------------------------------------------
+    meta_home_title: 'Automobili u Srbiji — kupovina, prodaja i izdavanje',
+    meta_home_desc:
+      'Oglasi za automobile u Srbiji: prodaja i iznajmljivanje. Besplatno objavljivanje oglasa, pretraga po marki, modelu, gradu i ceni.',
+    meta_catalog_desc:
+      'Automobili u Srbiji: prodaja i izdavanje. Pretraga po marki, modelu, gradu i ceni.',
+    meta_rent_desc:
+      'Automobili za izdavanje u Srbiji: cena po danu, depozit i uslovi. Pretraga po marki, modelu i gradu.',
+    meta_sell_desc:
+      'Objavite oglas za prodaju automobila besplatno — bez instaliranja aplikacije. Potvrda broja SMS kodom.',
+    meta_dealers_desc:
+      'Postavite oglase vašeg autosalona na RS Auto. Prva 3 meseca besplatno.',
+    meta_app_desc:
+      'Aplikacija RS Auto: poruke sa prodavcem, obaveštenja o novim oglasima i sniženjima cena.',
+    meta_contact_desc:
+      'Kontaktirajte RS Auto: e-pošta, telefon podrške i obrazac za poruku.',
+    meta_terms_desc:
+      'Uslovi korišćenja platforme RS Auto — oglasi za prodaju i izdavanje automobila u Srbiji.',
+    meta_privacy_desc:
+      'Politika privatnosti RS Auto — kako obrađujemo i štitimo lične podatke korisnika.',
+
     common_all: 'Sve',
     common_more: 'Prikaži još',
     common_currency_eur: '€',
@@ -560,6 +696,142 @@ export const dict = {
     otp_err_failed: 'Не удалось подтвердить код. Попробуйте ещё раз',
     otp_err_quota:
       'Превышен суточный лимит SMS на этот номер. Попробуйте завтра.',
+
+    // ------------------------------------------------------------
+    // Навигация по контентным страницам.
+    // ------------------------------------------------------------
+    nav_about: 'О нас',
+    nav_how: 'Как это работает',
+    nav_faq: 'Вопросы',
+    nav_menu: 'Меню',
+    nav_menu_close: 'Закрыть меню',
+
+    // ------------------------------------------------------------
+    // /about — о площадке.
+    // ------------------------------------------------------------
+    about_title: 'О нас',
+    about_meta_desc:
+      'RS Auto — площадка для покупки, продажи и аренды автомобилей в Сербии. Объявления бесплатны, связь с продавцом — через приложение.',
+    about_lead:
+      'RS Auto — автомобильный маркетплейс в Сербии. Мы соединяем тех, кто продаёт или сдаёт машину, с теми, кто её ищет, — без посредников и без комиссии с продажи.',
+
+    about_mission_title: 'Наша задача',
+    about_mission_text:
+      'Покупка подержанного автомобиля — решение на несколько тысяч евро, а принимается оно чаще всего по неполным данным. Мы добиваемся, чтобы объявление отвечало на главные вопросы сразу: настоящая цена, реальный пробег, фотографии машины и город, где она стоит. Чем честнее объявление, тем меньше потерянного времени у обеих сторон.',
+
+    about_how_title: 'Как устроена площадка',
+    about_how_1_title: 'Сайт и приложение — одна база',
+    about_how_1_text:
+      'Объявление, поданное на сайте, сразу видно в приложении, и наоборот. Двух разных витрин не существует.',
+    about_how_2_title: 'Проверка до публикации',
+    about_how_2_text:
+      'Каждое объявление проходит модерацию. Машины с перебитыми номерами, выдуманными ценами и мошеннические тексты до каталога не доходят.',
+    about_how_3_title: 'Связь — в приложении',
+    about_how_3_text:
+      'Сообщения и звонки идут через приложение, поэтому личный номер телефона не попадает в базы для спам-обзвона.',
+
+    about_buyer_title: 'Покупателю',
+    about_buyer_1: 'Поиск по марке, модели, году, цене и городу.',
+    about_buyer_2:
+      'Сохранённый поиск с уведомлением, как только появится подходящая машина.',
+    about_buyer_3: 'Уведомление, когда продавец снизит цену на отслеживаемый автомобиль.',
+    about_buyer_4: 'Связь с продавцом без раскрытия своего номера телефона.',
+
+    about_seller_title: 'Продавцу',
+    about_seller_1: 'Размещение объявления бесплатно, комиссии с продажи нет.',
+    about_seller_2: 'Объявление подаётся с сайта — без установки приложения.',
+    about_seller_3: 'Одно и то же объявление видят и посетители сайта, и пользователи приложения.',
+    about_seller_4: 'Продвижение — возможность, а не условие публикации.',
+
+    about_dealer_title: 'Автосалонам',
+    about_dealer_1: 'Отдельная страница салона со всем автопарком.',
+    about_dealer_2: 'Первые 3 месяца без оплаты.',
+    about_dealer_3: 'Пометка «Автосалон» на каждом объявлении.',
+    about_dealer_4: 'Покупатели со всей Сербии — с сайта и из приложения.',
+
+    about_cta_title: 'Есть автомобиль на продажу?',
+    about_cta_text: 'Разместите объявление за несколько минут — бесплатно.',
+
+    // ------------------------------------------------------------
+    // /how-it-works — как это работает.
+    // ------------------------------------------------------------
+    how_title: 'Как это работает',
+    how_meta_desc:
+      'Как купить, продать или сдать автомобиль на RS Auto: пошагово для покупателей, продавцов и автосалонов.',
+    how_lead:
+      'Три сценария — покупка, продажа и работа автосалона. Выберите свой и следуйте шагам.',
+
+    how_buyer_title: 'Покупаю автомобиль',
+    how_buyer_1_title: 'Найдите машину',
+    how_buyer_1_text:
+      'Откройте каталог и сузьте выбор фильтрами: марка, модель, год, цена, пробег и город. Результатом можно поделиться ссылкой — фильтры сохраняются в адресе.',
+    how_buyer_2_title: 'Сохраните поиск',
+    how_buyer_2_text:
+      'Если подходящей машины сейчас нет, сохраните поиск в приложении. Пришлём уведомление, как только появится автомобиль под ваши условия, — и когда продавец снизит цену.',
+    how_buyer_3_title: 'Напишите продавцу',
+    how_buyer_3_text:
+      'Сообщения и звонки идут через приложение. Ваш номер телефона остаётся скрытым, а вся переписка — в одном месте.',
+
+    how_seller_title: 'Продаю автомобиль',
+    how_seller_1_title: 'Подайте объявление',
+    how_seller_1_text:
+      'Заполните форму из четырёх шагов: автомобиль, детали, фотографии и телефон. Номер подтверждается кодом из SMS — это же и есть вход, отдельная регистрация не нужна.',
+    how_seller_2_title: 'Дождитесь проверки',
+    how_seller_2_text:
+      'Объявление уходит на модерацию. Обычно она занимает до суток. После одобрения объявление появляется в каталоге сайта и в приложении.',
+    how_seller_3_title: 'Получайте сообщения',
+    how_seller_3_text:
+      'Заинтересованные покупатели пишут вам в приложение, а вы получаете push-уведомление. Когда машина продана, отметьте объявление как проданное.',
+
+    how_dealer_title: 'У меня автосалон',
+    how_dealer_1_title: 'Оставьте заявку',
+    how_dealer_1_text:
+      'Заполните короткую форму на странице для автосалонов: название салона, контактное лицо и телефон. Мы свяжемся и обсудим детали.',
+    how_dealer_2_title: 'Получаете страницу салона',
+    how_dealer_2_text:
+      'Все ваши машины в одном месте, с названием и логотипом салона. На каждом объявлении — пометка «Автосалон»: покупатели видят, что имеют дело с компанией.',
+    how_dealer_3_title: 'Первые 3 месяца бесплатно',
+    how_dealer_3_text:
+      'Попробуйте площадку без оплаты и оцените результат. Условия после пробного периода обсуждаем индивидуально.',
+
+    how_step: 'Шаг',
+
+    // ------------------------------------------------------------
+    // /faq — вопросы и ответы.
+    // ------------------------------------------------------------
+    faq_title: 'Вопросы и ответы',
+    faq_meta_desc:
+      'Ответы на вопросы о размещении объявлений, модерации, связи с продавцом, аренде и условиях для автосалонов на RS Auto.',
+    faq_lead: 'Не нашли ответа — напишите нам через страницу «Контакты».',
+    faq_group_general: 'Общее',
+    faq_group_buyer: 'Покупателям',
+    faq_group_seller: 'Продавцам',
+    faq_group_dealer: 'Автосалонам',
+    faq_more_title: 'Не нашли ответ?',
+    faq_more_text: 'Напишите нам — отвечаем по будням.',
+
+    // ------------------------------------------------------------
+    // Метаданные страниц (title/description для поиска).
+    // ------------------------------------------------------------
+    meta_home_title: 'Автомобили в Сербии — покупка, продажа и аренда',
+    meta_home_desc:
+      'Объявления об автомобилях в Сербии: продажа и аренда. Бесплатное размещение объявлений, поиск по марке, модели, городу и цене.',
+    meta_catalog_desc:
+      'Автомобили в Сербии: продажа и аренда. Поиск по марке, модели, городу и цене.',
+    meta_rent_desc:
+      'Автомобили в аренду в Сербии: цена за сутки, залог и условия. Поиск по марке, модели и городу.',
+    meta_sell_desc:
+      'Разместите объявление о продаже автомобиля бесплатно — без установки приложения. Подтверждение номера кодом из SMS.',
+    meta_dealers_desc:
+      'Размещайте объявления вашего автосалона на RS Auto. Первые 3 месяца бесплатно.',
+    meta_app_desc:
+      'Приложение RS Auto: переписка с продавцом, уведомления о новых объявлениях и снижении цен.',
+    meta_contact_desc:
+      'Свяжитесь с RS Auto: электронная почта, телефон поддержки и форма обращения.',
+    meta_terms_desc:
+      'Условия использования платформы RS Auto — объявления о продаже и аренде автомобилей в Сербии.',
+    meta_privacy_desc:
+      'Политика конфиденциальности RS Auto — как мы обрабатываем и защищаем персональные данные пользователей.',
 
     common_all: 'Все',
     common_more: 'Показать ещё',

@@ -15,6 +15,7 @@ import ShareButton from '@/components/ShareButton';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
 import SmartBanner from '@/components/SmartBanner';
+import TrackCardView from '@/components/TrackCardView';
 import {
   carTitle,
   formatDate,
@@ -33,7 +34,7 @@ import {
   fetchCarImages,
   fetchSimilarCars,
 } from '@/lib/queries';
-import { buildVehicleJsonLd } from '@/lib/seo';
+import { buildBreadcrumbJsonLd, buildVehicleJsonLd } from '@/lib/seo';
 import { siteBaseUrl } from '@/lib/supabase';
 
 export default async function CarPageView({
@@ -75,6 +76,18 @@ export default async function CarPageView({
   const catalogPath = mode === 'rent' ? '/rent' : '/cars';
   const catalogLabel = mode === 'rent' ? t('rent_title') : t('nav_catalog');
 
+  // Хлебные крошки для поиска. Повторяют ВИДИМУЮ навигацию страницы
+  // (каталог → название объявления) — это требование Google: разметка
+  // должна соответствовать тому, что видит посетитель.
+  // Последний элемент — сама страница, поэтому его url канонический.
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    {
+      name: catalogLabel,
+      url: `${siteBaseUrl}${localeHref(locale, catalogPath)}`,
+    },
+    { name: title, url: canonicalUrl },
+  ]);
+
   const specs = [
     { label: t('car_year'), value: String(car.year) },
     { label: t('car_mileage'), value: formatMileage(car.mileage, locale) },
@@ -89,10 +102,20 @@ export default async function CarPageView({
 
   return (
     <>
-      {/* JSON-LD (Vehicle + Offer) для расширенного сниппета в поиске. */}
+      {/* JSON-LD: Vehicle + Offer (расширенный сниппет с ценой и
+          пробегом) и BreadcrumbList (путь в выдаче вместо голого URL). */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([jsonLd, breadcrumbJsonLd]),
+        }}
+      />
+
+      {/* Отметка просмотра. Ничего не рендерит — только событие. */}
+      <TrackCardView
+        brand={car.brand}
+        model={car.model}
+        listingType={mode}
       />
 
       {/* На мобильных ведём в приложение по каноническому адресу: при

@@ -25,8 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: '/sell',
     title: t('sell_title'),
-    description:
-      'Objavite oglas za prodaju automobila besplatno — bez instaliranja aplikacije.',
+    description: t('meta_sell_desc'),
   });
 }
 

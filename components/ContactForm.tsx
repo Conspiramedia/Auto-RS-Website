@@ -18,6 +18,7 @@ import { useState } from 'react';
 import type { Locale } from '@/lib/i18n';
 import { getT, type DictKey } from '@/lib/i18n';
 import { getBrowserClient } from '@/lib/supabaseClient';
+import { trackEvent } from '@/lib/analytics';
 import { fieldClass, fieldClassTextarea } from './ui/Field';
 import Button from './ui/Button';
 
@@ -93,6 +94,11 @@ export default function ContactForm({ locale }: Props) {
         return;
       }
 
+      // Событие ставится ТОЛЬКО после успешного ответа сервера: отправка
+      // формы и принятое обращение — разные вещи, и считать нужно второе.
+      // В свойствах — тема обращения: по ней видно, с чем чаще всего
+      // приходят. Персональных данных не передаём.
+      trackEvent('contact_submitted', { topic });
       setSent(true);
     } catch (e) {
       // В консоль — только текст ошибки: имя и почта отправителя это
