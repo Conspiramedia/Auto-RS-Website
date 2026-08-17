@@ -60,7 +60,13 @@ export function buildMetadata(params: {
       siteName: 'RS Auto',
       locale: locale === 'sr' ? 'sr_RS' : 'ru_RU',
       type: 'website',
-      images: image ? [{ url: image, width: 1200, height: 630 }] : undefined,
+      // Ключ images добавляется ТОЛЬКО когда картинка задана явно.
+      // Записать сюда undefined нельзя: для Next это всё равно означает
+      // «автор сам управляет картинками», и тогда файловый роут
+      // opengraph-image.tsx перестаёт подставляться автоматически —
+      // карточка уходит в соцсети вообще без og:image. Проверено на
+      // /car/{id}: с undefined тега не было, без ключа он появляется.
+      ...(image ? { images: [{ url: image, width: 1200, height: 630 }] } : {}),
     },
     twitter: {
       // summary_large_image даёт крупное превью — именно оно продаёт
@@ -68,7 +74,8 @@ export function buildMetadata(params: {
       card: 'summary_large_image',
       title,
       description,
-      images: image ? [image] : undefined,
+      // Та же причина, что и выше.
+      ...(image ? { images: [image] } : {}),
     },
   };
 }

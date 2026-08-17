@@ -90,7 +90,7 @@ export default async function Image({
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
-            <div style={{ fontSize: 48, color: '#9a9aa2' }}>{brand.name}</div>
+            <div style={{ display: 'flex', fontSize: 48, color: '#9a9aa2' }}>{brand.name}</div>
           )}
         </div>
 
@@ -105,17 +105,31 @@ export default async function Image({
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: 44, fontWeight: 700, color: '#2b2b2e' }}>
+            <div style={{ display: 'flex', fontSize: 44, fontWeight: 700, color: '#2b2b2e' }}>
               {title}
             </div>
-            <div style={{ fontSize: 28, color: '#6b6b73', marginTop: 8 }}>
-              {car.city} · {formatMileage(car.mileage, 'sr')}
+            {/* Satori (движок ImageResponse) требует явный display: flex
+                у любого <div> с несколькими дочерними узлами. Здесь их три
+                (город, разделитель, пробег) — без flex рендер падает с
+                «failed to pipe response», и соцсеть получает пустое превью.
+                По той же причине строка собирается заранее, а не склеивается
+                из выражений прямо в разметке. */}
+            <div
+              style={{
+                display: 'flex',
+                fontSize: 28,
+                color: '#6b6b73',
+                marginTop: 8,
+              }}
+            >
+              {`${car.city} · ${formatMileage(car.mileage, 'sr')}`}
             </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
             <div
               style={{
+                display: 'flex',
                 fontSize: 52,
                 fontWeight: 700,
                 color: brand.colors.primary,
@@ -123,7 +137,7 @@ export default async function Image({
             >
               {price}
             </div>
-            <div style={{ fontSize: 24, color: brand.colors.green, marginTop: 6 }}>
+            <div style={{ display: 'flex', fontSize: 24, color: brand.colors.green, marginTop: 6 }}>
               {brand.name}
             </div>
           </div>

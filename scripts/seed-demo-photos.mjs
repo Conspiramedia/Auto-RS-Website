@@ -29,6 +29,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // ------------------------------------------------------------
 // Загрузка .env.local. Своим парсером, а не зависимостью dotenv:
@@ -53,6 +54,38 @@ function loadEnv() {
 }
 
 const env = loadEnv();
+
+// ------------------------------------------------------------
+// Прокси для доступа к API фотостоков.
+// ------------------------------------------------------------
+// В некоторых сетях api.unsplash.com и api.pexels.com недоступны
+// напрямую (соединение отваливается по таймауту), но открываются через
+// локальный прокси. Node с версии 24 умеет использовать HTTPS_PROXY для
+// встроенного fetch, но только при включённом NODE_USE_ENV_PROXY.
+//
+// Этот флаг читается ОДИН РАЗ при старте процесса, поэтому присвоить его
+// в коде уже поздно — приходится перезапустить себя же с нужным
+// окружением. Проверено: без перезапуска запросы молча падают по таймауту.
+//
+// Если прокси в системе не задан, перезапуска не происходит и запросы
+// идут напрямую.
+if (
+  (process.env.HTTPS_PROXY || process.env.https_proxy) &&
+  !process.env.NODE_USE_ENV_PROXY
+) {
+  const { spawnSync } = await import('node:child_process');
+
+  const result = spawnSync(
+    process.execPath,
+    [fileURLToPath(import.meta.url), ...process.argv.slice(2)],
+    {
+      stdio: 'inherit',
+      env: { ...process.env, NODE_USE_ENV_PROXY: '1' },
+    },
+  );
+
+  process.exit(result.status ?? 1);
+}
 
 const SUPABASE_URL = env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_KEY = env.SUPABASE_SERVICE_ROLE_KEY;
