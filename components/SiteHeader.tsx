@@ -66,10 +66,6 @@ export default function SiteHeader({ locale, pathname }: Props) {
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-3">
           <LocaleSwitch locale={locale} pathname={pathname} />
 
-          {/* Бургер — только на мобильном: на десктопе разделы стоят
-              в самой шапке (nav выше). */}
-          <MobileMenu locale={locale} />
-
           {/* Сильный CTA продавцу — главная бизнес-цель сайта, поэтому он
               единственный акцентный элемент в шапке.
               whitespace-nowrap обязателен: «Prodaj auto» в две строки
@@ -81,6 +77,12 @@ export default function SiteHeader({ locale, pathname }: Props) {
           >
             {t('nav_sell')}
           </Button>
+
+          {/* Бургер — только на мобильном: на десктопе разделы стоят
+              в самой шапке (nav выше). Стоит последним, у самого края:
+              это край, до которого дотягивается большой палец, и меню
+              не разрывает пару «язык + CTA». */}
+          <MobileMenu locale={locale} />
         </div>
       </div>
     </header>
