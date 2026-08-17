@@ -13,13 +13,62 @@
 // Версия документа общая с приложением (kPolicyVersion). При правке
 // текста версию поднимать здесь И в приложении одновременно.
 //
-// ЮРИДИЧЕСКОЕ ЗАМЕЧАНИЕ (перенесено из приложения): реквизиты Оператора
-// в тексте — плейсхолдер. Перед релизом подставить реальные данные
-// компании (наименование, MB/PIB реестра APR) и дать текст на вычитку
-// юристу. Применимое право — Республика Сербия, сервис 18+.
+// ЮРИДИЧЕСКОЕ ЗАМЕЧАНИЕ (перенесено из приложения): применимое право —
+// Республика Сербия, сервис 18+. Перед публичным релизом текст должен
+// быть вычитан юристом.
 // ============================================================
 
 import type { Locale } from './i18n';
+
+// ------------------------------------------------------------
+// Реквизиты Оператора. ЕДИНЫЙ ИСТОЧНИК.
+// ------------------------------------------------------------
+// Используются в трёх местах: разделе «Контакты» обоих документов,
+// на странице /contact и в JSON-LD Organization. Держать их строкой
+// внутри текста политики нельзя — при смене адреса или регистрационного
+// номера пришлось бы править четыре перевода вручную.
+//
+// ⚠️ ВНИМАНИЕ: MB, PIB и юридический адрес — ПЛЕЙСХОЛДЕРЫ.
+// Регистрационные данные юридического лица нельзя выдумывать: указание
+// несуществующего номера APR в публичной оферте — нарушение само по
+// себе. Заполняются владельцем перед релизом (см. README → TODO).
+// Признак незаполненности — OPERATOR.verified: страница /contact и
+// разделы документов показывают строку с номером ТОЛЬКО когда он
+// подставлен, а не печатают «MB: [номер APR]» посетителю.
+// Тип задан явно, без `as const`: при `as const` пустые поля получают
+// литеральный тип '' и сужаются до never внутри проверок вида
+// `OPERATOR.phone && …`, из-за чего обращение к строковым методам
+// перестаёт компилироваться. Поля обязаны оставаться просто string —
+// они и предназначены для заполнения.
+type OperatorDetails = {
+  legalName: string;
+  registrationNumber: string;
+  taxNumber: string;
+  address: string;
+  email: string;
+  phone: string;
+};
+
+export const OPERATOR: OperatorDetails = {
+  // Наименование юридического лица.
+  legalName: 'RS AUTO d.o.o. Beograd',
+  // Матични број (регистрационный номер APR).
+  registrationNumber: '',
+  // ПИБ (налоговый идентификатор).
+  taxNumber: '',
+  // Юридический адрес.
+  address: '',
+  email: 'info@rsauto.rs',
+  // Телефон поддержки. Пустая строка — блок телефона не выводится.
+  phone: '',
+};
+
+// Заполнены ли регистрационные данные. Пока false, страницы показывают
+// только наименование и почту, а README держит открытый пункт TODO.
+export const OPERATOR_VERIFIED =
+  OPERATOR.registrationNumber !== '' &&
+  OPERATOR.taxNumber !== '' &&
+  OPERATOR.address !== '';
 
 // Версия и дата редакции — те же, что в приложении.
 export const POLICY_VERSION = '2026-08-14.1';
@@ -45,7 +94,7 @@ const PRIVACY_RU: LegalSection[] = [
   {
     paragraphs: [
       'Настоящая Политика конфиденциальности (далее — «Политика») определяет порядок обработки и защиты персональной информации пользователей (далее — «Пользователь»), которую приложение «Auto RS» (далее — «Приложение») может получить во время использования сервиса.',
-      'Оператором персональных данных (лицом, определяющим цели и способы обработки) является владелец Приложения (далее — «Оператор» или «мы»). Полные реквизиты Оператора указываются в разделе «Контакты» Приложения. Контакт для обращений — в разделе 8.',
+      `Оператором персональных данных (лицом, определяющим цели и способы обработки) является ${OPERATOR.legalName} (далее — «Оператор» или «мы»). Полные реквизиты Оператора указаны на странице «Контакты» сайта и в разделе 8 настоящей Политики.`,
       'Приложение предназначено для лиц, достигших 18 лет. Используя Приложение, Пользователь подтверждает, что ему исполнилось 18 лет. Мы сознательно не собираем данные лиц младше этого возраста; при обнаружении таких данных они удаляются.',
       'Использование Приложения означает безоговорочное согласие Пользователя с настоящей Политикой и указанными в ней условиями обработки его персональной информации. В случае несогласия с этими условиями Пользователь должен воздержаться от использования Приложения.',
     ],
@@ -128,7 +177,17 @@ const PRIVACY_RU: LegalSection[] = [
   {
     heading: '8. Контакты и реквизиты',
     paragraphs: [
-      'По любым вопросам, связанным с обработкой, изменением или удалением персональных данных, вы можете обратиться в службу поддержки через специальный раздел в Приложении.',
+      'По любым вопросам, связанным с обработкой, изменением или удалением персональных данных, вы можете обратиться к нам через страницу «Контакты» на сайте, через форму обратной связи или по электронной почте.',
+      `Оператор: ${OPERATOR.legalName}.`,
+      `Электронная почта: ${OPERATOR.email}.`,
+      // Регистрационные данные печатаются только когда заполнены:
+      // строка «MB: [номер APR]» в публичном документе хуже её отсутствия.
+      ...(OPERATOR_VERIFIED
+        ? [
+            `Матичный номер (MB): ${OPERATOR.registrationNumber}. ПИБ: ${OPERATOR.taxNumber}.`,
+            `Адрес: ${OPERATOR.address}.`,
+          ]
+        : []),
     ],
   },
 ];
@@ -137,7 +196,7 @@ const PRIVACY_SR: LegalSection[] = [
   {
     paragraphs: [
       'Ova Politika privatnosti (u daljem tekstu: „Politika“) određuje način obrade i zaštite ličnih podataka korisnika (u daljem tekstu: „Korisnik“) koje aplikacija „Auto RS“ (u daljem tekstu: „Aplikacija“) može dobiti tokom korišćenja servisa.',
-      'Rukovalac ličnih podataka (lice koje određuje svrhe i način obrade) jeste vlasnik Aplikacije (u daljem tekstu: „Rukovalac“ ili „mi“). Puni podaci Rukovaoca navedeni su u odeljku „Kontakt“ u Aplikaciji. Kontakt za obraćanja — u odeljku 8.',
+      `Rukovalac ličnih podataka (lice koje određuje svrhe i način obrade) jeste ${OPERATOR.legalName} (u daljem tekstu: „Rukovalac“ ili „mi“). Puni podaci Rukovaoca navedeni su na stranici „Kontakt“ na sajtu i u odeljku 8 ove Politike.`,
       'Aplikacija je namenjena licima starijim od 18 godina. Korišćenjem Aplikacije Korisnik potvrđuje da ima 18 godina. Svesno ne prikupljamo podatke lica mlađih od tog uzrasta; ako se takvi podaci otkriju, brišu se.',
       'Korišćenje Aplikacije znači bezuslovnu saglasnost Korisnika sa ovom Politikom i u njoj navedenim uslovima obrade njegovih ličnih podataka. U slučaju neslaganja sa ovim uslovima, Korisnik treba da se uzdrži od korišćenja Aplikacije.',
     ],
@@ -220,7 +279,15 @@ const PRIVACY_SR: LegalSection[] = [
   {
     heading: '8. Kontakt i podaci',
     paragraphs: [
-      'Za sva pitanja u vezi sa obradom, izmenom ili brisanjem ličnih podataka možete se obratiti korisničkoj podršci putem posebnog odeljka u Aplikaciji.',
+      'Za sva pitanja u vezi sa obradom, izmenom ili brisanjem ličnih podataka možete nam se obratiti putem stranice „Kontakt“ na sajtu, obrasca za kontakt ili e-poštom.',
+      `Rukovalac: ${OPERATOR.legalName}.`,
+      `E-pošta: ${OPERATOR.email}.`,
+      ...(OPERATOR_VERIFIED
+        ? [
+            `Matični broj (MB): ${OPERATOR.registrationNumber}. PIB: ${OPERATOR.taxNumber}.`,
+            `Adresa: ${OPERATOR.address}.`,
+          ]
+        : []),
     ],
   },
 ];
@@ -299,7 +366,15 @@ const TERMS_RU: LegalSection[] = [
   {
     heading: '9. Контакты',
     paragraphs: [
-      'По вопросам, связанным с работой Приложения и настоящими Условиями, обращайтесь через раздел поддержки в Приложении.',
+      'По вопросам, связанным с работой Приложения и настоящими Условиями, обращайтесь через страницу «Контакты» на сайте или по электронной почте.',
+      `Оператор: ${OPERATOR.legalName}.`,
+      `Электронная почта: ${OPERATOR.email}.`,
+      ...(OPERATOR_VERIFIED
+        ? [
+            `Матичный номер (MB): ${OPERATOR.registrationNumber}. ПИБ: ${OPERATOR.taxNumber}.`,
+            `Адрес: ${OPERATOR.address}.`,
+          ]
+        : []),
     ],
   },
 ];
@@ -375,7 +450,15 @@ const TERMS_SR: LegalSection[] = [
   {
     heading: '9. Kontakt',
     paragraphs: [
-      'Za pitanja u vezi sa radom Aplikacije i ovim Uslovima obratite se putem odeljka podrške u Aplikaciji.',
+      'Za pitanja u vezi sa radom Aplikacije i ovim Uslovima obratite se putem stranice „Kontakt“ na sajtu ili e-poštom.',
+      `Rukovalac: ${OPERATOR.legalName}.`,
+      `E-pošta: ${OPERATOR.email}.`,
+      ...(OPERATOR_VERIFIED
+        ? [
+            `Matični broj (MB): ${OPERATOR.registrationNumber}. PIB: ${OPERATOR.taxNumber}.`,
+            `Adresa: ${OPERATOR.address}.`,
+          ]
+        : []),
     ],
   },
 ];

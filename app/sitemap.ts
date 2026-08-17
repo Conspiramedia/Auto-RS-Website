@@ -50,6 +50,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // и краулер должен видеть, что страницы существуют.
     { path: '/terms', priority: 0.2, changeFrequency: 'yearly' as const },
     { path: '/privacy', priority: 0.2, changeFrequency: 'yearly' as const },
+    // Контакты: страница обязательная (на неё ссылаются документы) и
+    // при этом полезная для доверия — приоритет чуть выше юридических.
+    { path: '/contact', priority: 0.3, changeFrequency: 'yearly' as const },
   ].map((entry) => ({
     url: `${siteBaseUrl}${localeHref('sr', entry.path)}`,
     lastModified: now,

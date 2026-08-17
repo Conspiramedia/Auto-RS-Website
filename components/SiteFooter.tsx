@@ -73,6 +73,15 @@ export default function SiteFooter({
             согласие при входе по SMS), но конкурировать с разделами
             каталога им незачем. */}
         <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-black/50">
+          {/* Контакты стоят рядом с документами не случайно: именно
+              документы на них ссылаются, и путь должен быть доступен
+              с любой страницы сайта. */}
+          <Link
+            href={localeHref(locale, '/contact')}
+            className="hover:underline"
+          >
+            {t('nav_contact')}
+          </Link>
           <Link href={localeHref(locale, '/terms')} className="hover:underline">
             {t('legal_terms_title')}
           </Link>

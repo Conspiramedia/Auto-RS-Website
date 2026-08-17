@@ -250,6 +250,13 @@ export default function SellForm({ locale }: Props) {
     }
 
     setBusy(true);
+
+    // Шаг, на котором находится публикация. Нужен единственному месту —
+    // отчёту об ошибке в catch: по сообщению Supabase не всегда видно,
+    // отклонён код, не прошла загрузка фото или упала сама RPC.
+    // Персональные данные (uid, телефон) в лог не попадают.
+    let stage: 'verify' | 'upload' | 'create' = 'verify';
+
     try {
       // Номер берём тот, на который реально ушёл код. Пересчитывать его
       // из поля ввода нельзя: пользователь мог поправить текст после
@@ -271,22 +278,10 @@ export default function SellForm({ locale }: Props) {
         throw new Error(t('otp_err_failed'));
       }
 
-      // Диагностика живого прогона OTP. Пишется только в консоль
-      // браузера, в интерфейс не попадает: по этим строкам сверяется,
-      // что после verifyOtp сессия действительно создана и объявление
-      // уйдёт от имени auth.uid(), а не анонима.
-      // Токены НЕ логируем — в консоли им не место.
-      console.info('[RS Auto OTP] verifyOtp: сессия получена', {
-        uid,
-        phone: auth.user?.phone,
-        // Признак, что номер подтверждён на стороне Supabase.
-        phoneConfirmedAt: auth.user?.phone_confirmed_at ?? null,
-        expiresAt: auth.session.expires_at,
-        // Роль из JWT: для вошедшего по SMS обязана быть 'authenticated'.
-        role: auth.user?.role,
-      });
-
       setPhoneVerified(true);
+      // Дальше начинается загрузка фотографий: если что-то упадёт,
+      // отчёт об ошибке должен назвать именно этот шаг.
+      stage = 'upload';
 
       // 2) Загрузка фотографий. Путь ОБЯЗАН начинаться с uid: политика
       // car_images_insert_own разрешает запись только в свою папку.
@@ -305,6 +300,8 @@ export default function SellForm({ locale }: Props) {
           .getPublicUrl(path);
         photoUrls.push(pub.publicUrl);
       }
+
+      stage = 'create';
 
       // 3) Создание объявления. create_car_v3 (миграция 0055) — у неё
       // РАЗДЕЛЬНЫЕ цены продажи и аренды и есть залог. Прежняя v2
@@ -340,20 +337,16 @@ export default function SellForm({ locale }: Props) {
       });
       if (createError) throw new Error(createError.message);
 
-      // Подтверждение прогона: сессия жива и после публикации, объявление
-      // создано от имени того же uid. Пользователь этого не видит.
-      const { data: after } = await supabase.auth.getSession();
-      console.info('[RS Auto OTP] create_car_v3: объявление создано', {
-        uid,
-        photos: photoUrls.length,
-        sessionAlive: Boolean(after.session),
-        // Совпадение uid сессии с тем, под которым грузились фото, —
-        // признак, что токен не подменился между шагами.
-        sameUser: after.session?.user.id === uid,
-      });
-
       setDone(true);
     } catch (e) {
+      // В консоль — только шаг и текст ошибки. Ни uid, ни номер телефона
+      // сюда не пишутся: консоль браузера доступна расширениям, а это
+      // персональные данные продавца.
+      console.error('[RS Auto] Ошибка публикации объявления', {
+        stage,
+        message: e instanceof Error ? e.message : String(e),
+      });
+
       setError(humanOtpError(e));
     } finally {
       setBusy(false);

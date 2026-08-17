@@ -264,6 +264,46 @@ export const dict = {
     nf_catalog: 'Idi na katalog',
     nf_home: 'Na početnu',
 
+    // Страница ошибки (500). Текст намеренно не объясняет причину:
+    // посетителю нужен выход, а не диагноз. Техническая информация
+    // остаётся в логах, в интерфейс не попадает.
+    err_title: 'Nešto je pošlo naopako',
+    err_text:
+      'Stranica trenutno nije dostupna. Pokušajte da je osvežite — ako se greška ponovi, vratite se u katalog.',
+    err_retry: 'Pokušaj ponovo',
+
+    // Контакты
+    nav_contact: 'Kontakt',
+    contact_title: 'Kontakt',
+    contact_subtitle:
+      'Pišite nam — odgovaramo radnim danima. Za autosalone postoji poseban obrazac.',
+    contact_details: 'Podaci o firmi',
+    contact_email: 'E-pošta',
+    contact_phone: 'Telefon podrške',
+    contact_hours: 'Radno vreme',
+    contact_hours_value: 'Radnim danima 09.00–17.00',
+    contact_address: 'Adresa',
+    contact_dealers_hint: 'Vi ste autosalon? Pošaljite zahtev na posebnoj stranici.',
+
+    // Форма обратной связи
+    contact_form_title: 'Napišite nam',
+    contact_name: 'Ime',
+    contact_message: 'Poruka',
+    contact_topic: 'Tema',
+    contact_topic_general: 'Opšte pitanje',
+    contact_topic_ad: 'Pitanje o oglasu',
+    contact_topic_abuse: 'Prijava zloupotrebe',
+    contact_topic_privacy: 'Lični podaci',
+    contact_send: 'Pošalji poruku',
+    contact_sent_title: 'Poruka je poslata',
+    contact_sent_text: 'Odgovorićemo na navedenu e-poštu u najkraćem roku.',
+    contact_err_name: 'Unesite ime.',
+    contact_err_email: 'Proverite e-poštu.',
+    contact_err_message: 'Napišite poruku (najmanje 10 znakova).',
+    contact_err_too_long: 'Neko od polja je predugačko.',
+    contact_err_rate: 'Već ste poslali poruku. Pokušajte ponovo sutra.',
+    contact_err_unknown: 'Došlo je do greške. Pokušajte ponovo.',
+
     // Согласие с условиями (перед отправкой SMS) — формулировки
     // приложения (features/legal), перенесённые на сайт.
     legal_terms_title: 'Uslovi korišćenja',
@@ -443,6 +483,47 @@ export const dict = {
       'Возможно, объявление продано и снято, либо адрес указан неверно. Посмотрите другие автомобили в каталоге.',
     nf_catalog: 'Перейти в каталог',
     nf_home: 'На главную',
+
+    // Страница ошибки (500). Текст намеренно не объясняет причину:
+    // посетителю нужен выход, а не диагноз. Техническая информация
+    // остаётся в логах, в интерфейс не попадает.
+    err_title: 'Что-то пошло не так',
+    err_text:
+      'Страница сейчас недоступна. Попробуйте обновить её — если ошибка повторится, вернитесь в каталог.',
+    err_retry: 'Попробовать снова',
+
+    // Контакты
+    nav_contact: 'Контакты',
+    contact_title: 'Контакты',
+    contact_subtitle:
+      'Напишите нам — отвечаем по будням. Для автосалонов есть отдельная форма.',
+    contact_details: 'Реквизиты',
+    contact_email: 'Электронная почта',
+    contact_phone: 'Телефон поддержки',
+    contact_hours: 'Часы работы',
+    contact_hours_value: 'По будням 09:00–17:00',
+    contact_address: 'Адрес',
+    contact_dealers_hint:
+      'Вы автосалон? Оставьте заявку на отдельной странице.',
+
+    // Форма обратной связи
+    contact_form_title: 'Напишите нам',
+    contact_name: 'Имя',
+    contact_message: 'Сообщение',
+    contact_topic: 'Тема',
+    contact_topic_general: 'Общий вопрос',
+    contact_topic_ad: 'Вопрос по объявлению',
+    contact_topic_abuse: 'Жалоба на нарушение',
+    contact_topic_privacy: 'Персональные данные',
+    contact_send: 'Отправить сообщение',
+    contact_sent_title: 'Сообщение отправлено',
+    contact_sent_text: 'Ответим на указанную почту в ближайшее время.',
+    contact_err_name: 'Укажите имя.',
+    contact_err_email: 'Проверьте адрес электронной почты.',
+    contact_err_message: 'Напишите сообщение (не короче 10 символов).',
+    contact_err_too_long: 'Одно из полей слишком длинное.',
+    contact_err_rate: 'Вы уже отправили сообщение. Попробуйте завтра.',
+    contact_err_unknown: 'Произошла ошибка. Попробуйте ещё раз.',
 
     // Согласие с условиями (перед отправкой SMS) — формулировки
     // приложения (features/legal), перенесённые на сайт.

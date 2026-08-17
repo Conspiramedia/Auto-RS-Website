@@ -198,17 +198,57 @@ Tailwind берёт значения оттуда же. **Правка брен�
       из БД совпадают. При переезде на собственный домен менять в двух
       местах: переменную окружения на Vercel **и**
       `select public.set_site_base_url('https://новый-домен');`
-- [ ] **Deep links.** В `public/.well-known/` заменить плейсхолдеры:
-      `TEAM_ID` (Apple Developer → Membership) в `apple-app-site-association`
-      и `SHA256_FINGERPRINT` (отпечаток **релизного** ключа) в `assetlinks.json`.
+- [ ] **Deep links.** В `public/.well-known/` заменить плейсхолдеры —
+      **значения доступны только владельцу, из репозитория их взять негде:**
+      - `TEAM_ID` в `apple-app-site-association` — Apple Developer Portal →
+        Membership details → Team ID (10 символов).
+      - `SHA256_FINGERPRINT` в `assetlinks.json` — отпечаток **релизного**
+        ключа приложения:
+        `keytool -list -v -keystore <release.keystore> -alias <alias>`
+        (строка `SHA256:`, вместе с двоеточиями). Отпечаток **debug**-ключа
+        не подходит: проверка Google пройдёт, а установленное из Play
+        приложение ссылки перехватывать не будет.
+
       Подробности — `D:\Project\Auto.RS\docs\well-known\README.md`.
+      До заполнения App Links и Universal Links не работают: ссылка
+      открывается в браузере, воронка в приложение теряется.
+- [ ] **Реквизиты Оператора.** В `lib/legal.ts` → `OPERATOR` заполнить
+      `registrationNumber` (MB), `taxNumber` (PIB) и `address`.
+      Наименование (`RS AUTO d.o.o. Beograd`) и почта уже проставлены.
+      Пока поля пусты, `OPERATOR_VERIFIED` равно `false`, и страница
+      `/contact` вместе с разделами «Контакты» в документах показывает
+      только наименование и почту — заглушки вида «PIB: [номер]»
+      посетителю не выводятся. Регистрационные номера выдумывать нельзя:
+      неверный номер APR в публичной оферте — нарушение сам по себе.
+- [ ] **Телефон поддержки.** `lib/legal.ts` → `OPERATOR.phone`. Пока пусто,
+      блок телефона на `/contact` не отображается.
 - [ ] **App Store ID.** После публикации проставить числовой ID в
       `lib/brand.ts` → `appIds.ios.appStoreId`; сейчас ссылка ведёт на поиск.
 - [ ] **Applinks в приложении.** Android: `intent-filter` с `autoVerify`;
       iOS: Associated Domains `applinks:домен`. Это правки **в приложении** —
       выполняются отдельной задачей, по согласованию.
-- [ ] **SMS-провайдер.** Проверить настройки Phone Auth в Supabase
-      (Twilio/Vonage) и лимиты — без него вход на `/sell` не работает.
+- [ ] **SMS-провайдер.** Supabase Dashboard → Authentication → Providers →
+      Phone: включить провайдера и проверить лимиты. Без этого вход на
+      `/sell` не работает — код не отправляется, и объявление подать нельзя.
+      Код сайта менять не потребуется: путь
+      `rpc_check_otp_quota` → `signInWithOtp` → `verifyOtp` → `create_car_v3`
+      уже реализован в `components/SellForm.tsx`.
+      После включения проверить end-to-end на реальном номере:
+      код пришёл → введён → сессия создана → объявление появилось
+      со статусом `moderation`.
+- [x] **Миграция 0058** — таблица `contact_messages` и RPC
+      `submit_contact_message` для формы на `/contact`. **Применена в базе**
+      (проверено вызовом RPC под anon-ключом: валидация и коды ошибок
+      совпадают с ожидаемыми, прямой `INSERT` анонимом отклоняется RLS).
+      Файл миграции живёт в репозитории приложения —
+      `D:\Project\Auto.RS\supabase\migrations\0058_contact_messages.sql`:
+      `supabase/migrations` там единый источник истины по схеме для обоих
+      клиентов, и второй копии в `docs/` быть не должно.
+- [ ] **Заголовки безопасности: проверка на проде.** Заданы в
+      `next.config.mjs` (`headers()`), проверяются только на задеплоенном
+      домене: `https://securityheaders.com/?q=rsauto-rs.vercel.app`.
+      Цель — A+. HSTS с `preload` требует, чтобы домен отдавался
+      исключительно по HTTPS.
 
 ### Функциональное
 
