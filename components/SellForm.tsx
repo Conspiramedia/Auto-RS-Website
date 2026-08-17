@@ -43,9 +43,11 @@ export default function SellForm({ locale }: Props) {
 
   // Тип объявления. Определяет, какие поля цен показываются и что
   // уходит в create_car_v3. По умолчанию продажа — самый частый случай.
-  const [listingType, setListingType] = useState<'sale' | 'rent' | 'both'>(
-    'sale',
-  );
+  // У объявления один тип сделки: продажа ИЛИ аренда. Вариант «и то и
+  // другое» убран — одна машина, выставленная и на продажу, и в аренду,
+  // подаётся двумя отдельными объявлениями. Защита от дублей это
+  // разрешает: тип сделки входит в условие совпадения (миграция 0057).
+  const [listingType, setListingType] = useState<'sale' | 'rent'>('sale');
 
   // Шаг 1–2: данные автомобиля.
   const [brand, setBrand] = useState('');
@@ -213,11 +215,11 @@ export default function SellForm({ locale }: Props) {
         // ставка — только сдающимся. Лишние значения не отправляем,
         // чтобы в базе не осталось цены от неактуального типа.
         p_sale_price:
-          listingType !== 'rent' && price ? Number(price) : null,
+          listingType === 'sale' && price ? Number(price) : null,
         p_rent_price_daily:
-          listingType !== 'sale' && rentPrice ? Number(rentPrice) : null,
+          listingType === 'rent' && rentPrice ? Number(rentPrice) : null,
         p_deposit_amount:
-          listingType !== 'sale' && deposit ? Number(deposit) : 0,
+          listingType === 'rent' && deposit ? Number(deposit) : 0,
         p_currency: 'EUR',
         p_city: city.trim(),
         p_lat: null,
@@ -258,7 +260,7 @@ export default function SellForm({ locale }: Props) {
   // намеренно: сервер — источник истины, но сообщить об ошибке до
   // загрузки фотографий и отправки SMS гораздо дешевле для пользователя.
   function validateDetails(): string | null {
-    const needsRent = listingType !== 'sale';
+    const needsRent = listingType === 'rent';
 
     if (needsRent) {
       if (!rentPrice.trim()) return t('sell_err_rent_price');
@@ -268,7 +270,7 @@ export default function SellForm({ locale }: Props) {
 
     // Цена продажи может отсутствовать («Договорная»), но если указана —
     // должна быть положительной.
-    if (listingType !== 'rent' && price.trim() && Number(price) <= 0) {
+    if (listingType === 'sale' && price.trim() && Number(price) <= 0) {
       return t('sell_err_price_positive');
     }
 
@@ -303,12 +305,13 @@ export default function SellForm({ locale }: Props) {
             <label className="mb-1 block text-sm text-black/60">
               {t('sell_type')}
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            {/* Два варианта вместо трёх: у объявления один тип сделки.
+                Машину, которую продают и сдают, подают двумя объявлениями. */}
+            <div className="grid grid-cols-2 gap-2">
               {(
                 [
                   ['sale', t('sell_type_sale')],
                   ['rent', t('sell_type_rent')],
-                  ['both', t('sell_type_both')],
                 ] as const
               ).map(([value, label]) => (
                 <button
@@ -408,7 +411,7 @@ export default function SellForm({ locale }: Props) {
 
           {/* Цена продажи — только когда объявление продаётся.
               Пустое значение допустимо: это «Договорная». */}
-          {listingType !== 'rent' && (
+          {listingType === 'sale' && (
             <div>
               <label className="mb-1 block text-sm text-black/60">
                 {t('sell_sale_price')}, €
@@ -427,7 +430,7 @@ export default function SellForm({ locale }: Props) {
           {/* Цена аренды и залог — только когда объявление сдаётся.
               Суточная ставка обязательна: без неё объявление аренды
               бессмысленно, и того же требует constraint в БД. */}
-          {listingType !== 'sale' && (
+          {listingType === 'rent' && (
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="mb-1 block text-sm text-black/60">
