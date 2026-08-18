@@ -31,6 +31,21 @@ export const metadata: Metadata = {
     template: `%s | ${brand.name}`,
   },
   description: 'Kupovina i prodaja automobila u Srbiji.',
+
+  // Иконки нарезаны из фирменного PNG. Пути статичные: файлы лежат в
+  // public/ и отдаются с корня.
+  icons: {
+    // favicon.ico первым — старые браузеры берут именно его; PNG 32
+    // рядом для тех, кто умеет лучше.
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/favicon-32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+    ],
+    // iOS не читает manifest для экрана «Домой» — ему нужен именно
+    // apple-touch-icon, иначе система нарисует скриншот страницы.
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
+  },
 };
 
 export default function RootLayout({
