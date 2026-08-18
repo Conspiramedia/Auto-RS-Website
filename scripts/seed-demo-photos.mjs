@@ -44,7 +44,16 @@ function loadEnv() {
       if (!trimmed || trimmed.startsWith('#')) continue;
       const eq = trimmed.indexOf('=');
       if (eq === -1) continue;
-      env[trimmed.slice(0, eq).trim()] = trimmed.slice(eq + 1).trim();
+
+      let value = trimmed.slice(eq + 1).trim();
+      // Снимаем обрамляющие кавычки: Vercel CLI выгружает .env.local
+      // в виде KEY="value", и без этого URL уходил в supabase-js
+      // вместе с кавычками — клиент падал на «Invalid supabaseUrl».
+      if (value.length > 1 && /^(".*"|'.*')$/s.test(value)) {
+        value = value.slice(1, -1);
+      }
+
+      env[trimmed.slice(0, eq).trim()] = value;
     }
   } catch {
     console.error('Не найден .env.local в текущей папке.');
