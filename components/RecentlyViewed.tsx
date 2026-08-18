@@ -76,6 +76,27 @@ export function rememberCar(car: RecentCar): void {
   }
 }
 
+// ------------------------------------------------------------
+// Проверка «объявление уже открывали». Используется меткой
+// «Просмотрено» на карточке каталога (ViewedBadge).
+//
+// Вызывать только из эффекта клиентского компонента: на сервере
+// localStorage нет, и до гидратации ответ всегда false.
+// ------------------------------------------------------------
+export function isCarViewed(id: string): boolean {
+  if (typeof window === 'undefined') return false;
+
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const list: RecentCar[] = JSON.parse(raw);
+    return list.some((item) => item.id === id);
+  } catch {
+    // Хранилище недоступно или содержит мусор — метки просто не будет.
+    return false;
+  }
+}
+
 type Props = {
   locale: Locale;
   // Объявление, которое сейчас открыто: его из блока исключаем —

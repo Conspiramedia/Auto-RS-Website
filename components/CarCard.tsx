@@ -12,6 +12,7 @@ import { formatMileage, formatPrice, formatRentPrice } from '@/lib/format';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import type { ListingType } from '@/lib/types';
+import ViewedBadge from './ViewedBadge';
 
 type Props = {
   locale: Locale;
@@ -84,8 +85,16 @@ export default function CarCard({
           </div>
         )}
 
+        {/* «Просмотрено» — клиентская метка: история открытых объявлений
+            лежит в localStorage, серверу она недоступна. Дорисовывается
+            поверх фотографии после гидратации. */}
+        <ViewedBadge locale={locale} carId={car.id} />
+
+        {/* Продвижение — левый НИЖНИЙ угол: верхний слева занят меткой
+            «Просмотрено», и в одном углу они накладывались бы друг на
+            друга. Так же разведены бейджи в приложении. */}
         {car.is_promoted && (
-          <span className="absolute left-2 top-2 rounded-control bg-brand-gold px-2 py-1 text-xs font-semibold text-white">
+          <span className="absolute bottom-2 left-2 rounded-control bg-brand-gold px-2 py-1 text-xs font-semibold text-white">
             {t('car_promoted')}
           </span>
         )}
