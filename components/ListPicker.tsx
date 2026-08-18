@@ -27,6 +27,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import { normalizeForSearch } from '@/lib/referenceData';
+import CloseButton from './ui/CloseButton';
 import { FIELD_HEIGHT, FIELD_HEIGHT_COMPACT, labelClass } from './ui/Field';
 
 export type PickerOption = {
@@ -104,7 +105,13 @@ export default function ListPicker({
       }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key !== 'Escape') return;
+      setOpen(false);
+      // Пикер часто открыт ВНУТРИ шторки фильтров, которая слушает
+      // Escape на том же document. Без остановки всплытия одно нажатие
+      // закрыло бы сразу оба слоя, и пользователь, закрывавший список,
+      // терял бы заодно всю форму фильтров.
+      e.stopPropagation();
     };
 
     document.addEventListener('mousedown', onDocClick);
@@ -214,14 +221,10 @@ export default function ListPicker({
           >
             <div className="flex items-center justify-between border-b border-neutral-10 px-4 py-3 sm:hidden">
               <span className="font-semibold">{label}</span>
-              <button
-                type="button"
+              <CloseButton
                 onClick={() => setOpen(false)}
-                className="px-2 text-2xl leading-none text-neutral-40"
-                aria-label="×"
-              >
-                ×
-              </button>
+                label={t('common_close')}
+              />
             </div>
 
             {searchable && (

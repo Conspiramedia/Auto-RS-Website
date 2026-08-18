@@ -17,10 +17,16 @@
 // ============================================================
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { getBrowserClient } from '@/lib/supabaseClient';
 import { trackEvent } from '@/lib/analytics';
+import {
+  acceptPolicy,
+  hasAcceptedPolicy,
+  migrateGuestConsent,
+} from '@/lib/consent';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { BRANDS, CITIES, YEAR_MIN, yearMax } from '@/lib/referenceData';
@@ -29,7 +35,6 @@ import {
   MAX_PRICE,
   formatSerbianPhone,
   handleNumberInput,
-  handleYearInput,
   parseThousands,
   serbianPhoneToE164,
   validateYear,
@@ -37,6 +42,7 @@ import {
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
 import PhotoPicker from './PhotoPicker';
+import CloseButton from './ui/CloseButton';
 import { fieldClass, fieldClassTextarea } from './ui/Field';
 import Button from './ui/Button';
 import Card from './ui/Card';
@@ -46,10 +52,22 @@ type Props = {
 };
 
 // Максимум фотографий — как в приложении (AppConstants.maxCarImages).
-const MAX_PHOTOS = 15;
+// Десять, а не пятнадцать: столько же принимает форма подачи
+// в приложении, и лимит обязан совпадать в обоих клиентах —
+// ограничения на стороне БД нет, проверка целиком клиентская.
+const MAX_PHOTOS = 10;
+
+// Годы выпуска для пикера: свежие сверху, как в приложении.
+// Считается один раз при загрузке модуля — список не меняется в течение
+// сессии, и пересобирать его на каждый рендер незачем.
+const YEARS: string[] = Array.from(
+  { length: yearMax() - YEAR_MIN + 1 },
+  (_, i) => String(yearMax() - i),
+);
 
 export default function SellForm({ locale }: Props) {
   const t = getT(locale);
+  const router = useRouter();
   const supabase = getBrowserClient();
 
   const [step, setStep] = useState(1);
@@ -107,7 +125,21 @@ export default function SellForm({ locale }: Props) {
   // Согласие с условиями и политикой. Без него код не отправляется —
   // тот же порядок, что в приложении (login_screen.dart: политика
   // принимается ДО sendOtp, а не после).
+  //
+  // Начальное значение подставляется из localStorage в useEffect ниже:
+  // при первом рендере обращаться к нему нельзя (форма рендерится и на
+  // сервере), а расхождение разметки сервера и клиента ломает гидрацию.
   const [agreed, setAgreed] = useState(false);
+
+  // Уже вошедший продавец. Сессия Supabase живёт между визитами
+  // (persistSession в lib/supabaseClient), и человеку, подающему второе
+  // объявление, незачем снова получать SMS: код нужен для СОЗДАНИЯ
+  // сессии, а она уже есть.
+  //
+  // null — проверка ещё идёт: до её конца шаг 4 не показывает ни блок
+  // входа, ни кнопку публикации, иначе на долю секунды мелькнёт
+  // «Отправить код» у того, кто давно вошёл.
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
 
   // Обратный отсчёт до повторной отправки, 60 секунд — как в приложении.
   // Хранится момент, когда отправка снова разрешена: при возврате на
@@ -125,6 +157,30 @@ export default function SellForm({ locale }: Props) {
   useEffect(() => {
     trackEvent('sell_start');
   }, []);
+
+  // Определение уже вошедшего продавца и ранее принятой политики.
+  // Оба факта живут на устройстве и читаются ТОЛЬКО на клиенте.
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+
+      const uid = data.session?.user.id ?? null;
+      setSignedIn(uid !== null);
+
+      // Согласие могло быть дано ещё гостем — переносим на аккаунт,
+      // иначе тот же человек увидит непринятый чекбокс.
+      if (uid) migrateGuestConsent(uid);
+      setAgreed(hasAcceptedPolicy(uid));
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // supabase — синглтон, ссылка стабильна: эффект выполняется однажды.
+  }, [supabase]);
 
   useEffect(() => {
     if (resendAt === 0) return;
@@ -209,6 +265,10 @@ export default function SellForm({ locale }: Props) {
       setError(t('legal_consent_required'));
       return;
     }
+
+    // Фиксируем принятие текущей редакции. Пока пользователь — гость;
+    // на его uid согласие переедет после успешного входа.
+    acceptPolicy(null);
 
     const e164 = normalizePhone(resend && sentTo ? sentTo : phone);
 
@@ -298,18 +358,43 @@ export default function SellForm({ locale }: Props) {
       // отправки, и verifyOtp ушёл бы с другим номером.
       const e164 = sentTo || normalizePhone(phone);
 
-      // 1) Вход по коду из SMS.
-      const { data: auth, error: verifyError } = await supabase.auth.verifyOtp({
-        phone: e164,
-        token: code.trim(),
-        type: 'sms',
-      });
-      if (verifyError) throw new Error(verifyError.message);
+      // 1) Вход. У продавца, подающего не первое объявление, сессия уже
+      // есть — SMS не нужна вовсе: код служит для СОЗДАНИЯ сессии, а не
+      // для подтверждения каждой публикации. Лишний verifyOtp здесь
+      // отклонялся бы (кода нет) и жёг суточную квоту в пять SMS.
+      let uid: string | undefined;
+      // Телефон для объявления. У гостя это номер, на который ушёл код;
+      // у вошедшего — номер его аккаунта: поле ввода ему не показывается,
+      // и брать оттуда нечего, а create_car_v3 требует непустой телефон
+      // (constraint cars_contact_phone_serbian).
+      let contactPhone = e164;
 
-      const uid = auth.user?.id;
-      // Сессия обязана появиться: без неё RLS отклонит и загрузку фото,
+      if (signedIn) {
+        const { data: current } = await supabase.auth.getSession();
+        uid = current.session?.user.id;
+        contactPhone = current.session?.user.phone
+          ? `+${current.session.user.phone.replace(/^\+/, '')}`
+          : '';
+        if (!contactPhone) throw new Error(t('otp_err_failed'));
+      } else {
+        const { data: auth, error: verifyError } =
+          await supabase.auth.verifyOtp({
+            phone: e164,
+            token: code.trim(),
+            type: 'sms',
+          });
+        if (verifyError) throw new Error(verifyError.message);
+        if (!auth.session) throw new Error(t('otp_err_failed'));
+        uid = auth.user?.id;
+
+        // Согласие давалось гостем — переносим на созданный аккаунт,
+        // чтобы при следующей подаче политику не спрашивали снова.
+        if (uid) migrateGuestConsent(uid);
+      }
+
+      // Сессия обязана быть: без неё RLS отклонит и загрузку фото,
       // и create_car_v3 — объявление осталось бы без владельца.
-      if (!auth.session || !uid) {
+      if (!uid) {
         throw new Error(t('otp_err_failed'));
       }
 
@@ -380,7 +465,7 @@ export default function SellForm({ locale }: Props) {
         p_transmission: transmission || null,
         p_fuel: fuel || null,
         p_description: description.trim() || null,
-        p_phone: e164,
+        p_phone: contactPhone,
       });
       if (createError) throw new Error(createError.message);
 
@@ -445,7 +530,9 @@ export default function SellForm({ locale }: Props) {
     model.trim() &&
     validateYear(year, YEAR_MIN, yearMax()) &&
     city.trim();
-  const canSubmit = codeSent && code.trim().length >= 4;
+  // Вошедшему продавцу код не нужен — публиковать можно сразу.
+  // Гостю по-прежнему нужен отправленный и введённый код.
+  const canSubmit = signedIn || (codeSent && code.trim().length >= 4);
 
   // Проверка шага «Детали». Дублирует серверную валидацию create_car_v3
   // намеренно: сервер — источник истины, но сообщить об ошибке до
@@ -496,8 +583,26 @@ export default function SellForm({ locale }: Props) {
 
   return (
     <Card>
-      <div className="mb-4 text-sm text-neutral-50">
-        {t('sell_step')} {step} / 4
+      {/* Шапка формы: счётчик шагов слева, выход справа.
+          Крестик нужен именно здесь: подача — длинная форма на
+          отдельной странице, и до появления кнопки единственным
+          способом «передумать» была кнопка «Назад» браузера, которая
+          на первом шаге уводила вообще с сайта. Уход ведёт в каталог,
+          а не history.back(): на /sell часто приходят по прямой ссылке
+          из шапки, и возвращать человека в пустую историю незачем.
+          Ничего не отправлено — закрытие проходит без последствий. */}
+      <div className="mb-4 flex items-start justify-between gap-2">
+        <div className="text-sm text-neutral-50">
+          {t('sell_step')} {step} / 4
+        </div>
+        <CloseButton
+          onClick={() => router.push(localeHref(locale, '/cars'))}
+          label={t('common_close')}
+          // Отрицательные отступы возвращают знак к краю карточки:
+          // у кнопки область 40px ради попадания пальцем, и без сдвига
+          // она визуально отступала бы от угла сильнее заголовка.
+          className="-mr-2 -mt-2 shrink-0"
+        />
       </div>
 
       {/* ---------- Шаг 1: автомобиль ---------- */}
@@ -572,23 +677,22 @@ export default function SellForm({ locale }: Props) {
           />
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-sm text-neutral-60">
-                {t('filter_year')}
-              </label>
-              {/* inputMode="numeric" вместо type="number": цифровая
-                  клавиатура на телефоне остаётся, но поле принимает
-                  форматированную строку и не показывает стрелки-спиннеры.
-                  Ограничение ввода — handleYearInput (4 цифры). */}
-              <input
-                type="text"
-                inputMode="numeric"
-                value={year}
-                onChange={(e) => setYear(handleYearInput(e.target.value))}
-                placeholder={String(yearMax() - 5)}
-                className={field}
-              />
-            </div>
+            {/* Год — ВЫБОР ИЗ СПИСКА, как в приложении
+                (create_car_screen.dart): свежие годы сверху, диапазон
+                тот же 1900…текущий+1, что и constraint chk_year в БД.
+                Ручной ввод здесь ничего не давал: значение всё равно
+                обязано попасть в этот диапазон, а опечатку вроде «20222»
+                приходилось ловить проверкой уже после ввода.
+                Поиск в списке оставлен: годов больше сотни, и мотать
+                до 1998-го колесом дольше, чем набрать его. */}
+            <ListPicker
+              locale={locale}
+              name="year"
+              label={t('filter_year')}
+              options={YEARS.map((y): PickerOption => ({ value: y, label: y }))}
+              value={year}
+              onChange={setYear}
+            />
             {/* Город — тот же список, что в онбординге приложения.
                 allowCustom оставлен, как в приложении: продавец может
                 быть из города, которого нет в списке 18 крупных. */}
@@ -745,6 +849,7 @@ export default function SellForm({ locale }: Props) {
               onChange={(e) => setDescription(e.target.value)}
               rows={5}
               maxLength={6000}
+              placeholder={t('car_description_hint')}
               className={fieldTextarea}
             />
           </div>
@@ -814,25 +919,61 @@ export default function SellForm({ locale }: Props) {
             }}
           />
 
-          <div>
-            <label className="mb-1 block text-sm text-neutral-60">
-              {t('sell_phone')}
-            </label>
-            {/* Маска «+381 6X XXX XXX(X)» — та же, что в приложении
-                (SerbianPhoneFormatter). Форматирование идёт по мере
-                набора, наружу уходит E.164. */}
-            <input
-              type="tel"
-              inputMode="tel"
-              value={phone}
-              onChange={(e) => setPhone(formatSerbianPhone(e.target.value))}
-              placeholder="+381 6X XXX XXX"
-              className={field}
-              disabled={codeSent}
-            />
-          </div>
+          {/* Телефон спрашиваем только у гостя: у вошедшего он уже
+              привязан к аккаунту, и вводить его заново незачем. */}
+          {signedIn === false && (
+            <div>
+              <label className="mb-1 block text-sm text-neutral-60">
+                {t('sell_phone')}
+              </label>
+              {/* Маска «+381 6X XXX XXX(X)» — та же, что в приложении
+                  (SerbianPhoneFormatter). Форматирование идёт по мере
+                  набора, наружу уходит E.164. */}
+              <input
+                type="tel"
+                inputMode="tel"
+                value={phone}
+                onChange={(e) => setPhone(formatSerbianPhone(e.target.value))}
+                placeholder="+381 6X XXX XXX"
+                className={field}
+                disabled={codeSent}
+              />
+            </div>
+          )}
 
-          {!codeSent ? (
+          {/* Проверка сессии ещё идёт: не показываем ничего, иначе
+              у вошедшего продавца на долю секунды мелькнёт блок
+              «Отправить код», которого он не должен видеть вовсе. */}
+          {signedIn === null ? null : signedIn ? (
+            <>
+              {/* Продавец уже вошёл — публикуем без SMS. Код нужен для
+                  создания сессии, а она есть и живёт между визитами
+                  (persistSession). Требовать SMS на каждое объявление
+                  значило бы жечь суточную квоту в пять сообщений
+                  и заставлять человека ждать на ровном месте. */}
+              <Button onClick={submit} disabled={busy} fullWidth>
+                {busy ? t('otp_verifying') : t('sell_submit')}
+              </Button>
+
+              {/* Прогресс отправки фотографий: у вошедшего публикация
+                  начинается сразу с загрузки, и без индикатора кнопка
+                  выглядит зависшей. */}
+              {busy && files.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between text-caption text-neutral-60">
+                    <span>{t('sell_photos_uploading')}</span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                  <div className="mt-1.5 h-2 overflow-hidden rounded-pill bg-surface-muted">
+                    <div
+                      className="h-full rounded-pill bg-brand-green transition-[width] duration-normal ease-out"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </>
+          ) : !codeSent ? (
             <>
               {/* Согласие с условиями и политикой — ОБЯЗАТЕЛЬНО до кнопки
                   «Получить код». Тот же порядок, что в приложении: аккаунт

@@ -12,6 +12,7 @@ import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import CarGallery from '@/components/CarGallery';
+import GalleryCloseButton from '@/components/GalleryCloseButton';
 import ShareButton from '@/components/ShareButton';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
@@ -151,7 +152,13 @@ export default async function CarPageView({
 
         <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
           <div>
-            <CarGallery images={images} alt={title} />
+            {/* Обёртка нужна ради позиционирования крестика: сама
+                галерея прокручивает миниатюры и не должна отвечать
+                за слой поверх кадра. */}
+            <div className="relative">
+              <CarGallery images={images} alt={title} />
+              <GalleryCloseButton locale={locale} fallbackPath={catalogPath} />
+            </div>
 
             <h1 className="mt-5 text-2xl font-bold">{title}</h1>
 

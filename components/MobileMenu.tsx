@@ -22,6 +22,7 @@ import { useEffect, useState } from 'react';
 
 import type { DictKey, Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
+import CloseButton from './ui/CloseButton';
 
 // Разделы меню. Порядок осмысленный: сначала витрины (за ними приходят),
 // потом продавцам, затем справочные страницы и контакты.
@@ -100,14 +101,13 @@ export default function MobileMenu({ locale }: { locale: Locale }) {
           >
             <div className="flex h-14 shrink-0 items-center justify-between border-b border-neutral-10 px-4">
               <span className="font-semibold">{t('nav_menu')}</span>
-              <button
-                type="button"
+              {/* Подпись остаётся своей («Закрыть меню»), а не общей:
+                  в шапке рядом нет другого слоя, и уточнение помогает
+                  тому, кто слушает страницу скринридером. */}
+              <CloseButton
                 onClick={() => setOpen(false)}
-                aria-label={t('nav_menu_close')}
-                className="px-2 text-2xl leading-none text-neutral-40"
-              >
-                ×
-              </button>
+                label={t('nav_menu_close')}
+              />
             </div>
 
             {/* Список прокручивается сам: восемь пунктов не помещаются

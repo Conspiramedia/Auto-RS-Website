@@ -33,6 +33,7 @@ import { getBrowserClient } from '@/lib/supabaseClient';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import type { ListingType, SiteBrand, SiteCity } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
+import CloseButton from './ui/CloseButton';
 import { fieldClassCompact } from './ui/Field';
 import Button from './ui/Button';
 
@@ -73,6 +74,22 @@ export default function FilterPanel({
 }: Props) {
   const t = getT(locale);
   const [open, setOpen] = useState(false);
+
+  // Escape закрывает шторку — то же поведение, что у меню в шапке и у
+  // списка выбора. Без этого шторка была единственным слоем сайта,
+  // из которого нельзя выйти с клавиатуры.
+  //
+  // Список выбора внутри шторки гасит своё Escape (stopPropagation),
+  // поэтому первое нажатие закрывает только открытый список, а до
+  // шторки событие доходит уже следующим нажатием.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
 
   // Тип объявления. Витрина каталога смешанная, поэтому по умолчанию
   // 'both' — «Всё». На SEO-лендинге /rent тип задан адресом и сегмент
@@ -224,18 +241,23 @@ export default function FilterPanel({
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-filter-sheet flex items-end justify-center bg-surface-overlay sm:items-center">
-          <div className="max-h-[90vh] w-full overflow-y-auto rounded-t-card bg-white p-4 sm:max-w-lg sm:rounded-card">
+        <div
+          className="fixed inset-0 z-filter-sheet flex items-end justify-center bg-surface-overlay sm:items-center"
+          // Клик по затемнению закрывает шторку. Обработчик висит на
+          // самом затемнении, а клик внутри панели гасится ниже: иначе
+          // любое нажатие по полю формы схлопывало бы фильтры.
+          onClick={() => setOpen(false)}
+        >
+          <div
+            className="max-h-[90vh] w-full overflow-y-auto rounded-t-card bg-white p-4 sm:max-w-lg sm:rounded-card"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold">{t('catalog_filters')}</h2>
-              <button
-                type="button"
+              <CloseButton
                 onClick={() => setOpen(false)}
-                className="px-2 text-2xl leading-none text-neutral-40"
-                aria-label="×"
-              >
-                ×
-              </button>
+                label={t('common_close')}
+              />
             </div>
 
             {/* GET-форма: значения уходят в query-параметры адреса.
