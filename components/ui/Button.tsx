@@ -64,7 +64,7 @@ const VARIANTS: Record<Variant, string> = {
 // Значения перенесены из разметки без изменений: text-caption = text-sm,
 // text-small = text-xs (одна и та же пара размер/интерлиньяж).
 const SIZES: Record<Size, string> = {
-  xs: 'px-2.5 py-2 text-small sm:px-3 sm:text-caption',
+  xs: 'px-2.5 py-2.5 text-small sm:px-3 sm:text-caption',
   sm: 'px-4 py-2.5 text-caption',
   md: 'px-4 py-3',
   lg: 'px-5 py-3',

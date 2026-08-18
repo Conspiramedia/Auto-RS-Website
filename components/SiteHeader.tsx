@@ -40,9 +40,9 @@ export default function SiteHeader({ locale, pathname }: Props) {
     <header className="sticky top-0 z-header border-b border-neutral-10 bg-white">
       {/* gap-2 на мобильных и gap-4 с sm: на 360px каждый пиксель между
           элементами решает, поместится CTA или уедет за край. */}
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:gap-4 sm:px-4">
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 pl-3 pr-2 sm:gap-4 sm:pl-4 sm:pr-3">
         <Link href={localeHref(locale, '/')} className="shrink-0">
-          <Logo className="text-base sm:text-lg" />
+          <Logo className="text-sm sm:text-lg" />
         </Link>
 
         {/* Разделы сайта. Показываются только на десктопе (sm:flex):

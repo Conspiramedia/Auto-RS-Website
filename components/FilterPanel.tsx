@@ -189,9 +189,33 @@ export default function FilterPanel({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 rounded-control bg-brand-dark px-4 py-2.5 text-sm font-semibold text-white"
+        className="inline-flex h-10 items-center gap-2 rounded-control bg-brand-dark px-4 text-sm font-semibold text-white"
       >
         {t('catalog_filters')}
+
+        {/* Значок регуляторов справа от подписи. Inline-SVG, а не иконочная
+            библиотека: тянуть зависимость ради одного знака избыточно —
+            тем же приёмом собран бургер в шапке.
+            currentColor — знак наследует белый цвет текста кнопки. */}
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          aria-hidden="true"
+        >
+          {/* Три дорожки с бегунками на разной высоте. */}
+          <line x1="4" y1="6" x2="20" y2="6" />
+          <line x1="4" y1="12" x2="20" y2="12" />
+          <line x1="4" y1="18" x2="20" y2="18" />
+          <circle cx="9" cy="6" r="2" fill="currentColor" stroke="none" />
+          <circle cx="15" cy="12" r="2" fill="currentColor" stroke="none" />
+          <circle cx="8" cy="18" r="2" fill="currentColor" stroke="none" />
+        </svg>
+
         {activeCount > 0 && (
           <span className="rounded-full bg-brand-gold px-2 py-0.5 text-xs">
             {activeCount}

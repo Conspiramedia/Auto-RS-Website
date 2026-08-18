@@ -48,7 +48,7 @@ export default function SortSelect({ locale, filters, basePath }: Props) {
         value={current}
         onChange={(e) => router.push(hrefFor(e.target.value as never))}
         aria-label={t('catalog_sort')}
-        className="max-w-[52vw] truncate rounded-control border border-neutral-15 bg-white px-2.5 py-2 text-sm outline-none focus:border-brand-primary sm:hidden"
+        className="h-10 max-w-[52vw] truncate rounded-control border border-neutral-15 bg-white px-2.5 text-sm outline-none focus:border-brand-primary sm:hidden"
       >
         {SORT_OPTIONS.map((opt) => (
           <option key={opt.key} value={opt.key}>
