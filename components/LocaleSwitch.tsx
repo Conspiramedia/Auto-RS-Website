@@ -7,9 +7,16 @@
 //
 // Пользователь остаётся на той же странице: подставляется тот же путь
 // с другим префиксом локали.
+//
+// ЗДЕСЬ НАМЕРЕННО <a>, А НЕ <Link>. Смена языка обязана быть ПОЛНЫМ
+// переходом браузера: cookie NEXT_LOCALE ставит proxy.ts ответом
+// Set-Cookie на редирект 307, а клиентская навигация Next разрешает
+// такой редирект своими силами, не перезагружая документ, — cookie при
+// этом не успевает примениться, и переключатель «не реагирует».
+// Особенно заметно на статических страницах (revalidate у /cars и
+// /ru/cars): разметка приходит из CDN-кеша, одинаковая для всех.
+// Замена на <Link> вернёт эту ошибку.
 // ============================================================
-
-import Link from 'next/link';
 
 import type { Locale } from '@/lib/i18n';
 import { LOCALES, localeSwitchHref } from '@/lib/i18n';
@@ -31,11 +38,11 @@ export default function LocaleSwitch({ locale, pathname }: Props) {
       {LOCALES.map((code) => {
         const active = code === locale;
         return (
-          <Link
+          <a
             key={code}
-            // Выбор языка сохраняется в cookie (middleware). Для
+            // Выбор языка сохраняется в cookie (proxy.ts). Для
             // сербского адрес несёт маркер явного выбора: его зеркало
-            // живёт в корне без префикса, и иначе middleware вернул бы
+            // живёт в корне без префикса, и иначе proxy вернул бы
             // пользователя на прежний язык.
             href={localeSwitchHref(code, pathname)}
             hrefLang={code}
@@ -47,7 +54,7 @@ export default function LocaleSwitch({ locale, pathname }: Props) {
             aria-current={active ? 'true' : undefined}
           >
             {LABEL[code]}
-          </Link>
+          </a>
         );
       })}
     </div>
