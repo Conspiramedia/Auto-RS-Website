@@ -24,7 +24,7 @@ import { getBrowserClient } from '@/lib/supabaseClient';
 import { trackEvent } from '@/lib/analytics';
 import {
   acceptPolicy,
-  hasAcceptedPolicy,
+  hasAcceptedPolicyHere,
   migrateGuestConsent,
 } from '@/lib/consent';
 import type { Locale } from '@/lib/i18n';
@@ -44,6 +44,7 @@ import ListPicker, { type PickerOption } from './ListPicker';
 import PhotoPicker from './PhotoPicker';
 import CloseButton from './ui/CloseButton';
 import { fieldClass, fieldClassTextarea } from './ui/Field';
+import { RESEND_DELAY_SEC, humanOtpError } from '@/lib/otp';
 import Button from './ui/Button';
 import Card from './ui/Card';
 
@@ -141,11 +142,12 @@ export default function SellForm({ locale }: Props) {
   // «Отправить код» у того, кто давно вошёл.
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
 
-  // Обратный отсчёт до повторной отправки, 60 секунд — как в приложении.
+  // Обратный отсчёт до повторной отправки. Задержка общая с входом в
+  // кабинет (lib/otp.ts): расхождение здесь означало бы, что одна и та
+  // же квота SMS расходуется по разным правилам на разных экранах.
   // Хранится момент, когда отправка снова разрешена: при возврате на
   // вкладку из фона таймер по «оставшимся секундам» отстал бы, а по
   // метке времени пересчёт всегда верный.
-  const RESEND_DELAY_SEC = 60;
   const [resendAt, setResendAt] = useState(0);
   const [resendIn, setResendIn] = useState(0);
   // Сообщение об успешной повторной отправке (в приложении — снек).
@@ -173,7 +175,10 @@ export default function SellForm({ locale }: Props) {
       // Согласие могло быть дано ещё гостем — переносим на аккаунт,
       // иначе тот же человек увидит непринятый чекбокс.
       if (uid) migrateGuestConsent(uid);
-      setAgreed(hasAcceptedPolicy(uid));
+      // Проверяем и аккаунт, и гостя: документы принимаются один раз
+      // на устройстве, а не при каждом входе. Без гостевой ветки
+      // продавец без активной сессии снова видел пустой чекбокс.
+      setAgreed(hasAcceptedPolicyHere(uid));
     })();
 
     return () => {
@@ -231,25 +236,6 @@ export default function SellForm({ locale }: Props) {
   // уходила в никуда, списывая квоту.
   function normalizePhone(raw: string): string {
     return serbianPhoneToE164(raw) ?? '';
-  }
-
-  // Человеческие тексты типичных ошибок OTP — перенос _humanOtpError
-  // из приложения (login_screen.dart). Supabase отдаёт эти сообщения
-  // по-английски, и показывать их продавцу нельзя.
-  function humanOtpError(e: unknown): string {
-    const raw = e instanceof Error ? e.message : String(e);
-    const s = raw.toLowerCase();
-
-    if (s.includes('expired')) return t('otp_err_expired');
-    if (s.includes('invalid') || s.includes('incorrect')) {
-      return t('otp_err_invalid');
-    }
-    // Серверный лимит Supabase на частоту отправки (отдельный от нашей
-    // суточной квоты) — сообщаем как о лимите, а не англоязычной ошибкой.
-    if (s.includes('rate limit') || s.includes('too many')) {
-      return t('otp_err_quota');
-    }
-    return raw;
   }
 
   // ---------- Отправка SMS-кода ----------
@@ -316,7 +302,7 @@ export default function SellForm({ locale }: Props) {
       setResendAt(Date.now() + RESEND_DELAY_SEC * 1000);
       if (resend) setNotice(t('otp_resent'));
     } catch (e) {
-      setError(humanOtpError(e));
+      setError(humanOtpError(e, t));
     } finally {
       setBusy(false);
     }
@@ -487,7 +473,7 @@ export default function SellForm({ locale }: Props) {
         message: e instanceof Error ? e.message : String(e),
       });
 
-      setError(humanOtpError(e));
+      setError(humanOtpError(e, t));
     } finally {
       setBusy(false);
     }

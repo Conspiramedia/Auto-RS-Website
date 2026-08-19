@@ -7,3 +7,9 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# Локальный кэш Supabase CLI: связь с проектом, версии сервисов и
+# строка подключения к боевой БД. Восстанавливается командой
+# supabase link --project-ref <ref> и в репозиторий не коммитится.
+supabase/.temp/
+supabase/.branches/

@@ -21,6 +21,7 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.3",
     "next": "^16.3.1",
     "qrcode": "^1.5.4",

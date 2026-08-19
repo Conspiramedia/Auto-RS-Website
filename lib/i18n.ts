@@ -343,6 +343,30 @@ export const dict = {
     otp_err_quota:
       'Prekoračen je dnevni limit SMS poruka za ovaj broj. Pokušajte sutra.',
 
+    // ------------------------------------------------------------
+    // Kabinet prodavca (/my). Sve stranice su noindex.
+    // ------------------------------------------------------------
+    // Nazivi sekcija prate ekrane aplikacije (my_cars, chats, profile):
+    // dva klijenta — jedan proizvod, pa se i rečnik poklapa.
+    my_title: 'Moj nalog',
+    my_tab_listings: 'Moji oglasi',
+    my_tab_messages: 'Poruke',
+    my_tab_profile: 'Profil',
+    my_logout: 'Odjavi se',
+
+    // Ulaz u kabinet. Kod se traži samo kada sesije nema: sesija živi
+    // između poseta, kao i u aplikaciji.
+    my_auth_title: 'Prijavite se',
+    my_auth_lead:
+      'Unesite broj telefona — poslaćemo vam kod u SMS-u. Isti nalog kao u aplikaciji.',
+    my_auth_phone: 'Broj telefona',
+    my_auth_code: 'Kod iz SMS-a',
+    my_auth_send: 'Pošalji kod',
+    my_auth_submit: 'Prijavi se',
+    my_auth_checking: 'Proveravamo…',
+    // Privremeni tekst sekcija koje stižu u sledećim paketima.
+    my_soon: 'Ova sekcija je u pripremi i biće dostupna uskoro.',
+
     // Общее
     // ------------------------------------------------------------
     // Навигация по контентным страницам.
@@ -790,6 +814,30 @@ export const dict = {
       'Превышен суточный лимит SMS на этот номер. Попробуйте завтра.',
 
     // ------------------------------------------------------------
+    // Кабинет продавца (/my). Все страницы — noindex.
+    // ------------------------------------------------------------
+    // Названия разделов повторяют экраны приложения (my_cars, chats,
+    // profile): два клиента — один продукт, поэтому и словарь совпадает.
+    my_title: 'Мой кабинет',
+    my_tab_listings: 'Мои объявления',
+    my_tab_messages: 'Сообщения',
+    my_tab_profile: 'Профиль',
+    my_logout: 'Выйти',
+
+    // Вход в кабинет. Код запрашивается только когда сессии нет: она
+    // живёт между визитами, как и в приложении.
+    my_auth_title: 'Вход',
+    my_auth_lead:
+      'Введите номер телефона — пришлём код в SMS. Аккаунт тот же, что в приложении.',
+    my_auth_phone: 'Номер телефона',
+    my_auth_code: 'Код из SMS',
+    my_auth_send: 'Получить код',
+    my_auth_submit: 'Войти',
+    my_auth_checking: 'Проверяем…',
+    // Временный текст разделов, которые приходят в следующих пакетах.
+    my_soon: 'Раздел готовится и появится в ближайшее время.',
+
+    // ------------------------------------------------------------
     // Навигация по контентным страницам.
     // ------------------------------------------------------------
     nav_about: 'О нас',
@@ -1016,3 +1064,8 @@ export type DictKey = keyof typeof dict.sr;
 export function getT(locale: Locale) {
   return (key: DictKey): string => dict[locale][key];
 }
+
+// Тип функции перевода. Нужен там, где переводчик передаётся аргументом
+// в общий модуль (lib/otp.ts) — иначе такой модуль пришлось бы делать
+// зависимым от локали или дублировать тексты.
+export type Translate = ReturnType<typeof getT>;

@@ -63,15 +63,29 @@ export function acceptPolicy(userId?: string | null): void {
 // Согласие даётся до создания аккаунта (под ключом 'guest'); после
 // успешного входа копируем его на реальный uid, иначе тот же человек
 // увидит непринятый чекбокс при следующей подаче.
+//
+// Гостевую запись НЕ удаляем. Она означает «на этом устройстве
+// документы приняты» и нужна, когда сессии нет: пользователь вышел,
+// сессия истекла или подача открыта до входа. Раньше запись стиралась,
+// и в этих случаях чекбокс снова оказывался пустым, хотя тот же
+// человек на том же устройстве политику уже принял.
 export function migrateGuestConsent(userId: string): void {
   if (typeof window === 'undefined' || !userId) return;
 
   try {
     if (localStorage.getItem(key(null)) === POLICY_VERSION) {
       localStorage.setItem(key(userId), POLICY_VERSION);
-      localStorage.removeItem(key(null));
     }
   } catch {
     // См. выше: отказ хранилища не критичен.
   }
+}
+
+// Принята ли политика на этом устройстве — под аккаунтом ИЛИ гостем.
+// Форма подачи проставляет галочку по этому признаку: человек, уже
+// принявший документы, не должен ставить её заново при каждом входе.
+// Юридически это то же согласие: та же редакция (POLICY_VERSION),
+// то же устройство, тот же человек.
+export function hasAcceptedPolicyHere(userId?: string | null): boolean {
+  return hasAcceptedPolicy(userId) || hasAcceptedPolicy(null);
 }
