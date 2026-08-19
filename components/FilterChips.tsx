@@ -23,9 +23,17 @@ type Props = {
   filters: CatalogFilters;
   // Базовый путь каталога: '/cars' либо SEO-страница '/cars/bmw'.
   basePath: string;
+  // Тип объявления зафиксирован адресом страницы (лендинг /rent) —
+  // чипс типа не показывается: снять его значило бы уйти со страницы.
+  lockedType?: boolean;
 };
 
-export default function FilterChips({ locale, filters, basePath }: Props) {
+export default function FilterChips({
+  locale,
+  filters,
+  basePath,
+  lockedType = false,
+}: Props) {
   const t = getT(locale);
 
   // Список активных фильтров с подписью и ссылкой на снятие.
@@ -42,6 +50,14 @@ export default function FilterChips({ locale, filters, basePath }: Props) {
     });
   };
 
+  // Тип объявления — первым, как в форме фильтров и в приложении.
+  // 'both' не показываем: это состояние по умолчанию, а не условие отбора.
+  if (!lockedType && filters.listingType && filters.listingType !== 'both') {
+    add(
+      'listingType',
+      filters.listingType === 'rent' ? t('mode_rent') : t('mode_sale'),
+    );
+  }
   if (filters.q) add('q', `"${filters.q}"`);
   if (filters.brand) add('brand', filters.brand);
   if (filters.model) add('model', filters.model);

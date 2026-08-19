@@ -150,13 +150,21 @@ export default function CatalogView({
         <SortSelect locale={locale} filters={filters} basePath={basePath} />
       </div>
 
-      {/* Счётчик результатов на мобильном — отдельной строкой. */}
+      {/* Счётчик результатов на мобильном — отдельной строкой.
+          Подпись склоняется так же, как в десктопной версии выше:
+          раньше здесь стояло голое число («Найдено: 2»), и две ширины
+          экрана давали разный текст, а приложение — третий вариант. */}
       <div className="mt-2 text-sm text-neutral-50 sm:hidden">
-        {t('catalog_found')}: {result.total}
+        {t('catalog_found')}: {countNoun(result.total, 'listing', locale)}
       </div>
 
       <div className="mt-3">
-        <FilterChips locale={locale} filters={countable} basePath={basePath} />
+        <FilterChips
+          locale={locale}
+          filters={countable}
+          basePath={basePath}
+          lockedType={lockedType}
+        />
       </div>
 
       {result.cars.length === 0 ? (
