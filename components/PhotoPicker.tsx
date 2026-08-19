@@ -22,6 +22,23 @@
 // ВАЛИДАЦИЯ на клиенте: тип и размер файла. Она дублирует ограничения
 // бакета car-images, но сообщает о проблеме ДО загрузки — иначе
 // человек ждёт отправки 12 мегабайт, чтобы получить отказ.
+//
+// ------------------------------------------------------------
+// ДВА ВИДА ФОТОГРАФИЙ В ОДНОМ НАБОРЕ
+// ------------------------------------------------------------
+// При подаче объявления все снимки новые — это File из файлового
+// диалога. При РЕДАКТИРОВАНИИ к ним добавляются уже загруженные: они
+// живут в бакете и известны только по URL, файла на устройстве нет.
+//
+// Оба вида лежат в одном списке (тип PhotoItem) и выглядят одинаково:
+// продавец не должен думать, какое фото «старое», а какое «новое», —
+// он просто расставляет их в нужном порядке и удаляет лишние. Порядок
+// в списке становится order_index в car_images, первый элемент —
+// обложка объявления в каталоге.
+//
+// Разница проявляется только при сохранении: новые файлы сначала
+// уходят в хранилище, существующие берутся по готовому URL
+// (см. SellForm, сборка photoUrls).
 // ============================================================
 
 import { useEffect, useRef, useState } from 'react';
@@ -37,10 +54,24 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 // 10 МБ на файл. Снимок современного телефона укладывается с запасом.
 const MAX_SIZE_BYTES = 10 * 1024 * 1024;
 
+// Один снимок в наборе: либо выбранный на устройстве файл, либо уже
+// загруженное фото объявления, известное по адресу.
+export type PhotoItem =
+  | { kind: 'file'; file: File }
+  | { kind: 'url'; url: string };
+
+// Ключ для React и для сравнения наборов. У файла — имя с размером
+// (двух одинаковых снимков подряд не бывает), у существующего — URL.
+export function photoKey(item: PhotoItem): string {
+  return item.kind === 'file'
+    ? `${item.file.name}-${item.file.size}`
+    : item.url;
+}
+
 type Props = {
   locale: Locale;
-  files: File[];
-  onChange: (files: File[]) => void;
+  files: PhotoItem[];
+  onChange: (files: PhotoItem[]) => void;
   maxPhotos: number;
   // Идёт загрузка на сервер: пока она идёт, менять набор нельзя.
   uploading?: boolean;
@@ -66,13 +97,25 @@ export default function PhotoPicker({
   const [previews, setPreviews] = useState<string[]>([]);
 
   useEffect(() => {
-    const urls = files.map((file) => URL.createObjectURL(file));
+    // Временные ссылки нужны только локальным файлам; у существующих
+    // фотографий адрес уже есть, и создавать для них blob нечего.
+    const created: string[] = [];
+
+    const urls = files.map((item) => {
+      if (item.kind === 'url') return item.url;
+      const objectUrl = URL.createObjectURL(item.file);
+      created.push(objectUrl);
+      return objectUrl;
+    });
+
     setPreviews(urls);
 
     // Освобождение обязательно: без revokeObjectURL браузер держит
-    // выбранные файлы в памяти до перезагрузки страницы.
+    // выбранные файлы в памяти до перезагрузки страницы. Освобождаем
+    // ТОЛЬКО созданные здесь ссылки — отзыв чужого URL сломал бы
+    // показ уже загруженного фото.
     return () => {
-      urls.forEach((url) => URL.revokeObjectURL(url));
+      created.forEach((url) => URL.revokeObjectURL(url));
     };
   }, [files]);
 
@@ -102,7 +145,14 @@ export default function PhotoPicker({
       setError(t('sell_err_photos_max'));
     }
 
-    if (room > 0) onChange([...files, ...accepted.slice(0, room)]);
+    if (room > 0) {
+      onChange([
+        ...files,
+        ...accepted
+          .slice(0, room)
+          .map((file): PhotoItem => ({ kind: 'file', file })),
+      ]);
+    }
 
     // Сброс значения поля: без него повторный выбор того же файла
     // не вызовет onChange (значение не изменилось).
@@ -182,9 +232,9 @@ export default function PhotoPicker({
 
       {files.length > 0 && !uploading && (
         <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
-          {files.map((file, i) => (
+          {files.map((item, i) => (
             <div
-              key={`${file.name}-${file.size}-${i}`}
+              key={`${photoKey(item)}-${i}`}
               className="group relative overflow-hidden rounded-control border border-neutral-10"
             >
               {/* aspect-[4/3] — та же пропорция, что у карточки в

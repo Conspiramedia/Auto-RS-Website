@@ -1,11 +1,27 @@
 'use client';
 
 // ============================================================
-// RS AUTO — Пошаговая форма подачи объявления. Client Component.
+// RS AUTO — Форма объявления: подача и редактирование. Client Component.
 // ============================================================
+// ОДНА форма на два сценария (mode):
+//   'create' — подача нового объявления с /sell;
+//   'edit'   — правка своего объявления из кабинета
+//              (/my/listing/[id]/edit).
+//
+// Почему один компонент, а не два. Поля, пикеры, маски, валидация и
+// правила цен совпадают полностью: разошедшись на две формы, они
+// разъехались бы при первой же правке — например, новое поле появилось
+// бы только при подаче, и отредактировать его стало бы невозможно.
+//
+// Различия ровно три, и все они локальны:
+//   1. в edit нет шага входа по SMS — сессия уже есть;
+//   2. поля предзаполняются из get_car_details + get_car_images;
+//   3. вызывается update_car_v3 вместо create_car_v3.
+//
 // Порядок шагов: Автомобиль → Детали → Фото → Контакты (вход по SMS).
 // Вход намеренно последний: заставлять человека авторизоваться до того,
 // как он что-то ввёл, — верный способ потерять продавца на первом экране.
+// В режиме edit последнего шага нет: форма заканчивается фотографиями.
 //
 // Путь публикации (согласован с приложением, миграции 0035/0036/0040):
 //   1. rpc_check_otp_quota(phone) — суточная квота SMS (5 на номер);
@@ -20,6 +36,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { revalidateMyListings } from '@/app/my/actions';
 import { getBrowserClient } from '@/lib/supabaseClient';
 import { trackEvent } from '@/lib/analytics';
 import {
@@ -41,15 +58,21 @@ import {
 } from '@/lib/inputFormat';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
-import PhotoPicker from './PhotoPicker';
+import PhotoPicker, { type PhotoItem } from './PhotoPicker';
 import CloseButton from './ui/CloseButton';
 import { fieldClass, fieldClassTextarea } from './ui/Field';
 import { RESEND_DELAY_SEC, humanOtpError } from '@/lib/otp';
 import Button from './ui/Button';
 import Card from './ui/Card';
+import { SkeletonBox } from './ui/Skeleton';
 
 type Props = {
   locale: Locale;
+  // 'create' по умолчанию — страница подачи /sell не передаёт режим.
+  mode?: 'create' | 'edit';
+  // Идентификатор редактируемого объявления. Обязателен при mode='edit'
+  // и не используется при подаче.
+  carId?: string;
 };
 
 // Максимум фотографий — как в приложении (AppConstants.maxCarImages).
@@ -66,12 +89,26 @@ const YEARS: string[] = Array.from(
   (_, i) => String(yearMax() - i),
 );
 
-export default function SellForm({ locale }: Props) {
+export default function SellForm({
+  locale,
+  mode = 'create',
+  carId,
+}: Props) {
   const t = getT(locale);
   const router = useRouter();
   const supabase = getBrowserClient();
 
+  const isEdit = mode === 'edit';
+
   const [step, setStep] = useState(1);
+  // Загрузка исходных данных объявления в режиме правки. true на старте
+  // только для edit: при подаче грузить нечего, и форма показывается
+  // сразу.
+  const [loading, setLoading] = useState(isEdit);
+  // Ушло ли объявление на повторную модерацию после сохранения. Нужно
+  // экрану успеха: решение принимает СЕРВЕР (сравнивает контент), и
+  // угадывать его на клиенте нельзя.
+  const [movedToModeration, setMovedToModeration] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -102,8 +139,10 @@ export default function SellForm({ locale }: Props) {
   const [fuel, setFuel] = useState('');
   const [description, setDescription] = useState('');
 
-  // Шаг 3: фотографии.
-  const [files, setFiles] = useState<File[]>([]);
+  // Шаг 3: фотографии. Набор смешанный: при подаче это только выбранные
+  // файлы, при правке — ещё и уже загруженные снимки объявления
+  // (см. PhotoItem в PhotoPicker).
+  const [files, setFiles] = useState<PhotoItem[]>([]);
   // Прогресс отправки фотографий в хранилище, 0..100. Считается по
   // числу загруженных файлов, а не по байтам: Supabase Storage не
   // отдаёт события прогресса отдельного запроса, а по файлам
@@ -186,6 +225,117 @@ export default function SellForm({ locale }: Props) {
     };
     // supabase — синглтон, ссылка стабильна: эффект выполняется однажды.
   }, [supabase]);
+
+  // ------------------------------------------------------------
+  // Режим правки: предзаполнение формы данными объявления.
+  // ------------------------------------------------------------
+  // Два запроса идут ПАРАЛЛЕЛЬНО (Promise.all): карточка и её фотографии
+  // независимы, и последовательное ожидание удвоило бы время до
+  // появления формы.
+  //
+  // Права проверяет сервер: get_car_details отдаёт непубличные статусы
+  // только владельцу и админу (миграция 0048). Страница дополнительно
+  // сверяет user_id и отдаёт 404 на чужое объявление — здесь это уже
+  // гарантировано, поэтому форма просто показывает то, что пришло.
+  useEffect(() => {
+    if (!isEdit || !carId) return;
+
+    let cancelled = false;
+
+    (async () => {
+      const [detailsResult, imagesResult] = await Promise.all([
+        supabase.rpc('get_car_details', { p_car_id: carId }),
+        supabase.rpc('get_car_images', { p_car_id: carId }),
+      ]);
+
+      if (cancelled) return;
+
+      const car = (detailsResult.data ?? [])[0] as
+        | Record<string, unknown>
+        | undefined;
+
+      if (detailsResult.error || !car) {
+        setError(t('edit_err_load'));
+        setLoading(false);
+        return;
+      }
+
+      // Тип сделки. Объявление «и продажа, и аренда» (такие создавало
+      // приложение через v2) приводим к продаже: форма сайта предлагает
+      // только один тип, а продажа — основная сделка такой карточки.
+      setListingType(car.is_for_rent && !car.is_for_sale ? 'rent' : 'sale');
+
+      setBrand((car.brand as string) ?? '');
+      setModel((car.model as string) ?? '');
+      setYear(car.year != null ? String(car.year) : '');
+      setCity((car.city as string) ?? '');
+      setBodyType((car.body_type as string) ?? '');
+      setTransmission((car.transmission as string) ?? '');
+      setFuel((car.fuel as string) ?? '');
+      setDescription((car.description as string) ?? '');
+
+      // Числовые поля хранят ФОРМАТИРОВАННУЮ строку («12 500»): их
+      // читает parseThousands при отправке. Поэтому и предзаполняем
+      // через тот же форматтер, иначе первая же правка поля сбила бы
+      // разделители разрядов.
+      setMileage(
+        car.mileage != null
+          ? handleNumberInput(String(car.mileage), MAX_MILEAGE)
+          : '',
+      );
+      setPrice(
+        car.sale_price != null
+          ? handleNumberInput(String(Math.round(Number(car.sale_price))), MAX_PRICE)
+          : '',
+      );
+      setRentPrice(
+        car.rent_price_daily != null
+          ? handleNumberInput(
+              String(Math.round(Number(car.rent_price_daily))),
+              MAX_PRICE,
+            )
+          : '',
+      );
+      setDeposit(
+        car.deposit_amount != null && Number(car.deposit_amount) > 0
+          ? handleNumberInput(
+              String(Math.round(Number(car.deposit_amount))),
+              MAX_PRICE,
+            )
+          : '',
+      );
+
+      // Существующие фотографии в порядке order_index — его задаёт RPC.
+      // Ошибку выборки фото не считаем фатальной: текстовые поля уже
+      // загружены, и правка описания не должна срываться из-за картинок.
+      if (!imagesResult.error) {
+        const urls = (imagesResult.data ?? []) as { image_url: string }[];
+        setFiles(
+          urls.map((row): PhotoItem => ({ kind: 'url', url: row.image_url })),
+        );
+      }
+
+      // Список моделей выбранной марки: без него пикер модели окажется
+      // пустым, и продавец не сможет сменить модель, не выбрав марку
+      // заново.
+      if (car.brand) {
+        const { data: models } = await supabase.rpc('get_car_models', {
+          p_brand_name: car.brand as string,
+        });
+        if (!cancelled) {
+          setModelList((models ?? []) as { id: string; name: string }[]);
+        }
+      }
+
+      setLoading(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // t стабильна для локали, supabase — синглтон: эффект выполняется
+    // один раз на объявление.
+  }, [isEdit, carId, supabase, t]);
 
   useEffect(() => {
     if (resendAt === 0) return;
@@ -355,7 +505,11 @@ export default function SellForm({ locale }: Props) {
       // (constraint cars_contact_phone_serbian).
       let contactPhone = e164;
 
-      if (signedIn) {
+      // В режиме правки шага входа нет вовсе: в кабинет пускает только
+      // серверная проверка сессии (app/my/layout), поэтому здесь она
+      // заведомо есть. Ветка signedIn ниже обрабатывает и этот случай —
+      // берёт uid и телефон из текущей сессии.
+      if (isEdit || signedIn) {
         const { data: current } = await supabase.auth.getSession();
         uid = current.session?.user.id;
         contactPhone = current.session?.user.phone
@@ -389,16 +543,33 @@ export default function SellForm({ locale }: Props) {
       // отчёт об ошибке должен назвать именно этот шаг.
       stage = 'upload';
 
-      // 2) Загрузка фотографий. Путь ОБЯЗАН начинаться с uid: политика
-      // car_images_insert_own разрешает запись только в свою папку.
+      // 2) Фотографии. Массив photoUrls собирается В ПОРЯДКЕ, который
+      // продавец задал в PhotoPicker: первая ссылка становится обложкой
+      // объявления в каталоге.
+      //
+      // При правке набор смешанный. Уже загруженные снимки берём по
+      // готовому адресу — заново отправлять их в хранилище незачем:
+      // это лишний трафик и дубли одного файла в бакете. Грузятся
+      // только те, что продавец добавил сейчас.
       const photoUrls: string[] = [];
       setUploadProgress(0);
 
-      for (const [i, file] of files.entries()) {
+      // Прогресс считаем по НОВЫМ файлам: существующие не грузятся, и
+      // включать их в знаменатель значило бы показать «50%» там, где
+      // работы нет вовсе.
+      const toUpload = files.filter((item) => item.kind === 'file').length;
+      let uploaded = 0;
+
+      for (const [i, item] of files.entries()) {
+        if (item.kind === 'url') {
+          photoUrls.push(item.url);
+          continue;
+        }
+
+        const file = item.file;
         const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-        // Индекс в имени файла сохраняет ПОРЯДОК, который продавец
-        // задал в PhotoPicker: photoUrls уходит в create_car_v3 массивом,
-        // и первая ссылка становится обложкой объявления.
+        // Путь ОБЯЗАН начинаться с uid: политика car_images_insert_own
+        // разрешает запись только в свою папку.
         const path = `${uid}/${Date.now()}_${i}.${ext}`;
 
         const { error: uploadError } = await supabase.storage
@@ -411,18 +582,23 @@ export default function SellForm({ locale }: Props) {
           .getPublicUrl(path);
         photoUrls.push(pub.publicUrl);
 
-        // Прогресс после КАЖДОГО файла: при 15 снимках это единственная
-        // обратная связь на протяжении десятков секунд.
-        setUploadProgress(Math.round(((i + 1) / files.length) * 100));
+        // Прогресс после КАЖДОГО файла: при десяти снимках это
+        // единственная обратная связь на протяжении десятков секунд.
+        uploaded += 1;
+        setUploadProgress(Math.round((uploaded / toUpload) * 100));
       }
 
       stage = 'create';
 
-      // 3) Создание объявления. create_car_v3 (миграция 0055) — у неё
-      // РАЗДЕЛЬНЫЕ цены продажи и аренды и есть залог. Прежняя v2
-      // принимала одну цену и при 'both' копировала её в обе колонки,
-      // из-за чего цена продажи равнялась суточной ставке.
-      const { error: createError } = await supabase.rpc('create_car_v3', {
+      // 3) Запись. Обе функции — create_car_v3 (0055) и update_car_v3
+      // (0067) — принимают ОДИНАКОВЫЙ набор полей с раздельными ценами
+      // продажи и аренды. Поэтому параметры собираются один раз, а
+      // отличается только имя RPC и добавленный при правке p_car_id.
+      //
+      // Прежняя update_car_v2 принимала одну цену и при 'both'
+      // копировала её в обе колонки — ровно та ошибка, ради которой
+      // появилась v3.
+      const payload = {
         p_listing_type: listingType,
         p_brand: brand.trim(),
         p_model: model.trim(),
@@ -452,16 +628,40 @@ export default function SellForm({ locale }: Props) {
         p_fuel: fuel || null,
         p_description: description.trim() || null,
         p_phone: contactPhone,
-      });
-      if (createError) throw new Error(createError.message);
+      };
 
-      // Целевое действие сайта: объявление создано и ушло на модерацию.
-      // Число фотографий — полезный признак качества подачи, по нему
-      // видно, доходят ли продавцы до шага с фото.
-      trackEvent('listing_submitted', {
-        listing_type: listingType,
-        photos: photoUrls.length,
-      });
+      if (isEdit) {
+        const { data, error: updateError } = await supabase.rpc(
+          'update_car_v3',
+          { p_car_id: carId, ...payload },
+        );
+        if (updateError) throw new Error(updateError.message);
+
+        // Ушло ли объявление на повторную проверку, решает СЕРВЕР:
+        // он сравнивает новый контент со старым (миграция 0067).
+        // Клиент только читает результат — повторять это сравнение
+        // здесь значило бы завести второй источник истины.
+        const updated = (data ?? [])[0] as { status?: string } | undefined;
+        setMovedToModeration(updated?.status === 'moderation');
+
+        // Список в кабинете отрисован на сервере и закэширован: без
+        // сброса продавец вернулся бы к прежнему бейджу статуса.
+        await revalidateMyListings();
+      } else {
+        const { error: createError } = await supabase.rpc(
+          'create_car_v3',
+          payload,
+        );
+        if (createError) throw new Error(createError.message);
+
+        // Целевое действие сайта: объявление создано и ушло на
+        // модерацию. Число фотографий — полезный признак качества
+        // подачи, по нему видно, доходят ли продавцы до шага с фото.
+        trackEvent('listing_submitted', {
+          listing_type: listingType,
+          photos: photoUrls.length,
+        });
+      }
 
       setDone(true);
     } catch (e) {
@@ -479,12 +679,57 @@ export default function SellForm({ locale }: Props) {
     }
   }
 
+  // ---------- Загрузка объявления в режиме правки ----------
+  // Скелет вместо пустой карточки: форма из десятка полей появляется
+  // не мгновенно, и подсказка о том, что данные едут, избавляет от
+  // ощущения сломанной страницы.
+  if (loading) {
+    return (
+      <Card>
+        <p className="text-center text-neutral-60">{t('edit_loading')}</p>
+        <div className="mt-4 space-y-3">
+          <SkeletonBox className="h-11 w-full" />
+          <SkeletonBox className="h-11 w-full" />
+          <SkeletonBox className="h-11 w-2/3" />
+        </div>
+      </Card>
+    );
+  }
+
   // ---------- Экран успеха ----------
   if (done) {
+    // После ПРАВКИ возвращаем в кабинет: продавец пришёл оттуда, туда
+    // же ему и нужно — увидеть объявление в списке с новым статусом.
+    // Текст зависит от того, ушло ли объявление на повторную проверку:
+    // это решил сервер, сравнив контент (миграция 0067), и сообщить об
+    // этом честно важнее, чем показать одинаковое «Сохранено».
+    if (isEdit) {
+      return (
+        <Card padding="none" className="p-6 text-center">
+          <h2 className="text-xl font-semibold">
+            {movedToModeration
+              ? t('edit_done_moderation_title')
+              : t('edit_done_title')}
+          </h2>
+          <p className="mx-auto mt-2 max-w-md text-neutral-60">
+            {movedToModeration
+              ? t('edit_done_moderation_text')
+              : t('edit_done_text')}
+          </p>
+
+          <div className="mt-6">
+            <Button size="lg" href={localeHref(locale, '/my')}>
+              {t('edit_back_to_list')}
+            </Button>
+          </div>
+        </Card>
+      );
+    }
+
     return (
-      // Личного кабинета на сайте нет намеренно: управление объявлениями
-      // живёт в приложении. Поэтому после подачи — экран модерации и
-      // выход в каталог, а не «мои объявления».
+      // После ПОДАЧИ ведём в каталог: объявление ещё на модерации и в
+      // кабинете показать нечего, кроме бейджа «На проверке», а вот
+      // посмотреть площадку в этот момент самое время.
       <Card padding="none" className="p-6 text-center">
         <h2 className="text-xl font-semibold">{t('sell_success_title')}</h2>
         <p className="mx-auto mt-2 max-w-md text-neutral-60">
@@ -498,9 +743,9 @@ export default function SellForm({ locale }: Props) {
           <Button
             variant="secondary"
             size="lg"
-            href={localeHref(locale, '/app')}
+            href={localeHref(locale, '/my')}
           >
-            {t('nav_app')}
+            {t('edit_back_to_list')}
           </Button>
         </div>
       </Card>
@@ -579,10 +824,17 @@ export default function SellForm({ locale }: Props) {
           Ничего не отправлено — закрытие проходит без последствий. */}
       <div className="mb-4 flex items-start justify-between gap-2">
         <div className="text-sm text-neutral-50">
-          {t('sell_step')} {step} / 4
+          {/* В режиме правки шага входа нет — всего три. */}
+          {t('sell_step')} {step} / {isEdit ? 3 : 4}
         </div>
         <CloseButton
-          onClick={() => router.push(localeHref(locale, '/cars'))}
+          // При правке закрытие возвращает в кабинет, откуда продавец
+          // пришёл; при подаче — в каталог: на /sell часто попадают по
+          // прямой ссылке из шапки, и возвращать в пустую историю
+          // незачем.
+          onClick={() =>
+            router.push(localeHref(locale, isEdit ? '/my' : '/cars'))
+          }
           label={t('common_close')}
           // Отрицательные отступы возвращают знак к краю карточки:
           // у кнопки область 40px ради попадания пальцем, и без сдвига
@@ -873,11 +1125,48 @@ export default function SellForm({ locale }: Props) {
                 снимков в каталоге показывается серой заглушкой и почти
                 не получает откликов. Проверка именно здесь, а не при
                 отправке, — иначе продавец узнал бы о ней после ввода
-                телефона и SMS-кода. */}
-            <Button onClick={goToContacts} className="flex-1">
-              {t('sell_next')}
-            </Button>
+                телефона и SMS-кода.
+
+                В режиме правки это последний шаг: входить некуда,
+                поэтому кнопка сразу сохраняет. */}
+            {isEdit ? (
+              <Button onClick={submit} disabled={busy} className="flex-1">
+                {busy ? t('edit_saving') : t('edit_submit')}
+              </Button>
+            ) : (
+              <Button onClick={goToContacts} className="flex-1">
+                {t('sell_next')}
+              </Button>
+            )}
           </div>
+
+          {/* Предупреждение о повторной модерации. Тон warning — тот же
+              золотой, что у бейджа «На проверке» в кабинете: цвет
+              предупреждения совпадает с цветом статуса, который
+              наступит после сохранения. */}
+          {isEdit && (
+            <p className="rounded-control bg-warning/10 px-3 py-2 text-caption text-warning">
+              {t('edit_moderation_warning')}
+            </p>
+          )}
+
+          {/* Прогресс отправки новых фотографий. При правке загрузка
+              начинается сразу по нажатию «Сохранить», и без индикатора
+              кнопка выглядит зависшей. */}
+          {isEdit && busy && files.some((item) => item.kind === 'file') && (
+            <div>
+              <div className="flex items-center justify-between text-caption text-neutral-60">
+                <span>{t('sell_photos_uploading')}</span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <div className="mt-1.5 h-2 overflow-hidden rounded-pill bg-surface-muted">
+                <div
+                  className="h-full rounded-pill bg-brand-green transition-[width] duration-normal ease-out"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
 

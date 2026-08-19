@@ -18,9 +18,11 @@
 // получить ошибку в ответ — худший вид интерфейса. Но матрица здесь
 // НЕ источник истины, а её отражение: решение всё равно принимает база.
 //
-// «Редактировать» в этом пакете намеренно отсутствует — редактирование
-// приходит в Пакете 3 вместе с RPC update_car_v3. Кнопка, ведущая в
-// никуда, хуже её отсутствия.
+// «Редактировать» доступно в тех же статусах, что принимает
+// update_car_v3 (миграция 0067): moderation, active, rejected.
+// У проданного и архивного его нет — такое объявление сначала
+// возвращают в публикацию, иначе правка меняла бы условия
+// завершённой сделки задним числом.
 //
 // ПОДТВЕРЖДЕНИЕ ДВУХШАГОВОЕ И ИНЛАЙНОВОЕ: нажатие подменяет ряд кнопок
 // строкой «вопрос + Да/Отмена». Модальное окно ради одного вопроса
@@ -33,7 +35,7 @@ import { useState, useTransition } from 'react';
 import { promoteCar, setCarStatus } from '@/app/my/actions';
 import Button from './ui/Button';
 import type { DictKey, Locale } from '@/lib/i18n';
-import { getT } from '@/lib/i18n';
+import { getT, localeHref } from '@/lib/i18n';
 
 type Props = {
   locale: Locale;
@@ -114,8 +116,11 @@ export default function ListingActions({
   // Продвигать можно только активное и только если промо не идёт —
   // те же условия проверяет activate_promotion на сервере.
   const canPromote = status === 'active' && !isPromoted;
+  // Редактировать — рабочие статусы. Тот же список в update_car_v3
+  // и на странице правки: показывать кнопку, ведущую на 404, нельзя.
+  const canEdit = ['moderation', 'active', 'rejected'].includes(status);
 
-  if (actions.length === 0 && !canPromote) return null;
+  if (actions.length === 0 && !canPromote && !canEdit) return null;
 
   function run(fn: () => Promise<{ ok: boolean; error?: string }>) {
     setError(null);
@@ -159,7 +164,24 @@ export default function ListingActions({
           {/* Все действия оформлены вторичными: на карточке владельца
               нет «главного» действия, а зелёный акцент занят строкой
               продвижения. Ряд одинаковых по весу кнопок честно
-              отражает, что выбор за продавцом. */}
+              отражает, что выбор за продавцом.
+
+              «Редактировать» — первое: из всех действий над объявлением
+              оно самое частое, особенно у отклонённых, где правка и
+              есть единственный способ вернуться в выдачу.
+              Это ссылка, а не кнопка: переход на другую страницу
+              обязан оставаться настоящей ссылкой — работают «назад»,
+              открытие в новой вкладке и предзагрузка Next. */}
+          {canEdit && (
+            <Button
+              size="sm"
+              variant="secondary"
+              href={localeHref(locale, `/my/listing/${carId}/edit`)}
+            >
+              {t('my_action_edit')}
+            </Button>
+          )}
+
           {actions.map((action) => (
             <Button
               key={action.target}

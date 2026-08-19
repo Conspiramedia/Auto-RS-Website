@@ -214,7 +214,7 @@ export const dict = {
     // Главная
     home_hero_title: 'Prodajte automobil u Srbiji',
     home_hero_text: 'Besplatno objavljivanje. Kupci vas kontaktiraju u aplikaciji.',
-    home_hero_cta: 'Objavi oglas',
+    home_hero_cta: 'Objavi auto',
     home_fresh: 'Novi oglasi',
     home_brands: 'Popularne marke',
     home_all_cars: 'Svi automobili',
@@ -409,6 +409,27 @@ export const dict = {
 
     // Greška radnje.
     my_action_error: 'Nije uspelo. Pokušajte ponovo.',
+
+    // ------------------------------------------------------------
+    // Izmena oglasa (/my/listing/[id]/edit).
+    // ------------------------------------------------------------
+    my_action_edit: 'Izmeni',
+    edit_title: 'Izmena oglasa',
+    edit_submit: 'Sačuvaj izmene',
+    edit_saving: 'Čuvamo…',
+    edit_loading: 'Učitavamo oglas…',
+    edit_err_load: 'Nije uspelo učitavanje oglasa.',
+    // Upozorenje iznad dugmeta: izmena sadržaja vraća oglas na proveru
+    // i gasi promociju (migracija 0067).
+    edit_moderation_warning:
+      'Nakon izmene oglas ponovo ide na proveru, a aktivna promocija se gasi.',
+    // Ekran nakon čuvanja.
+    edit_done_moderation_title: 'Izmene su sačuvane',
+    edit_done_moderation_text:
+      'Oglas je poslat na ponovnu proveru i vratiće se u pretragu nakon odobrenja.',
+    edit_done_title: 'Izmene su sačuvane',
+    edit_done_text: 'Sadržaj oglasa se nije promenio, status je ostao isti.',
+    edit_back_to_list: 'Moji oglasi',
 
     // Общее
     // ------------------------------------------------------------
@@ -727,7 +748,7 @@ export const dict = {
 
     home_hero_title: 'Продайте автомобиль в Сербии',
     home_hero_text: 'Бесплатное размещение. Покупатели напишут вам в приложении.',
-    home_hero_cta: 'Разместить объявление',
+    home_hero_cta: 'Разместить авто',
     home_fresh: 'Свежие объявления',
     home_brands: 'Популярные марки',
     home_all_cars: 'Все автомобили',
@@ -922,6 +943,27 @@ export const dict = {
 
     // Ошибка действия.
     my_action_error: 'Не удалось. Попробуйте ещё раз.',
+
+    // ------------------------------------------------------------
+    // Редактирование объявления (/my/listing/[id]/edit).
+    // ------------------------------------------------------------
+    my_action_edit: 'Редактировать',
+    edit_title: 'Редактирование объявления',
+    edit_submit: 'Сохранить изменения',
+    edit_saving: 'Сохраняем…',
+    edit_loading: 'Загружаем объявление…',
+    edit_err_load: 'Не удалось загрузить объявление.',
+    // Предупреждение над кнопкой: правка контента возвращает объявление
+    // на проверку и гасит продвижение (миграция 0067).
+    edit_moderation_warning:
+      'После изменений объявление снова уйдёт на проверку, а активное продвижение погаснет.',
+    // Экран после сохранения.
+    edit_done_moderation_title: 'Изменения сохранены',
+    edit_done_moderation_text:
+      'Объявление отправлено на повторную проверку и вернётся в выдачу после одобрения.',
+    edit_done_title: 'Изменения сохранены',
+    edit_done_text: 'Содержимое объявления не изменилось, статус остался прежним.',
+    edit_back_to_list: 'Мои объявления',
 
     // ------------------------------------------------------------
     // Навигация по контентным страницам.
