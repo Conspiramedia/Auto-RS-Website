@@ -213,7 +213,7 @@ export const dict = {
 
     // Главная
     home_hero_title: 'Prodajte automobil u Srbiji',
-    home_hero_text: 'Besplatno objavljivanje. Kupci vas kontaktiraju u aplikaciji.',
+    home_hero_text: 'Besplatno objavljivanje. Kupci vam pišu direktno na sajtu.',
     home_hero_cta: 'Objavi auto',
     home_fresh: 'Novi oglasi',
     home_brands: 'Popularne marke',
@@ -747,7 +747,7 @@ export const dict = {
       'После одобрения модератором объявление появится в каталоге. О результате сообщим.',
 
     home_hero_title: 'Продайте автомобиль в Сербии',
-    home_hero_text: 'Бесплатное размещение. Покупатели напишут вам в приложении.',
+    home_hero_text: 'Бесплатное размещение. Покупатели напишут вам прямо на сайте.',
     home_hero_cta: 'Разместить авто',
     home_fresh: 'Свежие объявления',
     home_brands: 'Популярные марки',
