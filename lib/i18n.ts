@@ -367,6 +367,49 @@ export const dict = {
     // Privremeni tekst sekcija koje stižu u sledećim paketima.
     my_soon: 'Ova sekcija je u pripremi i biće dostupna uskoro.',
 
+    // Statusi oglasa — iste formulacije kao u aplikaciji
+    // (app_strings.dart: statusModeration … statusSold).
+    my_status_moderation: 'Na proveri',
+    my_status_active: 'Objavljeno',
+    my_status_archived: 'Arhivirano',
+    my_status_rejected: 'Odbijeno',
+    my_status_sold: 'Prodato',
+    // Razlog odbijanja stiže iz moderation_comment.
+    my_rejected_reason: 'Razlog odbijanja',
+
+    // Metrike oglasa.
+    my_metric_views: 'Pregledi',
+    my_metric_favorites: 'U omiljenim',
+    my_metric_contacts: 'Kontakti',
+
+    // Radnje nad oglasom.
+    my_action_archive: 'Skloni',
+    my_action_restore: 'Vrati',
+    my_action_sold: 'Prodato',
+    my_action_promote: 'Promoviši',
+    // Potvrda u dva koraka: pitanje + Da/Otkaži.
+    my_confirm_archive: 'Skloniti oglas sa objave?',
+    my_confirm_restore: 'Vratiti oglas u objavu?',
+    my_confirm_sold: 'Označiti kao prodato?',
+    my_confirm_yes: 'Da',
+    my_confirm_no: 'Otkaži',
+    my_action_busy: 'Čuvamo…',
+    // Promocija je za sada besplatna (activate_promotion, 7 dana).
+    my_promoted_until: 'Promoviše se do',
+    my_promote_days: 'Besplatno, 7 dana u vrhu pretrage',
+
+    // Zbirna statistika (get_my_stats_totals).
+    my_totals_title: 'Ukupno',
+    my_totals_listings: 'Oglasi',
+
+    // Prazno stanje.
+    my_empty_title: 'Još nemate oglase',
+    my_empty_text: 'Postavite prvi oglas — prodaja počinje odavde.',
+    my_empty_cta: 'Postavi oglas',
+
+    // Greška radnje.
+    my_action_error: 'Nije uspelo. Pokušajte ponovo.',
+
     // Общее
     // ------------------------------------------------------------
     // Навигация по контентным страницам.
@@ -836,6 +879,49 @@ export const dict = {
     my_auth_checking: 'Проверяем…',
     // Временный текст разделов, которые приходят в следующих пакетах.
     my_soon: 'Раздел готовится и появится в ближайшее время.',
+
+    // Статусы объявления — те же формулировки, что в приложении
+    // (app_strings.dart: statusModeration … statusSold).
+    my_status_moderation: 'На проверке',
+    my_status_active: 'Опубликовано',
+    my_status_archived: 'В архиве',
+    my_status_rejected: 'Отклонено',
+    my_status_sold: 'Продано',
+    // Причина отклонения приходит из moderation_comment.
+    my_rejected_reason: 'Причина отклонения',
+
+    // Метрики объявления.
+    my_metric_views: 'Просмотры',
+    my_metric_favorites: 'В избранном',
+    my_metric_contacts: 'Контакты',
+
+    // Действия над объявлением.
+    my_action_archive: 'Снять',
+    my_action_restore: 'Вернуть',
+    my_action_sold: 'Продано',
+    my_action_promote: 'Продвинуть',
+    // Подтверждение в два шага: вопрос + Да/Отмена.
+    my_confirm_archive: 'Снять объявление с публикации?',
+    my_confirm_restore: 'Вернуть объявление в публикацию?',
+    my_confirm_sold: 'Отметить проданным?',
+    my_confirm_yes: 'Да',
+    my_confirm_no: 'Отмена',
+    my_action_busy: 'Сохраняем…',
+    // Продвижение пока бесплатное (activate_promotion, 7 дней).
+    my_promoted_until: 'Продвигается до',
+    my_promote_days: 'Бесплатно, 7 дней в начале выдачи',
+
+    // Сводная статистика (get_my_stats_totals).
+    my_totals_title: 'Всего',
+    my_totals_listings: 'Объявления',
+
+    // Пустое состояние.
+    my_empty_title: 'У вас пока нет объявлений',
+    my_empty_text: 'Разместите первое — продажа начинается отсюда.',
+    my_empty_cta: 'Подать объявление',
+
+    // Ошибка действия.
+    my_action_error: 'Не удалось. Попробуйте ещё раз.',
 
     // ------------------------------------------------------------
     // Навигация по контентным страницам.

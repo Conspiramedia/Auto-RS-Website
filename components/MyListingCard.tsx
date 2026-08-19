@@ -1,0 +1,237 @@
+// ============================================================
+// RS AUTO — Карточка объявления в кабинете владельца. Server Component.
+// ============================================================
+// Отличается от CarCard намеренно, и дело не в оформлении. В каталоге
+// карточка продаёт: крупная фотография, цена, минимум текста. Здесь
+// продавец УПРАВЛЯЕТ объявлением, и на первый план выходят статус,
+// метрики и действия — то, чего в каталоге нет вовсе.
+//
+// Поэтому раскладка горизонтальная (фото слева, данные справа), как на
+// экране my_cars приложения: у владельца объявлений единицы, и список
+// строками читается быстрее сетки плиток.
+//
+// Карточка НЕ ссылка целиком: внутри живут кнопки действий, и вложенная
+// в ссылку кнопка — ошибка разметки (интерактивный элемент внутри
+// интерактивного). Ссылкой сделана только фотография с заголовком.
+// ============================================================
+
+import Image from 'next/image';
+import Link from 'next/link';
+
+import ListingActions from './ListingActions';
+import StatusBadge from './StatusBadge';
+import Badge from './ui/Badge';
+import Card from './ui/Card';
+import { formatDate, formatPrice, formatRentPrice } from '@/lib/format';
+import type { Locale } from '@/lib/i18n';
+import { getT, localeHref } from '@/lib/i18n';
+import type { MyListing } from '@/lib/types';
+
+type Props = {
+  locale: Locale;
+  listing: MyListing;
+};
+
+export default function MyListingCard({ locale, listing }: Props) {
+  const t = getT(locale);
+
+  // Какую цену показывать. Объявление «только аренда» не имеет цены
+  // продажи, и без этой проверки карточка написала бы «Цена по запросу»
+  // там, где на самом деле указана суточная ставка.
+  const rentOnly = listing.is_for_rent && !listing.is_for_sale;
+  const price = rentOnly
+    ? formatRentPrice(listing.rent_price_daily, listing.currency, locale)
+    : formatPrice(listing.sale_price, listing.currency, locale);
+
+  return (
+    <Card padding="sm">
+      <div className="flex gap-3">
+        {/* Фотография ведёт на публичную карточку: продавцу важно
+            видеть объявление глазами покупателя. */}
+        <Link
+          href={localeHref(locale, `/car/${listing.car_id}`)}
+          className="relative aspect-[4/3] w-28 shrink-0 overflow-hidden rounded-control bg-surface-muted sm:w-36"
+        >
+          {listing.photo_url ? (
+            <Image
+              src={listing.photo_url}
+              alt={`${listing.brand} ${listing.model}`}
+              fill
+              sizes="(max-width: 640px) 112px, 144px"
+              // Проданное притеняем — так же, как _Thumb в приложении:
+              // завершённая сделка не должна выглядеть активной карточкой.
+              className={`object-cover ${
+                listing.status === 'sold' ? 'opacity-60' : ''
+              }`}
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-small text-neutral-30">
+              {listing.brand}
+            </div>
+          )}
+        </Link>
+
+        <div className="min-w-0 flex-1">
+          <Link
+            href={localeHref(locale, `/car/${listing.car_id}`)}
+            className="block font-semibold hover:underline"
+          >
+            {listing.brand} {listing.model}, {listing.year}
+          </Link>
+
+          <div className="mt-0.5 truncate text-caption text-neutral-60">
+            {listing.city} · {price}
+          </div>
+
+          {/* Статус и промо — одной строкой, как в приложении. */}
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <StatusBadge locale={locale} status={listing.status} />
+            {listing.is_promoted && (
+              <Badge tone="promoted">{t('car_promoted')}</Badge>
+            )}
+          </div>
+
+          {/* Причина отклонения. Без неё красный бейдж «Отклонено» —
+              тупик: продавец не знает, что именно исправлять.
+              Сервер отдаёт это поле только в статусе rejected. */}
+          {listing.moderation_comment && (
+            <p className="mt-2 rounded-control bg-brand-red/10 px-3 py-2 text-caption text-brand-red">
+              <span className="font-semibold">{t('my_rejected_reason')}:</span>{' '}
+              {listing.moderation_comment}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Метрики объявления — тот же набор и порядок, что в приложении:
+          просмотры, избранное, контакты. */}
+      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 border-t border-neutral-10 pt-3">
+        <Metric
+          label={t('my_metric_views')}
+          value={listing.views}
+          icon={<IconEye />}
+        />
+        <Metric
+          label={t('my_metric_favorites')}
+          value={listing.favorites}
+          icon={<IconHeart />}
+        />
+        <Metric
+          label={t('my_metric_contacts')}
+          value={listing.contacts}
+          icon={<IconPhone />}
+        />
+      </div>
+
+      {/* Срок продвижения — зелёным, рядом с действиями: продавцу нужно
+          понимать, до какого числа объявление стоит в начале выдачи. */}
+      {listing.is_promoted && listing.boosted_until && (
+        <p className="mt-2 flex items-center gap-1.5 text-small text-brand-green">
+          <IconRocket />
+          {t('my_promoted_until')} {formatDate(listing.boosted_until, locale)}
+        </p>
+      )}
+
+      <ListingActions
+        locale={locale}
+        carId={listing.car_id}
+        status={listing.status}
+        isPromoted={listing.is_promoted}
+      />
+    </Card>
+  );
+}
+
+// ------------------------------------------------------------
+// Одна метрика: иконка + число + подпись.
+// ------------------------------------------------------------
+function Metric({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: number;
+  icon: React.ReactNode;
+}) {
+  return (
+    <span className="flex items-center gap-1.5 text-caption">
+      <span className="text-neutral-60">{icon}</span>
+      <span className="font-semibold">{value}</span>
+      <span className="text-neutral-60">{label}</span>
+    </span>
+  );
+}
+
+// ------------------------------------------------------------
+// Иконки. Инлайновый SVG, а не иконочный шрифт или библиотека:
+// их здесь четыре, и тянуть ради этого зависимость незачем.
+// currentColor — цвет наследуется от родителя, поэтому иконка
+// автоматически совпадает с цветом текста рядом.
+// ------------------------------------------------------------
+function IconEye() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function IconHeart() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
+      <path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1l8.8 8.8 8.8-8.8a5 5 0 0 0 0-7.1Z" />
+    </svg>
+  );
+}
+
+function IconPhone() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
+      <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z" />
+    </svg>
+  );
+}
+
+function IconRocket() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
+      <path d="M4.5 16.5c-1.5 1.3-2 5.5-2 5.5s4.2-.5 5.5-2c.8-.9.8-2.2-.1-3a2.1 2.1 0 0 0-3.4-.5Z" />
+      <path d="M12 15 9 12a15 15 0 0 1 9-9 15 15 0 0 1-3 9Z" />
+      <path d="M9 12H5s.5-2.2 1.5-3S12 9 12 9" />
+    </svg>
+  );
+}

@@ -242,3 +242,52 @@ export type SellerListing = {
   photo_url: string | null;
   created_at: string;
 };
+
+// ------------------------------------------------------------
+// КАБИНЕТ ПРОДАВЦА
+// ------------------------------------------------------------
+
+// Строка списка «Мои объявления». RPC get_my_listings_stats
+// (миграция 0044, расширена в 0047 и 0070).
+//
+// Отличается от SellerListing тем, что это ВЗГЛЯД ВЛАДЕЛЬЦА: здесь есть
+// метрики (просмотры, избранное, контакты), причина отклонения и все
+// статусы, включая непубличные. Витрина продавца (SellerListing) отдаёт
+// только active и sold, и метрик в ней нет — чужие цифры посторонним
+// не показываются.
+export type MyListing = {
+  car_id: string;
+  brand: string;
+  model: string;
+  year: number;
+  city: string;
+  // moderation | active | archived | rejected | sold
+  status: string;
+  sale_price: number | null;
+  rent_price_daily: number | null;
+  currency: string;
+  photo_url: string | null;
+  views: number;
+  favorites: number;
+  contacts: number;
+  // Действует ли продвижение прямо сейчас — считает сервер (флаг вместе
+  // со сроком), клиенту сравнивать даты не нужно.
+  is_promoted: boolean;
+  boosted_until: string | null;
+  created_at: string;
+  // Причина отклонения от модератора. Сервер отдаёт её только в статусе
+  // 'rejected', в остальных приходит null.
+  moderation_comment: string | null;
+  is_for_sale: boolean;
+  is_for_rent: boolean;
+};
+
+// Итоговая плашка кабинета. RPC get_my_stats_totals (миграция 0044).
+// Считается по ВСЕМ объявлениям продавца, включая архив: важна общая
+// отдача, а не только текущая витрина.
+export type MyStatsTotals = {
+  listings_count: number;
+  views: number;
+  favorites: number;
+  contacts: number;
+};
