@@ -15,11 +15,20 @@
 // номера (lib/inputFormat.ts) и приём политики (lib/consent.ts).
 // Разметка совпадает с шагом 4 SellForm по токенам и порядку элементов.
 //
-// ПОСЛЕ УСПЕШНОГО ВХОДА — router.refresh(), а не переход по адресу.
-// Сессия теперь живёт в cookie (lib/supabaseClient.ts), но серверный
-// рендер этой страницы уже произошёл: без refresh пользователь увидел бы
-// форму входа до следующей навигации. refresh перезапрашивает Server
-// Component с новыми cookie, и на его месте отрисовывается кабинет.
+// ПОСЛЕ УСПЕШНОГО ВХОДА — два разных исхода, отсюда проп redirectTo:
+//
+//   * без него (форма подставлена вместо содержимого кабинета) —
+//     router.refresh(). Сессия живёт в cookie, но серверный рендер уже
+//     произошёл: без refresh пользователь видел бы форму входа до
+//     следующей навигации. refresh перезапрашивает Server Component
+//     с новыми cookie, и на месте формы отрисовывается кабинет;
+//
+//   * с ним (отдельная страница /login) — переход по адресу. Оставаться
+//     на /login после входа бессмысленно, а вернуть человека туда,
+//     куда он шёл, — единственное правильное поведение.
+//
+// Компонент используется в двух местах и обязан выглядеть одинаково:
+// на /login и внутри кабинета это одна и та же форма.
 // ============================================================
 
 import { useEffect, useState } from 'react';
@@ -38,9 +47,17 @@ import { getBrowserClient } from '@/lib/supabaseClient';
 
 type Props = {
   locale: Locale;
+  // Куда идти после успешного входа. Путь БЕЗ префикса локали:
+  // префикс добавляется здесь через localeHref, иначе русский
+  // пользователь после входа проваливался бы на сербское зеркало.
+  // Не задан — остаёмся на месте и перерисовываем страницу.
+  redirectTo?: string;
+  // Заголовок над формой. На отдельной странице входа он свой
+  // («Вход в кабинет»), внутри кабинета — общий.
+  title?: string;
 };
 
-export default function AuthGate({ locale }: Props) {
+export default function AuthGate({ locale, redirectTo, title }: Props) {
   const t = getT(locale);
   const router = useRouter();
   const supabase = getBrowserClient();
@@ -174,9 +191,17 @@ export default function AuthGate({ locale }: Props) {
       // чтобы при подаче объявления политику не спрашивали снова.
       if (data.user?.id) migrateGuestConsent(data.user.id);
 
-      // Сессия записана в cookie — просим сервер перерисовать страницу
-      // уже от имени вошедшего пользователя.
-      router.refresh();
+      // Сессия записана в cookie.
+      if (redirectTo) {
+        // Отдельная страница входа: уводим туда, откуда пришёл
+        // пользователь. replace, а не push: возврат «назад» на форму
+        // входа после успешного входа — тупик.
+        router.replace(localeHref(locale, redirectTo));
+      } else {
+        // Форма вместо содержимого кабинета: просим сервер
+        // перерисовать страницу уже от имени вошедшего.
+        router.refresh();
+      }
     } catch (e) {
       setError(humanOtpError(e, t));
       setBusy(false);
@@ -190,7 +215,9 @@ export default function AuthGate({ locale }: Props) {
     <Card className="mx-auto max-w-md">
       <div className="space-y-3">
         <div>
-          <h1 className="text-xl font-semibold">{t('my_auth_title')}</h1>
+          <h1 className="text-xl font-semibold">
+            {title ?? t('my_auth_title')}
+          </h1>
           <p className="mt-1 text-sm text-neutral-60">{t('my_auth_lead')}</p>
         </div>
 

@@ -439,6 +439,10 @@ export const dict = {
     nav_how: 'Kako funkcioniše',
     nav_faq: 'Česta pitanja',
     nav_menu: 'Meni',
+    // Вход и кабинет: шапка, бургер, подвал, страница /login.
+    nav_login: 'Prijava',
+    nav_my: 'Moji oglasi',
+    login_title: 'Prijava na nalog',
     nav_menu_close: 'Zatvori meni',
     // Закрытие смарт-баннера. Раньше строка была зашита по-сербски
     // прямо в компоненте и в русской локали читалась как чужая.
@@ -972,6 +976,10 @@ export const dict = {
     nav_how: 'Как это работает',
     nav_faq: 'Вопросы',
     nav_menu: 'Меню',
+    // Вход и кабинет: шапка, бургер, подвал, страница /login.
+    nav_login: 'Войти',
+    nav_my: 'Мои объявления',
+    login_title: 'Вход в кабинет',
     nav_menu_close: 'Закрыть меню',
     banner_close: 'Закрыть',
     common_close: 'Закрыть',

@@ -22,6 +22,7 @@ import Link from 'next/link';
 import Logo from './ui/Logo';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
+import HeaderAuth from './HeaderAuth';
 import LocaleSwitch from './LocaleSwitch';
 import MobileMenu from './MobileMenu';
 import Button from './ui/Button';
@@ -65,6 +66,11 @@ export default function SiteHeader({ locale, pathname }: Props) {
 
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-3">
           <LocaleSwitch locale={locale} pathname={pathname} />
+
+          {/* Вход или ссылка в кабинет. Клиентский компонент: сервер
+              шапку без него рендерит, и кэш публичных страниц остаётся
+              статическим (см. комментарий в HeaderAuth). */}
+          <HeaderAuth locale={locale} />
 
           {/* Сильный CTA продавцу — главная бизнес-цель сайта, поэтому он
               единственный акцентный элемент в шапке.

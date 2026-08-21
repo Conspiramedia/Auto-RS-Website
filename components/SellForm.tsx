@@ -879,10 +879,12 @@ export default function SellForm({
             </div>
           </div>
 
-          {/* Марка — выбор из полного справочника с поиском.
-              allowCustom повторяет приложение (allowCustom: true в
-              create_car_screen.dart): редкую марку можно добавить явным
-              действием «Указать», справочник car_brands пополнит триггер. */}
+          {/* Марка и модель — пара связанных полей, на десктопе стоят
+              в одной строке: модель каскадом зависит от марки, и видеть
+              их рядом естественнее, чем одно под другим.
+              На мобильном (до lg) остаются в столбец — пикер со списком
+              в половину узкого экрана нечитаем. */}
+          <div className="grid gap-3 lg:grid-cols-2">
           <ListPicker
             locale={locale}
             name="brand"
@@ -913,6 +915,7 @@ export default function SellForm({
             allowCustom
             onChange={setModel}
           />
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             {/* Год — ВЫБОР ИЗ СПИСКА, как в приложении
@@ -959,7 +962,7 @@ export default function SellForm({
           {/* Цена продажи — только когда объявление продаётся.
               Пустое значение допустимо: это «Договорная». */}
           {listingType === 'sale' && (
-            <div>
+            <div className="lg:w-1/2 lg:pr-1.5">
               <label className="mb-1 block text-sm text-neutral-60">
                 {t('sell_sale_price')}, €
               </label>
@@ -1014,7 +1017,10 @@ export default function SellForm({
             </div>
           )}
 
-          <div>
+          {/* Пробег и цена — короткие числовые поля: на всю ширину
+              1152px они выглядели бы пустыми. Половина строки —
+              достаточно для семи цифр с разделителями. */}
+          <div className="lg:w-1/2 lg:pr-1.5">
             <label className="mb-1 block text-sm text-neutral-60">
               {t('car_mileage')}, {t('common_km')}
             </label>

@@ -18,10 +18,12 @@
 // ============================================================
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import type { DictKey, Locale } from '@/lib/i18n';
-import { getT, localeHref } from '@/lib/i18n';
+import { getT, localeHref, stripLocale } from '@/lib/i18n';
+import { getBrowserClient } from '@/lib/supabaseClient';
 import CloseButton from './ui/CloseButton';
 
 // Разделы меню. Порядок осмысленный: сначала витрины (за ними приходят),
@@ -39,7 +41,33 @@ const LINKS: { path: string; label: DictKey }[] = [
 
 export default function MobileMenu({ locale }: { locale: Locale }) {
   const t = getT(locale);
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  // Вошёл ли пользователь: от этого зависит первый пункт меню —
+  // «Войти» или «Мои объявления». null — проверка ещё идёт, пункт
+  // не показываем вовсе (мелькнувшее «Войти» у вошедшего читается
+  // как разлогин).
+  //
+  // Проверка запускается ТОЛЬКО при открытии меню: держать её на
+  // каждой странице незачем — закрытый бургер ничего не показывает.
+  // Сессия читается локально из cookie, обращения к базе здесь нет.
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    let cancelled = false;
+
+    (async () => {
+      const { data } = await getBrowserClient().auth.getSession();
+      if (!cancelled) setSignedIn(data.session != null);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   // Блокировка прокрутки страницы под открытой шторкой. Без неё палец
   // прокручивает не меню, а страницу за ним, и при закрытии человек
@@ -113,6 +141,24 @@ export default function MobileMenu({ locale }: { locale: Locale }) {
             {/* Список прокручивается сам: восемь пунктов не помещаются
                 на низком экране в альбомной ориентации. */}
             <div className="flex-1 overflow-y-auto py-2">
+              {/* Вход или кабинет — первым пунктом и отделён линией:
+                  это действие над аккаунтом, а не раздел сайта. */}
+              {signedIn !== null && (
+                <Link
+                  href={
+                    signedIn
+                      ? localeHref(locale, '/my')
+                      : `${localeHref(locale, '/login')}?redirect=${encodeURIComponent(
+                          stripLocale(pathname).path,
+                        )}`
+                  }
+                  onClick={() => setOpen(false)}
+                  className="mb-2 block border-b border-neutral-10 px-4 py-3 font-semibold transition-colors duration-fast ease-out hover:bg-surface-hover"
+                >
+                  {signedIn ? t('nav_my') : t('nav_login')}
+                </Link>
+              )}
+
               {LINKS.map((link) => (
                 <Link
                   key={link.path}

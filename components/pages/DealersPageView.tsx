@@ -28,7 +28,7 @@ export default function DealersPageView({ locale }: { locale: Locale }) {
       <SmartBanner locale={locale} />
       <SiteHeader locale={locale} pathname="/dealers" />
 
-      <main className="mx-auto max-w-4xl px-4 py-10">
+      <main className="mx-auto max-w-6xl px-4 py-10">
         <h1 className="text-3xl font-bold">{t('dealers_title')}</h1>
         <p className="mt-2 text-xl font-semibold text-brand-green">
           {t('dealers_offer')}
@@ -43,7 +43,11 @@ export default function DealersPageView({ locale }: { locale: Locale }) {
           ))}
         </div>
 
-        <div className="mt-8">
+        {/* Форма ограничена по ширине отдельно от контейнера страницы:
+            блоки преимуществ выигрывают от широкой сетки, а поля ввода
+            во всю ширину 1152px читаются плохо — глаз теряет начало
+            следующей строки. */}
+        <div className="mt-8 max-w-2xl">
           <DealerForm locale={locale} />
         </div>
       </main>

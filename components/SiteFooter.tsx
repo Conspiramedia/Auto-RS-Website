@@ -66,6 +66,20 @@ export default function SiteFooter({
           <Link href={localeHref(locale, '/app')} className="hover:underline">
             {t('nav_app')}
           </Link>
+
+          {/* Кабинет продавца. Ссылка нужна людям — она даёт вход в
+              «Мои объявления» с любой страницы, включая те, где шапка
+              прокручена далеко вверх.
+              rel="nofollow" обязателен: /my закрыт noindex и в
+              robots.txt, поэтому обходить его краулеру незачем, а
+              обычная ссылка сливала бы туда вес страницы. */}
+          <Link
+            href={localeHref(locale, '/my')}
+            rel="nofollow"
+            className="hover:underline"
+          >
+            {t('nav_my')}
+          </Link>
         </div>
 
         {/* Справочные страницы отдельной строкой: они отвечают на

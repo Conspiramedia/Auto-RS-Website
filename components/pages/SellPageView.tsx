@@ -17,7 +17,12 @@ export default function SellPageView({ locale }: { locale: Locale }) {
       <SmartBanner locale={locale} />
       <SiteHeader locale={locale} pathname="/sell" />
 
-      <main className="mx-auto max-w-2xl px-4 py-6">
+      {/* max-w-3xl на десктопе вместо 2xl: форма подачи получила парные
+          поля (марка+модель, цена+пробег), и на 672px две колонки
+          становятся слишком узкими для пикеров со списком.
+          Шире 768px не идём — поля ввода во всю ширину экрана читаются
+          плохо, а форма остаётся линейным сценарием, а не панелью. */}
+      <main className="mx-auto max-w-2xl px-4 py-6 lg:max-w-3xl">
         <h1 className="text-2xl font-bold">{t('sell_title')}</h1>
         <p className="mt-2 text-neutral-60">{t('sell_subtitle')}</p>
 

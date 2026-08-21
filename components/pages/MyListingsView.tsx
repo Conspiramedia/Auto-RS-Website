@@ -82,7 +82,9 @@ export default async function MyListingsView({ locale }: Props) {
       {totals && (
         // Плашка итогов на приглушённой подложке — как в приложении
         // (surfaceMuted): сводка вторична по отношению к списку и не
-        // должна спорить с карточками за внимание.
+        // должна спорить с карточками за внимание. Стоит отдельной
+        // строкой над сеткой, а не в боковой колонке: так она читается
+        // одним движением глаз, а карточки получают всю ширину.
         <div className="grid grid-cols-2 gap-3 rounded-card bg-surface-muted p-4 sm:grid-cols-4">
           <Total label={t('my_totals_listings')} value={totals.listings_count} />
           <Total label={t('my_metric_views')} value={totals.views} />
@@ -91,7 +93,13 @@ export default async function MyListingsView({ locale }: Props) {
         </div>
       )}
 
-      <div className="space-y-3">
+      {/* Сетка карточек. На мобильном — один столбец (карточка
+          горизонтальная: фото слева, данные справа), с 1024px — две
+          колонки, с 1280px — три.
+          Больше трёх не делаем: карточка владельца несёт метрики,
+          бейджи и до четырёх кнопок действий, и в узкой колонке они
+          начали бы переноситься по одной в строку. */}
+      <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
         {listings.map((listing) => (
           <MyListingCard
             key={listing.car_id}
