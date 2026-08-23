@@ -74,16 +74,32 @@ export function SkeletonCatalogControls() {
           <SkeletonBox className="h-10 w-full" />
         </div>
 
-        <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none sm:gap-3">
+        {/* «Фильтры» со счётчиком и сортировка — только до 768px:
+            с md они спущены в отдельный ряд под чипсами. */}
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none sm:gap-3 md:hidden">
           {/* Габариты кнопки «Фильтры»: h-10 = px-4 py-2.5 + text-caption. */}
           <SkeletonBox className="h-10 w-28" />
           <SkeletonBox className="hidden h-5 w-24 sm:block" />
         </div>
-        <SkeletonBox className="h-10 w-40" />
+        <SkeletonBox className="h-10 w-40 md:hidden" />
       </div>
 
       {/* Счётчик результатов на мобильном — отдельной строкой. */}
       <SkeletonBox className="mt-2 h-5 w-32 sm:hidden" />
+
+      {/* Десктопный ряд управления: «Фильтры» и сортировка под
+          чипсами, счётчик отдельной строкой под ними. Место самих
+          чипсов скелетон не занимает — их состав зависит от
+          применённых фильтров, и пустая заглушка там сдвигала бы
+          выдачу.
+          Ширина второй заглушки — под ленту чипсов сортировки
+          («Сортировка:» + шесть вариантов), а не под компактный
+          список: на десктопе сортировка остаётся лентой ссылок. */}
+      <div className="mt-3 hidden items-center gap-3 md:flex">
+        <SkeletonBox className="h-10 w-28" />
+        <SkeletonBox className="h-8 w-[34rem] max-w-full" />
+      </div>
+      <SkeletonBox className="mt-2 hidden h-5 w-32 md:block" />
     </>
   );
 }

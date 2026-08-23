@@ -169,7 +169,14 @@ export default function CatalogView({
           />
         </div>
 
-        <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none sm:gap-3">
+        {/* Блок «Фильтры + счётчик» и сортировка живут в этом ряду
+            только до 768px — на мобильном всё остаётся как было.
+            С md оба контрола уходят отсюда (md:hidden) и переезжают
+            в собственный ряд под чипсами, ниже: на десктопе строка
+            поиска занимает всю ширину, а служебная кнопка «Фильтры»
+            рядом с ней сжимала поле и вставала вровень с главным
+            полем ввода. */}
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none sm:gap-3 md:hidden">
           {/* action ОБЯЗАН нести префикс локали: форма фильтров уходит
               методом GET, и голый basePath уводил пользователя с
               /ru/cars на сербское зеркало — язык сбрасывался ровно по
@@ -185,12 +192,27 @@ export default function CatalogView({
             mode={pageMode}
             lockedType={lockedType}
           />
-          <span className="hidden shrink-0 text-caption text-neutral-50 sm:inline">
+          {/* Счётчик в этом ряду показывается только в диапазоне
+              640–767px: ниже он стоит отдельной строкой, выше —
+              под десктопным рядом управления. */}
+          <span className="hidden shrink-0 text-caption text-neutral-50 sm:inline md:hidden">
             {t('catalog_found')}: {countNoun(result.total, 'listing', locale)}
           </span>
         </div>
 
-        <SortSelect locale={locale} filters={filters} basePath={basePath} />
+        {/* variant="compact" — ЯВНО компактный список, а не «то, что
+            решит сам компонент по ширине». Внутри SortSelect свои
+            брейкпоинты (select до 640px, чипсы выше), и без явного
+            указания в диапазоне 640–767px здесь развернулась бы лента
+            чипсов, которой в этом тесном ряду места нет. */}
+        <div className="md:hidden">
+          <SortSelect
+            locale={locale}
+            filters={filters}
+            basePath={basePath}
+            variant="compact"
+          />
+        </div>
       </div>
 
       {/* Счётчик результатов на мобильном — отдельной строкой.
@@ -208,6 +230,48 @@ export default function CatalogView({
           basePath={basePath}
           lockedType={lockedType}
         />
+      </div>
+
+      {/* ------------------------------------------------------------
+          ДЕСКТОПНЫЙ РЯД УПРАВЛЕНИЯ (только с 768px).
+          ------------------------------------------------------------
+          «Фильтры» и сортировка спущены из ряда поиска сюда, под
+          применённые чипсы. Порядок сверху вниз идёт по убыванию
+          веса: поиск → что уже применено (чипсы) → чем управляем
+          (фильтры, сортировка) → сколько получилось (счётчик).
+          На мобильном этого ряда нет вовсе: там оба контрола остались
+          в ряду поиска.
+          variant="chips" — лента ссылок, как была: ряд существует
+          только с md, и выбирать представление по внутренним
+          брейкпоинтам компоненту здесь не из чего. */}
+      <div className="mt-3 hidden items-center gap-3 md:flex">
+        <FilterPanel
+          locale={locale}
+          filters={filters}
+          brands={brands}
+          cities={cities}
+          models={models}
+          action={localeHref(locale, basePath)}
+          activeCount={activeCount}
+          mode={pageMode}
+          lockedType={lockedType}
+        />
+
+        <SortSelect
+          locale={locale}
+          filters={filters}
+          basePath={basePath}
+          variant="chips"
+        />
+      </div>
+
+      {/* Счётчик результатов на десктопе — ПОД сортировкой отдельной
+          строкой. Раньше он стоял в ряду поиска между «Фильтрами» и
+          сортировкой: число результатов — это ИТОГ применённых
+          настроек, и читаться оно должно после них, а не посреди
+          органов управления. */}
+      <div className="mt-2 hidden text-caption text-neutral-50 md:block">
+        {t('catalog_found')}: {countNoun(result.total, 'listing', locale)}
       </div>
 
       {result.cars.length === 0 ? (
