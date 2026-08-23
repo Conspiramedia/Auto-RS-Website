@@ -9,8 +9,12 @@
 // Автоматически — из npm-скрипта prebuild перед next build.
 //
 // Сгенерировано: 2026-08-23
-// Заготовок из базы: 41, фраз в файле: 41
-// По видам: brand_model=27, brand_price=9, fuel=5
+// Заготовок из базы: 36, фраз в файле: 36
+// По видам: brand_model=27, brand_price=9
+//
+// В списке ТОЛЬКО фразы с маркой авто: «марка+модель» и «марка+цена».
+// Голое топливо («Бензин», «Дизель») исключено — такая подсказка не
+// сужает поиск и не отвечает на вопрос «что тут есть».
 //
 // ПОЧЕМУ ФАЙЛ ЛЕЖИТ В GIT. Сборка не должна зависеть от доступности
 // базы в момент деплоя: если RPC недоступна, генератор оставляет этот
@@ -21,7 +25,8 @@ import type { CatalogFilters } from './queries';
 
 export type SearchSuggestion = {
   // Текст подсказки на обоих языках. Марка и модель — имена
-  // собственные и совпадают, топливо и слово «до» различаются.
+  // собственные и совпадают, различается только слово «до» в
+  // подсказках цены.
   text: { sr: string; ru: string };
   // Фильтры, которые применяются по клику. Готовые значения, а не
   // строка для разбора: клик уходит в существующий buildQuery, и
@@ -31,20 +36,12 @@ export type SearchSuggestion = {
 
 export const SEARCH_SUGGESTIONS: SearchSuggestion[] = [
   {
-    text: { sr: "Dizel", ru: "Дизель" },
-    filters: {"fuel":"diesel"},
-  },
-  {
     text: { sr: "Volkswagen do 9.000 €", ru: "Volkswagen до 9 000 €" },
     filters: {"brand":"Volkswagen","priceTo":9000},
   },
   {
     text: { sr: "Volkswagen Golf", ru: "Volkswagen Golf" },
     filters: {"brand":"Volkswagen","model":"Golf"},
-  },
-  {
-    text: { sr: "Hibrid", ru: "Гибрид" },
-    filters: {"fuel":"hybrid"},
   },
   {
     text: { sr: "Audi do 16.000 €", ru: "Audi до 16 000 €" },
@@ -55,10 +52,6 @@ export const SEARCH_SUGGESTIONS: SearchSuggestion[] = [
     filters: {"brand":"Volkswagen","model":"Passat"},
   },
   {
-    text: { sr: "Benzin", ru: "Бензин" },
-    filters: {"fuel":"petrol"},
-  },
-  {
     text: { sr: "BMW do 3.000 €", ru: "BMW до 3 000 €" },
     filters: {"brand":"BMW","priceTo":3000},
   },
@@ -67,20 +60,12 @@ export const SEARCH_SUGGESTIONS: SearchSuggestion[] = [
     filters: {"brand":"Audi","model":"A3"},
   },
   {
-    text: { sr: "Električni", ru: "Электро" },
-    filters: {"fuel":"electric"},
-  },
-  {
     text: { sr: "Ford do 15.000 €", ru: "Ford до 15 000 €" },
     filters: {"brand":"Ford","priceTo":15000},
   },
   {
     text: { sr: "Audi A4", ru: "Audi A4" },
     filters: {"brand":"Audi","model":"A4"},
-  },
-  {
-    text: { sr: "Gas (TNG)", ru: "Газ" },
-    filters: {"fuel":"gas"},
   },
   {
     text: { sr: "Mercedes-Benz do 4.500 €", ru: "Mercedes-Benz до 4 500 €" },
