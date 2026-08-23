@@ -20,6 +20,7 @@
 // клики с каталога.
 // ============================================================
 
+import BackCloseButton from '@/components/BackCloseButton';
 import InstallGuide from '@/components/InstallGuide';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
@@ -39,12 +40,18 @@ export default function InstallPageView({ locale }: { locale: Locale }) {
           рассчитан на телефон, и растянутая на 1280px строка шага
           читалась бы иначе, чем задумано. */}
       <main className="mx-auto max-w-3xl px-4 pb-8 pt-4">
-        {/* Заголовок — 17px/600, как title у AppBar в приложении.
-            Крупного h1 с подзаголовком здесь нет: в образце его тоже
-            нет, а вводный блок ниже говорит то же самое подробнее. */}
-        <h1 className="text-[17px] font-semibold text-neutral-100">
-          {t('install_title')}
-        </h1>
+        {/* Заголовок и выход в одну строку — как AppBar в приложении,
+            где эту роль играет стрелка «назад». Крестик прижат к
+            правому краю колонки; -mr-2 втягивает его кликабельную
+            область 40px в поле бокового отступа, иначе знак стоял бы
+            заметно левее края. */}
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-[17px] font-semibold text-neutral-100">
+            {t('install_title')}
+          </h1>
+
+          <BackCloseButton locale={locale} className="-mr-2 shrink-0" />
+        </div>
 
         {/* Карточки вынесены в клиентский InstallGuide: он подсвечивает
             платформу посетителя и поднимает её карточку наверх. Текст
