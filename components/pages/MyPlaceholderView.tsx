@@ -15,7 +15,7 @@
 // resetPath, которого у кабинета нет.
 // ============================================================
 
-import Card from '@/components/ui/Card';
+import StateCard from '@/components/ui/StateCard';
 import type { DictKey, Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 
@@ -30,11 +30,6 @@ export default function MyPlaceholderView({ locale, titleKey }: Props) {
   const t = getT(locale);
 
   return (
-    <Card padding="none" className="px-6 py-12 text-center">
-      <h2 className="text-h4 font-semibold">{t(titleKey)}</h2>
-      <p className="mx-auto mt-2 max-w-md text-neutral-60">
-        {t('my_soon')}
-      </p>
-    </Card>
+    <StateCard locale={locale} title={t(titleKey)} text={t('my_soon')} />
   );
 }

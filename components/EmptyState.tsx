@@ -11,7 +11,7 @@
 // ============================================================
 
 import Button from './ui/Button';
-import Card from './ui/Card';
+import StateCard from './ui/StateCard';
 
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
@@ -42,36 +42,32 @@ export default function EmptyState({
     mode === 'rent' && !showReset ? t('rent_empty_title') : t('empty_title');
 
   return (
-    // padding="none": у пустого состояния свой крупный вертикальный
-    // отступ (py-12) — это единственный блок на экране, и он должен
-    // дышать сильнее обычной карточки.
-    <Card padding="none" className="px-6 py-12 text-center">
-      <h2 className="text-h3 font-semibold">{title}</h2>
-      <p className="mx-auto mt-2 max-w-md text-neutral-60">{t('empty_reason')}</p>
+    <StateCard
+      locale={locale}
+      title={title}
+      text={t('empty_reason')}
+      hint={t('empty_notify_hint')}
+      actions={
+        <>
+          {showReset && (
+            <Button
+              variant="dark"
+              size="sm"
+              href={localeHref(locale, resetPath)}
+            >
+              {t('empty_reset')}
+            </Button>
+          )}
 
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-        {showReset && (
           <Button
-            variant="dark"
+            variant="secondary"
             size="sm"
-            href={localeHref(locale, resetPath)}
+            href={localeHref(locale, '/app')}
           >
-            {t('empty_reset')}
+            {t('empty_notify')}
           </Button>
-        )}
-
-        <Button
-          variant="secondary"
-          size="sm"
-          href={localeHref(locale, '/app')}
-        >
-          {t('empty_notify')}
-        </Button>
-      </div>
-
-      <p className="mx-auto mt-3 max-w-md text-caption text-neutral-50">
-        {t('empty_notify_hint')}
-      </p>
-    </Card>
+        </>
+      }
+    />
   );
 }

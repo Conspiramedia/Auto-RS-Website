@@ -19,6 +19,7 @@ import Image from 'next/image';
 
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import StateCard from '@/components/ui/StateCard';
 import CarCard from '@/components/CarCard';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
@@ -147,14 +148,12 @@ export default async function DealerPageView({
 
         {/* Витрина. Пустая — не тупик: даём выход в общий каталог. */}
         {active.length === 0 ? (
-          <Card padding="none" className="mt-6 px-6 py-12 text-center">
-            <h2 className="text-h3 font-semibold">
-              {t('dealer_page_empty_title')}
-            </h2>
-            <p className="mx-auto mt-2 max-w-md text-neutral-60">
-              {t('dealer_page_empty_text')}
-            </p>
-            <div className="mt-6">
+          <StateCard
+            locale={locale}
+            className="mt-6"
+            title={t('dealer_page_empty_title')}
+            text={t('dealer_page_empty_text')}
+            actions={
               <Button
                 variant="secondary"
                 size="sm"
@@ -162,8 +161,8 @@ export default async function DealerPageView({
               >
                 {t('nf_catalog')}
               </Button>
-            </div>
-          </Card>
+            }
+          />
         ) : (
           <section className="mt-8">
             <h2 className="text-h3 font-semibold">

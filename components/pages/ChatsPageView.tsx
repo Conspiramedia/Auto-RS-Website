@@ -12,6 +12,7 @@
 
 import ChatList from '@/components/ChatList';
 import Card from '@/components/ui/Card';
+import StateCard from '@/components/ui/StateCard';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import { getServerClient } from '@/lib/supabaseServer';
@@ -36,9 +37,7 @@ export default async function ChatsPageView({ locale }: Props) {
 
   if (error) {
     return (
-      <Card padding="none" className="px-6 py-12 text-center">
-        <p className="text-neutral-60">{t('my_action_error')}</p>
-      </Card>
+      <StateCard locale={locale} variant="error" retryPath="/my/messages" />
     );
   }
 
@@ -46,12 +45,11 @@ export default async function ChatsPageView({ locale }: Props) {
 
   if (chats.length === 0) {
     return (
-      <Card padding="none" className="px-6 py-12 text-center">
-        <h2 className="text-h4 font-semibold">{t('chat_empty_title')}</h2>
-        <p className="mx-auto mt-2 max-w-md text-neutral-60">
-          {t('chat_empty_text')}
-        </p>
-      </Card>
+      <StateCard
+        locale={locale}
+        title={t('chat_empty_title')}
+        text={t('chat_empty_text')}
+      />
     );
   }
 

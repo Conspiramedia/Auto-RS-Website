@@ -14,7 +14,7 @@
 import { notFound } from 'next/navigation';
 
 import ProfileForm from '@/components/ProfileForm';
-import Card from '@/components/ui/Card';
+import StateCard from '@/components/ui/StateCard';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import { getCurrentUser, getServerClient } from '@/lib/supabaseServer';
@@ -44,9 +44,7 @@ export default async function ProfilePageView({ locale }: Props) {
 
   if (profileResult.error || !profileResult.data) {
     return (
-      <Card padding="none" className="px-6 py-12 text-center">
-        <p className="text-neutral-60">{t('my_action_error')}</p>
-      </Card>
+      <StateCard locale={locale} variant="error" retryPath="/my/profile" />
     );
   }
 
