@@ -40,7 +40,9 @@ import CountBadge from './ui/CountBadge';
 // Разделы сайта. Порядок осмысленный: сначала витрины (за ними приходят),
 // потом продавцам, затем справочные страницы и контакты.
 const LINKS: { path: string; label: DictKey }[] = [
-  { path: '/cars', label: 'nav_catalog' },
+  // nav_catalog_menu, а не nav_catalog: в меню пункт стоит рядом с
+  // «Арендой», и там это выбор вида сделки, а не название раздела.
+  { path: '/cars', label: 'nav_catalog_menu' },
   { path: '/rent', label: 'nav_rent' },
   { path: '/dealers', label: 'nav_dealers' },
   { path: '/app', label: 'nav_app' },
@@ -110,15 +112,56 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
     };
   }, [open]);
 
+  // Текущий путь без префикса локали: на /ru/my/messages сравнивать
+  // нужно '/my/messages', иначе на русской версии не подсветится
+  // ни один пункт.
+  const { path: currentPath } = stripLocale(pathname);
+
   // Ссылка на вход с адресом возврата. Путь передаётся БЕЗ префикса
   // локали — /login добавит его сам, иначе на русской версии
   // получился бы /ru/ru/….
   const loginHref = (() => {
-    const { path } = stripLocale(pathname);
     const back =
-      path === '/login' ? '' : `?redirect=${encodeURIComponent(path)}`;
+      currentPath === '/login'
+        ? ''
+        : `?redirect=${encodeURIComponent(currentPath)}`;
     return `${localeHref(locale, '/login')}${back}`;
   })();
+
+  // Активен ли пункт меню. Правило то же, что во вкладках кабинета
+  // (components/MyTabs.tsx), и расходиться они не должны: на одной
+  // странице подсветиться обязан один и тот же раздел.
+  //
+  // '/my' — особый случай. По префиксу «Мои объявления» горели бы
+  // одновременно с «Сообщениями» на /my/messages: два активных пункта
+  // вместо ориентира дают путаницу. Но и одного точного совпадения
+  // мало — редактирование объявления живёт на /my/listing/{id}/edit,
+  // и там не подсвечивался бы вообще ни один пункт, хотя человек
+  // находится внутри своих объявлений.
+  //
+  // Поэтому: точное совпадение ИЛИ вложенный путь, не принадлежащий
+  // соседним разделам.
+  //
+  // Остальные пункты — по префиксу: '/cars' обязан оставаться
+  // подсвеченным на странице марки '/cars/bmw', это тот же раздел
+  // каталога. Пересечься здесь не с чем — среди прочих пунктов нет
+  // вложенных друг в друга.
+  const isActive = (linkPath: string) => {
+    if (linkPath === '/my') {
+      if (currentPath === '/my') return true;
+      // Соседние личные разделы имеют собственные пункты меню и
+      // подсвечиваются сами.
+      const ownedByOthers = MY_LINKS.some(
+        (other) =>
+          other.path !== '/my' &&
+          (currentPath === other.path ||
+            currentPath.startsWith(`${other.path}/`)),
+      );
+      return currentPath.startsWith('/my/') && !ownedByOthers;
+    }
+
+    return currentPath === linkPath || currentPath.startsWith(`${linkPath}/`);
+  };
 
   return (
     <>
@@ -198,12 +241,32 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                           ? counts.notifications
                           : 0;
 
+                    const active = isActive(link.path);
+
                     return (
                       <Link
                         key={link.path}
                         href={localeHref(locale, link.path)}
                         onClick={() => setOpen(false)}
-                        className="flex items-center justify-between gap-2 px-4 py-3 font-semibold transition-colors duration-fast ease-out hover:bg-surface-hover"
+                        // aria-current — единственный признак текущего
+                        // раздела для скринридера: ни заливку, ни
+                        // полосу слева он не читает.
+                        aria-current={active ? 'page' : undefined}
+                        className={[
+                          'flex items-center justify-between gap-2 py-3 pr-4 font-semibold transition-colors duration-fast ease-out',
+                          // Полоса слева + подложка вместо сплошной
+                          // тёмной заливки, как у вкладок кабинета:
+                          // в списке из двенадцати пунктов чёрный
+                          // прямоугольник во всю ширину читался бы
+                          // как выбранный элемент формы, а не как
+                          // «вы находитесь здесь».
+                          // border-l-4 задан ВСЕМ пунктам прозрачным:
+                          // иначе активный пункт сдвигал бы текст на
+                          // 4px относительно соседей.
+                          active
+                            ? 'border-l-4 border-brand-primary bg-surface-hover pl-3 text-brand-primary'
+                            : 'border-l-4 border-transparent pl-3 hover:bg-surface-hover',
+                        ].join(' ')}
                       >
                         <span>{t(link.label)}</span>
                         {/* Счётчик у своего раздела: сумма на кнопке
@@ -226,16 +289,30 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                 </Link>
               )}
 
-              {LINKS.map((link) => (
-                <Link
-                  key={link.path}
-                  href={localeHref(locale, link.path)}
-                  onClick={() => setOpen(false)}
-                  className="block px-4 py-3 font-medium transition-colors duration-fast ease-out hover:bg-surface-hover"
-                >
-                  {t(link.label)}
-                </Link>
-              ))}
+              {LINKS.map((link) => {
+                const active = isActive(link.path);
+
+                return (
+                  <Link
+                    key={link.path}
+                    href={localeHref(locale, link.path)}
+                    onClick={() => setOpen(false)}
+                    aria-current={active ? 'page' : undefined}
+                    className={[
+                      'block py-3 pr-4 pl-3 transition-colors duration-fast ease-out',
+                      // Активный раздел ещё и жирнее: у разделов сайта
+                      // обычное начертание (font-medium), и одной
+                      // сменой цвета подсветка читалась бы слабее,
+                      // чем в личном блоке, где текст уже полужирный.
+                      active
+                        ? 'border-l-4 border-brand-primary bg-surface-hover font-semibold text-brand-primary'
+                        : 'border-l-4 border-transparent font-medium hover:bg-surface-hover',
+                    ].join(' ')}
+                  >
+                    {t(link.label)}
+                  </Link>
+                );
+              })}
             </div>
           </nav>
         </div>
