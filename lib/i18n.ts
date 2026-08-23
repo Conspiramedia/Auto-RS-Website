@@ -351,6 +351,7 @@ export const dict = {
     my_title: 'Moj nalog',
     my_tab_listings: 'Moji oglasi',
     my_tab_messages: 'Poruke',
+    my_tab_notifications: 'Obaveštenja',
     my_tab_profile: 'Profil',
     my_logout: 'Odjavi se',
 
@@ -451,6 +452,25 @@ export const dict = {
     chat_write: 'Pošalji poruku',
 
     // ------------------------------------------------------------
+    // Obaveštenja (/my/notifications).
+    // ------------------------------------------------------------
+    // Naslov i tekst svakog obaveštenja dolaze IZ BAZE i pisani su na
+    // ruskom: upisuju ih okidači zajednički sa aplikacijom (0024, 0039).
+    // Ovde su prevedeni samo okvir ekrana i dugmad — zamena samih
+    // tekstova zadire u aplikaciju i radi se posebnim zadatkom.
+    notif_title: 'Obaveštenja',
+    notif_empty_title: 'Još nema obaveštenja',
+    notif_empty_text:
+      'Ovde stižu odluke o oglasima i poruke od kupaca.',
+    notif_mark_all: 'Označi sve kao pročitano',
+    notif_marking: 'Čuvamo…',
+    notif_open_listing: 'Otvori oglas',
+    notif_open_chat: 'Otvori razgovor',
+    notif_unread: 'Novo',
+    notif_today: 'Danas',
+    notif_yesterday: 'Juče',
+
+    // ------------------------------------------------------------
     // Profil (/my/profile).
     // ------------------------------------------------------------
     profile_title: 'Profil',
@@ -459,6 +479,13 @@ export const dict = {
     profile_phone: 'Telefon',
     profile_phone_hint: 'Broj se koristi za prijavu i ne može se promeniti',
     profile_email: 'E-mail',
+    // Podnaslov polja e-pošte. Prijava ide preko SMS-a, pa je adresa
+    // prazna dok je vlasnik sam ne unese — a bez nje odluka moderacije
+    // ne može da stigne nigde osim u kabinet.
+    profile_email_hint:
+      'Na ovu adresu šaljemo odluku o oglasu. Ostavite prazno ako ne želite e-poštu.',
+    profile_email_invalid: 'Proverite adresu e-pošte',
+    profile_email_taken: 'Ova adresa se već koristi na drugom nalogu',
     profile_avatar: 'Fotografija',
     profile_avatar_change: 'Promeni',
     profile_seller_kind: 'Tip prodavca',
@@ -932,6 +959,7 @@ export const dict = {
     my_title: 'Мой кабинет',
     my_tab_listings: 'Мои объявления',
     my_tab_messages: 'Сообщения',
+    my_tab_notifications: 'Уведомления',
     my_tab_profile: 'Профиль',
     my_logout: 'Выйти',
 
@@ -1032,6 +1060,25 @@ export const dict = {
     chat_write: 'Написать сообщение',
 
     // ------------------------------------------------------------
+    // Уведомления (/my/notifications).
+    // ------------------------------------------------------------
+    // Заголовок и текст каждого уведомления приходят ИЗ БАЗЫ и написаны
+    // по-русски: их пишут триггеры, общие с приложением (0024, 0039).
+    // Здесь переведён только каркас экрана и кнопки — подмена самих
+    // текстов затрагивает приложение и делается отдельной задачей.
+    notif_title: 'Уведомления',
+    notif_empty_title: 'Уведомлений пока нет',
+    notif_empty_text:
+      'Сюда приходят решения по объявлениям и сообщения от покупателей.',
+    notif_mark_all: 'Отметить все прочитанными',
+    notif_marking: 'Сохраняем…',
+    notif_open_listing: 'Открыть объявление',
+    notif_open_chat: 'Открыть диалог',
+    notif_unread: 'Новое',
+    notif_today: 'Сегодня',
+    notif_yesterday: 'Вчера',
+
+    // ------------------------------------------------------------
     // Профиль (/my/profile).
     // ------------------------------------------------------------
     profile_title: 'Профиль',
@@ -1040,6 +1087,13 @@ export const dict = {
     profile_phone: 'Телефон',
     profile_phone_hint: 'Номер используется для входа и не меняется',
     profile_email: 'E-mail',
+    // Подпись под полем почты. Вход идёт по SMS, поэтому адрес пуст,
+    // пока владелец не укажет его сам, — а без адреса решение
+    // модерации некуда отправить, кроме кабинета.
+    profile_email_hint:
+      'На этот адрес приходит решение по объявлению. Оставьте пустым, если письма не нужны.',
+    profile_email_invalid: 'Проверьте адрес электронной почты',
+    profile_email_taken: 'Эта почта уже используется другим аккаунтом',
     profile_avatar: 'Фотография',
     profile_avatar_change: 'Изменить',
     profile_seller_kind: 'Тип продавца',

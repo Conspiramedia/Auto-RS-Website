@@ -27,6 +27,7 @@ import { useEffect, useState, useTransition } from 'react';
 
 import { startChat } from '@/app/my/actions';
 import Button from './ui/Button';
+import { trackEvent } from '@/lib/analytics';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref, stripLocale } from '@/lib/i18n';
 import { getBrowserClient } from '@/lib/supabaseClient';
@@ -81,6 +82,10 @@ export default function ContactSellerButton({
         variant="info"
         fullWidth
         className="mt-3"
+        // Клик гостя тоже событие: намерение связаться он проявил, и
+        // без этой отметки в воронке не видно, сколько покупателей
+        // теряется на форме входа между кнопкой и созданием диалога.
+        onClick={() => trackEvent('seller_contact_click', { guest: true })}
       >
         {t('chat_write')}
       </Button>
@@ -97,9 +102,18 @@ export default function ContactSellerButton({
         onClick={() =>
           startTransition(async () => {
             setError(null);
+            // Намерение фиксируем ДО обращения к серверу: событие
+            // должно уйти даже если start_chat откажет, иначе в
+            // статистике сбой выглядел бы как отсутствие интереса.
+            trackEvent('seller_contact_click', { guest: false });
+
             const result = await startChat(carId);
 
             if (result.ok && result.chatId) {
+              // Диалог создан (или найден существующий — start_chat
+              // идемпотентна). Разница между этим счётчиком и
+              // предыдущим и есть потери на пути к переписке.
+              trackEvent('chat_started');
               router.push(localeHref(locale, `/my/messages/${result.chatId}`));
             } else {
               setError(t('chat_send_failed'));

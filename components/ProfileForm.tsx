@@ -22,7 +22,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRef, useState, useTransition } from 'react';
 
-import { saveProfile } from '@/app/my/actions';
+import { saveContactEmail, saveProfile } from '@/app/my/actions';
 import Button from './ui/Button';
 import Card from './ui/Card';
 import { fieldClass } from './ui/Field';
@@ -44,6 +44,11 @@ export default function ProfileForm({ locale, profile, balance }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [fullName, setFullName] = useState(profile.full_name ?? '');
+  // Почта уведомлений. Вход на площадку идёт по SMS, поэтому у
+  // большинства продавцов адрес пуст (profiles.email = NULL, миграция
+  // 0035) — и решение модерации отправить некуда. Поле сделано
+  // редактируемым именно ради этого канала.
+  const [email, setEmail] = useState(profile.email ?? '');
   const [sellerKind, setSellerKind] = useState(profile.seller_kind);
   const [companyName, setCompanyName] = useState(profile.company_name ?? '');
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url);
@@ -105,8 +110,40 @@ export default function ProfileForm({ locale, profile, balance }: Props) {
         avatarUrl,
       });
 
-      if (result.ok) setSaved(true);
-      else setError(t('profile_error'));
+      if (!result.ok) {
+        setError(t('profile_error'));
+        return;
+      }
+
+      // Почта сохраняется ВТОРЫМ вызовом и только если её изменили.
+      // Отдельно — потому что правила другие: адрес обязан быть
+      // уникальным среди заполненных и проходить проверку формата
+      // (RPC set_my_contact_email, миграция 0071). Складывать их в
+      // saveProfile значило бы либо потерять внятные коды ошибок, либо
+      // тащить проверку уникальности в общий UPDATE профиля.
+      //
+      // Условие «изменили» важно: без него сохранение профиля с той же
+      // почтой упиралось бы в собственную запись при проверке
+      // занятости на каждом нажатии.
+      if (email.trim() !== (profile.email ?? '')) {
+        const emailResult = await saveContactEmail({
+          email,
+          locale,
+        });
+
+        if (!emailResult.ok) {
+          setError(
+            emailResult.code === 'taken'
+              ? t('profile_email_taken')
+              : emailResult.code === 'invalid'
+                ? t('profile_email_invalid')
+                : t('profile_error'),
+          );
+          return;
+        }
+      }
+
+      setSaved(true);
     });
   }
 
@@ -150,17 +187,36 @@ export default function ProfileForm({ locale, profile, balance }: Props) {
             </p>
           </div>
 
+          {/* Почта — РЕДАКТИРУЕМОЕ поле, в отличие от телефона выше.
+              Телефон служит логином и меняться не может; почта же
+              нигде для входа не используется, зато без неё продавцу
+              некуда отправить решение модерации: при входе по SMS
+              адрес пуст. Пустое значение допустимо и означает «письма
+              не нужны» — уведомления в этом случае остаются только в
+              кабинете. */}
           <div>
             <label className="mb-1 block text-sm text-neutral-60">
               {t('profile_email')}
             </label>
             <input
-              type="text"
-              value={profile.email}
-              readOnly
-              disabled
-              className={`${fieldClass} bg-surface-muted text-neutral-60`}
+              // type="email" даёт мобильной клавиатуре раскладку с @,
+              // но проверку формата на него НЕ перекладываем: браузер
+              // валидирует поле только внутри <form> с submit, а здесь
+              // отправка идёт по кнопке. Настоящая проверка — в RPC.
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setSaved(false);
+              }}
+              placeholder="you@example.com"
+              className={fieldClass}
             />
+            <p className="mt-1 text-small text-neutral-50">
+              {t('profile_email_hint')}
+            </p>
           </div>
 
           {/* Тип продавца — сегмент из двух кнопок, тот же паттерн, что

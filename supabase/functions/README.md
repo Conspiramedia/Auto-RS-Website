@@ -1,6 +1,6 @@
 # Edge Functions и расписания — Auto.RS
 
-Две функции, обе запускаются **по расписанию**, вручную дёргать не нужно.
+Три функции, все запускаются **по расписанию**, вручную дёргать не нужно.
 
 > **Эти файлы — код для Deno, а не для Next.js.** Они импортируют модули
 > по URL (`https://esm.sh/…`) и используют глобальный объект `Deno` —
@@ -13,12 +13,17 @@
 | Функция | Расписание | Что делает |
 |---|---|---|
 | `send-push` | каждую минуту | Разбирает очередь `push_queue` и отправляет уведомления через FCM |
-| `daily-cleanup` | раз в сутки, 03:00 UTC | Чистит журнал просмотров, старую очередь пушей, гасит истёкшие промо |
+| `send-email` | каждые 5 минут | Разбирает очередь `email_queue` и отправляет письма через Resend |
+| `daily-cleanup` | раз в сутки, 03:00 UTC | Чистит журнал просмотров, старые очереди пушей и писем, гасит истёкшие промо |
 
 ## 1. Деплой
 
 ```bash
 supabase functions deploy send-push
+```
+
+```bash
+supabase functions deploy send-email
 ```
 
 ```bash
@@ -46,6 +51,40 @@ supabase secrets set FCM_CLIENT_EMAIL=firebase-adminsdk-xxxxx@auto-rs-58294.iam.
 supabase secrets set FCM_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEv...\n-----END PRIVATE KEY-----\n"
 ```
 
+### Секреты `send-email`
+
+Ключ API Resend (Dashboard Resend → API Keys). Домен отправителя обязан
+быть верифицирован в Resend, иначе письма не уходят вовсе:
+
+```bash
+supabase secrets set RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx
+```
+
+```bash
+supabase secrets set MAIL_FROM=noreply@rsauto.rs
+```
+
+Необязательные. `MAIL_FROM_NAME` — отображаемое имя отправителя (по
+умолчанию «RS Auto»); `MAIL_REPLY_TO` — адрес для ответов: письма уходят
+с `noreply@`, но на служебные письма о заявках салонов отвечать удобно
+на почту поддержки:
+
+```bash
+supabase secrets set MAIL_REPLY_TO=support@rsauto.rs
+```
+
+`SITE_BASE_URL` задавать не нужно: если секрета нет, функция берёт адрес
+из `app_settings.site_base_url` — той же строки, из которой собираются
+canonical сайта и `site_url` объявлений. Это гарантирует, что ссылка в
+письме совпадает с адресом в выдаче.
+
+Адрес служебного ящика, на который приходят заявки салонов и обращения,
+живёт не в секретах, а в базе — его читают SQL-триггеры:
+
+```sql
+select public.set_admin_email('support@rsauto.rs');
+```
+
 Проверить, что секреты на месте (значения не показываются, только имена):
 
 ```bash
@@ -69,6 +108,7 @@ supabase secrets list
 | Функция | Выражение | Расшифровка |
 |---|---|---|
 | `send-push` | `* * * * *` | каждую минуту |
+| `send-email` | `*/5 * * * *` | каждые 5 минут |
 | `daily-cleanup` | `0 3 * * *` | ежедневно в 03:00 |
 
 Порядок полей: `минута час день месяц день_недели`.
@@ -104,6 +144,18 @@ curl -i -X POST "https://nedjfdswonnbhuxaxjsv.supabase.co/functions/v1/daily-cle
 curl -i -X POST "https://nedjfdswonnbhuxaxjsv.supabase.co/functions/v1/send-push" -H "Authorization: Bearer ВАШ_ANON_KEY"
 ```
 
+```bash
+curl -i -X POST "https://nedjfdswonnbhuxaxjsv.supabase.co/functions/v1/send-email" -H "Authorization: Bearer ВАШ_ANON_KEY"
+```
+
+Ожидаемый ответ `send-email` — сводка по разобранной пачке:
+
+```json
+{ "processed": 3, "sent": 3, "failed": 0 }
+```
+
+При пустой очереди: `{"processed":0,"message":"Очередь пуста"}`.
+
 В Windows PowerShell `curl` может быть алиасом `Invoke-WebRequest` и не понимать
 эти флаги. Тогда:
 
@@ -119,6 +171,7 @@ Invoke-RestMethod -Method Post -Uri "https://nedjfdswonnbhuxaxjsv.supabase.co/fu
   "results": [
     { "task": "cleanup_view_log", "ok": true, "affected": 128 },
     { "task": "cleanup_push_queue", "ok": true, "affected": 40 },
+    { "task": "cleanup_email_queue", "ok": true, "affected": 12 },
     { "task": "expire_promotions", "ok": true, "affected": 3 }
   ],
   "failed": 0
@@ -143,11 +196,12 @@ select * from pg_available_extensions where name in ('pg_cron', 'pg_net');
 При наличии расширения (включается в **Database → Extensions**):
 
 ```sql
-select cron.schedule('daily-cleanup', '0 3 * * *', $$select public.cleanup_view_log(); select public.cleanup_push_queue(); select public.expire_promotions();$$);
+select cron.schedule('daily-cleanup', '0 3 * * *', $$select public.cleanup_view_log(); select public.cleanup_push_queue(); select public.cleanup_email_queue(); select public.expire_promotions();$$);
 ```
 
-`send-push` через pg_cron вызвать нельзя — ей нужен HTTP-запрос к FCM,
-поэтому её расписание в любом случае настраивается в Edge Functions.
+`send-push` и `send-email` через pg_cron вызвать нельзя — им нужен
+HTTP-запрос наружу (к FCM и к Resend), поэтому их расписания в любом
+случае настраиваются в Edge Functions.
 
 Держать оба механизма одновременно не нужно: выберите либо Schedules, либо
 pg_cron, иначе чистки будут выполняться дважды.

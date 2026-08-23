@@ -38,6 +38,7 @@ import { useRouter } from 'next/navigation';
 import Button from './ui/Button';
 import Card from './ui/Card';
 import { fieldClass } from './ui/Field';
+import { trackEvent } from '@/lib/analytics';
 import { acceptPolicy, hasAcceptedPolicyHere, migrateGuestConsent } from '@/lib/consent';
 import { formatSerbianPhone, serbianPhoneToE164 } from '@/lib/inputFormat';
 import type { Locale } from '@/lib/i18n';
@@ -190,6 +191,13 @@ export default function AuthGate({ locale, redirectTo, title }: Props) {
       // Согласие давалось гостем — переносим на созданный аккаунт,
       // чтобы при подаче объявления политику не спрашивали снова.
       if (data.user?.id) migrateGuestConsent(data.user.id);
+
+      // Вход состоялся. Свойство redirect показывает, пришёл ли человек
+      // за конкретным действием (написать продавцу, открыть объявление)
+      // или просто в кабинет: это разные сценарии, и в воронке их надо
+      // различать. Событие ставится ДО перехода — router.replace
+      // размонтирует компонент, и отправка после него не успела бы.
+      trackEvent('login_success', { redirect: redirectTo ? 'yes' : 'no' });
 
       // Сессия записана в cookie.
       if (redirectTo) {

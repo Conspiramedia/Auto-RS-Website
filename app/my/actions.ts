@@ -295,3 +295,108 @@ export async function saveProfile(input: {
   revalidatePath('/ru/my/profile');
   return { ok: true };
 }
+
+// ============================================================
+// УВЕДОМЛЕНИЯ
+// ============================================================
+// Лента читается Server Component напрямую из таблицы notifications под
+// политикой notifications_select_own (миграция 0024): RLS сама оставляет
+// только свои записи, и RPC ради выборки заводить незачем.
+//
+// А вот пометка прочитанным идёт через Server Action, а не UPDATE из
+// браузера, — по той же причине, что и markChatRead выше: после смены
+// флага серверную ленту нужно перерисовать, иначе бейдж «Новое» висел
+// бы до ручного обновления страницы.
+//
+// Фильтр по user_id в запросах ниже ИЗБЫТОЧЕН — политика
+// notifications_update_own уже ограничивает строки владельцем. Он
+// оставлен намеренно: это второй рубеж, и он делает намерение явным
+// для того, кто будет читать код после нас.
+
+// Пометить одно уведомление прочитанным. Вызывается при переходе по
+// ссылке из ленты: человек открыл объявление или диалог — значит,
+// уведомление своё дело сделало.
+export async function markNotificationRead(
+  notificationId: string,
+): Promise<void> {
+  const supabase = await getServerClient();
+
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) return;
+
+  await supabase
+    .from('notifications')
+    .update({ is_read: true })
+    .eq('id', notificationId)
+    .eq('user_id', auth.user.id)
+    // Не переписываем уже прочитанные: лишний UPDATE поднял бы
+    // строку в журнале репликации без единого изменения данных.
+    .eq('is_read', false);
+
+  revalidatePath('/my/notifications');
+  revalidatePath('/ru/my/notifications');
+}
+
+// Пометить прочитанными все. Отдельное действие, а не цикл по ленте:
+// один UPDATE вместо десятков запросов, и лента гаснет целиком.
+export async function markAllNotificationsRead(): Promise<ActionResult> {
+  const supabase = await getServerClient();
+
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) return { ok: false };
+
+  const { error } = await supabase
+    .from('notifications')
+    .update({ is_read: true })
+    .eq('user_id', auth.user.id)
+    .eq('is_read', false);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/my/notifications');
+  revalidatePath('/ru/my/notifications');
+  return { ok: true };
+}
+
+// ------------------------------------------------------------
+// Почта и язык уведомлений.
+// ------------------------------------------------------------
+// Вынесено из saveProfile в отдельное действие, потому что правила
+// разные: имя и аватар — обычные поля, а почта обязана быть уникальной
+// среди заполненных и проверяться на формат. Обе проверки живут в RPC
+// set_my_contact_email (миграция 0071), здесь их копии нет.
+//
+// Коды ошибок разбираем по тексту сообщения Postgres: RPC бросает
+// исключения с внятными формулировками, но показывать пользователю
+// серверный текст нельзя — интерфейс двуязычный, а сообщения RPC
+// написаны по-русски. Возвращаем код, а строку подбирает клиент.
+export async function saveContactEmail(input: {
+  email: string;
+  locale: Locale;
+}): Promise<{ ok: boolean; code?: 'invalid' | 'taken' | 'unknown' }> {
+  const supabase = await getServerClient();
+
+  const { error } = await supabase.rpc('set_my_contact_email', {
+    p_email: input.email.trim(),
+    // Язык писем проставляем по локали, на которой человек сейчас
+    // работает: явного выбора языка уведомлений в интерфейсе нет, и
+    // заводить его ради одного поля незачем.
+    p_locale: input.locale,
+  });
+
+  if (error) {
+    const message = error.message.toLowerCase();
+
+    if (message.includes('уже использ')) {
+      return { ok: false, code: 'taken' };
+    }
+    if (message.includes('некорректн') || message.includes('слишком длин')) {
+      return { ok: false, code: 'invalid' };
+    }
+    return { ok: false, code: 'unknown' };
+  }
+
+  revalidatePath('/my/profile');
+  revalidatePath('/ru/my/profile');
+  return { ok: true };
+}

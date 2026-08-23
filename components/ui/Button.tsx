@@ -94,6 +94,11 @@ type LinkProps = CommonProps & {
   external?: boolean;
   target?: string;
   rel?: string;
+  // Побочное действие при переходе — на практике отправка события
+  // аналитики. Переход при этом остаётся НАСТОЯЩЕЙ ссылкой: обработчик
+  // ничего не отменяет и не подменяет навигацию. Подменять её нельзя —
+  // сломались бы открытие в новой вкладке и предзагрузка Next.
+  onClick?: () => void;
 };
 
 export default function Button(props: ButtonProps | LinkProps) {
@@ -117,18 +122,30 @@ export default function Button(props: ButtonProps | LinkProps) {
 
   // Ссылка.
   if ('href' in props && props.href !== undefined) {
-    const { href, external, target, rel } = props;
+    const { href, external, target, rel, onClick } = props;
 
     if (external) {
       return (
-        <a href={href} target={target} rel={rel} className={classes}>
+        <a
+          href={href}
+          target={target}
+          rel={rel}
+          onClick={onClick}
+          className={classes}
+        >
           {children}
         </a>
       );
     }
 
     return (
-      <Link href={href} target={target} rel={rel} className={classes}>
+      <Link
+        href={href}
+        target={target}
+        rel={rel}
+        onClick={onClick}
+        className={classes}
+      >
         {children}
       </Link>
     );
