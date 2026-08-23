@@ -138,6 +138,7 @@ export default function CatalogView({
             cities={cities}
             models={models}
             action={localeHref(locale, basePath)}
+            basePath={basePath}
             activeCount={activeCount}
             mode={pageMode}
             lockedType={lockedType}

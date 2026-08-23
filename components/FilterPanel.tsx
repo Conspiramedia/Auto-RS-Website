@@ -33,6 +33,7 @@ import { getBrowserClient } from '@/lib/supabaseClient';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import type { ListingType, SiteBrand, SiteCity } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
+import SearchSuggestInput from './SearchSuggestInput';
 import CloseButton from './ui/CloseButton';
 import { fieldClassCompact } from './ui/Field';
 import Button from './ui/Button';
@@ -50,7 +51,12 @@ type Props = {
   // без ожидания клиентского запроса.
   models: { id: string; name: string }[];
   // Куда отправлять форму: '/cars', '/rent' или SEO-страница с маркой.
+  // Уже с префиксом локали — форма уходит методом GET.
   action: string;
+  // Раздел БЕЗ префикса локали: '/cars' или '/rent'. Нужен подсказкам
+  // поиска — их ссылки собираются через localeHref сами, и готовый
+  // action с уже подставленным префиксом им не подходит.
+  basePath: string;
   // Число применённых фильтров для счётчика на кнопке.
   activeCount: number;
   // Витрина: в аренде фильтр цены работает по суточной ставке, поэтому
@@ -68,6 +74,7 @@ export default function FilterPanel({
   cities,
   models,
   action,
+  basePath,
   activeCount,
   mode = 'sale',
   lockedType = false,
@@ -318,19 +325,16 @@ export default function FilterPanel({
               )}
 
               {/* Единственное поле свободного ввода — поиск по тексту
-                  объявления. В приложении он тоже отдельной строкой. */}
-              <div>
-                <label className="mb-1 block text-caption text-neutral-60">
-                  {t('filter_search')}
-                </label>
-                <input
-                  type="text"
-                  name="q"
-                  defaultValue={filters.q ?? ''}
-                  placeholder={t('filter_search_ph')}
-                  className={field}
-                />
-              </div>
+                  объявления. В приложении он тоже отдельной строкой.
+                  Плейсхолдер вращает живые фразы из каталога, под полем
+                  стоят кликабельные подсказки. Пустой список подсказок
+                  компонент переживает молча: остаётся обычное поле с
+                  нейтральной подписью. */}
+              <SearchSuggestInput
+                locale={locale}
+                defaultValue={filters.q ?? ''}
+                basePath={basePath}
+              />
 
               <div className="grid grid-cols-2 gap-3">
                 <ListPicker
