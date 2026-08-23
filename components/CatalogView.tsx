@@ -74,13 +74,19 @@ export default function CatalogView({
     mode === 'rent' ? 'rent' : 'sale';
 
   // Счётчик на кнопке фильтров считает только те фильтры, которые
-  // пользователь применил сам. Марка и модель, заданные самим адресом
-  // SEO-страницы, в счётчик не входят — их нельзя снять, не уйдя со страницы.
+  // пользователь применил сам. Системные параметры, заданные самим
+  // адресом страницы, в счётчик не входят — их нельзя снять, не уйдя
+  // со страницы, и пользователь их не выбирал:
+  //   * марка и модель на SEO-страницах /cars/bmw и /cars/bmw/x5;
+  //   * тип объявления на лендинге /rent (lockedType) — именно из-за
+  //     него счётчик показывал «1 фильтр» на чистом /rent.
   const rootPath = mode === 'rent' ? '/rent' : '/cars';
   const isBrandPage = basePath !== rootPath;
-  const countable: CatalogFilters = isBrandPage
-    ? { ...filters, brand: undefined, model: undefined }
-    : filters;
+  const countable: CatalogFilters = {
+    ...filters,
+    ...(isBrandPage ? { brand: undefined, model: undefined } : null),
+    ...(lockedType ? { listingType: undefined } : null),
+  };
 
   const activeCount = [
     // Тип объявления считается применённым фильтром, только когда он
