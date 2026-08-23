@@ -10,6 +10,7 @@
 
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import BackCloseButton from '@/components/BackCloseButton';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
 import type { DictKey, Locale } from '@/lib/i18n';
@@ -69,7 +70,16 @@ export default function HowItWorksPageView({ locale }: { locale: Locale }) {
       <SiteHeader locale={locale} pathname="/how-it-works" />
 
       <main className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
-        <h1 className="text-h2 font-bold sm:text-h1">{t('how_title')}</h1>
+        {/* Заголовок и крестик в одну строку. Крестик уводит назад -
+            на эти страницы приходят из бургер-меню с любого раздела,
+            и возврат по истории точнее любого фиксированного адреса.
+            items-start: заголовок на узком экране занимает две строки,
+            и крестик обязан остаться у верхнего края.
+            -mr-2 втягивает область 40px в поле бокового отступа. */}
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="text-h2 font-bold sm:text-h1">{t('how_title')}</h1>
+          <BackCloseButton locale={locale} className="-mr-2 shrink-0" />
+        </div>
         <p className="mt-3 text-h4 text-neutral-60">{t('how_lead')}</p>
 
         {SCENARIOS.map((scenario) => (
