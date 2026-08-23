@@ -613,7 +613,9 @@ export const dict = {
     // Здесь она работает как имя поля для скринридера.
     app_soon_cta: 'Ostavite imejl — javićemo vam na dan izlaska',
     app_soon_qr: 'Skenirajte kod telefonom da otvorite sajt na telefonu',
-    app_soon_email: 'E-pošta',
+    // Подсказка ВНУТРИ поля (placeholder). Имя поля для скринридера —
+    // отдельный ключ app_soon_cta выше: placeholder именем поля не является.
+    app_soon_email: 'Unesite vaš imejl',
     app_soon_submit: 'Obavesti me',
     app_soon_sending: 'Šaljemo…',
     app_soon_done: 'Javićemo vam čim aplikacija izađe.',
@@ -1263,7 +1265,9 @@ export const dict = {
     // Здесь она работает как имя поля для скринридера.
     app_soon_cta: 'Оставьте почту — сообщим в день выхода',
     app_soon_qr: 'Отсканируйте код телефоном, чтобы открыть сайт на телефоне',
-    app_soon_email: 'Почта',
+    // Подсказка ВНУТРИ поля (placeholder). Имя поля для скринридера —
+    // отдельный ключ app_soon_cta выше: placeholder именем поля не является.
+    app_soon_email: 'Введите ваш Email',
     app_soon_submit: 'Сообщить о выходе',
     app_soon_sending: 'Отправляем…',
     app_soon_done: 'Сообщим, как только приложение выйдет.',
