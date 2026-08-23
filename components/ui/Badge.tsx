@@ -54,6 +54,9 @@ type Tone =
   | 'error'
   | 'dark'
   | 'neutral'
+  // Информационная плашка: факт о состоянии, а не оценка. Плашка
+  // «ваше устройство» на /install.
+  | 'info-soft'
   // Личная метка посетителя «Просмотрено». Нейтральная тёмная плашка:
   // это констатация, а не акцент, и спорить с промо и арендой она не
   // должна.
@@ -72,6 +75,9 @@ const TONES: Record<Tone, string> = {
   // Разбавленная зелень с зелёным текстом — та же пара, что у Alert
   // тона success: единая трактовка «зелёный на своём светлом фоне».
   'success-soft': 'bg-status-success text-brand-green',
+  // Разбавленный primary с primary-текстом — та же пара, что у
+  // success-soft: цвет на своей светлой подложке.
+  'info-soft': 'bg-status-info text-brand-primary',
   error: 'bg-error text-white',
   dark: 'bg-brand-dark text-white',
   // Архив — единственный тон без заливки: архивное объявление не
