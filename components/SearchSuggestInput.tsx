@@ -484,13 +484,31 @@ export default function SearchSuggestInput({
         action={localeHref(locale, basePath)}
         className="flex gap-2"
         onSubmit={(e) => {
-          // Пустое поле не должно попадать в адрес как «?q=»: это
-          // лишний вариант одного URL для краулера и мусор в ссылке,
-          // которой человек делится.
           const input = e.currentTarget.querySelector<HTMLInputElement>(
             'input[name="q"]',
           );
-          if (input && input.value.trim() === '') input.disabled = true;
+
+          // ПУСТОЕ ПОЛЕ — ОТПРАВКИ НЕТ ВОВСЕ.
+          //
+          // Раньше здесь только отключался сам input, чтобы «?q=» не
+          // попадало в адрес. Форма при этом всё равно уходила, и
+          // нажатие «Поиск» на пустой строке перезагружало страницу с
+          // тем же адресом: выдача моргала и возвращалась к тому же
+          // состоянию. Человек видел перезагрузку без результата и не
+          // понимал, сработало что-то или нет.
+          //
+          // preventDefault оставляет страницу на месте. Фильтры при
+          // этом не теряются: они уже в адресе, а перезапрашивать ту
+          // же выдачу незачем.
+          if (!input || input.value.trim() === '') {
+            e.preventDefault();
+            return;
+          }
+
+          // Пробелы по краям в адрес тоже не нужны: «?q=%20bmw» и
+          // «?q=bmw» — два URL с одной выдачей. Нормализуем прямо
+          // перед отправкой.
+          input.value = input.value.trim();
         }}
       >
         {/* Уже применённые фильтры переносятся скрытыми полями: поиск
@@ -521,7 +539,18 @@ export default function SearchSuggestInput({
           className={`${fieldClassCompact} min-w-0 flex-1`}
         />
 
-        <Button type="submit" variant="dark" size="sm" className="shrink-0">
+        {/* Кнопка гаснет на пустом поле, а не молча отказывает при
+            нажатии: отключённый вид (opacity 40% + курсор «нельзя»)
+            сообщает о невозможности ДО клика. Проверка в onSubmit при
+            этом остаётся — форму отправляет и Enter в поле, и он не
+            обязан спрашивать разрешения у кнопки. */}
+        <Button
+          type="submit"
+          variant="dark"
+          size="sm"
+          disabled={value.trim() === ''}
+          className="shrink-0"
+        >
           {t('filter_search')}
         </Button>
       </form>
