@@ -128,7 +128,7 @@ export const dict = {
     nav_sell: 'Prodaj auto',
     nav_dealers: 'Za autosalone',
     nav_app: 'Aplikacija',
-    site_tagline: 'Kupovina i prodaja automobila u Srbiji',
+    site_tagline: 'Prodaja i iznajmljivanje automobila u Srbiji',
 
     // Каталог
     catalog_title: 'Automobili na prodaju',
@@ -795,7 +795,7 @@ export const dict = {
     nav_sell: 'Продать авто',
     nav_dealers: 'Автосалонам',
     nav_app: 'Приложение',
-    site_tagline: 'Покупка и продажа автомобилей в Сербии',
+    site_tagline: 'Продажа и аренда автомобилей в Сербии',
 
     catalog_title: 'Автомобили на продажу',
     catalog_filters: 'Фильтры',
