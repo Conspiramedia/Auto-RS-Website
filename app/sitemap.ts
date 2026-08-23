@@ -1,8 +1,8 @@
 // ============================================================
 // RS AUTO — sitemap.xml. Генерируется на сервере.
 // ============================================================
-// Состав: статические разделы + страницы марок и моделей + карточки всех
-// активных объявлений на продажу. Каждый URL отдаётся с языковыми
+// Состав: статические разделы + страницы марок и моделей + витрины
+// салонов + карточки всех активных объявлений на продажу. Каждый URL отдаётся с языковыми
 // альтернативами (hreflang) — Google рекомендует указывать их именно
 // в sitemap, а не только в разметке страницы.
 //
@@ -16,6 +16,7 @@ import type { MetadataRoute } from 'next';
 import { HTML_LANG, LOCALES, localeHref } from '@/lib/i18n';
 import {
   fetchSitemapCars,
+  fetchSitemapDealers,
   fetchSiteBrands,
   fetchSiteModels,
 } from '@/lib/queries';
@@ -127,5 +128,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: alternates(`/car/${car.id}`),
   }));
 
-  return [...staticEntries, ...saleEntries, ...rentEntries, ...carEntries];
+  // ---------- Витрины салонов ----------
+  // Страница салона — целевая посадочная по запросу «<название салона>
+  // Beograd» и приводит десятки объявлений, поэтому индексироваться
+  // должна. До сих пор краулер добирался до неё только переходом с
+  // карточки объявления.
+  //
+  // Приоритет 0.5 — ниже карточек: витрина ценна как вход, но сам
+  // товар лежит на карточках. changeFrequency weekly: состав
+  // объявлений салона меняется, но не ежедневно.
+  const dealers = await fetchSitemapDealers(1000);
+
+  const dealerEntries: MetadataRoute.Sitemap = dealers.map((dealer) => ({
+    url: `${siteBaseUrl}${localeHref('sr', `/dealer/${dealer.user_id}`)}`,
+    lastModified: new Date(dealer.updated_at),
+    changeFrequency: 'weekly',
+    priority: 0.5,
+    alternates: alternates(`/dealer/${dealer.user_id}`),
+  }));
+
+  return [
+    ...staticEntries,
+    ...saleEntries,
+    ...rentEntries,
+    ...dealerEntries,
+    ...carEntries,
+  ];
 }

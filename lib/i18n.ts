@@ -173,6 +173,18 @@ export const dict = {
     car_specs: 'Karakteristike',
     car_similar: 'Slični automobili',
     car_sold: 'Prodato',
+
+    // Oglas povučen sa objave. Stranica se prikazuje umesto gole 404
+    // kada je oglas arhiviran, odbijen ili vraćen na proveru: link iz
+    // Google pretrage mora da vodi negde, a ne u prazno.
+    // Formulacija namerno ne otkriva RAZLOG: posetiocu je svejedno da
+    // li je oglas arhiviran ili odbijen na moderaciji, a druga
+    // varijanta bi odala odluku moderatora trećem licu.
+    car_gone_title: 'Oglas nije dostupan',
+    car_gone_text:
+      'Ovaj oglas je povučen sa objave ili je na proveri. Možda je automobil već prodat.',
+    car_gone_similar: 'Pogledajte slične automobile',
+    car_gone_badge: 'Nije dostupno',
     car_promoted: 'Izdvojeno',
     car_viewed: 'Pregledano',
     car_published: 'Objavljeno',
@@ -784,6 +796,19 @@ export const dict = {
     car_specs: 'Характеристики',
     car_similar: 'Похожие автомобили',
     car_sold: 'Продано',
+
+    // Объявление снято с публикации. Страница показывается вместо
+    // голой 404, когда объявление в архиве, отклонено или вернулось
+    // на проверку: ссылка из выдачи Google обязана вести куда-то, а
+    // не в пустоту.
+    // Формулировка намеренно НЕ раскрывает причину: посетителю всё
+    // равно, архив это или отказ модерации, а второй вариант выдал бы
+    // решение модератора постороннему.
+    car_gone_title: 'Объявление недоступно',
+    car_gone_text:
+      'Это объявление снято с публикации или находится на проверке. Возможно, автомобиль уже продан.',
+    car_gone_similar: 'Посмотрите похожие автомобили',
+    car_gone_badge: 'Недоступно',
     car_promoted: 'Продвигается',
     car_viewed: 'Просмотрено',
     car_published: 'Опубликовано',

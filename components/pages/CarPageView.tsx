@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation';
 
 import AppQr from '@/components/AppQr';
 import CarCard from '@/components/CarCard';
+import CarGoneView from '@/components/pages/CarGoneView';
 import RecentlyViewed from '@/components/RecentlyViewed';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
@@ -50,9 +51,31 @@ export default async function CarPageView({
   const t = getT(locale);
 
   const car = await fetchCarDetails(id);
-  // RPC вернула пусто — объявление не существует либо недоступно публично
-  // (модерация, отклонено, архив). В обоих случаях это 404.
+  // RPC вернула пусто — объявления с таким id не существует вовсе.
+  // Только это теперь 404: снятые с публикации RPC отдаёт (0072).
   if (!car) notFound();
+
+  // ---------- Снятое с публикации ----------
+  // Объявление в архиве, отклонённое или ушедшее на перепроверку после
+  // правки. Раньше RPC не отдавала такие посторонним и страница
+  // уходила в 404 — а ссылка из выдачи Google живёт ещё недели после
+  // снятия, и человек попадал в пустоту.
+  //
+  // Теперь отдаётся урезанная карточка (без цен, описания, контактов и
+  // витрины продавца — их обнуляет сама RPC), и мы показываем экран
+  // «объявление снято» с подборкой похожих.
+  //
+  // ВЛАДЕЛЬЦА И АДМИНА сюда НЕ уводим: им RPC возвращает объявление
+  // целиком, и они должны видеть обычную карточку — иначе продавец не
+  // смог бы посмотреть, как выглядит его объявление на проверке.
+  // Признак полноты — наличие витрины продавца: посторонним
+  // seller_name приходит пустым.
+  const withdrawn =
+    car.status !== 'active' && car.status !== 'sold' && !car.seller_name;
+
+  if (withdrawn) {
+    return <CarGoneView locale={locale} car={car} />;
+  }
 
   // Фото и похожие грузятся параллельно: последовательные запросы удвоили
   // бы время ответа страницы.

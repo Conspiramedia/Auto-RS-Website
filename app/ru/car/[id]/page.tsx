@@ -34,6 +34,21 @@ export async function generateMetadata({
     };
   }
 
+  // Снятое с публикации: RPC отдаёт урезанную карточку (миграция 0072),
+  // и страница показывает экран «объявление снято». В индексе ей места
+  // нет — контента не осталось, — но follow оставляем: ссылки на
+  // каталог и похожие должны обходиться, чтобы вес исчезнувшей
+  // страницы перетёк на живые.
+  // Признак постороннего — пустая витрина продавца: владельцу и
+  // админу объявление приходит целиком, и для них это обычная
+  // карточка со своими метаданными.
+  if (car.status !== 'active' && car.status !== 'sold' && !car.seller_name) {
+    return {
+      title: `${car.brand} ${car.model}, ${car.year} — Объявление недоступно`,
+      robots: { index: false, follow: true },
+    };
+  }
+
   const title = `${carTitle(car)} — ${formatPrice(car.sale_price, car.currency, locale)}`;
   const description = car.description
     ? car.description.slice(0, 200)

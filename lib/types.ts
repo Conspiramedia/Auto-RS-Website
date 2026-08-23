@@ -69,17 +69,24 @@ export type CarDetails = {
   contact_phone: string | null;
   rating_avg: number | null;
   reviews_count: number | null;
-  // 'active' | 'sold' для публичного доступа; прочие статусы видит только владелец/админ.
+  // 'active' | 'sold' — объявление доступно целиком.
+  // 'archived' | 'rejected' | 'moderation' постороннему приходят в
+  // урезанном виде (миграция 0072): цены, описание, контакты и витрина
+  // продавца обнулены, показывается экран «объявление снято».
+  // Владельцу и админу все статусы приходят полностью.
   status: string;
   is_vip: boolean;
   boosted_until: string | null;
   is_promoted: boolean;
   site_url: string;
-  seller_kind: string;
-  seller_name: string;
+  // Витрина продавца. NULL у снятых объявлений, показанных
+  // постороннему: имя человека, снявшего объявление, публиковать
+  // незачем. Наличие seller_name и служит признаком полного доступа.
+  seller_kind: string | null;
+  seller_name: string | null;
   seller_logo_url: string | null;
   seller_avatar_url: string | null;
-  seller_since: string;
+  seller_since: string | null;
   created_at: string;
   updated_at: string;
 };
