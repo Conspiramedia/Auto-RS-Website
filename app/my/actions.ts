@@ -150,3 +150,148 @@ export async function promoteCar(carId: string): Promise<ActionResult> {
 export async function revalidateMyListings(): Promise<void> {
   revalidateMy();
 }
+
+// ============================================================
+// ЧАТ
+// ============================================================
+// Отправка и пометка прочтения идут через Server Actions, а не прямым
+// вызовом из браузера, по той же причине, что и действия над
+// объявлением: список диалогов отрисован на сервере, и после отправки
+// его нужно перерисовать — иначе превью последнего сообщения и счётчик
+// непрочитанных останутся прежними.
+//
+// Сама запись выполняется ОБЫЧНЫМ INSERT/UPDATE под RLS, без RPC:
+//   * messages_insert_participant проверяет участие в чате, требует
+//     sender_id = auth.uid() и запрещает писать тому, кто заблокировал
+//     отправителя (миграция 0041);
+//   * колоночный грант из 0069 разрешает менять только is_read.
+// Бизнес-правил сверх этого у чата нет, поэтому заводить RPC значило бы
+// плодить слой без содержания.
+
+// Отправка сообщения. Пустые и пробельные строки не отправляем: пустое
+// сообщение в ленте — мусор, который нельзя удалить.
+export async function sendMessage(
+  chatId: string,
+  text: string,
+): Promise<ActionResult> {
+  const clean = text.trim();
+  if (clean === '') return { ok: false };
+
+  const supabase = await getServerClient();
+
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) return { ok: false };
+
+  const { error } = await supabase.from('messages').insert({
+    chat_id: chatId,
+    // sender_id обязан совпадать с auth.uid() — этого требует политика.
+    sender_id: auth.user.id,
+    text: clean,
+  });
+
+  if (error) return { ok: false, error: error.message };
+
+  // Список диалогов: изменились превью и порядок сортировки.
+  revalidatePath('/my/messages');
+  revalidatePath('/ru/my/messages');
+  return { ok: true };
+}
+
+// Пометка входящих сообщений прочитанными при открытии диалога.
+// Обновляем ТОЛЬКО чужие: своё сообщение прочитанным помечает
+// получатель, а не отправитель.
+export async function markChatRead(chatId: string): Promise<void> {
+  const supabase = await getServerClient();
+
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) return;
+
+  await supabase
+    .from('messages')
+    .update({ is_read: true })
+    .eq('chat_id', chatId)
+    .eq('is_read', false)
+    .neq('sender_id', auth.user.id);
+
+  // Счётчик непрочитанных в списке и в шапке должен погаснуть.
+  revalidatePath('/my/messages');
+  revalidatePath('/ru/my/messages');
+}
+
+// Начало диалога с продавцом по объявлению. Идемпотентно: start_chat
+// возвращает существующий чат, если он уже создан (миграция 0016),
+// поэтому двойное нажатие «Написать» не плодит диалоги.
+export async function startChat(
+  carId: string,
+): Promise<{ ok: boolean; chatId?: string; error?: string }> {
+  const supabase = await getServerClient();
+
+  const { data, error } = await supabase.rpc('start_chat', {
+    p_car_id: carId,
+  });
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, chatId: data as string };
+}
+
+// ============================================================
+// ПРОФИЛЬ
+// ============================================================
+// Сохранение идёт в ДВА приёма, и это не лишний шаг:
+//
+//   1. update_seller_profile(kind, company, logo) — RPC. Она проверяет
+//      бизнес-правила: дилер обязан иметь название салона, а при
+//      возврате в 'private' поля витрины очищаются, чтобы не осталось
+//      мусора от прошлой роли (миграция 0043);
+//   2. UPDATE profiles для имени и аватара — обычных полей без правил,
+//      под политикой profiles_update_own. Заводить ради них RPC значило
+//      бы создать функцию, которая ничего не проверяет.
+//
+// Телефон НЕ обновляем: он приходит из auth.users и служит логином,
+// менять его через профиль нельзя — это смена способа входа.
+export async function saveProfile(input: {
+  fullName: string;
+  sellerKind: string;
+  companyName: string;
+  avatarUrl: string | null;
+}): Promise<ActionResult> {
+  const supabase = await getServerClient();
+
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) return { ok: false };
+
+  // Логотип витрины на сайте пока не редактируется, но передать его
+  // ОБЯЗАНЫ: update_seller_profile пишет logo_url безусловно
+  // (logo_url = case when dealer then nullif(trim(p_logo_url), '') end),
+  // и вызов с null стёр бы у дилера уже загруженный логотип.
+  // Поэтому читаем текущее значение и возвращаем его же.
+  const { data: current } = await supabase
+    .from('profiles')
+    .select('logo_url')
+    .eq('id', auth.user.id)
+    .maybeSingle();
+
+  // Сначала роль продавца: если сервер отклонит её (дилер без названия),
+  // остальное сохранять незачем — профиль остался бы изменённым наполовину.
+  const { error: rpcError } = await supabase.rpc('update_seller_profile', {
+    p_seller_kind: input.sellerKind,
+    p_company_name: input.companyName.trim() || null,
+    p_logo_url: (current?.logo_url as string | null) ?? null,
+  });
+
+  if (rpcError) return { ok: false, error: rpcError.message };
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      full_name: input.fullName.trim() || null,
+      avatar_url: input.avatarUrl,
+    })
+    .eq('id', auth.user.id);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/my/profile');
+  revalidatePath('/ru/my/profile');
+  return { ok: true };
+}

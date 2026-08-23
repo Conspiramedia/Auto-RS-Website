@@ -13,6 +13,7 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import CarGallery from '@/components/CarGallery';
 import GalleryCloseButton from '@/components/GalleryCloseButton';
+import ContactSellerButton from '@/components/ContactSellerButton';
 import ShareButton from '@/components/ShareButton';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
@@ -311,27 +312,21 @@ export default async function CarPageView({
                 </div>
               </div>
 
-              {/* Контакты продавца — только в приложении. Это осознанное
-                  продуктовое решение: чат и звонки живут в приложении,
-                  сайт работает как воронка в него. */}
+              {/* Связь с продавцом. Переписка работает НА САЙТЕ: это
+                  требование web-first — сценарий не должен упираться в
+                  установку приложения. Раньше здесь стояла кнопка
+                  «Продолжить в приложении», и покупатель без него не мог
+                  написать вовсе.
+                  Кнопка клиентская: сама решает, показать вход гостю,
+                  открыть диалог покупателю или скрыться у владельца. */}
               <div className="mt-4 border-t border-neutral-10 pt-4">
                 <div className="font-semibold">{t('car_contact_title')}</div>
-                <p className="mt-1 text-sm text-neutral-60">
-                  {t('car_contact_text')}
-                </p>
 
-                {/* Внешняя ссылка (external): канонический адрес
-                    перехватывается App Link на телефоне с установленным
-                    приложением. Через next/link это не сработает —
-                    клиентская навигация не отдаёт переход системе. */}
-                <Button
-                  href={canonicalUrl}
-                  external
-                  fullWidth
-                  className="mt-3"
-                >
-                  {t('car_open_in_app')}
-                </Button>
+                <ContactSellerButton
+                  locale={locale}
+                  carId={car.id}
+                  sellerId={car.user_id}
+                />
 
                 <div className="mt-3">
                   <ShareButton locale={locale} url={canonicalUrl} title={title} />

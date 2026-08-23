@@ -1,15 +1,15 @@
 // ============================================================
 // RS AUTO — Сообщения (/ru/my/messages), русская версия.
 // ============================================================
-// Пакет 1 — фундамент: маршрут существует, содержимое приходит в
-// Пакете 4. Метаданные и noindex задаёт layout кабинета.
+// Разметка живёт в components/pages/ChatsPageView — общая с /my/messages.
+// Метаданные (noindex) и проверку сессии задаёт layout кабинета.
 // ============================================================
 
-import MyPlaceholderView from '@/components/pages/MyPlaceholderView';
+import ChatsPageView from '@/components/pages/ChatsPageView';
 import type { Locale } from '@/lib/i18n';
 
 const locale: Locale = 'ru';
 
 export default function RuMyMessagesPage() {
-  return <MyPlaceholderView locale={locale} titleKey="my_tab_messages" />;
+  return <ChatsPageView locale={locale} />;
 }

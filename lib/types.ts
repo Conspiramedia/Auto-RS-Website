@@ -291,3 +291,63 @@ export type MyStatsTotals = {
   favorites: number;
   contacts: number;
 };
+
+// ------------------------------------------------------------
+// ЧАТ
+// ------------------------------------------------------------
+
+// Строка списка диалогов. VIEW chats_with_details (миграции 0018/0041).
+// Не RPC, а представление с security_invoker: RLS вызывающего сама
+// оставляет только его чаты, и отдельная функция здесь не нужна.
+export type ChatListItem = {
+  id: string;
+  car_id: string;
+  buyer_id: string;
+  seller_id: string;
+  created_at: string;
+  // Собеседник вычисляется относительно auth.uid() внутри VIEW.
+  opponent_id: string;
+  opponent_name: string | null;
+  opponent_avatar: string | null;
+  brand: string;
+  model: string;
+  year: number;
+  car_photo: string | null;
+  unread_count: number;
+  last_message_at: string | null;
+  last_message: string | null;
+  pinned: boolean;
+  pinned_at: string | null;
+  // Заблокировал ли ТЕКУЩИЙ пользователь собеседника: при true
+  // отправка запрещена политикой messages_insert_participant.
+  peer_blocked: boolean;
+};
+
+// Сообщение в ленте. Таблица messages напрямую под RLS.
+export type ChatMessage = {
+  id: string;
+  chat_id: string;
+  sender_id: string;
+  text: string;
+  is_read: boolean;
+  created_at: string;
+};
+
+// ------------------------------------------------------------
+// ПРОФИЛЬ
+// ------------------------------------------------------------
+
+// Свой профиль. Таблица profiles под политикой profiles_select_own.
+// Телефон приходит из auth.users (это логин) и здесь может быть пустым
+// у профилей, заведённых до перехода на вход по SMS.
+export type MyProfile = {
+  id: string;
+  email: string;
+  full_name: string | null;
+  phone: string | null;
+  avatar_url: string | null;
+  // private | dealer
+  seller_kind: string;
+  company_name: string | null;
+  logo_url: string | null;
+};

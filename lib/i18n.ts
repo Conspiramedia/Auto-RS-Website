@@ -431,6 +431,49 @@ export const dict = {
     edit_done_text: 'Sadržaj oglasa se nije promenio, status je ostao isti.',
     edit_back_to_list: 'Moji oglasi',
 
+    // ------------------------------------------------------------
+    // Poruke (/my/messages).
+    // ------------------------------------------------------------
+    chat_empty_title: 'Još nema razgovora',
+    chat_empty_text:
+      'Kada vam kupac napiše povodom oglasa, razgovor će se pojaviti ovde.',
+    chat_pick: 'Izaberite razgovor',
+    chat_back: 'Svi razgovori',
+    chat_placeholder: 'Poruka…',
+    chat_send: 'Pošalji',
+    chat_sending: 'Šaljemo…',
+    chat_send_failed: 'Slanje nije uspelo',
+    chat_blocked: 'Sagovornik je blokiran. Slanje poruka nije moguće.',
+    chat_no_messages: 'Još nema poruka. Napišite prvu.',
+    chat_about: 'Oglas',
+    chat_today: 'Danas',
+    chat_yesterday: 'Juče',
+    chat_write: 'Pošalji poruku',
+
+    // ------------------------------------------------------------
+    // Profil (/my/profile).
+    // ------------------------------------------------------------
+    profile_title: 'Profil',
+    profile_name: 'Ime',
+    profile_name_ph: 'Kako da vas oslovimo',
+    profile_phone: 'Telefon',
+    profile_phone_hint: 'Broj se koristi za prijavu i ne može se promeniti',
+    profile_email: 'E-mail',
+    profile_avatar: 'Fotografija',
+    profile_avatar_change: 'Promeni',
+    profile_seller_kind: 'Tip prodavca',
+    profile_private: 'Privatno lice',
+    profile_dealer: 'Autosalon',
+    profile_company: 'Naziv autosalona',
+    profile_company_required: 'Unesite naziv autosalona',
+    profile_showcase: 'Moja stranica',
+    profile_balance: 'Stanje',
+    profile_save: 'Sačuvaj',
+    profile_saving: 'Čuvamo…',
+    profile_saved: 'Promene su sačuvane',
+    profile_error: 'Nije uspelo. Pokušajte ponovo.',
+    profile_avatar_error: 'Nije uspelo učitavanje fotografije',
+
     // Общее
     // ------------------------------------------------------------
     // Навигация по контентным страницам.
@@ -968,6 +1011,49 @@ export const dict = {
     edit_done_title: 'Изменения сохранены',
     edit_done_text: 'Содержимое объявления не изменилось, статус остался прежним.',
     edit_back_to_list: 'Мои объявления',
+
+    // ------------------------------------------------------------
+    // Сообщения (/my/messages).
+    // ------------------------------------------------------------
+    chat_empty_title: 'Диалогов пока нет',
+    chat_empty_text:
+      'Когда покупатель напишет вам по объявлению, диалог появится здесь.',
+    chat_pick: 'Выберите диалог',
+    chat_back: 'Все диалоги',
+    chat_placeholder: 'Сообщение…',
+    chat_send: 'Отправить',
+    chat_sending: 'Отправляем…',
+    chat_send_failed: 'Не удалось отправить',
+    chat_blocked: 'Собеседник заблокирован. Отправка сообщений недоступна.',
+    chat_no_messages: 'Сообщений пока нет. Напишите первое.',
+    chat_about: 'Объявление',
+    chat_today: 'Сегодня',
+    chat_yesterday: 'Вчера',
+    chat_write: 'Написать сообщение',
+
+    // ------------------------------------------------------------
+    // Профиль (/my/profile).
+    // ------------------------------------------------------------
+    profile_title: 'Профиль',
+    profile_name: 'Имя',
+    profile_name_ph: 'Как к вам обращаться',
+    profile_phone: 'Телефон',
+    profile_phone_hint: 'Номер используется для входа и не меняется',
+    profile_email: 'E-mail',
+    profile_avatar: 'Фотография',
+    profile_avatar_change: 'Изменить',
+    profile_seller_kind: 'Тип продавца',
+    profile_private: 'Частное лицо',
+    profile_dealer: 'Автосалон',
+    profile_company: 'Название автосалона',
+    profile_company_required: 'Укажите название автосалона',
+    profile_showcase: 'Моя витрина',
+    profile_balance: 'Баланс',
+    profile_save: 'Сохранить',
+    profile_saving: 'Сохраняем…',
+    profile_saved: 'Изменения сохранены',
+    profile_error: 'Не удалось. Попробуйте ещё раз.',
+    profile_avatar_error: 'Не удалось загрузить фотографию',
 
     // ------------------------------------------------------------
     // Навигация по контентным страницам.
