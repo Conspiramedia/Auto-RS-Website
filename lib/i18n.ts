@@ -600,15 +600,18 @@ export const dict = {
     // /app — заглушка «приложение в разработке» вместо кнопок сторов.
     // ------------------------------------------------------------
     app_soon_badge: 'U izradi',
-    app_soon_title: 'Aplikacija je u izradi',
+    app_soon_title: 'Sve već radi na sajtu',
     app_soon_text:
-      'Sve što aplikacija donosi već radi na sajtu — pretraga, oglašavanje, '
-      + 'poruke i obaveštenja. Radimo na aplikaciji i javićemo vam čim izađe.',
+      'Pretraga, objava oglasa, poruke i obaveštenja — veb verzija ima sve '
+      + 'što će aplikacija doneti, a pri ruci je bez instalacije.',
     // Честная формулировка: пуш придёт только тому, у кого приложение
     // уже установлено, — то есть на сайте это всегда письмо.
     app_soon_note:
-      'Korisnicima naloga stiže obaveštenje u nalogu, a na e-poštu ispod '
-      + 'šaljemo poruku na dan izlaska. Bez newslettera.',
+      'Na dan izlaska: jedno obaveštenje u kabinetu i jedan imejl. Bez spama.',
+    // Подпись поля адреса. Видимой её не делаем: строка выше (app_soon_note)
+    // уже стоит над формой, и два призыва подряд читались бы как повтор.
+    // Здесь она работает как имя поля для скринридера.
+    app_soon_cta: 'Ostavite imejl — javićemo vam na dan izlaska',
     app_soon_qr: 'Skenirajte kod telefonom da otvorite sajt na telefonu',
     app_soon_email: 'E-pošta',
     app_soon_submit: 'Obavesti me',
@@ -1247,15 +1250,18 @@ export const dict = {
     // /app — заглушка «приложение в разработке» вместо кнопок сторов.
     // ------------------------------------------------------------
     app_soon_badge: 'В разработке',
-    app_soon_title: 'Приложение в разработке',
+    app_soon_title: 'Всё уже работает на сайте',
     app_soon_text:
-      'Всё, что даёт приложение, уже работает на сайте — поиск, подача, '
-      + 'сообщения и уведомления. Приложение делаем и сообщим, когда выйдет.',
+      'Поиск, подача объявления, сообщения и уведомления — в веб-версии есть '
+      + 'всё, что получит приложение. И она всегда под рукой — без установки.',
     // Честная формулировка: пуш придёт только тому, у кого приложение
     // уже установлено, — то есть на сайте это всегда письмо.
     app_soon_note:
-      'Владельцам аккаунтов придёт уведомление в кабинете, а на почту ниже '
-      + 'пришлём письмо в день выхода. Без рассылок.',
+      'В день выхода пришлём одно уведомление в кабинет и одно письмо. Без спама.',
+    // Подпись поля адреса. Видимой её не делаем: строка выше (app_soon_note)
+    // уже стоит над формой, и два призыва подряд читались бы как повтор.
+    // Здесь она работает как имя поля для скринридера.
+    app_soon_cta: 'Оставьте почту — сообщим в день выхода',
     app_soon_qr: 'Отсканируйте код телефоном, чтобы открыть сайт на телефоне',
     app_soon_email: 'Почта',
     app_soon_submit: 'Сообщить о выходе',

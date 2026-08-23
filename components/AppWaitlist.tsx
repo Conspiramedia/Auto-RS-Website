@@ -118,8 +118,14 @@ export default function AppWaitlist({ locale }: { locale: Locale }) {
           {/* Настоящая <form>: Enter в поле обязан отправлять подписку,
               а не перезагружать страницу. */}
           <form onSubmit={submit} className="mt-2 flex flex-col gap-2 sm:flex-row">
+            {/* Подпись поля — призыв целиком («Оставьте почту — сообщим
+                в день выхода»), а не слово «Почта»: скринридер зачитывает
+                имя поля, и полный призыв объясняет, зачем адрес нужен.
+                Видимой её не делаем — строка app_soon_note стоит прямо
+                над формой, и два призыва подряд читались бы как повтор.
+                Placeholder остаётся коротким: он внутри поля. */}
             <label className="sr-only" htmlFor="app-waitlist-email">
-              {t('app_soon_email')}
+              {t('app_soon_cta')}
             </label>
             <input
               id="app-waitlist-email"
