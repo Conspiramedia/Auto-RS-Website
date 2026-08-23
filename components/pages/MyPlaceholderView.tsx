@@ -31,7 +31,7 @@ export default function MyPlaceholderView({ locale, titleKey }: Props) {
 
   return (
     <Card padding="none" className="px-6 py-12 text-center">
-      <h2 className="text-lg font-semibold">{t(titleKey)}</h2>
+      <h2 className="text-h4 font-semibold">{t(titleKey)}</h2>
       <p className="mx-auto mt-2 max-w-md text-neutral-60">
         {t('my_soon')}
       </p>

@@ -45,8 +45,8 @@ export default function FaqPageView({ locale }: { locale: Locale }) {
 
       <SiteHeader locale={locale} pathname="/faq" />
 
-      <main className="mx-auto max-w-3xl px-4 py-8">
-        <h1 className="text-2xl font-bold sm:text-3xl">{t('faq_title')}</h1>
+      <main className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
+        <h1 className="text-h2 font-bold sm:text-h1">{t('faq_title')}</h1>
         <p className="mt-3 text-neutral-60">{t('faq_lead')}</p>
 
         {FAQ_GROUPS.map((group) => {
@@ -55,7 +55,7 @@ export default function FaqPageView({ locale }: { locale: Locale }) {
 
           return (
             <section key={group} className="mt-10">
-              <h2 className="text-xl font-semibold">{t(GROUP_LABEL[group])}</h2>
+              <h2 className="text-h3 font-semibold">{t(GROUP_LABEL[group])}</h2>
 
               <div className="mt-4 divide-y divide-neutral-10 border-y border-neutral-10">
                 {groupItems.map((item) => (
@@ -82,7 +82,7 @@ export default function FaqPageView({ locale }: { locale: Locale }) {
         })}
 
         <Card className="mt-10 text-center">
-          <h2 className="text-lg font-semibold">{t('faq_more_title')}</h2>
+          <h2 className="text-h3 font-semibold">{t('faq_more_title')}</h2>
           <p className="mt-2 text-neutral-60">{t('faq_more_text')}</p>
           <div className="mt-5">
             <Button variant="secondary" href={localeHref(locale, '/contact')}>

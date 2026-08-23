@@ -73,19 +73,19 @@ export default async function CarGoneView({
     <>
       <SiteHeader locale={locale} pathname={catalogPath} />
 
-      <main className="mx-auto max-w-6xl px-4 py-10">
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
         {/* Верхний блок ограничен по ширине и центрирован: это
             сообщение, а не контент. Растянутый на 1152px абзац из двух
             строк выглядел бы потерянным. */}
         <Card padding="none" className="mx-auto max-w-2xl px-6 py-10 text-center">
           <Badge tone="neutral">{t('car_gone_badge')}</Badge>
 
-          <h1 className="mt-3 text-2xl font-bold">{t('car_gone_title')}</h1>
+          <h1 className="mt-3 text-h2 font-bold sm:text-h1">{t('car_gone_title')}</h1>
 
           {/* Название объявления — единственное подтверждение, что
               человек пришёл по верному адресу. Без него страница
               неотличима от общей ошибки. */}
-          <p className="mt-2 text-lg font-semibold text-neutral-60">{title}</p>
+          <p className="mt-2 text-h4 font-semibold text-neutral-60">{title}</p>
 
           {car.city && (
             <p className="mt-0.5 text-caption text-neutral-50">{car.city}</p>
@@ -118,7 +118,7 @@ export default async function CarGoneView({
             приглашение. */}
         {similar.length > 0 && (
           <section className="mt-10">
-            <h2 className="text-xl font-semibold">{t('car_gone_similar')}</h2>
+            <h2 className="text-h3 font-semibold">{t('car_gone_similar')}</h2>
 
             {/* Та же сетка, что в каталоге: 1 колонка на мобильном,
                 2 на планшете, 3 на десктопе. Карточки обязаны

@@ -113,7 +113,7 @@ export default function CatalogView({
         totalPages={result.totalPages}
       />
 
-      <h1 className="text-2xl font-bold">{title}</h1>
+      <h1 className="text-h2 font-bold sm:text-h1">{title}</h1>
       {intro && <p className="mt-2 max-w-3xl text-neutral-60">{intro}</p>}
 
       {/* Панель управления выдачей.
@@ -142,7 +142,7 @@ export default function CatalogView({
             mode={pageMode}
             lockedType={lockedType}
           />
-          <span className="hidden shrink-0 text-sm text-neutral-50 sm:inline">
+          <span className="hidden shrink-0 text-caption text-neutral-50 sm:inline">
             {t('catalog_found')}: {countNoun(result.total, 'listing', locale)}
           </span>
         </div>
@@ -154,7 +154,7 @@ export default function CatalogView({
           Подпись склоняется так же, как в десктопной версии выше:
           раньше здесь стояло голое число («Найдено: 2»), и две ширины
           экрана давали разный текст, а приложение — третий вариант. */}
-      <div className="mt-2 text-sm text-neutral-50 sm:hidden">
+      <div className="mt-2 text-caption text-neutral-50 sm:hidden">
         {t('catalog_found')}: {countNoun(result.total, 'listing', locale)}
       </div>
 

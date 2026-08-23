@@ -19,7 +19,7 @@ import {
 export default function Loading() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
-      {/* Заголовок h1: text-2xl → 32px строки. */}
+      {/* Заголовок h1: text-h2 → 32px строки. */}
       <SkeletonBox className="h-8 w-64" />
       <SkeletonCatalogControls />
       <SkeletonCarGrid />

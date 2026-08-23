@@ -38,10 +38,10 @@ export default function LegalPageView({
 
       {/* max-w-3xl: длина строки для сплошного текста. На каталожной
           ширине (6xl) юридический документ читать невозможно. */}
-      <main className="mx-auto max-w-3xl px-4 py-8">
-        <h1 className="text-2xl font-bold sm:text-3xl">{title}</h1>
+      <main className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
+        <h1 className="text-h2 font-bold sm:text-h1">{title}</h1>
 
-        <p className="mt-2 text-sm text-neutral-50">
+        <p className="mt-2 text-caption text-neutral-50">
           {t('legal_updated')}: {POLICY_UPDATED[locale]} • {POLICY_VERSION}
         </p>
 
@@ -49,7 +49,7 @@ export default function LegalPageView({
           {sections.map((section, i) => (
             <section key={section.heading ?? `intro-${i}`}>
               {section.heading && (
-                <h2 className="mb-3 text-lg font-semibold">
+                <h2 className="mb-3 text-h3 font-semibold">
                   {section.heading}
                 </h2>
               )}

@@ -27,9 +27,9 @@ export default function NotFoundView({ locale }: { locale: Locale }) {
           несуществующей. */}
       <SiteHeader locale={locale} pathname="/" />
 
-      <main className="mx-auto flex max-w-2xl flex-col items-center px-4 py-16 text-center">
-        <p className="text-5xl font-bold text-brand-dark/20">404</p>
-        <h1 className="mt-4 text-2xl font-bold">{t('nf_title')}</h1>
+      <main className="mx-auto flex max-w-2xl flex-col items-center px-4 py-12 text-center sm:py-16">
+        <p className="text-hero font-bold text-neutral-15">404</p>
+        <h1 className="mt-4 text-h2 font-bold sm:text-h1">{t('nf_title')}</h1>
         <p className="mt-3 max-w-md text-neutral-60">{t('nf_text')}</p>
 
         {/* Столбик на мобильном, ряд с sm — тот же приём, что на экране

@@ -94,6 +94,11 @@ const config: Config = {
       // Значения совпадают с дефолтами Tailwind, которые уже стояли
       // в разметке, поэтому text-h1 и text-3xl дают одинаковый результат.
       fontSize: {
+        hero: [brand.typography.hero.size, brand.typography.hero.lineHeight],
+        display: [
+          brand.typography.display.size,
+          brand.typography.display.lineHeight,
+        ],
         h1: [brand.typography.h1.size, brand.typography.h1.lineHeight],
         h2: [brand.typography.h2.size, brand.typography.h2.lineHeight],
         h3: [brand.typography.h3.size, brand.typography.h3.lineHeight],

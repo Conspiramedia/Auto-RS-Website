@@ -177,12 +177,12 @@ export default function ListPicker({
         className={
           // Высота и размер шрифта берутся из тех же токенов, что и
           // <input> (components/ui/Field). Раньше здесь стояло py-2 +
-          // text-sm, а у input — py-2.5 + text-base, и на шаге 1 подачи
+          // text-caption, а у input — py-2.5 + text-body, и на шаге 1 подачи
           // «Год выпуска» и «Город» оказывались разной высоты.
           `flex w-full items-center justify-between gap-2 rounded-control border border-neutral-15 bg-white px-3 text-left ${
             size === 'compact'
               ? `${FIELD_HEIGHT_COMPACT} text-caption`
-              : `${FIELD_HEIGHT} text-base`
+              : `${FIELD_HEIGHT} text-body`
           } ` +
           (disabled
             ? 'cursor-not-allowed bg-surface-hover text-neutral-30'
@@ -238,7 +238,7 @@ export default function ListPicker({
                       ? `${t('picker_search')} / ${t('picker_custom_hint')}`
                       : t('picker_search')
                   }
-                  className="w-full rounded-control border border-neutral-15 px-3 py-2 text-sm outline-none focus:border-brand-primary"
+                  className="w-full rounded-control border border-neutral-15 px-3 py-2 text-caption outline-none focus:border-brand-primary"
                   // autoFocus только на десктопе: на мобильном он поднимает
                   // клавиатуру поверх списка ещё до того, как пользователь
                   // увидел варианты.
@@ -255,7 +255,7 @@ export default function ListPicker({
                 <button
                   type="button"
                   onClick={() => pick(trimmed)}
-                  className="flex w-full items-center gap-2 border-b border-neutral-10 px-4 py-3 text-left text-sm hover:bg-surface-hoverStrong"
+                  className="flex w-full items-center gap-2 border-b border-neutral-10 px-4 py-3 text-left text-caption hover:bg-surface-hoverStrong"
                 >
                   <span className="text-brand-green">+</span>
                   <span>
@@ -272,7 +272,7 @@ export default function ListPicker({
                   aria-selected={selected === ''}
                   onClick={() => pick('')}
                   className={
-                    'flex w-full items-center justify-between px-4 py-3 text-left text-sm hover:bg-surface-hoverStrong ' +
+                    'flex w-full items-center justify-between px-4 py-3 text-left text-caption hover:bg-surface-hoverStrong ' +
                     (selected === '' ? 'font-semibold' : '')
                   }
                 >
@@ -289,7 +289,7 @@ export default function ListPicker({
                   aria-selected={selected === o.value}
                   onClick={() => pick(o.value)}
                   className={
-                    'flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm hover:bg-surface-hoverStrong ' +
+                    'flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-caption hover:bg-surface-hoverStrong ' +
                     (selected === o.value ? 'font-semibold' : '')
                   }
                 >
@@ -306,7 +306,7 @@ export default function ListPicker({
               ))}
 
               {filtered.length === 0 && !showCustom && (
-                <div className="px-4 py-6 text-center text-sm text-neutral-40">
+                <div className="px-4 py-6 text-center text-caption text-neutral-40">
                   {t('picker_nothing')}
                 </div>
               )}

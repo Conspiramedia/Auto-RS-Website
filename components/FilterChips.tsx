@@ -83,7 +83,7 @@ export default function FilterChips({
         <Link
           key={chip.key}
           href={chip.href}
-          className="inline-flex items-center gap-1.5 rounded-control bg-surface-active px-3 py-1.5 text-sm hover:bg-surface-activeHover"
+          className="inline-flex items-center gap-1.5 rounded-control bg-surface-active px-3 py-1.5 text-caption hover:bg-surface-activeHover"
           // Ссылки-снятия фильтра не должны обходиться краулером: они ведут
           // на такие же отфильтрованные выдачи и только тратят краулинговый
           // бюджет.
@@ -97,7 +97,7 @@ export default function FilterChips({
       {/* Сброс всех фильтров разом — ведёт на чистый каталог. */}
       <Link
         href={localeHref(locale, basePath)}
-        className="inline-flex items-center rounded-control px-3 py-1.5 text-sm font-semibold text-brand-red hover:bg-brand-red/5"
+        className="inline-flex items-center rounded-control px-3 py-1.5 text-caption font-semibold text-brand-red hover:bg-brand-red/5"
         rel="nofollow"
       >
         {t('catalog_reset')}

@@ -65,10 +65,10 @@ export default async function HomeView({ locale }: { locale: Locale }) {
         {/* Оффер продавцу — главный экран и единственный акцентный CTA. */}
         <section className="border-b border-neutral-10 bg-surface-subtle">
           <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
-            <h1 className="max-w-2xl text-3xl font-bold sm:text-4xl">
+            <h1 className="max-w-2xl text-h1 font-bold sm:text-display">
               {t('home_hero_title')}
             </h1>
-            <p className="mt-3 max-w-xl text-lg text-neutral-60">
+            <p className="mt-3 max-w-xl text-h4 text-neutral-60">
               {t('home_hero_text')}
             </p>
 
@@ -106,7 +106,7 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                 названия разделов меню («Автомобили», «Город»), из-за чего
                 получалось «11 город». */}
             {stats.cars_total > 0 && (
-              <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3 text-sm text-neutral-60">
+              <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3 text-caption text-neutral-60">
                 <span>
                   <strong className="text-brand-dark">{stats.cars_total}</strong>{' '}
                   {nounFor(stats.cars_total, 'car', locale)}
@@ -127,10 +127,10 @@ export default async function HomeView({ locale }: { locale: Locale }) {
         {fresh.cars.length > 0 && (
           <section className="mx-auto max-w-6xl px-4 py-10">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold">{t('home_fresh')}</h2>
+              <h2 className="text-h3 font-semibold">{t('home_fresh')}</h2>
               <Link
                 href={localeHref(locale, '/cars')}
-                className="text-sm font-semibold text-brand-primary hover:underline"
+                className="text-caption font-semibold text-brand-primary hover:underline"
               >
                 {t('home_all_cars')} →
               </Link>
@@ -152,10 +152,10 @@ export default async function HomeView({ locale }: { locale: Locale }) {
         {rent.cars.length > 0 && (
           <section className="mx-auto max-w-6xl px-4 pb-10">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold">{t('rent_title')}</h2>
+              <h2 className="text-h3 font-semibold">{t('rent_title')}</h2>
               <Link
                 href={localeHref(locale, '/rent')}
-                className="text-sm font-semibold text-brand-primary hover:underline"
+                className="text-caption font-semibold text-brand-primary hover:underline"
               >
                 {t('nav_rent')} →
               </Link>
@@ -176,7 +176,7 @@ export default async function HomeView({ locale }: { locale: Locale }) {
 
         {brands.length > 0 && (
           <section className="mx-auto max-w-6xl px-4 pb-10">
-            <h2 className="mb-4 text-xl font-semibold">{t('home_brands')}</h2>
+            <h2 className="mb-4 text-h3 font-semibold">{t('home_brands')}</h2>
             <div className="flex flex-wrap gap-2">
               {brands.slice(0, 24).map((b) => (
                 // Ярлык марки остаётся обычной ссылкой, а не Chip:
@@ -187,7 +187,7 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                 <Link
                   key={b.brand_slug}
                   href={localeHref(locale, `/cars/${b.brand_slug}`)}
-                  className="rounded-control border border-neutral-15 px-3 py-2 text-sm hover:bg-surface-hover"
+                  className="rounded-control border border-neutral-15 px-3 py-2 text-caption hover:bg-surface-hover"
                 >
                   {b.brand}{' '}
                   <span className="text-neutral-40">({b.cars_count})</span>
@@ -206,7 +206,7 @@ export default async function HomeView({ locale }: { locale: Locale }) {
         <section className="border-t border-neutral-10 bg-surface-subtle">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-10">
             <div>
-              <h2 className="text-xl font-semibold">{t('dealers_title')}</h2>
+              <h2 className="text-h3 font-semibold">{t('dealers_title')}</h2>
               <p className="mt-1 text-neutral-60">{t('dealers_offer')}</p>
             </div>
             <Button

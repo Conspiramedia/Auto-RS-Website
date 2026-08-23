@@ -49,7 +49,7 @@ export default function Pagination({
   const pages = pageWindow(page, totalPages);
 
   const base =
-    'inline-flex h-9 min-w-9 items-center justify-center rounded-control px-3 text-sm';
+    'inline-flex h-9 min-w-9 items-center justify-center rounded-control px-3 text-caption';
 
   return (
     <nav

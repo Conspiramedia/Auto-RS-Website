@@ -223,16 +223,16 @@ export default function AuthGate({ locale, redirectTo, title }: Props) {
     <Card className="mx-auto max-w-md">
       <div className="space-y-3">
         <div>
-          <h1 className="text-xl font-semibold">
+          <h1 className="text-h3 font-semibold">
             {title ?? t('my_auth_title')}
           </h1>
-          <p className="mt-1 text-sm text-neutral-60">{t('my_auth_lead')}</p>
+          <p className="mt-1 text-caption text-neutral-60">{t('my_auth_lead')}</p>
         </div>
 
         {!codeSent ? (
           <>
             <div>
-              <label className="mb-1 block text-sm text-neutral-60">
+              <label className="mb-1 block text-caption text-neutral-60">
                 {t('my_auth_phone')}
               </label>
               {/* Маска «+381 6X XXX XXX(X)» — та же, что в приложении
@@ -251,7 +251,7 @@ export default function AuthGate({ locale, redirectTo, title }: Props) {
                 «Получить код»: аккаунт создаётся самим входом по SMS.
                 Ссылки открываются в новой вкладке, чтобы не потерять
                 введённый номер. */}
-            <label className="flex cursor-pointer items-start gap-2.5 text-sm text-neutral-70">
+            <label className="flex cursor-pointer items-start gap-2.5 text-caption text-neutral-70">
               <input
                 type="checkbox"
                 checked={agreed}
@@ -295,12 +295,12 @@ export default function AuthGate({ locale, redirectTo, title }: Props) {
           </>
         ) : (
           <>
-            <p className="text-sm text-neutral-60">
+            <p className="text-caption text-neutral-60">
               {t('otp_sent_to')} {sentTo}
             </p>
 
             <div>
-              <label className="mb-1 block text-sm text-neutral-60">
+              <label className="mb-1 block text-caption text-neutral-60">
                 {t('my_auth_code')}
               </label>
               <input
@@ -318,7 +318,7 @@ export default function AuthGate({ locale, redirectTo, title }: Props) {
 
             {/* «Изменить номер» и «Отправить снова» — как в приложении и
                 в форме подачи. Повтор блокируется на 60 секунд. */}
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-caption">
               <button
                 type="button"
                 onClick={changeNumber}
@@ -352,13 +352,13 @@ export default function AuthGate({ locale, redirectTo, title }: Props) {
 
         {/* Успех повторной отправки — в приложении это зелёный снек. */}
         {notice && !error && (
-          <p className="rounded-control bg-brand-green/10 px-3 py-2 text-sm text-brand-green">
+          <p className="rounded-control bg-brand-green/10 px-3 py-2 text-caption text-brand-green">
             {notice}
           </p>
         )}
 
         {error && (
-          <p className="rounded-control bg-brand-red/10 px-3 py-2 text-sm text-brand-red">
+          <p className="rounded-control bg-brand-red/10 px-3 py-2 text-caption text-brand-red">
             {error}
           </p>
         )}

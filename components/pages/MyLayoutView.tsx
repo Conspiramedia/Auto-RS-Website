@@ -58,7 +58,7 @@ export default async function MyLayoutView({ locale, children }: Props) {
                 третьестепенное, поэтому уводится вправо и оформлен
                 ссылкой, а не кнопкой-акцентом. */}
             <div className="flex items-center justify-between gap-4">
-              <h1 className="text-xl font-semibold sm:text-2xl">
+              <h1 className="text-h2 font-bold sm:text-h1">
                 {t('my_title')}
               </h1>
               <SignOutButton locale={locale} />

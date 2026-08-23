@@ -55,21 +55,21 @@ export default function AboutPageView({ locale }: { locale: Locale }) {
     <>
       <SiteHeader locale={locale} pathname="/about" />
 
-      <main className="mx-auto max-w-3xl px-4 py-8">
-        <h1 className="text-2xl font-bold sm:text-3xl">{t('about_title')}</h1>
-        <p className="mt-3 text-lg text-neutral-60">{t('about_lead')}</p>
+      <main className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
+        <h1 className="text-h2 font-bold sm:text-h1">{t('about_title')}</h1>
+        <p className="mt-3 text-h4 text-neutral-60">{t('about_lead')}</p>
 
         {/* Задача площадки. Отдельным блоком и первым: это ответ на
             вопрос «зачем вы вообще нужны», а не список функций. */}
         <section className="mt-10">
-          <h2 className="text-xl font-semibold">{t('about_mission_title')}</h2>
+          <h2 className="text-h3 font-semibold">{t('about_mission_title')}</h2>
           <p className="mt-3 leading-relaxed text-neutral-75">
             {t('about_mission_text')}
           </p>
         </section>
 
         <section className="mt-10">
-          <h2 className="text-xl font-semibold">{t('about_how_title')}</h2>
+          <h2 className="text-h3 font-semibold">{t('about_how_title')}</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             {HOW_BLOCKS.map((block) => (
               <Card key={block.title} padding="sm">
@@ -85,7 +85,7 @@ export default function AboutPageView({ locale }: { locale: Locale }) {
         {/* Выгоды по ролям. */}
         {AUDIENCES.map((audience) => (
           <section key={audience.title} className="mt-10">
-            <h2 className="text-xl font-semibold">{t(audience.title)}</h2>
+            <h2 className="text-h3 font-semibold">{t(audience.title)}</h2>
             <ul className="mt-3 space-y-2">
               {audience.items.map((item) => (
                 <li key={item} className="flex gap-2 text-neutral-75">
@@ -103,7 +103,7 @@ export default function AboutPageView({ locale }: { locale: Locale }) {
         ))}
 
         <Card className="mt-10 text-center">
-          <h2 className="text-xl font-semibold">{t('about_cta_title')}</h2>
+          <h2 className="text-h3 font-semibold">{t('about_cta_title')}</h2>
           <p className="mt-2 text-neutral-60">{t('about_cta_text')}</p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
             <Button size="lg" href={localeHref(locale, '/sell')}>

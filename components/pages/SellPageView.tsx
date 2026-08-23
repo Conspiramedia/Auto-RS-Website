@@ -22,8 +22,8 @@ export default function SellPageView({ locale }: { locale: Locale }) {
           становятся слишком узкими для пикеров со списком.
           Шире 768px не идём — поля ввода во всю ширину экрана читаются
           плохо, а форма остаётся линейным сценарием, а не панелью. */}
-      <main className="mx-auto max-w-2xl px-4 py-6 lg:max-w-3xl">
-        <h1 className="text-2xl font-bold">{t('sell_title')}</h1>
+      <main className="mx-auto max-w-2xl px-4 py-6 sm:py-8 lg:max-w-3xl">
+        <h1 className="text-h2 font-bold sm:text-h1">{t('sell_title')}</h1>
         <p className="mt-2 text-neutral-60">{t('sell_subtitle')}</p>
 
         <div className="mt-6">

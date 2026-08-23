@@ -84,7 +84,7 @@ export default function HeaderAuth({ locale }: Props) {
     return (
       <Link
         href={`${localeHref(locale, '/login')}${back}`}
-        className="whitespace-nowrap text-sm font-medium text-neutral-60 transition-colors duration-fast ease-out hover:text-brand-primary"
+        className="whitespace-nowrap text-caption font-medium text-neutral-60 transition-colors duration-fast ease-out hover:text-brand-primary"
       >
         {t('nav_login')}
       </Link>
@@ -97,7 +97,7 @@ export default function HeaderAuth({ locale }: Props) {
   return (
     <Link
       href={localeHref(locale, '/my')}
-      className="relative flex shrink-0 items-center gap-1.5 whitespace-nowrap text-sm font-medium text-neutral-60 transition-colors duration-fast ease-out hover:text-brand-primary"
+      className="relative flex shrink-0 items-center gap-1.5 whitespace-nowrap text-caption font-medium text-neutral-60 transition-colors duration-fast ease-out hover:text-brand-primary"
     >
       <IconUser />
       <span className="hidden lg:inline">{t('nav_my')}</span>

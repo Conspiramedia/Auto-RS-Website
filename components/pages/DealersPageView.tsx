@@ -28,9 +28,9 @@ export default function DealersPageView({ locale }: { locale: Locale }) {
       <SmartBanner locale={locale} />
       <SiteHeader locale={locale} pathname="/dealers" />
 
-      <main className="mx-auto max-w-6xl px-4 py-10">
-        <h1 className="text-3xl font-bold">{t('dealers_title')}</h1>
-        <p className="mt-2 text-xl font-semibold text-brand-green">
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
+        <h1 className="text-h2 font-bold sm:text-h1">{t('dealers_title')}</h1>
+        <p className="mt-2 text-h3 font-semibold text-brand-green">
           {t('dealers_offer')}
         </p>
 
@@ -38,7 +38,7 @@ export default function DealersPageView({ locale }: { locale: Locale }) {
           {BENEFITS.map((b) => (
             <div key={b.title} className="rounded-card border border-neutral-10 p-4">
               <h2 className="font-semibold">{t(b.title)}</h2>
-              <p className="mt-1 text-sm text-neutral-60">{t(b.text)}</p>
+              <p className="mt-1 text-caption text-neutral-60">{t(b.text)}</p>
             </div>
           ))}
         </div>

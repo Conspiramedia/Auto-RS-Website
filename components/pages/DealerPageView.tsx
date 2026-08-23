@@ -97,7 +97,7 @@ export default async function DealerPageView({
       <SmartBanner locale={locale} />
       <SiteHeader locale={locale} pathname={`/dealer/${id}`} />
 
-      <main className="mx-auto max-w-6xl px-4 py-6">
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
         {/* Шапка витрины: логотип/аватар, имя и счётчики. */}
         <Card className="flex flex-col gap-4 sm:flex-row sm:items-center">
           {/* Логотип салона. Когда его нет — инициал в круге: пустой
@@ -112,14 +112,14 @@ export default async function DealerPageView({
                 className="object-cover"
               />
             ) : (
-              <div className="flex h-full items-center justify-center text-2xl font-bold text-neutral-30">
+              <div className="flex h-full items-center justify-center text-h2 font-bold text-neutral-30">
                 {profile.display_name.charAt(0).toUpperCase()}
               </div>
             )}
           </div>
 
           <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-bold">{profile.display_name}</h1>
+            <h1 className="text-h2 font-bold sm:text-h1">{profile.display_name}</h1>
             <p className="mt-1 text-caption text-neutral-50">
               {isDealer ? t('car_seller_dealer') : t('car_seller_private')}
               {' · '}
@@ -148,7 +148,7 @@ export default async function DealerPageView({
         {/* Витрина. Пустая — не тупик: даём выход в общий каталог. */}
         {active.length === 0 ? (
           <Card padding="none" className="mt-6 px-6 py-12 text-center">
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-h3 font-semibold">
               {t('dealer_page_empty_title')}
             </h2>
             <p className="mx-auto mt-2 max-w-md text-neutral-60">
@@ -166,7 +166,7 @@ export default async function DealerPageView({
           </Card>
         ) : (
           <section className="mt-8">
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-h3 font-semibold">
               {t('dealer_page_listings')}
             </h2>
             <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
@@ -188,7 +188,7 @@ export default async function DealerPageView({
             список объявлений. */}
         {sold.length > 0 && (
           <section className="mt-10">
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-h3 font-semibold">
               {t('dealer_page_sold_title')}
             </h2>
             <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">

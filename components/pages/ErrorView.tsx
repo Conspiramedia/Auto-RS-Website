@@ -46,7 +46,7 @@ export default function ErrorView({ locale, reset }: Props) {
       <header className="border-b border-neutral-10 bg-white">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:gap-4 sm:px-4">
           <Link href={localeHref(locale, '/')} className="shrink-0">
-            <Logo className="text-base sm:text-lg" />
+            <Logo className="text-body sm:text-h4" />
           </Link>
 
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-3">
@@ -66,9 +66,9 @@ export default function ErrorView({ locale, reset }: Props) {
         </div>
       </header>
 
-      <main className="mx-auto flex max-w-2xl flex-col items-center px-4 py-16 text-center">
-        <p className="text-5xl font-bold text-brand-dark/20">500</p>
-        <h1 className="mt-4 text-2xl font-bold">{t('err_title')}</h1>
+      <main className="mx-auto flex max-w-2xl flex-col items-center px-4 py-12 text-center sm:py-16">
+        <p className="text-hero font-bold text-neutral-15">500</p>
+        <h1 className="mt-4 text-h2 font-bold sm:text-h1">{t('err_title')}</h1>
         <p className="mt-3 max-w-md text-neutral-60">{t('err_text')}</p>
 
         {/* СТОЛБИК НА МОБИЛЬНОМ, РЯД НА ШИРОКОМ ЭКРАНЕ.

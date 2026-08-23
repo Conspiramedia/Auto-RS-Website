@@ -94,13 +94,13 @@ export default function SmartBanner({ locale, deepLink }: Props) {
       <Logo variant="mark" />
 
       <div className="min-w-0 flex-1 leading-tight">
-        <div className="truncate text-sm font-semibold">{t('banner_title')}</div>
-        <div className="truncate text-xs text-white/70">{t('banner_text')}</div>
+        <div className="truncate text-caption font-semibold">{t('banner_title')}</div>
+        <div className="truncate text-small text-white/70">{t('banner_text')}</div>
       </div>
 
       <a
         href={href}
-        className="shrink-0 rounded-control bg-brand-green px-3 py-1.5 text-sm font-semibold text-white"
+        className="shrink-0 rounded-control bg-brand-green px-3 py-1.5 text-caption font-semibold text-white"
       >
         {t('banner_open')}
       </a>
@@ -111,7 +111,7 @@ export default function SmartBanner({ locale, deepLink }: Props) {
           localStorage.setItem(DISMISS_KEY, '1');
           setVisible(false);
         }}
-        className="shrink-0 px-1 text-xl leading-none text-white/60"
+        className="shrink-0 px-1 text-h3 leading-none text-white/60"
         aria-label={t('banner_close')}
       >
         ×

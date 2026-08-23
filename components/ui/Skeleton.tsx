@@ -9,7 +9,7 @@
 // Отсюда два правила в коде ниже:
 //   * пропорции картинок задаются той же aspect-[4/3], что в CarCard;
 //   * высоты текстовых строк равны высоте строки соответствующего
-//     размера шрифта (h-5 ≈ text-base, h-4 ≈ text-caption).
+//     размера шрифта (h-5 ≈ body, h-4 ≈ caption).
 //
 // Анимация — animate-pulse Tailwind: она не двигает элементы, только
 // меняет прозрачность, поэтому не создаёт ощущения «прыгающего» UI.
@@ -66,7 +66,7 @@ export function SkeletonCatalogControls() {
     <>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none sm:gap-3">
-          {/* Габариты кнопки «Фильтры»: h-10 = px-4 py-2.5 + text-sm. */}
+          {/* Габариты кнопки «Фильтры»: h-10 = px-4 py-2.5 + text-caption. */}
           <SkeletonBox className="h-10 w-28" />
           <SkeletonBox className="hidden h-5 w-24 sm:block" />
         </div>
@@ -100,7 +100,7 @@ export function SkeletonCarPage() {
             ))}
           </div>
 
-          {/* Заголовок h1: text-2xl → высота строки 32px. */}
+          {/* Заголовок h1: text-h2 → высота строки 32px. */}
           <SkeletonBox className="mt-5 h-8 w-2/3" />
 
           {/* Блок характеристик: 6 пар «подпись + значение». */}

@@ -17,8 +17,8 @@ import type { ReactNode } from 'react';
 // ------------------------------------------------------------
 // ВЫСОТА КОНТРОЛОВ — фиксированная, а не выведенная из паддингов.
 // ------------------------------------------------------------
-// Была ошибка: у <input> стояло py-2.5 + унаследованный text-base (16px),
-// у кнопки пикера — py-2 + text-sm (14px). Итоговая высота считалась из
+// Была ошибка: у <input> стояло py-2.5 + унаследованный body (16px),
+// у кнопки пикера — py-2 + caption (14px). Итоговая высота считалась из
 // «паддинг + интерлиньяж шрифта» и расходилась на 6px, из-за чего на
 // шаге 1 подачи «Год выпуска» (input) и «Город» (пикер) стояли рядом
 // разной высоты.
@@ -40,7 +40,7 @@ export const FIELD_HEIGHT = 'h-11';
 export const FIELD_HEIGHT_COMPACT = 'h-10';
 
 // Поле формы: подача объявления, заявка дилера, обратная связь.
-export const fieldClass = `${FIELD_BASE} ${FIELD_HEIGHT} text-base`;
+export const fieldClass = `${FIELD_BASE} ${FIELD_HEIGHT} text-body`;
 
 // Компактный вариант: панель фильтров.
 export const fieldClassCompact = `${FIELD_BASE} ${FIELD_HEIGHT_COMPACT} text-caption`;
@@ -48,7 +48,7 @@ export const fieldClassCompact = `${FIELD_BASE} ${FIELD_HEIGHT_COMPACT} text-cap
 // Многострочное поле (textarea): высота задаётся числом строк через
 // rows, поэтому фиксированная h-* здесь неприменима — берём паддинг,
 // подобранный под ту же вертикальную плотность, что и у h-11.
-export const fieldClassTextarea = `${FIELD_BASE} py-2.5 text-base`;
+export const fieldClassTextarea = `${FIELD_BASE} py-2.5 text-body`;
 
 // Классы подписи над контролом.
 export const labelClass = 'mb-1 block text-caption text-neutral-60';

@@ -105,7 +105,7 @@ export default function DealerForm({ locale }: Props) {
   if (sent) {
     return (
       <div className="rounded-card border border-neutral-10 p-6 text-center">
-        <h2 className="text-lg font-semibold">
+        <h2 className="text-h4 font-semibold">
           {t('dealers_sent_title')}
         </h2>
         <p className="mt-2 text-neutral-60">
@@ -139,7 +139,7 @@ export default function DealerForm({ locale }: Props) {
       />
 
       <div>
-        <label className="mb-1 block text-sm text-neutral-60">
+        <label className="mb-1 block text-caption text-neutral-60">
           {t('dealers_company')}
         </label>
         <input
@@ -154,7 +154,7 @@ export default function DealerForm({ locale }: Props) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm text-neutral-60">
+          <label className="mb-1 block text-caption text-neutral-60">
             {t('dealers_contact')}
           </label>
           <input
@@ -168,7 +168,7 @@ export default function DealerForm({ locale }: Props) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm text-neutral-60">
+          <label className="mb-1 block text-caption text-neutral-60">
             {t('sell_phone')}
           </label>
           {/* Та же маска, что в форме подачи и в приложении: заявка
@@ -188,7 +188,7 @@ export default function DealerForm({ locale }: Props) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm text-neutral-60">Email</label>
+          <label className="mb-1 block text-caption text-neutral-60">Email</label>
           <input
             type="email"
             value={email}
@@ -214,7 +214,7 @@ export default function DealerForm({ locale }: Props) {
       </div>
 
       <div>
-        <label className="mb-1 block text-sm text-neutral-60">
+        <label className="mb-1 block text-caption text-neutral-60">
           {t('dealers_comment')}
         </label>
         <textarea
@@ -231,7 +231,7 @@ export default function DealerForm({ locale }: Props) {
       </Button>
 
       {error && (
-        <p className="rounded-control bg-brand-red/10 px-3 py-2 text-sm text-brand-red">
+        <p className="rounded-control bg-brand-red/10 px-3 py-2 text-caption text-brand-red">
           {error}
         </p>
       )}

@@ -89,8 +89,8 @@ export default async function BrandPageView({
       <SmartBanner locale={locale} />
       <SiteHeader locale={locale} pathname={`${root}/${slug}`} />
 
-      <main className="mx-auto max-w-6xl px-4 py-6">
-        <nav className="mb-4 text-sm text-neutral-50">
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+        <nav className="mb-4 text-caption text-neutral-50">
           <Link href={localeHref(locale, root)} className="hover:underline">
             {mode === 'rent' ? t('rent_title') : t('nav_catalog')}
           </Link>
@@ -116,7 +116,7 @@ export default async function BrandPageView({
             ссылок для глубоких SEO-страниц. */}
         {models.length > 0 && (
           <section className="mt-10">
-            <h2 className="mb-3 text-lg font-semibold">
+            <h2 className="mb-3 text-h3 font-semibold">
               {brand.brand}: {t('filter_model')}
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -124,7 +124,7 @@ export default async function BrandPageView({
                 <Link
                   key={m.model_slug}
                   href={localeHref(locale, `${root}/${slug}/${m.model_slug}`)}
-                  className="rounded-control border border-neutral-15 px-3 py-1.5 text-sm hover:bg-surface-hover"
+                  className="rounded-control border border-neutral-15 px-3 py-1.5 text-caption hover:bg-surface-hover"
                 >
                   {m.model}{' '}
                   <span className="text-neutral-40">({m.cars_count})</span>

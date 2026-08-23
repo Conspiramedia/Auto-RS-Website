@@ -149,7 +149,7 @@ export default function RecentlyViewed({ locale, excludeId }: Props) {
   return (
     <section className="mx-auto max-w-6xl px-4 pb-10">
       <div className="mb-4 flex items-center justify-between gap-4">
-        <h2 className="text-xl font-semibold">{t('recent_title')}</h2>
+        <h2 className="text-h3 font-semibold">{t('recent_title')}</h2>
         <Button variant="ghost" size="sm" onClick={clear}>
           {t('recent_clear')}
         </Button>

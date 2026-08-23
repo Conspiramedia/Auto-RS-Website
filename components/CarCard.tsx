@@ -80,7 +80,7 @@ export default function CarCard({
             priority={priority}
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-neutral-30">
+          <div className="flex h-full items-center justify-center text-caption text-neutral-30">
             {car.brand}
           </div>
         )}
@@ -138,7 +138,7 @@ export default function CarCard({
           {car.brand} {car.model}
         </div>
 
-        <div className="mt-1 text-lg font-bold text-brand-primary">
+        <div className="mt-1 text-h4 font-bold text-brand-primary">
           {showRent
             ? formatRentPrice(car.rent_price_daily ?? null, car.currency, locale)
             : formatPrice(car.sale_price, car.currency, locale)}
@@ -149,7 +149,7 @@ export default function CarCard({
             собственной ценой. Просто слово «Аренда» без суммы заставляло
             бы открывать карточку, чтобы узнать ставку. */}
         {car.is_for_sale && car.is_for_rent && car.rent_price_daily != null && (
-          <div className="mt-0.5 text-sm font-medium text-brand-blue">
+          <div className="mt-0.5 text-caption font-medium text-brand-blue">
             {showRent
               ? formatPrice(car.sale_price, car.currency, locale)
               : formatRentPrice(car.rent_price_daily, car.currency, locale)}
@@ -159,16 +159,16 @@ export default function CarCard({
         {/* В специализированном разделе — короткая пометка о второй
             витрине без цены: она уже показана выше. */}
         {mode === 'sale' && car.is_for_rent && car.rent_price_daily == null && (
-          <div className="mt-0.5 text-xs font-medium text-brand-blue">
+          <div className="mt-0.5 text-small font-medium text-brand-blue">
             {t('mode_rent')}
           </div>
         )}
 
-        <div className="mt-1 text-sm text-neutral-60">
+        <div className="mt-1 text-caption text-neutral-60">
           {car.year} · {formatMileage(car.mileage, locale)}
         </div>
 
-        <div className="mt-0.5 truncate text-sm text-neutral-50">{car.city}</div>
+        <div className="mt-0.5 truncate text-caption text-neutral-50">{car.city}</div>
       </div>
     </Link>
   );

@@ -206,7 +206,7 @@ export default function FilterPanel({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex h-10 items-center gap-2 rounded-control bg-brand-dark px-4 text-sm font-semibold text-white"
+        className="inline-flex h-10 items-center gap-2 rounded-control bg-brand-dark px-4 text-caption font-semibold text-white"
       >
         {t('catalog_filters')}
 
@@ -234,7 +234,7 @@ export default function FilterPanel({
         </svg>
 
         {activeCount > 0 && (
-          <span className="rounded-full bg-brand-gold px-2 py-0.5 text-xs">
+          <span className="rounded-full bg-brand-gold px-2 py-0.5 text-small">
             {activeCount}
           </span>
         )}
@@ -253,7 +253,7 @@ export default function FilterPanel({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">{t('catalog_filters')}</h2>
+              <h2 className="text-h4 font-semibold">{t('catalog_filters')}</h2>
               <CloseButton
                 onClick={() => setOpen(false)}
                 label={t('common_close')}
@@ -283,7 +283,7 @@ export default function FilterPanel({
                   На лендинге /rent тип задан адресом и сегмент скрыт. */}
               {!lockedType && (
                 <div>
-                  <label className="mb-1 block text-sm text-neutral-60">
+                  <label className="mb-1 block text-caption text-neutral-60">
                     {t('filter_listing_type')}
                   </label>
                   <div className="grid grid-cols-3 gap-1 rounded-control bg-surface-active p-1">
@@ -299,7 +299,7 @@ export default function FilterPanel({
                         type="button"
                         onClick={() => setListingType(value)}
                         className={
-                          'rounded-control px-2 py-2 text-sm font-semibold transition-colors ' +
+                          'rounded-control px-2 py-2 text-caption font-semibold transition-colors ' +
                           (listingType === value
                             ? 'bg-white text-brand-dark shadow-sticky'
                             : 'text-neutral-55 hover:text-brand-dark')
@@ -320,7 +320,7 @@ export default function FilterPanel({
               {/* Единственное поле свободного ввода — поиск по тексту
                   объявления. В приложении он тоже отдельной строкой. */}
               <div>
-                <label className="mb-1 block text-sm text-neutral-60">
+                <label className="mb-1 block text-caption text-neutral-60">
                   {t('filter_search')}
                 </label>
                 <input
@@ -379,7 +379,7 @@ export default function FilterPanel({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1 block text-sm text-neutral-60">
+                  <label className="mb-1 block text-caption text-neutral-60">
                     {mode === 'rent'
                       ? `${t('rent_price')}, €`
                       : `${t('filter_price')}, €`}
@@ -411,7 +411,7 @@ export default function FilterPanel({
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-sm text-neutral-60">
+                  <label className="mb-1 block text-caption text-neutral-60">
                     {t('filter_year')}
                   </label>
                   {/* Границы совпадают с constraint chk_year таблицы cars:
@@ -452,7 +452,7 @@ export default function FilterPanel({
               </div>
 
               <div>
-                <label className="mb-1 block text-sm text-neutral-60">
+                <label className="mb-1 block text-caption text-neutral-60">
                   {t('filter_mileage')}, {t('common_km')}
                 </label>
                 <input

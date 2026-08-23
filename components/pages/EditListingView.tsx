@@ -61,7 +61,7 @@ export default async function EditListingView({ locale, carId }: Props) {
 
   return (
     <div className="mx-auto max-w-2xl lg:max-w-3xl">
-      <h1 className="mb-4 text-xl font-semibold">{t('edit_title')}</h1>
+      <h1 className="mb-4 text-h2 font-bold sm:text-h1">{t('edit_title')}</h1>
       <SellForm locale={locale} mode="edit" carId={carId} />
     </div>
   );

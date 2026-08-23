@@ -43,13 +43,13 @@ export default function SiteHeader({ locale, pathname }: Props) {
           элементами решает, поместится CTA или уедет за край. */}
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 pl-3 pr-2 sm:gap-4 sm:pl-4 sm:pr-3">
         <Link href={localeHref(locale, '/')} className="shrink-0">
-          <Logo className="text-sm sm:text-lg" />
+          <Logo className="text-caption sm:text-h4" />
         </Link>
 
         {/* Разделы сайта. Показываются только на десктопе (sm:flex):
             на мобильном места нет, там навигация живёт в подвале, а в
             шапке остаётся лого + язык + CTA. */}
-        <nav className="hidden flex-1 items-center gap-5 text-sm sm:flex">
+        <nav className="hidden flex-1 items-center gap-5 text-caption sm:flex">
           <Link href={localeHref(locale, '/cars')} className="hover:underline">
             {t('nav_catalog')}
           </Link>

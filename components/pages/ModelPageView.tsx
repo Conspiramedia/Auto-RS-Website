@@ -101,8 +101,8 @@ export default async function ModelPageView({
         pathname={`${root}/${brandSlug}/${modelSlug}`}
       />
 
-      <main className="mx-auto max-w-6xl px-4 py-6">
-        <nav className="mb-4 text-sm text-neutral-50">
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+        <nav className="mb-4 text-caption text-neutral-50">
           <Link href={localeHref(locale, root)} className="hover:underline">
             {mode === 'rent' ? t('rent_title') : t('nav_catalog')}
           </Link>

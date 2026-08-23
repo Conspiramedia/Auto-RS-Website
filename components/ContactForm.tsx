@@ -115,7 +115,7 @@ export default function ContactForm({ locale }: Props) {
   if (sent) {
     return (
       <div className="rounded-card border border-neutral-10 p-6 text-center">
-        <h2 className="text-lg font-semibold">{t('contact_sent_title')}</h2>
+        <h2 className="text-h4 font-semibold">{t('contact_sent_title')}</h2>
         <p className="mt-2 text-neutral-60">{t('contact_sent_text')}</p>
       </div>
     );
@@ -126,7 +126,7 @@ export default function ContactForm({ locale }: Props) {
       onSubmit={submit}
       className="space-y-3 rounded-card border border-neutral-10 p-4 sm:p-6"
     >
-      <h2 className="text-lg font-semibold">{t('contact_form_title')}</h2>
+      <h2 className="text-h4 font-semibold">{t('contact_form_title')}</h2>
 
       {/* Honeypot: скрыт от людей и скринридеров, виден ботам. */}
       <input
@@ -147,7 +147,7 @@ export default function ContactForm({ locale }: Props) {
       />
 
       <div>
-        <label className="mb-1 block text-sm text-neutral-60" htmlFor="topic">
+        <label className="mb-1 block text-caption text-neutral-60" htmlFor="topic">
           {t('contact_topic')}
         </label>
         <select
@@ -166,7 +166,7 @@ export default function ContactForm({ locale }: Props) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm text-neutral-60" htmlFor="name">
+          <label className="mb-1 block text-caption text-neutral-60" htmlFor="name">
             {t('contact_name')}
           </label>
           <input
@@ -182,7 +182,7 @@ export default function ContactForm({ locale }: Props) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm text-neutral-60" htmlFor="email">
+          <label className="mb-1 block text-caption text-neutral-60" htmlFor="email">
             {t('contact_email')}
           </label>
           <input
@@ -199,7 +199,7 @@ export default function ContactForm({ locale }: Props) {
       </div>
 
       <div>
-        <label className="mb-1 block text-sm text-neutral-60" htmlFor="message">
+        <label className="mb-1 block text-caption text-neutral-60" htmlFor="message">
           {t('contact_message')}
         </label>
         <textarea
@@ -219,7 +219,7 @@ export default function ContactForm({ locale }: Props) {
       </Button>
 
       {error && (
-        <p className="rounded-control bg-brand-red/10 px-3 py-2 text-sm text-brand-red">
+        <p className="rounded-control bg-brand-red/10 px-3 py-2 text-caption text-brand-red">
           {error}
         </p>
       )}

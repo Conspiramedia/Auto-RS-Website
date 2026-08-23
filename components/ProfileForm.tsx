@@ -153,7 +153,7 @@ export default function ProfileForm({ locale, profile, balance }: Props) {
       <Card>
         <div className="space-y-3">
           <div>
-            <label className="mb-1 block text-sm text-neutral-60">
+            <label className="mb-1 block text-caption text-neutral-60">
               {t('profile_name')}
             </label>
             <input
@@ -172,7 +172,7 @@ export default function ProfileForm({ locale, profile, balance }: Props) {
               его смена означала бы смену способа входа; почта приходит
               из auth.users и на сайте не редактируется. */}
           <div>
-            <label className="mb-1 block text-sm text-neutral-60">
+            <label className="mb-1 block text-caption text-neutral-60">
               {t('profile_phone')}
             </label>
             <input
@@ -195,7 +195,7 @@ export default function ProfileForm({ locale, profile, balance }: Props) {
               не нужны» — уведомления в этом случае остаются только в
               кабинете. */}
           <div>
-            <label className="mb-1 block text-sm text-neutral-60">
+            <label className="mb-1 block text-caption text-neutral-60">
               {t('profile_email')}
             </label>
             <input
@@ -222,7 +222,7 @@ export default function ProfileForm({ locale, profile, balance }: Props) {
           {/* Тип продавца — сегмент из двух кнопок, тот же паттерн, что
               «Продажа | Аренда» в форме подачи. */}
           <div>
-            <label className="mb-1 block text-sm text-neutral-60">
+            <label className="mb-1 block text-caption text-neutral-60">
               {t('profile_seller_kind')}
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -257,7 +257,7 @@ export default function ProfileForm({ locale, profile, balance }: Props) {
               сохранении с seller_kind = 'private'. */}
           {sellerKind === 'dealer' && (
             <div>
-              <label className="mb-1 block text-sm text-neutral-60">
+              <label className="mb-1 block text-caption text-neutral-60">
                 {t('profile_company')} *
               </label>
               <input
@@ -319,7 +319,7 @@ export default function ProfileForm({ locale, profile, balance }: Props) {
                   unoptimized
                 />
               ) : (
-                <span className="flex h-full w-full items-center justify-center text-2xl font-semibold text-neutral-50">
+                <span className="flex h-full w-full items-center justify-center text-h2 font-semibold text-neutral-50">
                   {(fullName.trim()[0] ?? '?').toUpperCase()}
                 </span>
               )}
@@ -357,7 +357,7 @@ export default function ProfileForm({ locale, profile, balance }: Props) {
           <div className="text-caption text-neutral-60">
             {t('profile_balance')}
           </div>
-          <div className="mt-1 text-xl font-bold">
+          <div className="mt-1 text-h3 font-bold">
             {new Intl.NumberFormat(locale === 'ru' ? 'ru-RU' : 'sr-Latn-RS', {
               style: 'currency',
               currency: 'EUR',

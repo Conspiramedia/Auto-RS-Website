@@ -162,8 +162,8 @@ export default async function CarPageView({
       <SmartBanner locale={locale} deepLink={canonicalUrl} />
       <SiteHeader locale={locale} pathname={`/car/${id}`} />
 
-      <main className="mx-auto max-w-6xl px-4 py-6">
-        <nav className="mb-4 text-sm text-neutral-50">
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+        <nav className="mb-4 text-caption text-neutral-50">
           <Link
             href={localeHref(locale, catalogPath)}
             className="hover:underline"
@@ -184,7 +184,7 @@ export default async function CarPageView({
               <GalleryCloseButton locale={locale} fallbackPath={catalogPath} />
             </div>
 
-            <h1 className="mt-5 text-2xl font-bold">{title}</h1>
+            <h1 className="mt-5 text-h2 font-bold sm:text-h1">{title}</h1>
 
             {car.status === 'sold' && (
               // Бейдж на карточке крупнее, чем на плитке каталога:
@@ -192,18 +192,18 @@ export default async function CarPageView({
               // поверх фотографии.
               <Badge
                 tone="sold"
-                className="mt-2 rounded-control px-3 py-1 text-sm"
+                className="mt-2 rounded-control px-3 py-1 text-caption"
               >
                 {t('car_sold')}
               </Badge>
             )}
 
             <section className="mt-6">
-              <h2 className="mb-3 text-lg font-semibold">{t('car_specs')}</h2>
+              <h2 className="mb-3 text-h3 font-semibold">{t('car_specs')}</h2>
               <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
                 {specs.map((s) => (
                   <div key={s.label}>
-                    <dt className="text-sm text-neutral-50">{s.label}</dt>
+                    <dt className="text-caption text-neutral-50">{s.label}</dt>
                     <dd className="font-medium">{s.value}</dd>
                   </div>
                 ))}
@@ -215,11 +215,11 @@ export default async function CarPageView({
                 что входит. */}
             {car.is_for_rent && (
               <Card padding="none" className="mt-6 p-4">
-                <h2 className="mb-3 text-lg font-semibold">{t('rent_terms')}</h2>
+                <h2 className="mb-3 text-h3 font-semibold">{t('rent_terms')}</h2>
 
                 <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
                   <div>
-                    <dt className="text-sm text-neutral-50">{t('rent_price')}</dt>
+                    <dt className="text-caption text-neutral-50">{t('rent_price')}</dt>
                     <dd className="font-medium">
                       {formatRentPrice(
                         car.rent_price_daily,
@@ -229,7 +229,7 @@ export default async function CarPageView({
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-sm text-neutral-50">
+                    <dt className="text-caption text-neutral-50">
                       {t('rent_deposit')}
                     </dt>
                     <dd className="font-medium">
@@ -237,7 +237,7 @@ export default async function CarPageView({
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-sm text-neutral-50">
+                    <dt className="text-caption text-neutral-50">
                       {t('rent_min_period')}
                     </dt>
                     <dd className="font-medium">
@@ -246,7 +246,7 @@ export default async function CarPageView({
                   </div>
                 </dl>
 
-                <p className="mt-3 text-sm text-neutral-60">
+                <p className="mt-3 text-caption text-neutral-60">
                   {t('rent_terms_text')}
                 </p>
               </Card>
@@ -254,7 +254,7 @@ export default async function CarPageView({
 
             {car.description && (
               <section className="mt-6">
-                <h2 className="mb-2 flex flex-wrap items-baseline gap-x-2 text-lg font-semibold">
+                <h2 className="mb-2 flex flex-wrap items-baseline gap-x-2 text-h3 font-semibold">
                   {t('car_description')}
                   {/* Описание — текст ПРОДАВЦА, а не строка интерфейса:
                       оно хранится в cars.description одним полем и на
@@ -277,7 +277,7 @@ export default async function CarPageView({
               </section>
             )}
 
-            <div className="mt-6 text-sm text-neutral-40">
+            <div className="mt-6 text-caption text-neutral-40">
               {t('car_published')}: {formatDate(car.created_at, locale)}
             </div>
           </div>
@@ -289,7 +289,7 @@ export default async function CarPageView({
                   (продажа и аренда) — тогда показываем обе, потому что
                   выбрать сделку должен пользователь, а не мы за него. */}
               {car.is_for_sale && (
-                <div className="text-3xl font-bold text-brand-primary">
+                <div className="text-h1 font-bold text-brand-primary">
                   {formatPrice(car.sale_price, car.currency, locale)}
                 </div>
               )}
@@ -299,8 +299,8 @@ export default async function CarPageView({
                   <div
                     className={
                       car.is_for_sale
-                        ? 'text-xl font-semibold text-brand-blue'
-                        : 'text-3xl font-bold text-brand-primary'
+                        ? 'text-h3 font-semibold text-brand-blue'
+                        : 'text-h1 font-bold text-brand-primary'
                     }
                   >
                     {formatRentPrice(
@@ -309,7 +309,7 @@ export default async function CarPageView({
                       locale,
                     )}
                   </div>
-                  <div className="mt-1 text-sm text-neutral-60">
+                  <div className="mt-1 text-caption text-neutral-60">
                     {t('rent_deposit')}:{' '}
                     {formatDeposit(car.deposit_amount, car.currency, locale)}
                   </div>
@@ -317,7 +317,7 @@ export default async function CarPageView({
               )}
 
               <div className="mt-4 border-t border-neutral-10 pt-4">
-                <div className="text-sm text-neutral-50">{t('car_seller')}</div>
+                <div className="text-caption text-neutral-50">{t('car_seller')}</div>
                 {/* Имя продавца ведёт на его витрину: у салона там весь
                     автопарк, и это заметно увеличивает глубину просмотра.
                     Ссылка нужна и краулеру — иначе страницы /dealer/{id}
@@ -328,7 +328,7 @@ export default async function CarPageView({
                 >
                   {car.seller_name}
                 </Link>
-                <div className="text-sm text-neutral-50">
+                <div className="text-caption text-neutral-50">
                   {car.seller_kind === 'dealer'
                     ? t('car_seller_dealer')
                     : t('car_seller_private')}
@@ -359,7 +359,7 @@ export default async function CarPageView({
               {/* QR — путь в приложение с десктопа, где смарт-баннера нет. */}
               <div className="mt-4 hidden border-t border-neutral-10 pt-4 lg:block">
                 <AppQr url={canonicalUrl} />
-                <p className="mt-2 text-xs text-neutral-50">{t('car_qr_hint')}</p>
+                <p className="mt-2 text-small text-neutral-50">{t('car_qr_hint')}</p>
               </div>
             </Card>
           </aside>
@@ -367,7 +367,7 @@ export default async function CarPageView({
 
         {similar.length > 0 && (
           <section className="mt-10">
-            <h2 className="mb-4 text-xl font-semibold">{t('car_similar')}</h2>
+            <h2 className="mb-4 text-h3 font-semibold">{t('car_similar')}</h2>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {similar.map((s) => (
                 <CarCard key={s.id} locale={locale} car={s} mode={mode} />

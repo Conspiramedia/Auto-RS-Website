@@ -35,7 +35,7 @@ export default function SignOutButton({ locale }: Props) {
       type="button"
       disabled={pending}
       onClick={() => startTransition(() => signOut(locale))}
-      className="shrink-0 text-sm font-semibold text-neutral-60 transition-colors duration-fast ease-out hover:text-brand-red disabled:opacity-40"
+      className="shrink-0 text-caption font-semibold text-neutral-60 transition-colors duration-fast ease-out hover:text-brand-red disabled:opacity-40"
     >
       {pending ? t('my_auth_checking') : t('my_logout')}
     </button>

@@ -46,7 +46,7 @@ export default function EmptyState({
     // отступ (py-12) — это единственный блок на экране, и он должен
     // дышать сильнее обычной карточки.
     <Card padding="none" className="px-6 py-12 text-center">
-      <h2 className="text-xl font-semibold">{title}</h2>
+      <h2 className="text-h3 font-semibold">{title}</h2>
       <p className="mx-auto mt-2 max-w-md text-neutral-60">{t('empty_reason')}</p>
 
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
@@ -69,7 +69,7 @@ export default function EmptyState({
         </Button>
       </div>
 
-      <p className="mx-auto mt-3 max-w-md text-sm text-neutral-50">
+      <p className="mx-auto mt-3 max-w-md text-caption text-neutral-50">
         {t('empty_notify_hint')}
       </p>
     </Card>

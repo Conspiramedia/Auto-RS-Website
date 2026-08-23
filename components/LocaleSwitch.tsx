@@ -34,7 +34,7 @@ type Props = {
 
 export default function LocaleSwitch({ locale, pathname }: Props) {
   return (
-    <div className="flex items-center gap-1 text-xs font-semibold">
+    <div className="flex items-center gap-1 text-small font-semibold">
       {LOCALES.map((code) => {
         const active = code === locale;
         return (

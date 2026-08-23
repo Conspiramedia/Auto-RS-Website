@@ -706,7 +706,7 @@ export default function SellForm({
     if (isEdit) {
       return (
         <Card padding="none" className="p-6 text-center">
-          <h2 className="text-xl font-semibold">
+          <h2 className="text-h3 font-semibold">
             {movedToModeration
               ? t('edit_done_moderation_title')
               : t('edit_done_title')}
@@ -731,7 +731,7 @@ export default function SellForm({
       // кабинете показать нечего, кроме бейджа «На проверке», а вот
       // посмотреть площадку в этот момент самое время.
       <Card padding="none" className="p-6 text-center">
-        <h2 className="text-xl font-semibold">{t('sell_success_title')}</h2>
+        <h2 className="text-h3 font-semibold">{t('sell_success_title')}</h2>
         <p className="mx-auto mt-2 max-w-md text-neutral-60">
           {t('sell_success_text')}
         </p>
@@ -823,7 +823,7 @@ export default function SellForm({
           из шапки, и возвращать человека в пустую историю незачем.
           Ничего не отправлено — закрытие проходит без последствий. */}
       <div className="mb-4 flex items-start justify-between gap-2">
-        <div className="text-sm text-neutral-50">
+        <div className="text-caption text-neutral-50">
           {/* В режиме правки шага входа нет — всего три. */}
           {t('sell_step')} {step} / {isEdit ? 3 : 4}
         </div>
@@ -846,12 +846,12 @@ export default function SellForm({
       {/* ---------- Шаг 1: автомобиль ---------- */}
       {step === 1 && (
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold">{t('sell_step_car')}</h2>
+          <h2 className="text-h4 font-semibold">{t('sell_step_car')}</h2>
 
           {/* Тип объявления — первый вопрос: от него зависит, какие поля
               цен появятся на следующем шаге. */}
           <div>
-            <label className="mb-1 block text-sm text-neutral-60">
+            <label className="mb-1 block text-caption text-neutral-60">
               {t('sell_type')}
             </label>
             {/* Два варианта вместо трёх: у объявления один тип сделки.
@@ -869,8 +869,8 @@ export default function SellForm({
                   onClick={() => setListingType(value)}
                   className={
                     listingType === value
-                      ? 'rounded-control bg-brand-dark px-3 py-2.5 text-sm font-semibold text-white'
-                      : 'rounded-control border border-neutral-15 px-3 py-2.5 text-sm hover:bg-surface-hover'
+                      ? 'rounded-control bg-brand-dark px-3 py-2.5 text-caption font-semibold text-white'
+                      : 'rounded-control border border-neutral-15 px-3 py-2.5 text-caption hover:bg-surface-hover'
                   }
                 >
                   {label}
@@ -957,13 +957,13 @@ export default function SellForm({
       {/* ---------- Шаг 2: детали ---------- */}
       {step === 2 && (
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold">{t('sell_step_details')}</h2>
+          <h2 className="text-h4 font-semibold">{t('sell_step_details')}</h2>
 
           {/* Цена продажи — только когда объявление продаётся.
               Пустое значение допустимо: это «Договорная». */}
           {listingType === 'sale' && (
             <div className="lg:w-1/2 lg:pr-1.5">
-              <label className="mb-1 block text-sm text-neutral-60">
+              <label className="mb-1 block text-caption text-neutral-60">
                 {t('sell_sale_price')}, €
               </label>
               <input
@@ -985,7 +985,7 @@ export default function SellForm({
           {listingType === 'rent' && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-sm text-neutral-60">
+                <label className="mb-1 block text-caption text-neutral-60">
                   {t('sell_rent_price')}, € *
                 </label>
                 <input
@@ -1000,7 +1000,7 @@ export default function SellForm({
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm text-neutral-60">
+                <label className="mb-1 block text-caption text-neutral-60">
                   {t('sell_deposit')}, €
                 </label>
                 <input
@@ -1021,7 +1021,7 @@ export default function SellForm({
               1152px они выглядели бы пустыми. Половина строки —
               достаточно для семи цифр с разделителями. */}
           <div className="lg:w-1/2 lg:pr-1.5">
-            <label className="mb-1 block text-sm text-neutral-60">
+            <label className="mb-1 block text-caption text-neutral-60">
               {t('car_mileage')}, {t('common_km')}
             </label>
             <input
@@ -1085,7 +1085,7 @@ export default function SellForm({
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-neutral-60">
+            <label className="mb-1 block text-caption text-neutral-60">
               {t('car_description')}
             </label>
             <textarea
@@ -1114,7 +1114,7 @@ export default function SellForm({
       {/* ---------- Шаг 3: фотографии ---------- */}
       {step === 3 && (
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold">{t('sell_step_photos')}</h2>
+          <h2 className="text-h4 font-semibold">{t('sell_step_photos')}</h2>
 
           <PhotoPicker
             locale={locale}
@@ -1179,7 +1179,7 @@ export default function SellForm({
       {/* ---------- Шаг 4: контакты и вход по SMS ---------- */}
       {step === 4 && (
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold">{t('sell_step_contact')}</h2>
+          <h2 className="text-h4 font-semibold">{t('sell_step_contact')}</h2>
 
           {/* Honeypot. Скрыт от пользователя и от скринридеров, но виден
               ботам, которые заполняют все поля формы подряд. */}
@@ -1204,7 +1204,7 @@ export default function SellForm({
               привязан к аккаунту, и вводить его заново незачем. */}
           {signedIn === false && (
             <div>
-              <label className="mb-1 block text-sm text-neutral-60">
+              <label className="mb-1 block text-caption text-neutral-60">
                 {t('sell_phone')}
               </label>
               {/* Маска «+381 6X XXX XXX(X)» — та же, что в приложении
@@ -1262,7 +1262,7 @@ export default function SellForm({
                   принимаются здесь, а не после публикации.
                   Ссылки ведут на страницы сайта и открываются в новой
                   вкладке — иначе продавец потеряет заполненную форму. */}
-              <label className="flex cursor-pointer items-start gap-2.5 text-sm text-neutral-70">
+              <label className="flex cursor-pointer items-start gap-2.5 text-caption text-neutral-70">
                 <input
                   type="checkbox"
                   checked={agreed}
@@ -1305,12 +1305,12 @@ export default function SellForm({
             </>
           ) : (
             <>
-              <p className="text-sm text-neutral-60">
+              <p className="text-caption text-neutral-60">
                 {t('otp_sent_to')} {sentTo}
               </p>
 
               <div>
-                <label className="mb-1 block text-sm text-neutral-60">
+                <label className="mb-1 block text-caption text-neutral-60">
                   {t('sell_code')}
                 </label>
                 <input
@@ -1331,7 +1331,7 @@ export default function SellForm({
               {/* «Изменить номер» и «Отправить снова» — как в приложении.
                   Повторная отправка блокируется на 60 секунд: без таймера
                   продавец выжжет суточную квоту в пять SMS за минуту. */}
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-caption">
                 <button
                   type="button"
                   onClick={changeNumber}
@@ -1394,13 +1394,13 @@ export default function SellForm({
       {/* Успешная повторная отправка. В приложении это зелёный снек;
           на сайте — та же роль, но без всплывающего слоя. */}
       {notice && !error && (
-        <p className="mt-4 rounded-control bg-brand-green/10 px-3 py-2 text-sm text-brand-green">
+        <p className="mt-4 rounded-control bg-brand-green/10 px-3 py-2 text-caption text-brand-green">
           {notice}
         </p>
       )}
 
       {error && (
-        <p className="mt-4 rounded-control bg-brand-red/10 px-3 py-2 text-sm text-brand-red">
+        <p className="mt-4 rounded-control bg-brand-red/10 px-3 py-2 text-caption text-brand-red">
           {error}
         </p>
       )}

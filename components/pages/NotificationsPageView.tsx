@@ -67,7 +67,7 @@ export default async function NotificationsPageView({ locale }: Props) {
   if (items.length === 0) {
     return (
       <Card padding="none" className="px-6 py-12 text-center">
-        <h2 className="text-lg font-semibold">{t('notif_empty_title')}</h2>
+        <h2 className="text-h4 font-semibold">{t('notif_empty_title')}</h2>
         <p className="mx-auto mt-2 max-w-md text-neutral-60">
           {t('notif_empty_text')}
         </p>

@@ -61,7 +61,7 @@ export default async function MyListingsView({ locale }: Props) {
   if (listings.length === 0) {
     return (
       <Card padding="none" className="px-6 py-12 text-center">
-        <h2 className="text-lg font-semibold">{t('my_empty_title')}</h2>
+        <h2 className="text-h4 font-semibold">{t('my_empty_title')}</h2>
         <p className="mx-auto mt-2 max-w-md text-neutral-60">
           {t('my_empty_text')}
         </p>
@@ -118,7 +118,7 @@ export default async function MyListingsView({ locale }: Props) {
 function Total({ label, value }: { label: string; value: number }) {
   return (
     <div>
-      <div className="text-xl font-bold">{value}</div>
+      <div className="text-h3 font-bold">{value}</div>
       <div className="text-caption text-neutral-60">{label}</div>
     </div>
   );

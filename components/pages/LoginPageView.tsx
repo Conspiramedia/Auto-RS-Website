@@ -69,13 +69,13 @@ export default async function LoginPageView({
           на странице больше ничего нет, и прижатый к верху блок оставлял
           бы под собой пустое поле в пол-экрана. min-h подобран так, что
           вместе с шапкой и подвалом заполняется первый экран. */}
-      <main className="mx-auto flex min-h-[60vh] max-w-6xl flex-col items-center justify-center px-4 py-10 sm:py-16">
+      <main className="mx-auto flex min-h-[60vh] max-w-6xl flex-col items-center justify-center px-4 py-12 sm:py-16">
         <div className="w-full max-w-md">
           {/* Логотип над карточкой: страница входа — единственная, куда
               можно попасть по прямой ссылке из письма, и она обязана
               сразу сообщать, куда человек пришёл. */}
           <div className="mb-6 flex justify-center">
-            <Logo className="text-lg" />
+            <Logo className="text-h4" />
           </div>
 
           <AuthGate

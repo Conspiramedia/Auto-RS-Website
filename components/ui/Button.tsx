@@ -61,8 +61,8 @@ const VARIANTS: Record<Variant, string> = {
 };
 
 // Размеры. md — размер по умолчанию, совпадает с прежним px-4 py-3.
-// Значения перенесены из разметки без изменений: text-caption = text-sm,
-// text-small = text-xs (одна и та же пара размер/интерлиньяж).
+// Значения перенесены из разметки без изменений: подписи кнопок берут
+// ступени caption (14px) и small (12px) из шкалы бренда.
 const SIZES: Record<Size, string> = {
   xs: 'px-2.5 py-2.5 text-small sm:px-3 sm:text-caption',
   sm: 'px-4 py-2.5 text-caption',

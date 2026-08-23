@@ -28,9 +28,9 @@ export default function AppPageView({ locale }: { locale: Locale }) {
       <SmartBanner locale={locale} />
       <SiteHeader locale={locale} pathname="/app" />
 
-      <main className="mx-auto max-w-4xl px-4 py-10">
-        <h1 className="text-3xl font-bold">{brand.name}</h1>
-        <p className="mt-2 max-w-xl text-lg text-neutral-60">
+      <main className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
+        <h1 className="text-h2 font-bold sm:text-h1">{brand.name}</h1>
+        <p className="mt-2 max-w-xl text-h4 text-neutral-60">
           {t('site_tagline')}
         </p>
 
@@ -70,7 +70,7 @@ export default function AppPageView({ locale }: { locale: Locale }) {
 
           <div className="hidden text-center sm:block">
             <AppQr url={siteBaseUrl} size={160} />
-            <p className="mt-2 max-w-[180px] text-xs text-neutral-50">
+            <p className="mt-2 max-w-[180px] text-small text-neutral-50">
               {t('car_qr_hint')}
             </p>
           </div>

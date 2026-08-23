@@ -68,13 +68,13 @@ export default function HowItWorksPageView({ locale }: { locale: Locale }) {
     <>
       <SiteHeader locale={locale} pathname="/how-it-works" />
 
-      <main className="mx-auto max-w-3xl px-4 py-8">
-        <h1 className="text-2xl font-bold sm:text-3xl">{t('how_title')}</h1>
-        <p className="mt-3 text-lg text-neutral-60">{t('how_lead')}</p>
+      <main className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
+        <h1 className="text-h2 font-bold sm:text-h1">{t('how_title')}</h1>
+        <p className="mt-3 text-h4 text-neutral-60">{t('how_lead')}</p>
 
         {SCENARIOS.map((scenario) => (
-          <section key={scenario.title} className="mt-12">
-            <h2 className="text-xl font-semibold">{t(scenario.title)}</h2>
+          <section key={scenario.title} className="mt-10">
+            <h2 className="text-h3 font-semibold">{t(scenario.title)}</h2>
 
             <ol className="mt-4 space-y-4">
               {scenario.steps.map((step, i) => (
@@ -115,8 +115,8 @@ export default function HowItWorksPageView({ locale }: { locale: Locale }) {
           </section>
         ))}
 
-        <Card className="mt-12 text-center">
-          <h2 className="text-lg font-semibold">{t('faq_more_title')}</h2>
+        <Card className="mt-10 text-center">
+          <h2 className="text-h3 font-semibold">{t('faq_more_title')}</h2>
           <p className="mt-2 text-neutral-60">{t('faq_more_text')}</p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
             <Button variant="secondary" href={localeHref(locale, '/faq')}>

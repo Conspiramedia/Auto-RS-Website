@@ -122,7 +122,7 @@ export function Avatar({
   url: string | null;
   size?: 'md' | 'lg';
 }) {
-  const box = size === 'lg' ? 'h-11 w-11 text-base' : 'h-10 w-10 text-caption';
+  const box = size === 'lg' ? 'h-11 w-11 text-body' : 'h-10 w-10 text-caption';
   const initial = name?.trim()?.[0]?.toUpperCase() ?? '?';
 
   return (

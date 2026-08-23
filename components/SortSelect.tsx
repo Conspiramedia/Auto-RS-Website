@@ -48,7 +48,7 @@ export default function SortSelect({ locale, filters, basePath }: Props) {
         value={current}
         onChange={(e) => router.push(hrefFor(e.target.value as never))}
         aria-label={t('catalog_sort')}
-        className="h-10 max-w-[52vw] truncate rounded-control border border-neutral-15 bg-white px-2.5 text-sm outline-none focus:border-brand-primary sm:hidden"
+        className="h-10 max-w-[52vw] truncate rounded-control border border-neutral-15 bg-white px-2.5 text-caption outline-none focus:border-brand-primary sm:hidden"
       >
         {SORT_OPTIONS.map((opt) => (
           <option key={opt.key} value={opt.key}>
@@ -61,7 +61,7 @@ export default function SortSelect({ locale, filters, basePath }: Props) {
           flex-wrap здесь НЕЛЬЗЯ: шесть вариантов переносятся на вторую
           строку и наезжают на счётчик слева. Вместо переноса — лента с
           прокруткой, как было до редизайна. */}
-      <div className="hidden min-w-0 items-center gap-2 text-sm sm:flex">
+      <div className="hidden min-w-0 items-center gap-2 text-caption sm:flex">
         <span className="shrink-0 text-neutral-50">{t('catalog_sort')}:</span>
 
         {/* min-w-0 + overflow-x-auto: лента сжимается по доступному
