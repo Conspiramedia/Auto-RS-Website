@@ -37,6 +37,7 @@ import { useBadgeCounts } from '@/lib/useBadgeCounts';
 import SignOutButton from './SignOutButton';
 import CloseButton from './ui/CloseButton';
 import CountBadge from './ui/CountBadge';
+import { InstallIcon } from './ui/InstallIcons';
 
 // Разделы сайта. Порядок осмысленный: сначала витрины (за ними приходят),
 // потом продавцам, затем справочные страницы и контакты.
@@ -315,25 +316,13 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                       : 'border-l-4 border-transparent pl-3 hover:bg-surface-hover',
                   ].join(' ')}
                 >
-                  {/* Стрелка в подставку — общепринятый знак установки.
-                      Inline-SVG по той же причине, что в CloseButton:
-                      у текстового символа метрики зависят от шрифта. */}
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                    className="shrink-0"
-                  >
-                    <path d="M12 3v12" />
-                    <path d="m7 10 5 5 5-5" />
-                    <path d="M5 21h14" />
-                  </svg>
+                  {/* Стрелка в подставку — общий InstallIcon, тот же
+                      значок, что у шага «Установить приложение» на
+                      /install. Пункт меню и шаг инструкции обязаны
+                      опознаваться как одно действие, а копия путей
+                      здесь разъехалась бы с оригиналом при первой
+                      правке — что и произошло до этой замены. */}
+                  <InstallIcon className="h-[18px] w-[18px] shrink-0" />
                   <span>{t('nav_install')}</span>
                 </Link>
               </div>

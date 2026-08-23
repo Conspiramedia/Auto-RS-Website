@@ -103,7 +103,7 @@ export default function FilterChips({
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2.5"
+            strokeWidth="3"
             strokeLinecap="round"
             aria-hidden="true"
             className="shrink-0 text-neutral-40"
