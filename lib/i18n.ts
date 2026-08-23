@@ -128,6 +128,7 @@ export const dict = {
     nav_sell: 'Prodaj auto',
     nav_dealers: 'Za autosalone',
     nav_app: 'Aplikacija',
+    nav_install: 'Brzi pristup',
     site_tagline: 'Prodaja i iznajmljivanje automobila u Srbiji',
 
     // Каталог
@@ -599,6 +600,31 @@ export const dict = {
     // ------------------------------------------------------------
     // /app — заглушка «приложение в разработке» вместо кнопок сторов.
     // ------------------------------------------------------------
+    // ------------------------------------------------------------
+    // /install — установка сайта на телефон (PWA).
+    // ------------------------------------------------------------
+    install_title: 'RS Auto na vašem telefonu',
+    install_lead:
+      'Ikonica na ekranu, otvara se bez adresne trake i radi kao aplikacija.',
+    install_android_title: 'Android (Chrome)',
+    install_android_1: 'Otvorite sajt u Chrome pregledaču.',
+    install_android_2: 'Dodirnite tri tačkice u gornjem desnom uglu.',
+    install_android_3:
+      'Izaberite «Instalirajte aplikaciju» ili «Dodaj na početni ekran».',
+    install_android_4: 'Potvrdite — ikonica će se pojaviti na ekranu.',
+    install_ios_title: 'iPhone/iPad (Safari)',
+    install_ios_1:
+      'Otvorite sajt u Safari pregledaču (u drugim pregledačima na iOS-u '
+      + 'instalacija nije dostupna).',
+    install_ios_2:
+      'Dodirnite «Podeli» — kvadrat sa strelicom nagore, na dnu ekrana.',
+    install_ios_3: 'Izaberite «Na početni ekran» (On Home Screen).',
+    install_ios_4:
+      'Dodirnite «Dodaj» — ikonica će se pojaviti na početnom ekranu.',
+    // Подпись номера шага для скринридера: кружок с цифрой от него
+    // скрыт, и без неё шаги читались бы сплошным списком без номеров.
+    install_step: 'Korak',
+
     app_soon_badge: 'U izradi',
     app_soon_title: 'Sve već radi na sajtu',
     app_soon_text:
@@ -800,6 +826,7 @@ export const dict = {
     nav_sell: 'Продать авто',
     nav_dealers: 'Автосалонам',
     nav_app: 'Приложение',
+    nav_install: 'Быстрый доступ',
     site_tagline: 'Продажа и аренда автомобилей в Сербии',
 
     catalog_title: 'Автомобили на продажу',
@@ -1251,6 +1278,32 @@ export const dict = {
     // ------------------------------------------------------------
     // /app — заглушка «приложение в разработке» вместо кнопок сторов.
     // ------------------------------------------------------------
+    // ------------------------------------------------------------
+    // /install — установка сайта на телефон (PWA).
+    // ------------------------------------------------------------
+    install_title: 'RS Auto на вашем телефоне',
+    install_lead:
+      'Иконка на экране, открывается без адресной строки и работает как '
+      + 'приложение.',
+    install_android_title: 'Android (Chrome)',
+    install_android_1: 'Откройте сайт в Chrome.',
+    install_android_2: 'Нажмите три точки в правом верхнем углу.',
+    install_android_3:
+      'Выберите «Установить приложение» или «Добавить на главный экран».',
+    install_android_4: 'Подтвердите — иконка появится на экране.',
+    install_ios_title: 'iPhone/iPad (Safari)',
+    install_ios_1:
+      'Откройте сайт в Safari (в других браузерах на iOS установка '
+      + 'недоступна).',
+    install_ios_2:
+      'Нажмите «Поделиться» — квадрат со стрелкой вверх, внизу экрана.',
+    install_ios_3: 'Выберите «На экран „Домой“» (On Home Screen).',
+    install_ios_4:
+      'Нажмите «Добавить» — иконка появится на главном экране.',
+    // Подпись номера шага для скринридера: кружок с цифрой от него
+    // скрыт, и без неё шаги читались бы сплошным списком без номеров.
+    install_step: 'Шаг',
+
     app_soon_badge: 'В разработке',
     app_soon_title: 'Всё уже работает на сайте',
     app_soon_text:

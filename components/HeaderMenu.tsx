@@ -290,6 +290,54 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                 </Link>
               )}
 
+              {/* БЫСТРЫЙ ДОСТУП — установка сайта на домашний экран.
+                  Отдельной строкой после блока входа/кабинета и до
+                  разделов сайта: это не раздел, а действие над самим
+                  сайтом, и в ряду «Каталог / Аренда / Контакты» оно
+                  читалось бы как ещё одна страница.
+
+                  Только в меню, в десктопной шапке пункта нет: ставят
+                  на домашний экран с телефона, и на десктопе строка
+                  занимала бы место, ничего не предлагая.
+
+                  Единственный пункт меню со значком: значок здесь
+                  отличает действие от списка ссылок вокруг. Разделители
+                  сверху и снизу отделяют его от обеих групп. */}
+              <div className="mb-2 border-b border-neutral-10 pb-2">
+                <Link
+                  href={localeHref(locale, '/install')}
+                  onClick={() => setOpen(false)}
+                  aria-current={isActive('/install') ? 'page' : undefined}
+                  className={[
+                    'flex items-center gap-2.5 py-3 pr-4 font-semibold transition-colors duration-fast ease-out',
+                    isActive('/install')
+                      ? 'border-l-4 border-brand-primary bg-surface-hover pl-3 text-brand-primary'
+                      : 'border-l-4 border-transparent pl-3 hover:bg-surface-hover',
+                  ].join(' ')}
+                >
+                  {/* Стрелка в подставку — общепринятый знак установки.
+                      Inline-SVG по той же причине, что в CloseButton:
+                      у текстового символа метрики зависят от шрифта. */}
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    className="shrink-0"
+                  >
+                    <path d="M12 3v12" />
+                    <path d="m7 10 5 5 5-5" />
+                    <path d="M5 21h14" />
+                  </svg>
+                  <span>{t('nav_install')}</span>
+                </Link>
+              </div>
+
               {LINKS.map((link) => {
                 const active = isActive(link.path);
 
