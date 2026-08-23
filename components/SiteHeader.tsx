@@ -51,7 +51,7 @@ export default function SiteHeader({ locale, pathname }: Props) {
           подтягивает кнопку с её собственным padding обратно к краю. */}
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-4 sm:gap-4">
         <Link href={localeHref(locale, '/')} className="shrink-0">
-          <Logo className="text-caption sm:text-h4" />
+          <Logo className="text-body sm:text-h4" />
         </Link>
 
         {/* Разделы сайта. Показываются только на десктопе (sm:flex):

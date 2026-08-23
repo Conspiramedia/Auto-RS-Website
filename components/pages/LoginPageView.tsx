@@ -75,7 +75,7 @@ export default async function LoginPageView({
               можно попасть по прямой ссылке из письма, и она обязана
               сразу сообщать, куда человек пришёл. */}
           <div className="mb-6 flex justify-center">
-            <Logo className="text-h4" />
+            <Logo className="text-body sm:text-h4" />
           </div>
 
           <AuthGate
