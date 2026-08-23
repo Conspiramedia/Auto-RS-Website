@@ -27,7 +27,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { markChatRead } from '@/app/my/actions';
 import ChatList, { Avatar } from '@/components/ChatList';
 import ChatRoom from '@/components/ChatRoom';
 import Card from '@/components/ui/Card';
@@ -84,10 +83,13 @@ export default async function ChatRoomPageView({ locale, chatId }: Props) {
     .slice()
     .reverse();
 
-  // Входящие помечаются прочитанными при открытии — как в приложении.
-  // await не нужен: результат на отрисовку не влияет, а ждать запись
-  // перед показом переписки значит задержать её на ровном месте.
-  if (chat.unread_count > 0) void markChatRead(chatId);
+  // Пометка входящих прочитанными НЕ делается здесь. Это мутация, а
+  // Next запрещает мутации и сброс кэша (revalidatePath) во время
+  // рендера Server Component: вызов markChatRead прямо в теле страницы
+  // ронял диалог в 500, как только в нём были непрочитанные — то есть
+  // ровно в тех чатах, ради которых её и открывают. Действие вызывает
+  // ChatRoom из useEffect после монтирования: там это отдельный POST,
+  // где revalidatePath законен.
 
   return (
     <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
@@ -160,6 +162,7 @@ export default async function ChatRoomPageView({ locale, chatId }: Props) {
           currentUserId={user.id}
           initialMessages={messages}
           peerBlocked={chat.peer_blocked}
+          hasUnread={chat.unread_count > 0}
         />
       </Card>
     </div>

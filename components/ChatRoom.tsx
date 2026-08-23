@@ -28,7 +28,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 
-import { sendMessage } from '@/app/my/actions';
+import { markChatRead, sendMessage } from '@/app/my/actions';
 import Alert from './ui/Alert';
 import Button from './ui/Button';
 import { fieldClass } from './ui/Field';
@@ -48,6 +48,9 @@ type Props = {
   // Собеседник заблокирован текущим пользователем: поле ввода
   // заменяется баннером. Запрет реального уровня — в RLS (0041).
   peerBlocked: boolean;
+  // В диалоге есть непрочитанные входящие — их надо погасить при
+  // открытии. Считает сервер, гасит клиент (см. useEffect ниже).
+  hasUnread: boolean;
 };
 
 export default function ChatRoom({
@@ -56,6 +59,7 @@ export default function ChatRoom({
   currentUserId,
   initialMessages,
   peerBlocked,
+  hasUnread,
 }: Props) {
   const t = getT(locale);
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
@@ -97,6 +101,23 @@ export default function ChatRoom({
       // накапливаются каналы, и одно сообщение приходит многократно.
       supabase.removeChannel(channel);
     };
+  }, [chatId]);
+
+  // Пометка входящих прочитанными — при открытии диалога, как в
+  // приложении. Отсюда, а не из Server Component страницы: markChatRead
+  // внутри вызывает revalidatePath, а сброс кэша во время рендера Next
+  // запрещает — страница падала бы в 500 на каждом чате с новыми
+  // сообщениями. Из useEffect это обычный вызов Server Action
+  // отдельным запросом.
+  //
+  // Зависимость только от chatId: hasUnread намеренно не в списке —
+  // после revalidatePath страница перерисуется с hasUnread=false, и
+  // изменение пропа не должно считаться поводом позвать действие ещё
+  // раз. Один диалог — один вызов.
+  useEffect(() => {
+    if (!hasUnread) return;
+    void markChatRead(chatId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatId]);
 
   // Прокрутка к низу при появлении сообщений.
