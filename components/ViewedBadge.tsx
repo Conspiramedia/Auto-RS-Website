@@ -22,6 +22,7 @@ import { useEffect, useState } from 'react';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import { isCarViewed } from './RecentlyViewed';
+import Badge from './ui/Badge';
 
 export default function ViewedBadge({
   locale,
@@ -46,15 +47,17 @@ export default function ViewedBadge({
   if (!viewed) return null;
 
   return (
-    // Тёмная нейтральная плашка — это констатация, а не акцент, поэтому
-    // она не спорит с бейджами промо и аренды.
+    // Тон viewed — тёмная нейтральная плашка: констатация, а не акцент,
+    // поэтому она не спорит с бейджами промо и аренды.
     // whitespace-nowrap: «Просмотрено» и сербское «Pogledano» — слова
     // длинные, и на узкой карточке flex сжал бы плашку, разорвав слово
     // посреди. Пусть лучше метка целиком уедет на вторую строку.
-    <span
-      className={`shrink-0 whitespace-nowrap rounded-sm bg-neutral-60 px-1.5 py-0.5 text-micro font-semibold text-white ${className}`}
+    <Badge
+      tone="viewed"
+      size="xs"
+      className={`shrink-0 whitespace-nowrap ${className}`}
     >
       {t('car_viewed')}
-    </span>
+    </Badge>
   );
 }

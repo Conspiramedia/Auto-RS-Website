@@ -6,6 +6,7 @@ import DealerForm from '@/components/DealerForm';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
 import SmartBanner from '@/components/SmartBanner';
+import Card from '@/components/ui/Card';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import type { DictKey } from '@/lib/i18n';
@@ -36,10 +37,10 @@ export default function DealersPageView({ locale }: { locale: Locale }) {
 
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           {BENEFITS.map((b) => (
-            <div key={b.title} className="rounded-card border border-neutral-10 p-4">
+            <Card key={b.title} padding="lg">
               <h2 className="font-semibold">{t(b.title)}</h2>
               <p className="mt-1 text-caption text-neutral-60">{t(b.text)}</p>
-            </div>
+            </Card>
           ))}
         </div>
 

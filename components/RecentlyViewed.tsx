@@ -155,7 +155,7 @@ export default function RecentlyViewed({ locale, excludeId }: Props) {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
         {items.map((car) => (
           // mode="both": в истории соседствуют продажа и аренда, и цену
           // должно выбирать само объявление.

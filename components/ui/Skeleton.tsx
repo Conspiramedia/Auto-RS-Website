@@ -50,7 +50,7 @@ export function SkeletonCarCard() {
 // Сетка карточек. Колонки те же, что в каталоге (2/3/4).
 export function SkeletonCarGrid({ count = 8 }: { count?: number }) {
   return (
-    <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+    <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
       {Array.from({ length: count }, (_, i) => (
         <SkeletonCarCard key={i} />
       ))}
@@ -88,7 +88,7 @@ export function SkeletonCarPage() {
       {/* Хлебные крошки. */}
       <SkeletonBox className="mb-4 h-5 w-48" />
 
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+      <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
         <div>
           {/* Галерея: та же пропорция 4:3, что у CarGallery. */}
           <div className="aspect-[4/3] animate-pulse rounded-card bg-surface-muted" />

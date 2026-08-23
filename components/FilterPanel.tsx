@@ -234,7 +234,7 @@ export default function FilterPanel({
         </svg>
 
         {activeCount > 0 && (
-          <span className="rounded-full bg-brand-gold px-2 py-0.5 text-small">
+          <span className="rounded-pill bg-brand-gold px-2 py-0.5 text-small">
             {activeCount}
           </span>
         )}

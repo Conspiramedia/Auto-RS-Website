@@ -6,12 +6,13 @@
 // ============================================================
 
 import Image from 'next/image';
-import Link from 'next/link';
 
 import { formatMileage, formatPrice, formatRentPrice } from '@/lib/format';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import type { ListingType } from '@/lib/types';
+import Badge from './ui/Badge';
+import Card from './ui/Card';
 import ViewedBadge from './ViewedBadge';
 
 type Props = {
@@ -62,9 +63,15 @@ export default function CarCard({
     (mode === 'rent' || (mode === 'both' && rentOnly));
 
   return (
-    <Link
+    // Card padding="none": содержимое карточки само управляет отступами —
+    // фотография идёт во всю ширину, текстовый блок под ней со своим p-3.
+    // hoverable даёт тень при наведении — ровно то, что раньше было
+    // выписано в этой строке хардкодом.
+    <Card
+      padding="none"
+      hoverable
+      className="group block"
       href={localeHref(locale, `/car/${car.id}`)}
-      className="group block overflow-hidden rounded-card border border-neutral-10 transition-shadow hover:shadow-card"
     >
       <div className="relative aspect-[4/3] bg-surface-muted">
         {car.photo_url ? (
@@ -72,10 +79,13 @@ export default function CarCard({
             src={car.photo_url}
             alt={`${car.brand} ${car.model}, ${car.year}`}
             fill
-            // Размеры соответствуют сетке ниже (1/2/3 колонки): без них
-            // Next отдал бы изображение под всю ширину экрана на всех
-            // брейкпоинтах и мобильный трафик вырос бы в разы.
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            // Размеры соответствуют сетке карточек (2/3/4 колонки на
+            // 360/768/1280): без них Next отдал бы изображение под всю
+            // ширину экрана на всех брейкпоинтах и мобильный трафик
+            // вырос бы в разы. Границы совпадают с md/xl сетки —
+            // разъехавшись, они дали бы размытое фото либо лишние
+            // килобайты.
+            sizes="(max-width: 767px) 50vw, (max-width: 1279px) 33vw, 25vw"
             className="object-cover"
             priority={priority}
           />
@@ -110,9 +120,9 @@ export default function CarCard({
               позиция бейджа аренды не зависит от того, открывал ли
               человек карточку, и не прыгает после гидратации. */}
           {mode === 'both' && car.is_for_rent && (
-            <span className="rounded-control bg-brand-blue px-1.5 py-0.5 text-micro font-semibold text-white">
+            <Badge tone="rent" size="xs">
               {t('badge_rent')}
-            </span>
+            </Badge>
           )}
 
           {/* «Просмотрено» — клиентская метка: история открытых
@@ -127,9 +137,9 @@ export default function CarCard({
         {/* Продвижение — левый НИЖНИЙ угол: верхний ряд занят метками
             аренды и просмотра. Так же разведены бейджи в приложении. */}
         {car.is_promoted && (
-          <span className="absolute bottom-2 left-2 rounded-control bg-brand-gold px-1.5 py-0.5 text-micro font-semibold text-white">
+          <Badge tone="promoted" size="xs" className="absolute bottom-2 left-2">
             {t('car_promoted')}
-          </span>
+          </Badge>
         )}
       </div>
 
@@ -159,7 +169,7 @@ export default function CarCard({
         {/* В специализированном разделе — короткая пометка о второй
             витрине без цены: она уже показана выше. */}
         {mode === 'sale' && car.is_for_rent && car.rent_price_daily == null && (
-          <div className="mt-0.5 text-small font-medium text-brand-blue">
+          <div className="mt-0.5 text-caption font-medium text-brand-blue">
             {t('mode_rent')}
           </div>
         )}
@@ -170,6 +180,6 @@ export default function CarCard({
 
         <div className="mt-0.5 truncate text-caption text-neutral-50">{car.city}</div>
       </div>
-    </Link>
+    </Card>
   );
 }

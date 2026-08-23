@@ -11,21 +11,34 @@
 // сделала бы страницу шумной.
 // ============================================================
 
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 type Props = {
   children: ReactNode;
   // Внутренний отступ. none — когда содержимое само управляет
   // отступами (карточка объявления с фотографией во всю ширину).
-  padding?: 'none' | 'sm' | 'md';
+  //   sm — плотные карточки списка (кабинет владельца);
+  //   lg — блоки на странице объявления: цена, условия аренды. Отступ
+  //        не растёт с шириной, потому что блок и так стоит в узкой
+  //        колонке, а на мобильном занимает всю ширину экрана;
+  //   md — формы: там поля должны отступать от края сильнее.
+  padding?: 'none' | 'sm' | 'lg' | 'md';
   // Реакция на наведение для кликабельных карточек.
   hoverable?: boolean;
+  // Карточка целиком — ссылка (плитка объявления в каталоге). Рендерится
+  // настоящим <Link>, а не div с обработчиком: краулер обязан видеть
+  // ссылку, а человек — открывать её в новой вкладке.
+  // Карточку с кнопками внутри так оформлять нельзя (интерактивный
+  // элемент внутри интерактивного) — там href не передаётся.
+  href?: string;
   className?: string;
 };
 
 const PADDINGS = {
   none: '',
   sm: 'p-3',
+  lg: 'p-4',
   // Прежнее «p-4 sm:p-6» форм — самый частый вариант.
   md: 'p-4 sm:p-6',
 } as const;
@@ -34,6 +47,7 @@ export default function Card({
   children,
   padding = 'md',
   hoverable = false,
+  href,
   className = '',
 }: Props) {
   const classes = [
@@ -46,6 +60,14 @@ export default function Card({
   ]
     .filter(Boolean)
     .join(' ');
+
+  if (href) {
+    return (
+      <Link href={href} className={classes}>
+        {children}
+      </Link>
+    );
+  }
 
   return <div className={classes}>{children}</div>;
 }

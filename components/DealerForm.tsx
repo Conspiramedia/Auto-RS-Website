@@ -19,6 +19,7 @@ import { trackEvent } from '@/lib/analytics';
 import { formatSerbianPhone, serbianPhoneToE164 } from '@/lib/inputFormat';
 import { fieldClass, fieldClassTextarea } from './ui/Field';
 import Button from './ui/Button';
+import Card from './ui/Card';
 import ListPicker, { type PickerOption } from './ListPicker';
 
 type Props = {
@@ -104,14 +105,14 @@ export default function DealerForm({ locale }: Props) {
 
   if (sent) {
     return (
-      <div className="rounded-card border border-neutral-10 p-6 text-center">
+      <Card className="text-center">
         <h2 className="text-h4 font-semibold">
           {t('dealers_sent_title')}
         </h2>
         <p className="mt-2 text-neutral-60">
           {t('dealers_sent_text')}
         </p>
-      </div>
+      </Card>
     );
   }
 

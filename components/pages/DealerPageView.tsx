@@ -169,7 +169,7 @@ export default async function DealerPageView({
             <h2 className="text-h3 font-semibold">
               {t('dealer_page_listings')}
             </h2>
-            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
               {active.map((car, i) => (
                 <CarCard
                   key={car.id}
@@ -191,7 +191,7 @@ export default async function DealerPageView({
             <h2 className="text-h3 font-semibold">
               {t('dealer_page_sold_title')}
             </h2>
-            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
               {sold.map((car) => (
                 <CarCard key={car.id} locale={locale} car={car} mode="both" />
               ))}

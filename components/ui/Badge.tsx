@@ -24,6 +24,15 @@
 //
 // Радиус sm, а не control: на плашке высотой ~24px радиус 12 превращает
 // её в капсулу, а нужен прямоугольник со скруглением.
+//
+// РАЗМЕРЫ — по месту, где плашка стоит, а не по вкусу:
+//   xs — поверх фотографии в плитке каталога. Ступень micro (11px):
+//        карточка на 360px узкая, и плашка обязана оставлять видимой
+//        саму фотографию.
+//   sm — рядом с текстом: статусы в кабинете, промо в списке владельца.
+//   md — ключевой факт об объявлении на его собственной странице
+//        («Продано»). Там плашка не пометка поверх кадра, а сообщение,
+//        и мельче она читается как случайный ярлык.
 // ============================================================
 
 import type { ReactNode } from 'react';
@@ -37,7 +46,13 @@ type Tone =
   | 'success'
   | 'error'
   | 'dark'
-  | 'neutral';
+  | 'neutral'
+  // Личная метка посетителя «Просмотрено». Нейтральная тёмная плашка:
+  // это констатация, а не акцент, и спорить с промо и арендой она не
+  // должна.
+  | 'viewed';
+
+type Size = 'xs' | 'sm' | 'md';
 
 const TONES: Record<Tone, string> = {
   promoted: 'bg-brand-gold text-white',
@@ -53,18 +68,31 @@ const TONES: Record<Tone, string> = {
   // требует внимания, и цветная плашка тянула бы взгляд туда, где
   // ничего делать не нужно.
   neutral: 'bg-surface-muted text-neutral-60',
+  viewed: 'bg-neutral-60 text-white',
+};
+
+const SIZES: Record<Size, string> = {
+  xs: 'px-1.5 py-0.5 text-micro',
+  sm: 'px-2 py-1 text-small',
+  md: 'px-3 py-1 text-caption',
 };
 
 type Props = {
   tone: Tone;
+  size?: Size;
   children: ReactNode;
   className?: string;
 };
 
-export default function Badge({ tone, children, className = '' }: Props) {
+export default function Badge({
+  tone,
+  size = 'sm',
+  children,
+  className = '',
+}: Props) {
   return (
     <span
-      className={`inline-flex items-center rounded-sm px-2 py-1 text-small font-semibold ${TONES[tone]} ${className}`}
+      className={`inline-flex items-center rounded-sm font-semibold ${SIZES[size]} ${TONES[tone]} ${className}`}
     >
       {children}
     </span>

@@ -174,7 +174,7 @@ export default async function CarPageView({
           <span>{title}</span>
         </nav>
 
-        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+        <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
           <div>
             {/* Обёртка нужна ради позиционирования крестика: сама
                 галерея прокручивает миниатюры и не должна отвечать
@@ -190,10 +190,7 @@ export default async function CarPageView({
               // Бейдж на карточке крупнее, чем на плитке каталога:
               // здесь это ключевой факт об объявлении, а не пометка
               // поверх фотографии.
-              <Badge
-                tone="sold"
-                className="mt-2 rounded-control px-3 py-1 text-caption"
-              >
+              <Badge tone="sold" size="md" className="mt-2">
                 {t('car_sold')}
               </Badge>
             )}
@@ -214,7 +211,7 @@ export default async function CarPageView({
                 вопросы, которые иначе ушли бы в переписку: залог, срок,
                 что входит. */}
             {car.is_for_rent && (
-              <Card padding="none" className="mt-6 p-4">
+              <Card padding="lg" className="mt-6">
                 <h2 className="mb-3 text-h3 font-semibold">{t('rent_terms')}</h2>
 
                 <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
@@ -283,8 +280,8 @@ export default async function CarPageView({
           </div>
 
           {/* Правая колонка: цена и воронка в приложение. */}
-          <aside className="lg:sticky lg:top-20 lg:self-start">
-            <Card padding="none" className="p-4">
+          <aside className="md:sticky md:top-20 md:self-start">
+            <Card padding="lg">
               {/* Блок цен. У объявления может быть две цены сразу
                   (продажа и аренда) — тогда показываем обе, потому что
                   выбрать сделку должен пользователь, а не мы за него. */}
@@ -368,7 +365,7 @@ export default async function CarPageView({
         {similar.length > 0 && (
           <section className="mt-10">
             <h2 className="mb-4 text-h3 font-semibold">{t('car_similar')}</h2>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
               {similar.map((s) => (
                 <CarCard key={s.id} locale={locale} car={s} mode={mode} />
               ))}
