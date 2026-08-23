@@ -17,6 +17,12 @@
 // ТОЛЬКО в меню, на всех ширинах: отдельной иконки кабинета в шапке
 // больше нет.
 //
+// Исключение одно — «Войти» в конце десктопного ряда разделов
+// (HeaderLoginLink) и только для гостя. Вход — не личная страница, а
+// порог к ней, и прятать его на десктопе в бургер значит требовать
+// лишнего клика от того, кто ещё ничего о сайте не знает. Вошедшему
+// ссылка не показывается: ему нужен кабинет, а он в меню.
+//
 // Логотип рендерит components/ui/Logo — там же он и меняется, когда
 // появится векторный файл. Здесь знак только вставляется в шапку.
 // ============================================================
@@ -28,6 +34,7 @@ import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import LocaleSwitch from './LocaleSwitch';
 import LocaleSwitchHere from './LocaleSwitchHere';
+import HeaderLoginLink from './HeaderLoginLink';
 import HeaderMenu from './HeaderMenu';
 import Button from './ui/Button';
 
@@ -86,6 +93,12 @@ export default function SiteHeader({ locale, pathname }: Props) {
           <Link href={localeHref(locale, '/app')} className="hover:underline">
             {t('nav_app')}
           </Link>
+
+          {/* «Войти» — последним в ряду разделов и только гостю.
+              Клиентский компонент: состояние сессии нельзя читать в
+              серверной шапке, не переведя весь сайт в динамический
+              рендер (см. комментарий внутри). */}
+          <HeaderLoginLink locale={locale} />
         </nav>
 
         <div className="-mr-1.5 ml-auto flex shrink-0 items-center gap-1.5 sm:mr-0 sm:gap-3">
