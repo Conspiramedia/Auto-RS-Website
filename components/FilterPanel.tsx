@@ -23,6 +23,7 @@
 // та же RPC, что вызывает приложение).
 // ============================================================
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import type { Locale } from '@/lib/i18n';
@@ -58,9 +59,16 @@ type Props = {
   // Витрина: в аренде фильтр цены работает по суточной ставке, поэтому
   // подпись поля обязана это отражать — иначе «до 50» выглядит абсурдом.
   mode?: Exclude<ListingType, 'both'>;
-  // Тип объявления зафиксирован адресом страницы (SEO-лендинг /rent) —
-  // сегмент выбора типа скрывается.
+  // Тип объявления зафиксирован адресом страницы (лендинг /rent,
+  // SEO-страницы марок и моделей). Сегмент типа перестаёт быть полем
+  // формы и становится НАВИГАЦИЕЙ между лендингами: текущий тип
+  // подсвечен и некликабелен, остальные — ссылки в каталог.
   lockedType?: boolean;
+  // Локаль-адреса для навигационного сегмента. Считаются на сервере
+  // (CatalogView) вместе с остальными ссылками каталога: собирать путь
+  // строкой в клиентском компоненте правило проекта запрещает.
+  // Нужны только при lockedType.
+  typeNavHrefs?: { both: string; sale: string; rent: string };
 };
 
 export default function FilterPanel({
@@ -73,6 +81,7 @@ export default function FilterPanel({
   activeCount,
   mode = 'sale',
   lockedType = false,
+  typeNavHrefs,
 }: Props) {
   const t = getT(locale);
   const [open, setOpen] = useState(false);
@@ -287,42 +296,93 @@ export default function FilterPanel({
             >
               {/* Тип объявления — сегмент из трёх кнопок. Первым полем:
                   он определяет саму выдачу, а не сужает её по признаку.
-                  На лендинге /rent тип задан адресом и сегмент скрыт. */}
-              {!lockedType && (
-                <div>
-                  <label className="mb-1 block text-caption text-neutral-60">
-                    {t('filter_listing_type')}
-                  </label>
-                  <div className="grid grid-cols-3 gap-1 rounded-control bg-surface-active p-1">
-                    {(
-                      [
-                        ['both', t('filter_type_all')],
-                        ['sale', t('mode_sale')],
-                        ['rent', t('mode_rent')],
-                      ] as const
-                    ).map(([value, label]) => (
+
+                  Сегмент выглядит одинаково везде, но работает по-разному,
+                  и разница задана адресом страницы:
+
+                  * /cars — ФИЛЬТР. Тип приходит из query (?type=), кнопки
+                    меняют состояние формы, значение уходит скрытым полем
+                    вместе с остальными фильтрами.
+
+                  * /rent и SEO-страницы марок — НАВИГАЦИЯ (lockedType).
+                    Тип там задан самим маршрутом, а не выбором человека:
+                    менять его формой нельзя (адрес врал бы), но и прятать
+                    сегмент незачем — он показывает, в каком разделе
+                    пользователь находится, и даёт выход в остальные.
+                    Текущий тип подсвечен и некликабелен, соседние —
+                    ссылки в каталог с ПЕРЕНОСОМ применённых фильтров
+                    (адреса собраны в CatalogView).
+                    В счётчик и чипсы этот тип не входит: пользователь его
+                    не выбирал (см. countable в CatalogView). */}
+              <div>
+                <label className="mb-1 block text-caption text-neutral-60">
+                  {t('filter_listing_type')}
+                </label>
+                <div className="grid grid-cols-3 gap-1 rounded-control bg-surface-active p-1">
+                  {(
+                    [
+                      ['both', t('filter_type_all')],
+                      ['sale', t('mode_sale')],
+                      ['rent', t('mode_rent')],
+                    ] as const
+                  ).map(([value, label]) => {
+                    // Активный сегмент: в режиме навигации активен тип
+                    // самой страницы, в режиме фильтра — выбор в форме.
+                    const active = lockedType
+                      ? value === mode
+                      : listingType === value;
+
+                    const cls =
+                      'rounded-control px-2 py-2 text-center text-caption font-semibold transition-colors ' +
+                      (active
+                        ? 'bg-white text-brand-dark shadow-sticky'
+                        : 'text-neutral-55 hover:text-brand-dark');
+
+                    if (lockedType) {
+                      // Текущий раздел — не ссылка на самого себя:
+                      // переход никуда не ведёт, а скринридер объявил бы
+                      // его равноправным пунктом. aria-current называет
+                      // активный раздел явно.
+                      if (active) {
+                        return (
+                          <span key={value} className={cls} aria-current="true">
+                            {label}
+                          </span>
+                        );
+                      }
+
+                      return (
+                        <Link
+                          key={value}
+                          href={typeNavHrefs?.[value] ?? '#'}
+                          className={cls}
+                        >
+                          {label}
+                        </Link>
+                      );
+                    }
+
+                    return (
                       <button
                         key={value}
                         type="button"
                         onClick={() => setListingType(value)}
-                        className={
-                          'rounded-control px-2 py-2 text-caption font-semibold transition-colors ' +
-                          (listingType === value
-                            ? 'bg-white text-brand-dark shadow-sticky'
-                            : 'text-neutral-55 hover:text-brand-dark')
-                        }
+                        className={cls}
                       >
                         {label}
                       </button>
-                    ))}
-                  </div>
-                  {/* Значение уходит в URL. 'both' — состояние по
-                      умолчанию, его в адрес не пишем. */}
-                  {listingType !== 'both' && (
-                    <input type="hidden" name="type" value={listingType} />
-                  )}
+                    );
+                  })}
                 </div>
-              )}
+                {/* Значение уходит в URL. 'both' — состояние по
+                    умолчанию, его в адрес не пишем. В режиме навигации
+                    скрытого поля нет вовсе: тип задан маршрутом, и
+                    дублировать его в query значило бы вернуть параметр
+                    в счётчик фильтров. */}
+                {!lockedType && listingType !== 'both' && (
+                  <input type="hidden" name="type" value={listingType} />
+                )}
+              </div>
 
               {/* Поля свободного поиска здесь БОЛЬШЕ НЕТ: строка
                   поиска стоит над выдачей (components/CatalogView),

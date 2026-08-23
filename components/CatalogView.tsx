@@ -17,10 +17,10 @@ import Pagination from './Pagination';
 import PaginationLinks from './PaginationLinks';
 import SortSelect from './SortSelect';
 import type { Locale } from '@/lib/i18n';
-import { getT, localeHref } from '@/lib/i18n';
+import { getT, localeHref, localePath } from '@/lib/i18n';
 import { countNoun } from '@/lib/plural';
 import type { CatalogFilters, CatalogResult } from '@/lib/queries';
-import { hasActiveFilters } from '@/lib/searchParams';
+import { buildQuery, hasActiveFilters } from '@/lib/searchParams';
 import type { ListingType, SiteBrand, SiteCity } from '@/lib/types';
 
 type Props = {
@@ -87,6 +87,41 @@ export default function CatalogView({
     ...(isBrandPage ? { brand: undefined, model: undefined } : null),
     ...(lockedType ? { listingType: undefined } : null),
   };
+
+  // Адреса навигационного сегмента «Тип объявления». Нужны только там,
+  // где тип задан маршрутом (lockedType): на /rent и SEO-страницах
+  // сегмент переключает не фильтр, а РАЗДЕЛ.
+  //
+  // Переносим применённые фильтры: человек отобрал BMW в Белграде и
+  // жмёт «Продажа» — он ожидает те же BMW в Белграде, а не пустой
+  // каталог. Не переносим:
+  //   * тип — его задаёт целевая ссылка;
+  //   * страницу — на другой выдаче номер страницы бессмысленен и
+  //     нередко ведёт за её пределы.
+  // Марка и модель SEO-страницы переносятся в query автоматически:
+  // они лежат в filters, куда их положил сам маршрут (BrandPageView).
+  //
+  // Целевой раздел всегда /cars: аренда живёт на собственном лендинге,
+  // а смешанная и продажная выдача — в каталоге.
+  const typeNavHrefs = lockedType
+    ? {
+        both: localePath(
+          locale,
+          '/cars',
+          buildQuery(filters, { listingType: undefined, page: 1 }),
+        ),
+        sale: localePath(
+          locale,
+          '/cars',
+          buildQuery(filters, { listingType: 'sale', page: 1 }),
+        ),
+        rent: localePath(
+          locale,
+          '/rent',
+          buildQuery(filters, { listingType: undefined, page: 1 }),
+        ),
+      }
+    : undefined;
 
   const activeCount = [
     // Тип объявления считается применённым фильтром, только когда он
@@ -197,6 +232,7 @@ export default function CatalogView({
             activeCount={activeCount}
             mode={pageMode}
             lockedType={lockedType}
+            typeNavHrefs={typeNavHrefs}
           />
           {/* Счётчик в этом ряду показывается только в диапазоне
               640–767px: ниже он стоит отдельной строкой, выше —
@@ -261,6 +297,7 @@ export default function CatalogView({
           activeCount={activeCount}
           mode={pageMode}
           lockedType={lockedType}
+          typeNavHrefs={typeNavHrefs}
         />
 
         <SortSelect
