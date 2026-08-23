@@ -15,13 +15,19 @@
 //   overlay — поверх фотографии: галерея объявления. Тёмный знак на
 //             белом круге — единственный вариант, который читается
 //             и на светлом небе, и на чёрном кузове.
+//   onDark  — на сплошной тёмной заливке: смарт-баннер (bg-brand-dark).
+//             Знак берёт ступень on-dark-60 — ту же, что стояла у
+//             самодельного крестика баннера до перевода на компонент.
+//             Круга здесь нет: подложка ровная и знак на ней читается
+//             без подставки, а белый круг в узкой полосе баннера
+//             выглядел бы кнопкой действия, а не отказом.
 //
 // Знак — inline-SVG, а не текстовый символ «×»: у текстового варианта
 // метрики зависят от шрифта, и он смещается относительно центра.
 // Тем же приёмом собраны бургер в шапке и значок фильтров.
 // ============================================================
 
-type Variant = 'plain' | 'overlay';
+type Variant = 'plain' | 'overlay' | 'onDark';
 
 type Props = {
   onClick: () => void;
@@ -47,6 +53,16 @@ const VARIANTS: Record<Variant, string> = {
   overlay:
     'inline-flex h-10 w-10 items-center justify-center rounded-full ' +
     'bg-white text-neutral-100 shadow-modal transition-colors hover:bg-surface-hover',
+  // Зеркало plain для тёмной подложки. Подсветка наведения у plain —
+  // surface-hover, то есть ПРОЗРАЧНЫЙ ЧЁРНЫЙ: на brand-dark он не даёт
+  // ничего видимого. Поэтому здесь белые полупрозрачные заливки —
+  // те же 0.03/0.06, что в шкале surface, но от белого. Цвет знака
+  // на наведении доводится до чистого белого, как plain доводит свой
+  // до neutral-100.
+  onDark:
+    'inline-flex h-10 w-10 items-center justify-center rounded-control ' +
+    'text-on-dark-60 transition-colors hover:bg-white/[0.06] hover:text-white ' +
+    'active:bg-white/[0.12]',
 };
 
 export default function CloseButton({

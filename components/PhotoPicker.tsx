@@ -266,9 +266,26 @@ export default function PhotoPicker({
                 type="button"
                 onClick={() => remove(i)}
                 aria-label={t('sell_photos_remove')}
-                className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-pill bg-brand-red text-caption leading-none text-white"
+                className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-pill bg-brand-red text-white"
               >
-                ×
+                {/* Знак — inline-SVG по той же причине, что в CloseButton:
+                    у текстового «×» метрики зависят от шрифта, и в круге
+                    24px он вставал заметно выше центра. Сам CloseButton
+                    сюда не подходит — у него область 40px, а значок
+                    прижат к углу миниатюры и должен остаться мелким. */}
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  aria-hidden="true"
+                >
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                </svg>
               </button>
 
               {/* Перестановка. Крайние кнопки отключены на границах. */}

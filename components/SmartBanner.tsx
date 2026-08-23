@@ -15,6 +15,7 @@
 import { useEffect, useState } from 'react';
 
 import { appIds } from '@/lib/brand';
+import CloseButton from './ui/CloseButton';
 import Logo from './ui/Logo';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
@@ -105,17 +106,22 @@ export default function SmartBanner({ locale, deepLink }: Props) {
         {t('banner_open')}
       </a>
 
-      <button
-        type="button"
+      {/* Крестик — общий CloseButton (вариант onDark), а не свой знак:
+          текстовый «×» здесь смещался относительно центра, потому что
+          его метрики зависят от шрифта, и подпись расходилась с
+          остальными слоями. Область нажатия выросла с ~20px до 40px —
+          баннер мобильный, и в прежний символ приходилось целиться.
+          -mr-2 втягивает её в боковой отступ полосы, чтобы знак
+          остался у края, а не отступил от него на пустое поле кнопки. */}
+      <CloseButton
         onClick={() => {
           localStorage.setItem(DISMISS_KEY, '1');
           setVisible(false);
         }}
-        className="shrink-0 px-1 text-h3 leading-none text-on-dark-60"
-        aria-label={t('banner_close')}
-      >
-        ×
-      </button>
+        label={t('banner_close')}
+        variant="onDark"
+        className="-mr-2 shrink-0"
+      />
     </div>
   );
 }
