@@ -126,7 +126,7 @@ export const dict = {
     nav_catalog: 'Automobili',
     nav_catalog_menu: 'Prodaja',
     nav_sell: 'Prodaj auto',
-    nav_dealers: 'Za autosalone',
+    nav_dealers: 'Autosaloni',
     nav_app: 'Aplikacija',
     nav_install: 'Brzi pristup',
     site_tagline: 'Prodaja i iznajmljivanje automobila u Srbiji',
@@ -537,7 +537,7 @@ export const dict = {
     // ------------------------------------------------------------
     // Навигация по контентным страницам.
     // ------------------------------------------------------------
-    nav_about: 'O nama',
+    nav_about: 'O platformi',
     nav_how: 'Kako funkcioniše',
     nav_faq: 'Česta pitanja',
     nav_menu: 'Meni',
@@ -836,7 +836,7 @@ export const dict = {
     nav_catalog: 'Автомобили',
     nav_catalog_menu: 'Продажа',
     nav_sell: 'Продать авто',
-    nav_dealers: 'Автосалонам',
+    nav_dealers: 'Автосалоны',
     nav_app: 'Приложение',
     nav_install: 'Быстрый доступ',
     site_tagline: 'Продажа и аренда автомобилей в Сербии',
@@ -1235,7 +1235,7 @@ export const dict = {
     // ------------------------------------------------------------
     // Навигация по контентным страницам.
     // ------------------------------------------------------------
-    nav_about: 'О нас',
+    nav_about: 'О площадке',
     nav_how: 'Как это работает',
     nav_faq: 'Вопросы',
     nav_menu: 'Меню',

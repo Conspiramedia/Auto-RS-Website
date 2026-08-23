@@ -119,7 +119,10 @@ export default function SignOutButton({
               // пунктов рядом. text-left обязателен — по умолчанию
               // кнопка центрирует подпись, и выход выбивался бы из
               // левого края списка.
-              'flex w-full items-center gap-2.5 py-3 text-left font-medium text-brand-red transition-opacity duration-fast ease-out hover:opacity-80'
+              // font-semibold — как у всех пунктов меню: выход стоит
+              // в том же списке и бледнее соседей быть не должен.
+              // Отличает его цвет (brand-red), а не начертание.
+              'flex w-full items-center gap-2.5 py-3 text-left font-semibold text-brand-red transition-opacity duration-fast ease-out hover:opacity-80'
             : 'shrink-0 text-caption font-semibold text-brand-red transition-opacity duration-fast ease-out hover:opacity-80'
         }
       >
