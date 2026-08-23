@@ -17,6 +17,7 @@ import { CITIES } from '@/lib/referenceData';
 import { getBrowserClient } from '@/lib/supabaseClient';
 import { trackEvent } from '@/lib/analytics';
 import { formatSerbianPhone, serbianPhoneToE164 } from '@/lib/inputFormat';
+import Alert from './ui/Alert';
 import { fieldClass, fieldClassTextarea } from './ui/Field';
 import Button from './ui/Button';
 import Card from './ui/Card';
@@ -232,9 +233,9 @@ export default function DealerForm({ locale }: Props) {
       </Button>
 
       {error && (
-        <p className="rounded-control bg-brand-red/10 px-3 py-2 text-caption text-brand-red">
+        <Alert tone="error">
           {error}
-        </p>
+        </Alert>
       )}
     </form>
   );

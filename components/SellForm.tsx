@@ -60,6 +60,7 @@ import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
 import PhotoPicker, { type PhotoItem } from './PhotoPicker';
 import CloseButton from './ui/CloseButton';
+import Alert from './ui/Alert';
 import { fieldClass, fieldClassTextarea } from './ui/Field';
 import { RESEND_DELAY_SEC, humanOtpError } from '@/lib/otp';
 import Button from './ui/Button';
@@ -1394,15 +1395,15 @@ export default function SellForm({
       {/* Успешная повторная отправка. В приложении это зелёный снек;
           на сайте — та же роль, но без всплывающего слоя. */}
       {notice && !error && (
-        <p className="mt-4 rounded-control bg-brand-green/10 px-3 py-2 text-caption text-brand-green">
+        <Alert tone="success" className="mt-4">
           {notice}
-        </p>
+        </Alert>
       )}
 
       {error && (
-        <p className="mt-4 rounded-control bg-brand-red/10 px-3 py-2 text-caption text-brand-red">
+        <Alert tone="error" className="mt-4">
           {error}
-        </p>
+        </Alert>
       )}
     </Card>
   );

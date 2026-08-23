@@ -179,7 +179,7 @@ function NotificationRow({
 
   const rowClass = [
     'flex gap-3 px-3 py-3 transition-colors duration-fast ease-out',
-    item.is_read ? '' : 'bg-brand-green/5',
+    item.is_read ? '' : 'bg-status-success-subtle',
   ]
     .filter(Boolean)
     .join(' ');

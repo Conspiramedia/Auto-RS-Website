@@ -43,6 +43,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import Alert from './ui/Alert';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 
@@ -207,9 +208,9 @@ export default function PhotoPicker({
       </p>
 
       {error && (
-        <p className="mt-2 rounded-control bg-brand-red/10 px-3 py-2 text-caption text-brand-red">
+        <Alert tone="error" className="mt-2">
           {error}
-        </p>
+        </Alert>
       )}
 
       {/* Прогресс загрузки. Показывается на месте сетки превью, когда

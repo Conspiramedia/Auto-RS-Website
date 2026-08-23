@@ -35,6 +35,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import Alert from './ui/Alert';
 import Button from './ui/Button';
 import Card from './ui/Card';
 import { fieldClass } from './ui/Field';
@@ -352,15 +353,15 @@ export default function AuthGate({ locale, redirectTo, title }: Props) {
 
         {/* Успех повторной отправки — в приложении это зелёный снек. */}
         {notice && !error && (
-          <p className="rounded-control bg-brand-green/10 px-3 py-2 text-caption text-brand-green">
+          <Alert tone="success">
             {notice}
-          </p>
+          </Alert>
         )}
 
         {error && (
-          <p className="rounded-control bg-brand-red/10 px-3 py-2 text-caption text-brand-red">
+          <Alert tone="error">
             {error}
-          </p>
+          </Alert>
         )}
       </div>
     </Card>

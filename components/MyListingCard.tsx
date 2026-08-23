@@ -31,6 +31,7 @@ import Link from 'next/link';
 
 import ListingActions from './ListingActions';
 import StatusBadge from './StatusBadge';
+import Alert from './ui/Alert';
 import Badge from './ui/Badge';
 import Card from './ui/Card';
 import { formatDate, formatPrice, formatRentPrice } from '@/lib/format';
@@ -106,10 +107,10 @@ export default function MyListingCard({ locale, listing }: Props) {
               тупик: продавец не знает, что именно исправлять.
               Сервер отдаёт это поле только в статусе rejected. */}
           {listing.moderation_comment && (
-            <p className="mt-2 rounded-control bg-brand-red/10 px-3 py-2 text-caption text-brand-red">
+            <Alert tone="error" className="mt-2">
               <span className="font-semibold">{t('my_rejected_reason')}:</span>{' '}
               {listing.moderation_comment}
-            </p>
+            </Alert>
           )}
         </div>
       </div>

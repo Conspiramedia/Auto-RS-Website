@@ -23,6 +23,7 @@ import Link from 'next/link';
 import { useRef, useState, useTransition } from 'react';
 
 import { saveContactEmail, saveProfile } from '@/app/my/actions';
+import Alert from './ui/Alert';
 import Button from './ui/Button';
 import Card from './ui/Card';
 import { fieldClass } from './ui/Field';
@@ -286,15 +287,15 @@ export default function ProfileForm({ locale, profile, balance }: Props) {
           </Button>
 
           {saved && !error && (
-            <p className="rounded-control bg-brand-green/10 px-3 py-2 text-caption text-brand-green">
+            <Alert tone="success">
               {t('profile_saved')}
-            </p>
+            </Alert>
           )}
 
           {error && (
-            <p className="rounded-control bg-brand-red/10 px-3 py-2 text-caption text-brand-red">
+            <Alert tone="error">
               {error}
-            </p>
+            </Alert>
           )}
         </div>
       </Card>

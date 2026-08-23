@@ -19,6 +19,7 @@ import type { Locale } from '@/lib/i18n';
 import { getT, type DictKey } from '@/lib/i18n';
 import { getBrowserClient } from '@/lib/supabaseClient';
 import { trackEvent } from '@/lib/analytics';
+import Alert from './ui/Alert';
 import { fieldClass, fieldClassTextarea } from './ui/Field';
 import Button from './ui/Button';
 import Card from './ui/Card';
@@ -220,9 +221,9 @@ export default function ContactForm({ locale }: Props) {
       </Button>
 
       {error && (
-        <p className="rounded-control bg-brand-red/10 px-3 py-2 text-caption text-brand-red">
+        <Alert tone="error">
           {error}
-        </p>
+        </Alert>
       )}
     </form>
   );

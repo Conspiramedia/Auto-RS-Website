@@ -38,6 +38,8 @@ const config: Config = {
         neutral: brand.neutral,
         // Нейтральная шкала для тёмных подложек: text-on-dark-70.
         'on-dark': brand.onDark,
+        // Подложки статусных сообщений: bg-status-error.
+        status: brand.statusSurface,
         // Заливки и состояния наведения.
         surface: brand.surface,
         // Семантические роли: bg-success читается лучше, чем bg-brand-green,
