@@ -27,6 +27,7 @@ import Logo from './ui/Logo';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import LocaleSwitch from './LocaleSwitch';
+import LocaleSwitchHere from './LocaleSwitchHere';
 import HeaderMenu from './HeaderMenu';
 import Button from './ui/Button';
 
@@ -34,7 +35,16 @@ type Props = {
   locale: Locale;
   // Путь текущей страницы без префикса локали — нужен переключателю языка,
   // чтобы остаться на том же месте при смене языка.
-  pathname: string;
+  //
+  // 'auto' — для случая, когда шапку рендерит layout, а не страница:
+  // layout своего адреса не знает (страница приходит к нему через
+  // children), и путь тогда определяется на клиенте через usePathname
+  // (LocaleSwitchHere). Такое место одно — кабинет /my.
+  //
+  // Обычным страницам передавать 'auto' НЕ НУЖНО: они свой адрес знают,
+  // а явная строка оставляет переключатель серверным, то есть даёт
+  // краулеру настоящие <a href> на языковое зеркало.
+  pathname: string | 'auto';
 };
 
 export default function SiteHeader({ locale, pathname }: Props) {
@@ -79,7 +89,11 @@ export default function SiteHeader({ locale, pathname }: Props) {
         </nav>
 
         <div className="-mr-1.5 ml-auto flex shrink-0 items-center gap-1.5 sm:mr-0 sm:gap-3">
-          <LocaleSwitch locale={locale} pathname={pathname} />
+          {pathname === 'auto' ? (
+            <LocaleSwitchHere locale={locale} />
+          ) : (
+            <LocaleSwitch locale={locale} pathname={pathname} />
+          )}
 
           {/* Сильный CTA продавцу — главная бизнес-цель сайта, поэтому он
               единственный акцентный элемент в шапке.

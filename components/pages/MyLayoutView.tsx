@@ -47,7 +47,12 @@ export default async function MyLayoutView({ locale, children }: Props) {
       {/* SmartBanner в кабинете не подключается принципиально, и дело не
           только в том, что он сейчас выключен: кабинет — рабочее место
           продавца, звать его отсюда в другой клиент неуместно. */}
-      <SiteHeader locale={locale} pathname="/my" />
+      {/* pathname='auto' — путь берётся из usePathname на клиенте.
+          Здесь НЕЛЬЗЯ передать конкретную строку: layout не знает, какая
+          страница внутри него отрисована. Стояло '/my', и смена языка с
+          любого раздела кабинета уводила в «Мои объявления» — из
+          открытого диалога в том числе. См. LocaleSwitchHere. */}
+      <SiteHeader locale={locale} pathname="auto" />
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
         {user === null ? (
