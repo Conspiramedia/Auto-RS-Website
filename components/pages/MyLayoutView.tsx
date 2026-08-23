@@ -22,8 +22,8 @@
 import type { ReactNode } from 'react';
 
 import AuthGate from '@/components/AuthGate';
+import MyHeaderBack from '@/components/MyHeaderBack';
 import MyTabs from '@/components/MyTabs';
-import SignOutButton from '@/components/SignOutButton';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
 import type { Locale } from '@/lib/i18n';
@@ -54,19 +54,25 @@ export default async function MyLayoutView({ locale, children }: Props) {
           <AuthGate locale={locale} />
         ) : (
           <>
-            {/* Заголовок и выход в одной строке: выход — действие
-                третьестепенное, поэтому уводится вправо и оформлен
-                ссылкой, а не кнопкой-акцентом.
-                flex-wrap обязателен: при подтверждении выхода кнопка
-                разворачивается в «Выйти из аккаунта? Да Отмена», и на
-                360px этот блок рядом с заголовком в строку не влезает.
-                Без переноса он давил бы на заголовок. min-w-0 у h1 —
-                чтобы сжимался именно заголовок, а не блок с выбором. */}
-            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            {/* Заголовок и путь назад в одной строке. Выхода здесь
+                больше нет: красная ссылка стояла вплотную к названию
+                раздела и читалась как действие над самим кабинетом
+                («закрыть», «удалить»), а не как выход из аккаунта.
+                Единственное место выхода — пункт внизу меню шапки:
+                там он в ряду навигации, где его и ищут, и случайно
+                не нажимается по пути к вкладкам.
+
+                Справа — «Все чаты», и только в открытом диалоге:
+                MyHeaderBack сам решает по адресу, показываться ли
+                (см. комментарий в нём). min-w-0 у h1 — чтобы при
+                нехватке места сжимался заголовок, а не ссылка:
+                заголовок раздела человек и так видит, а путь назад
+                на мобильном единственный. */}
+            <div className="flex items-center justify-between gap-x-4">
               <h1 className="min-w-0 text-h2 font-bold sm:text-h1">
                 {t('my_title')}
               </h1>
-              <SignOutButton locale={locale} />
+              <MyHeaderBack locale={locale} />
             </div>
 
             <MyTabs locale={locale} />

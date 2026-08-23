@@ -1104,7 +1104,7 @@ export const dict = {
     chat_empty_text:
       'Когда покупатель напишет вам по объявлению, диалог появится здесь.',
     chat_pick: 'Выберите диалог',
-    chat_back: 'Все диалоги',
+    chat_back: 'Все чаты',
     chat_placeholder: 'Сообщение…',
     chat_send: 'Отправить',
     chat_sending: 'Отправляем…',

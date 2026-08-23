@@ -109,49 +109,48 @@ export default async function ChatRoomPageView({ locale, chatId }: Props) {
         padding="none"
         className="flex min-h-[70vh] flex-col overflow-hidden lg:h-[calc(100vh-13rem)] lg:min-h-0"
       >
-        <div className="flex items-center gap-3 border-b border-neutral-10 p-3">
-          {/* «Все диалоги» — путь назад на мобильном, где списка нет
-              на экране. На десктопе он слева, и ссылка не нужна. */}
-          <Link
-            href={localeHref(locale, '/my/messages')}
-            className="shrink-0 text-caption font-semibold text-brand-blue lg:hidden"
-          >
-            ← {t('chat_back')}
-          </Link>
+        {/* Шапка диалога — только собеседник, от левого края. Путь
+            назад («Все чаты») переехал в строку заголовка кабинета
+            (MyHeaderBack): здесь он сначала стоял слева от аватара и
+            отжимал собеседника вправо, а затем строкой над ним — и
+            занимал целую строку ради одной ссылки. В шапке кабинета
+            для неё уже есть свободное место справа. */}
+        <div className="border-b border-neutral-10 p-3">
+          <div className="flex items-center gap-3">
+            <Avatar
+              name={chat.opponent_name}
+              url={chat.opponent_avatar}
+              size="lg"
+            />
 
-          <Avatar
-            name={chat.opponent_name}
-            url={chat.opponent_avatar}
-            size="lg"
-          />
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-semibold">
+                {chat.opponent_name?.trim() || t('car_seller')}
+              </div>
 
-          <div className="min-w-0 flex-1">
-            <div className="truncate font-semibold">
-              {chat.opponent_name?.trim() || t('car_seller')}
+              {/* Объявление, по которому идёт переписка, — ссылкой:
+                  открыть карточку из диалога нужно постоянно, и искать
+                  её в каталоге заново было бы издевательством. */}
+              <Link
+                href={localeHref(locale, `/car/${chat.car_id}`)}
+                className="mt-0.5 flex items-center gap-1.5 text-caption text-neutral-60 hover:text-brand-primary"
+              >
+                <span className="relative h-6 w-8 shrink-0 overflow-hidden rounded-sm bg-surface-muted">
+                  {chat.car_photo && (
+                    <Image
+                      src={chat.car_photo}
+                      alt=""
+                      fill
+                      sizes="32px"
+                      className="object-cover"
+                    />
+                  )}
+                </span>
+                <span className="truncate">
+                  {chat.brand} {chat.model}, {chat.year}
+                </span>
+              </Link>
             </div>
-
-            {/* Объявление, по которому идёт переписка, — ссылкой:
-                открыть карточку из диалога нужно постоянно, и искать
-                её в каталоге заново было бы издевательством. */}
-            <Link
-              href={localeHref(locale, `/car/${chat.car_id}`)}
-              className="mt-0.5 flex items-center gap-1.5 text-caption text-neutral-60 hover:text-brand-primary"
-            >
-              <span className="relative h-6 w-8 shrink-0 overflow-hidden rounded-sm bg-surface-muted">
-                {chat.car_photo && (
-                  <Image
-                    src={chat.car_photo}
-                    alt=""
-                    fill
-                    sizes="32px"
-                    className="object-cover"
-                  />
-                )}
-              </span>
-              <span className="truncate">
-                {chat.brand} {chat.model}, {chat.year}
-              </span>
-            </Link>
           </div>
         </div>
 
