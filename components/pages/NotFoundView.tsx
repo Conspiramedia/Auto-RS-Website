@@ -39,7 +39,7 @@ export default function NotFoundView({ locale }: { locale: Locale }) {
             Держать эти два экрана одинаковыми обязательно: 404 и 500
             стоят рядом в восприятии посетителя, и расхождение в
             раскладке кнопок выглядело бы недоделкой. */}
-        <div className="mt-8 inline-grid grid-cols-1 gap-3 sm:flex sm:flex-row sm:items-center sm:justify-center">
+        <div className="mt-8 inline-grid grid-cols-1 gap-3 [&>*]:w-full sm:[&>*]:w-auto sm:flex sm:flex-row sm:items-center sm:justify-center">
           <Button size="lg" href={localeHref(locale, '/cars')}>
             {t('nf_catalog')}
           </Button>

@@ -98,7 +98,7 @@ export default async function CarGoneView({
           {/* Столбик на мобильном, ряд с sm — тот же приём, что на
               экранах 404 и 500: inline-grid уравнивает кнопки по самой
               широкой, поэтому ширина берётся по длине подписи. */}
-          <div className="mt-6 inline-grid grid-cols-1 gap-3 sm:flex sm:flex-row sm:items-center sm:justify-center">
+          <div className="mt-6 inline-grid grid-cols-1 gap-3 [&>*]:w-full sm:[&>*]:w-auto sm:flex sm:flex-row sm:items-center sm:justify-center">
             <Button size="lg" href={localeHref(locale, catalogPath)}>
               {catalogLabel}
             </Button>

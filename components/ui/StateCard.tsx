@@ -82,7 +82,7 @@ export default function StateCard({
         // с обработчиком: страницы кабинета серверные, и повтор для
         // них означает повторный запрос страницы. Клиентский reset
         // потребовал бы делать компонент клиентским ради одной кнопки.
-        <div className="mt-6 inline-grid grid-cols-1 gap-3 sm:flex sm:flex-row sm:items-center sm:justify-center">
+        <div className="mt-6 inline-grid grid-cols-1 gap-3 [&>*]:w-full sm:[&>*]:w-auto sm:flex sm:flex-row sm:items-center sm:justify-center">
           <Button size="sm" href={localeHref(locale, retryPath)}>
             {t('err_retry')}
           </Button>
@@ -95,8 +95,13 @@ export default function StateCard({
           </Button>
         </div>
       ) : (
+        // На мобильном действия идут столбиком РАВНОЙ ширины: при
+        // flex-wrap каждая кнопка получала ширину по своей подписи, и
+        // «Сбросить фильтры» с «Сообщить, когда появится» вставали
+        // друг под другом разными по ширине — это читалось как брак
+        // вёрстки. С sm: возвращается обычный ряд по ширине контента.
         actions && (
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-6 inline-grid grid-cols-1 gap-3 [&>*]:w-full sm:[&>*]:w-auto sm:flex sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
             {actions}
           </div>
         )

@@ -88,7 +88,7 @@ export default function ErrorView({ locale, reset }: Props) {
             С sm: возвращается горизонтальный ряд — на планшете и
             десктопе три кнопки в строку помещаются свободно, и столбик
             там выглядел бы неоправданно тяжёлым. */}
-        <div className="mt-8 inline-grid grid-cols-1 gap-3 sm:flex sm:flex-row sm:items-center sm:justify-center">
+        <div className="mt-8 inline-grid grid-cols-1 gap-3 [&>*]:w-full sm:[&>*]:w-auto sm:flex sm:flex-row sm:items-center sm:justify-center">
           {/* Основное действие — повторить. Ошибки этого класса чаще
               всего сетевые и снимаются повторным рендером. */}
           <Button size="lg" onClick={reset}>

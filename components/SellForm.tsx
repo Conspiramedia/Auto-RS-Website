@@ -737,7 +737,7 @@ export default function SellForm({
           {t('sell_success_text')}
         </p>
 
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-6 inline-grid grid-cols-1 gap-3 [&>*]:w-full sm:[&>*]:w-auto sm:flex sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
           <Button size="lg" href={localeHref(locale, '/cars')}>
             {t('nf_catalog')}
           </Button>

@@ -105,7 +105,7 @@ export default function AboutPageView({ locale }: { locale: Locale }) {
         <Card className="mt-10 text-center">
           <h2 className="text-h3 font-semibold">{t('about_cta_title')}</h2>
           <p className="mt-2 text-neutral-60">{t('about_cta_text')}</p>
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-5 inline-grid grid-cols-1 gap-3 [&>*]:w-full sm:[&>*]:w-auto sm:flex sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
             <Button size="lg" href={localeHref(locale, '/sell')}>
               {t('home_hero_cta')}
             </Button>
