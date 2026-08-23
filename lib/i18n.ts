@@ -113,7 +113,18 @@ export const HTML_LANG: Record<Locale, string> = {
 export const dict = {
   sr: {
     // Навигация и общее
+    //
+    // ДВА КЛЮЧА НА ОДИН РАЗДЕЛ /cars — намеренно, у них разные роли:
+    //   nav_catalog — НАЗВАНИЕ РАЗДЕЛА: хлебные крошки и JSON-LD
+    //     («Automobili / BMW»). Здесь нужно имя того, что внутри;
+    //     «Prodaja / BMW» в крошке читается как обрывок фразы, а в
+    //     разметке для поисковика хуже описывает содержимое страницы.
+    //   nav_catalog_menu — ПУНКТ МЕНЮ рядом с «Аренда». Там это выбор
+    //     вида сделки, и пара «Prodaja / Iznajmljivanje» противопостав-
+    //     ляется явно, тогда как «Automobili / Iznajmljivanje» выглядит
+    //     как разные основания деления: в аренде тоже автомобили.
     nav_catalog: 'Automobili',
+    nav_catalog_menu: 'Prodaja',
     nav_sell: 'Prodaj auto',
     nav_dealers: 'Za autosalone',
     nav_app: 'Aplikacija',
@@ -754,7 +765,11 @@ export const dict = {
   },
 
   ru: {
+    // См. пояснение к паре ключей в сербском словаре выше:
+    // nav_catalog — название раздела для крошек и JSON-LD,
+    // nav_catalog_menu — пункт меню в паре с «Арендой».
     nav_catalog: 'Автомобили',
+    nav_catalog_menu: 'Продажа',
     nav_sell: 'Продать авто',
     nav_dealers: 'Автосалонам',
     nav_app: 'Приложение',

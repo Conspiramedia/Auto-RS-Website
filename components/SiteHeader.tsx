@@ -61,8 +61,11 @@ export default function SiteHeader({ locale, pathname }: Props) {
             на мобильном места нет, там навигация живёт в подвале, а в
             шапке остаётся лого + язык + CTA. */}
         <nav className="hidden flex-1 items-center gap-5 text-caption sm:flex">
+          {/* nav_catalog_menu: в ряду с «Арендой» это выбор вида
+              сделки. Название раздела (nav_catalog) остаётся в
+              хлебных крошках и JSON-LD. */}
           <Link href={localeHref(locale, '/cars')} className="hover:underline">
-            {t('nav_catalog')}
+            {t('nav_catalog_menu')}
           </Link>
           <Link href={localeHref(locale, '/rent')} className="hover:underline">
             {t('nav_rent')}

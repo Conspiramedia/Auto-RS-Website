@@ -52,7 +52,7 @@ export default function SiteFooter({
 
         <div className="flex flex-wrap gap-x-5 gap-y-2 text-caption">
           <Link href={localeHref(locale, '/cars')} className="hover:underline">
-            {t('nav_catalog')}
+            {t('nav_catalog_menu')}
           </Link>
           <Link href={localeHref(locale, '/rent')} className="hover:underline">
             {t('nav_rent')}
