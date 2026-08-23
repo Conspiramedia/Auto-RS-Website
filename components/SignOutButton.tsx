@@ -42,11 +42,12 @@
 // а второго красного в палитре нет.
 // ============================================================
 
-import { useEffect, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 
 import { signOut } from '@/app/my/actions';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
+import { useDismissableLayer } from '@/lib/useDismissableLayer';
 import Button from './ui/Button';
 import CloseButton from './ui/CloseButton';
 import { LogOutIcon } from './ui/NavIcons';
@@ -73,40 +74,25 @@ export default function SignOutButton({
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
 
-  // Блокировка прокрутки страницы под открытым диалогом и Escape для
-  // закрытия — то же поведение, что у меню шапки и шторки фильтров.
-  // Во время выхода Escape намеренно НЕ закрывает окно: запрос уже
-  // ушёл, и убирать индикатор происходящего нельзя.
-  useEffect(() => {
-    if (!open) return;
-
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-
-      // stopPropagation обязателен, когда диалог открыт ИЗ МЕНЮ: у
-      // меню свой слушатель Escape на document, и без остановки одно
-      // нажатие закрыло бы оба слоя разом — человек потерял бы и
-      // диалог, и список, из которого нажимал.
-      // Гасим и во время выхода: там Escape не закрывает ничего, но
-      // и меню закрывать посреди запроса тем более нельзя.
-      e.stopPropagation();
-      if (!pending) setOpen(false);
-    };
-    // capture: true — слушатель диалога обязан отработать РАНЬШЕ
-    // слушателя меню. Меню подписано в фазе всплытия, а перехват
-    // проходит до неё, поэтому stopPropagation выше успевает
-    // остановить событие: проверено в браузере — при открытом
-    // диалоге меню от Escape не закрывается.
-    document.addEventListener('keydown', onKey, true);
-
-    return () => {
-      document.body.style.overflow = previous;
-      document.removeEventListener('keydown', onKey, true);
-    };
-  }, [open, pending]);
+  // Escape, блокировка прокрутки и возврат фокуса — общее поведение
+  // закрываемых слоёв (lib/useDismissableLayer).
+  //
+  // locked={pending}: во время выхода Escape намеренно НЕ закрывает
+  // окно — запрос уже ушёл, и убирать индикатор происходящего нельзя.
+  //
+  // stopEscapePropagation: диалог открывается ИЗ МЕНЮ, у которого свой
+  // слушатель Escape. Без остановки одно нажатие закрыло бы оба слоя
+  // разом — человек потерял бы и диалог, и список, из которого нажимал.
+  // Флаг заодно переводит слушатель в фазу перехвата: только там
+  // остановка успевает сработать раньше меню, подписанного на
+  // всплытие. Событие гасится и во время запроса: закрывать меню
+  // посреди выхода тем более нельзя.
+  useDismissableLayer({
+    open,
+    onClose: () => setOpen(false),
+    locked: pending,
+    stopEscapePropagation: true,
+  });
 
   return (
     <>

@@ -114,11 +114,18 @@ export default function ListPicker({
       e.stopPropagation();
     };
 
+    // capture: true — ОБЯЗАТЕЛЬНО, иначе stopPropagation выше ничего не
+    // даёт. Оба слушателя (пикера и шторки) висят на одном document, а
+    // остановка всплытия не действует на соседей по одному узлу:
+    // порядок решала бы очерёдность подписки, а шторка монтируется
+    // раньше пикера — и Escape закрывал бы её вместе со списком.
+    // Перехват проходит до всплытия, поэтому пикер успевает погасить
+    // событие раньше, чем его увидит шторка.
     document.addEventListener('mousedown', onDocClick);
-    document.addEventListener('keydown', onKey);
+    document.addEventListener('keydown', onKey, true);
     return () => {
       document.removeEventListener('mousedown', onDocClick);
-      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('keydown', onKey, true);
     };
   }, [open]);
 

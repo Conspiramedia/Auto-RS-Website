@@ -83,12 +83,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 
 import type { DictKey, Locale } from '@/lib/i18n';
 import { getT, localeHref, stripLocale } from '@/lib/i18n';
 import { useBadgeCounts } from '@/lib/useBadgeCounts';
+import { useDismissableLayer } from '@/lib/useDismissableLayer';
 import SignOutButton from './SignOutButton';
 import CloseButton from './ui/CloseButton';
 import CountBadge from './ui/CountBadge';
@@ -177,28 +178,9 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
   // (см. lib/useBadgeCounts).
   const { signedIn, counts } = useBadgeCounts();
 
-  // Блокировка прокрутки страницы под открытой шторкой. Без неё палец
-  // прокручивает не меню, а страницу за ним, и при закрытии человек
-  // оказывается в другом месте документа.
-  useEffect(() => {
-    if (!open) return;
-
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    // Escape закрывает меню — привычное поведение модальных слоёв.
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('keydown', onKey);
-
-    return () => {
-      // Возвращаем исходное значение, а не пустую строку: страница
-      // могла иметь собственный overflow, и затирать его нельзя.
-      document.body.style.overflow = previous;
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
+  // Escape, блокировка прокрутки под слоем и возврат фокуса на кнопку
+  // меню — общее поведение закрываемых слоёв (lib/useDismissableLayer).
+  useDismissableLayer({ open, onClose: () => setOpen(false) });
 
   // Текущий путь без префикса локали: на /ru/my/messages сравнивать
   // нужно '/my/messages', иначе на русской версии не подсветится

@@ -31,6 +31,7 @@ import type { CatalogFilters } from '@/lib/queries';
 import { BRANDS, CITIES, YEAR_MIN, yearMax } from '@/lib/referenceData';
 import { getBrowserClient } from '@/lib/supabaseClient';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
+import { useDismissableLayer } from '@/lib/useDismissableLayer';
 import type { ListingType, SiteBrand, SiteCity } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
 import CloseButton from './ui/CloseButton';
@@ -76,21 +77,17 @@ export default function FilterPanel({
   const t = getT(locale);
   const [open, setOpen] = useState(false);
 
-  // Escape закрывает шторку — то же поведение, что у меню в шапке и у
-  // списка выбора. Без этого шторка была единственным слоем сайта,
-  // из которого нельзя выйти с клавиатуры.
+  // Escape, блокировка прокрутки под слоем и возврат фокуса на кнопку
+  // «Фильтры» — общее поведение закрываемых слоёв
+  // (lib/useDismissableLayer). Прокрутка блокируется ВПЕРВЫЕ: шторка
+  // была единственным полноэкранным слоем без этого, и палец
+  // прокручивал выдачу под ней — при закрытии человек оказывался в
+  // другом месте списка.
   //
   // Список выбора внутри шторки гасит своё Escape (stopPropagation),
   // поэтому первое нажатие закрывает только открытый список, а до
   // шторки событие доходит уже следующим нажатием.
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open]);
+  useDismissableLayer({ open, onClose: () => setOpen(false) });
 
   // Тип объявления. Витрина каталога смешанная, поэтому по умолчанию
   // 'both' — «Всё». На SEO-лендинге /rent тип задан адресом и сегмент
@@ -252,9 +249,18 @@ export default function FilterPanel({
           <div
             className="max-h-[90vh] w-full overflow-y-auto rounded-t-card bg-white p-4 sm:max-w-lg sm:rounded-card"
             onClick={(e) => e.stopPropagation()}
+            // Те же роли, что у диалога выхода: шторка перекрывает
+            // страницу целиком, и скринридер обязан объявить её окном,
+            // а не куском выдачи. aria-labelledby указывает на
+            // заголовок «Фильтры» — своё имя окно берёт из него.
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="filters-title"
           >
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-h4 font-semibold">{t('catalog_filters')}</h2>
+              <h2 id="filters-title" className="text-h4 font-semibold">
+                {t('catalog_filters')}
+              </h2>
               <CloseButton
                 onClick={() => setOpen(false)}
                 label={t('common_close')}
