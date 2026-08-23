@@ -16,7 +16,11 @@ import type { DictKey } from '@/lib/i18n';
 import { CITIES } from '@/lib/referenceData';
 import { getBrowserClient } from '@/lib/supabaseClient';
 import { trackEvent } from '@/lib/analytics';
-import { formatSerbianPhone, serbianPhoneToE164 } from '@/lib/inputFormat';
+import {
+  formatSerbianPhone,
+  SERBIAN_PHONE_PREFIX,
+  serbianPhoneToE164,
+} from '@/lib/inputFormat';
 import Alert from './ui/Alert';
 import { fieldClass, fieldClassTextarea } from './ui/Field';
 import Button from './ui/Button';
@@ -44,7 +48,8 @@ export default function DealerForm({ locale }: Props) {
 
   const [company, setCompany] = useState('');
   const [contact, setContact] = useState('');
-  const [phone, setPhone] = useState('');
+  // Поле стартует с кодом страны: набирать «+381» руками незачем.
+  const [phone, setPhone] = useState(SERBIAN_PHONE_PREFIX);
   const [email, setEmail] = useState('');
   const [city, setCity] = useState('');
   const [comment, setComment] = useState('');
@@ -182,7 +187,7 @@ export default function DealerForm({ locale }: Props) {
             value={phone}
             onChange={(e) => setPhone(formatSerbianPhone(e.target.value))}
             required
-            placeholder="+381 6X XXX XXX"
+            placeholder="6X XXX XXX"
             className={field}
           />
         </div>

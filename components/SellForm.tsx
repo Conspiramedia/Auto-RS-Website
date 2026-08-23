@@ -52,7 +52,9 @@ import {
   MAX_PRICE,
   formatSerbianPhone,
   handleNumberInput,
+  isValidSerbianPhone,
   parseThousands,
+  SERBIAN_PHONE_PREFIX,
   serbianPhoneToE164,
   validateYear,
 } from '@/lib/inputFormat';
@@ -151,7 +153,8 @@ export default function SellForm({
   const [uploadProgress, setUploadProgress] = useState(0);
 
   // Шаг 4: телефон и код.
-  const [phone, setPhone] = useState('');
+  // Поле стартует с кодом страны: набирать «+381» руками незачем.
+  const [phone, setPhone] = useState(SERBIAN_PHONE_PREFIX);
   const [code, setCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
   // Номер, на который реально ушёл код, в формате E.164. Держим отдельно
@@ -1216,7 +1219,7 @@ export default function SellForm({
                 inputMode="tel"
                 value={phone}
                 onChange={(e) => setPhone(formatSerbianPhone(e.target.value))}
-                placeholder="+381 6X XXX XXX"
+                placeholder="6X XXX XXX"
                 className={field}
                 disabled={codeSent}
               />
@@ -1296,8 +1299,10 @@ export default function SellForm({
               <Button
                 onClick={() => sendCode()}
                 // Кнопка неактивна без согласия: отправлять SMS раньше
-                // принятия документов нельзя.
-                disabled={busy || !phone.trim() || !agreed}
+                // принятия документов нельзя. Номер проверяется по
+                // существу: в поле всегда стоит код страны «+381 », и
+                // phone.trim() был бы истинным на пустом номере.
+                disabled={busy || !isValidSerbianPhone(phone) || !agreed}
                 variant="info"
                 fullWidth
               >

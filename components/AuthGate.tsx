@@ -41,7 +41,12 @@ import Card from './ui/Card';
 import { fieldClass } from './ui/Field';
 import { trackEvent } from '@/lib/analytics';
 import { acceptPolicy, hasAcceptedPolicyHere, migrateGuestConsent } from '@/lib/consent';
-import { formatSerbianPhone, serbianPhoneToE164 } from '@/lib/inputFormat';
+import {
+  formatSerbianPhone,
+  isValidSerbianPhone,
+  SERBIAN_PHONE_PREFIX,
+  serbianPhoneToE164,
+} from '@/lib/inputFormat';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { RESEND_DELAY_SEC, humanOtpError } from '@/lib/otp';
@@ -64,7 +69,8 @@ export default function AuthGate({ locale, redirectTo, title }: Props) {
   const router = useRouter();
   const supabase = getBrowserClient();
 
-  const [phone, setPhone] = useState('');
+  // Поле стартует с кодом страны: набирать «+381» руками незачем.
+  const [phone, setPhone] = useState(SERBIAN_PHONE_PREFIX);
   const [code, setCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
   // Номер, на который реально ушёл код, в формате E.164. Держим отдельно
@@ -243,7 +249,7 @@ export default function AuthGate({ locale, redirectTo, title }: Props) {
                 inputMode="tel"
                 value={phone}
                 onChange={(e) => setPhone(formatSerbianPhone(e.target.value))}
-                placeholder="+381 6X XXX XXX"
+                placeholder="6X XXX XXX"
                 className={fieldClass}
               />
             </div>
@@ -287,7 +293,10 @@ export default function AuthGate({ locale, redirectTo, title }: Props) {
                 действием (публикация объявления). */}
             <Button
               onClick={() => sendCode()}
-              disabled={busy || !phone.trim() || !agreed}
+              // Проверка ПО СУЩЕСТВУ, а не на непустоту: в поле всегда
+              // стоит код страны «+381 », и phone.trim() был бы истинным
+              // ещё до единой введённой цифры.
+              disabled={busy || !isValidSerbianPhone(phone) || !agreed}
               variant="info"
               fullWidth
             >
