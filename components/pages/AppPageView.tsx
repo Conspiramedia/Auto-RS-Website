@@ -3,10 +3,11 @@
 // ============================================================
 
 import AppQr from '@/components/AppQr';
+import AppWaitlist from '@/components/AppWaitlist';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
 import SmartBanner from '@/components/SmartBanner';
-import { appIds, brand } from '@/lib/brand';
+import { brand } from '@/lib/brand';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import type { DictKey } from '@/lib/i18n';
@@ -43,35 +44,22 @@ export default function AppPageView({ locale }: { locale: Locale }) {
               </div>
             ))}
 
-            {/* Бейджи сторов. Приложение ещё не опубликовано: пока числового
-                ID нет, ссылка ведёт на поиск по названию — битых ссылок
-                на сайте быть не должно. */}
-            <div className="flex flex-wrap gap-3 pt-2">
-              <a
-                href={`https://play.google.com/store/apps/details?id=${appIds.android.packageName}`}
-                className="rounded-control bg-brand-dark px-5 py-3 font-semibold text-white"
-                rel="nofollow"
-              >
-                Google Play
-              </a>
-              <a
-                href={
-                  appIds.ios.appStoreId
-                    ? `https://apps.apple.com/app/id${appIds.ios.appStoreId}`
-                    : 'https://apps.apple.com/search?term=RS%20Auto'
-                }
-                className="rounded-control bg-brand-dark px-5 py-3 font-semibold text-white"
-                rel="nofollow"
-              >
-                App Store
-              </a>
-            </div>
+            {/* Вместо бейджей сторов — заглушка с подпиской на релиз.
+                Кнопки вели в никуда: приложение не опубликовано, ссылка
+                на Google Play отдавала 404, а ссылка на App Store —
+                поиск по названию. Вернуть их нужно будет ровно здесь,
+                когда appIds.ios.appStoreId перестанет быть пустым. */}
+            <AppWaitlist locale={locale} />
           </div>
 
           <div className="hidden text-center sm:block">
             <AppQr url={siteBaseUrl} size={160} />
+            {/* Подпись своя, а не car_qr_hint: тот обещает открыть
+                объявление В ПРИЛОЖЕНИИ, и на странице, которая сообщает,
+                что приложения пока нет, это противоречие. Код ведёт на
+                сам сайт (siteBaseUrl) — так и написано. */}
             <p className="mt-2 max-w-[180px] text-small text-neutral-50">
-              {t('car_qr_hint')}
+              {t('app_soon_qr')}
             </p>
           </div>
         </div>

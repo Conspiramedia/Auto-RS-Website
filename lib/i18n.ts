@@ -597,6 +597,28 @@ export const dict = {
       'Obavestićemo vas kada prodavac snizi cenu automobila koji pratite.',
 
     // ------------------------------------------------------------
+    // /app — заглушка «приложение в разработке» вместо кнопок сторов.
+    // ------------------------------------------------------------
+    app_soon_badge: 'U izradi',
+    app_soon_title: 'Aplikacija je u izradi',
+    app_soon_text:
+      'Sve što aplikacija donosi već radi na sajtu — pretraga, oglašavanje, '
+      + 'poruke i obaveštenja. Radimo na aplikaciji i javićemo vam čim izađe.',
+    // Честная формулировка: пуш придёт только тому, у кого приложение
+    // уже установлено, — то есть на сайте это всегда письмо.
+    app_soon_note:
+      'Korisnicima naloga stiže obaveštenje u nalogu, a na e-poštu ispod '
+      + 'šaljemo poruku na dan izlaska. Bez newslettera.',
+    app_soon_qr: 'Skenirajte kod telefonom da otvorite sajt na telefonu',
+    app_soon_email: 'E-pošta',
+    app_soon_submit: 'Obavesti me',
+    app_soon_sending: 'Šaljemo…',
+    app_soon_done: 'Javićemo vam čim aplikacija izađe.',
+    app_wait_err_invalid_email: 'Proverite adresu e-pošte.',
+    app_wait_err_rate_limited: 'Previše zahteva. Pokušajte za minut.',
+    app_wait_err_failed: 'Nije uspelo. Pokušajte ponovo.',
+
+    // ------------------------------------------------------------
     // Страница продавца / автосалона.
     // ------------------------------------------------------------
     dealer_page_since: 'Na platformi od',
@@ -1220,6 +1242,28 @@ export const dict = {
     app_feature_3_title: 'Снижение цены',
     app_feature_3_text:
       'Сообщим, когда продавец снизит цену на отслеживаемый автомобиль.',
+
+    // ------------------------------------------------------------
+    // /app — заглушка «приложение в разработке» вместо кнопок сторов.
+    // ------------------------------------------------------------
+    app_soon_badge: 'В разработке',
+    app_soon_title: 'Приложение в разработке',
+    app_soon_text:
+      'Всё, что даёт приложение, уже работает на сайте — поиск, подача, '
+      + 'сообщения и уведомления. Приложение делаем и сообщим, когда выйдет.',
+    // Честная формулировка: пуш придёт только тому, у кого приложение
+    // уже установлено, — то есть на сайте это всегда письмо.
+    app_soon_note:
+      'Владельцам аккаунтов придёт уведомление в кабинете, а на почту ниже '
+      + 'пришлём письмо в день выхода. Без рассылок.',
+    app_soon_qr: 'Отсканируйте код телефоном, чтобы открыть сайт на телефоне',
+    app_soon_email: 'Почта',
+    app_soon_submit: 'Сообщить о выходе',
+    app_soon_sending: 'Отправляем…',
+    app_soon_done: 'Сообщим, как только приложение выйдет.',
+    app_wait_err_invalid_email: 'Проверьте адрес почты.',
+    app_wait_err_rate_limited: 'Слишком много запросов. Попробуйте через минуту.',
+    app_wait_err_failed: 'Не получилось. Попробуйте ещё раз.',
 
     // ------------------------------------------------------------
     // Страница продавца / автосалона.
