@@ -32,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: '/install',
     title: t('install_title'),
-    description: t('install_lead'),
+    description: t('install_intro_body'),
     noindex: true,
   });
 }

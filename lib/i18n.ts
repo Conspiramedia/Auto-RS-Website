@@ -603,24 +603,34 @@ export const dict = {
     // ------------------------------------------------------------
     // /install — установка сайта на телефон (PWA).
     // ------------------------------------------------------------
-    install_title: 'RS Auto na vašem telefonu',
-    install_lead:
-      'Ikonica na ekranu, otvara se bez adresne trake i radi kao aplikacija.',
+    install_title: 'Instalirajte aplikaciju',
+    // Вводный блок над карточками платформ.
+    install_intro_title: 'RS Auto radi kao aplikacija',
+    install_intro_body:
+      'Dodajte RS Auto na početni ekran telefona — otvoriće se kao obična '
+      + 'aplikacija: sa svojom ikonicom, preko celog ekrana, bez adresne '
+      + 'trake pregledača. Traje par sekundi.',
+    // Шаги. Двойные звёздочки выделяют название кнопки полужирным —
+    // разбор в components/InstallGuide.tsx. Приём взят из приложения
+    // (Baza), где жирные фрагменты вынесены отдельными ключами ARB;
+    // здесь маркер прямо в строке — переводчику так виднее контекст.
     install_android_title: 'Android (Chrome)',
-    install_android_1: 'Otvorite sajt u Chrome pregledaču.',
-    install_android_2: 'Dodirnite tri tačkice u gornjem desnom uglu.',
+    install_android_1: 'Otvorite RS Auto u pregledaču **Chrome**.',
+    install_android_2: 'Dodirnite **tri tačkice** u gornjem desnom uglu.',
     install_android_3:
-      'Izaberite «Instalirajte aplikaciju» ili «Dodaj na početni ekran».',
-    install_android_4: 'Potvrdite — ikonica će se pojaviti na ekranu.',
-    install_ios_title: 'iPhone/iPad (Safari)',
+      'Izaberite **«Instalirajte aplikaciju»** ili **«Dodaj na početni ekran»**.',
+    install_android_4:
+      'Potvrdite **«Instaliraj»** — ikonica RS Auto pojaviće se na ekranu.',
+    install_ios_title: 'iPhone / iPad (Safari)',
     install_ios_1:
-      'Otvorite sajt u Safari pregledaču (u drugim pregledačima na iOS-u '
-      + 'instalacija nije dostupna).',
+      'Otvorite RS Auto u pregledaču **Safari** (u drugim pregledačima na '
+      + 'iOS-u instalacija nije dostupna).',
     install_ios_2:
-      'Dodirnite «Podeli» — kvadrat sa strelicom nagore, na dnu ekrana.',
-    install_ios_3: 'Izaberite «Na početni ekran» (On Home Screen).',
+      'Dodirnite dugme **«Podeli»** — kvadrat sa strelicom nagore, na dnu ekrana.',
+    install_ios_3:
+      'Na spisku izaberite **«Na početni ekran»** (On Home Screen).',
     install_ios_4:
-      'Dodirnite «Dodaj» — ikonica će se pojaviti na početnom ekranu.',
+      'Dodirnite **«Dodaj»** — ikonica RS Auto pojaviće se na početnom ekranu.',
     // Подпись номера шага для скринридера: кружок с цифрой от него
     // скрыт, и без неё шаги читались бы сплошным списком без номеров.
     install_step: 'Korak',
@@ -1283,25 +1293,34 @@ export const dict = {
     // ------------------------------------------------------------
     // /install — установка сайта на телефон (PWA).
     // ------------------------------------------------------------
-    install_title: 'RS Auto на вашем телефоне',
-    install_lead:
-      'Иконка на экране, открывается без адресной строки и работает как '
-      + 'приложение.',
+    install_title: 'Установить приложение',
+    // Вводный блок над карточками платформ.
+    install_intro_title: 'RS Auto работает как приложение',
+    install_intro_body:
+      'Добавьте RS Auto на главный экран телефона — и он откроется как '
+      + 'обычное приложение: со своей иконкой, на весь экран, без адресной '
+      + 'строки браузера. Займёт пару секунд.',
+    // Шаги. Двойные звёздочки выделяют название кнопки полужирным —
+    // разбор в components/InstallGuide.tsx. Приём взят из приложения
+    // (Baza), где жирные фрагменты вынесены отдельными ключами ARB;
+    // здесь маркер прямо в строке — переводчику так виднее контекст.
     install_android_title: 'Android (Chrome)',
-    install_android_1: 'Откройте сайт в Chrome.',
-    install_android_2: 'Нажмите три точки в правом верхнем углу.',
+    install_android_1: 'Откройте RS Auto в браузере **Chrome**.',
+    install_android_2: 'Нажмите на **три точки** в правом верхнем углу.',
     install_android_3:
-      'Выберите «Установить приложение» или «Добавить на главный экран».',
-    install_android_4: 'Подтвердите — иконка появится на экране.',
-    install_ios_title: 'iPhone/iPad (Safari)',
+      'Выберите **«Установить приложение»** или **«Добавить на главный экран»**.',
+    install_android_4:
+      'Подтвердите **«Установить»** — иконка RS Auto появится на экране.',
+    install_ios_title: 'iPhone / iPad (Safari)',
     install_ios_1:
-      'Откройте сайт в Safari (в других браузерах на iOS установка '
-      + 'недоступна).',
+      'Откройте RS Auto в браузере **Safari** (в других браузерах на iOS '
+      + 'установка недоступна).',
     install_ios_2:
-      'Нажмите «Поделиться» — квадрат со стрелкой вверх, внизу экрана.',
-    install_ios_3: 'Выберите «На экран „Домой“» (On Home Screen).',
+      'Нажмите кнопку **«Поделиться»** — квадрат со стрелкой вверх, внизу экрана.',
+    install_ios_3:
+      'В списке выберите **«На экран „Домой“»** (On Home Screen).',
     install_ios_4:
-      'Нажмите «Добавить» — иконка появится на главном экране.',
+      'Нажмите **«Добавить»** — иконка RS Auto появится на главном экране.',
     // Подпись номера шага для скринридера: кружок с цифрой от него
     // скрыт, и без неё шаги читались бы сплошным списком без номеров.
     install_step: 'Шаг',

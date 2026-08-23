@@ -33,11 +33,18 @@ export default function InstallPageView({ locale }: { locale: Locale }) {
     <>
       <SiteHeader locale={locale} pathname="/install" />
 
-      {/* max-w-3xl — та же колонка, что у /how-it-works: страница
-          читается сверху вниз, и широкая строка на десктопе утомляет. */}
-      <main className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
-        <h1 className="text-h2 font-bold sm:text-h1">{t('install_title')}</h1>
-        <p className="mt-3 text-h4 text-neutral-60">{t('install_lead')}</p>
+      {/* Отступы 16px по бокам и сверху, 32px снизу — как
+          EdgeInsets.fromLTRB(16, 16, 16, 32) у ListView в приложении.
+          max-w-3xl ограничивает колонку на десктопе: экран приложения
+          рассчитан на телефон, и растянутая на 1280px строка шага
+          читалась бы иначе, чем задумано. */}
+      <main className="mx-auto max-w-3xl px-4 pb-8 pt-4">
+        {/* Заголовок — 17px/600, как title у AppBar в приложении.
+            Крупного h1 с подзаголовком здесь нет: в образце его тоже
+            нет, а вводный блок ниже говорит то же самое подробнее. */}
+        <h1 className="text-[17px] font-semibold text-neutral-100">
+          {t('install_title')}
+        </h1>
 
         {/* Карточки вынесены в клиентский InstallGuide: он подсвечивает
             платформу посетителя и поднимает её карточку наверх. Текст
