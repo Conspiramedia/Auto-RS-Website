@@ -95,7 +95,7 @@ export default function SmartBanner({ locale, deepLink }: Props) {
 
       <div className="min-w-0 flex-1 leading-tight">
         <div className="truncate text-caption font-semibold">{t('banner_title')}</div>
-        <div className="truncate text-small text-white/70">{t('banner_text')}</div>
+        <div className="truncate text-small text-on-dark-70">{t('banner_text')}</div>
       </div>
 
       <a
@@ -111,7 +111,7 @@ export default function SmartBanner({ locale, deepLink }: Props) {
           localStorage.setItem(DISMISS_KEY, '1');
           setVisible(false);
         }}
-        className="shrink-0 px-1 text-h3 leading-none text-white/60"
+        className="shrink-0 px-1 text-h3 leading-none text-on-dark-60"
         aria-label={t('banner_close')}
       >
         ×

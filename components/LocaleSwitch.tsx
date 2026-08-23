@@ -49,7 +49,7 @@ export default function LocaleSwitch({ locale, pathname }: Props) {
             className={
               active
                 ? 'rounded-control bg-brand-dark px-2 py-1 text-white'
-                : 'rounded-control px-2 py-1 text-brand-dark/60 hover:text-brand-dark'
+                : 'rounded-control px-2 py-1 text-neutral-55 hover:text-brand-dark'
             }
             aria-current={active ? 'true' : undefined}
           >

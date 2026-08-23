@@ -40,8 +40,16 @@ export default function SiteHeader({ locale, pathname }: Props) {
   return (
     <header className="sticky top-0 z-header border-b border-neutral-10 bg-white">
       {/* gap-2 на мобильных и gap-4 с sm: на 360px каждый пиксель между
-          элементами решает, поместится CTA или уедет за край. */}
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 pl-3 pr-2 sm:gap-4 sm:pl-4 sm:pr-3">
+          элементами решает, поместится CTA или уедет за край.
+          Отступы px-4 — те же, что у контейнера содержимого на всех
+          страницах: логотип обязан стоять на одной вертикали с
+          заголовком страницы под ним. Раньше здесь было асимметричное
+          pl-3 pr-2, и знак съезжал влево относительно контента.
+          Справа те же 16px компенсируются внутренним отступом
+          последнего элемента (бургер на мобильном, CTA на десктопе),
+          поэтому визуальный зазор у края не удваивается: -mr-1.5
+          подтягивает кнопку с её собственным padding обратно к краю. */}
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-4 sm:gap-4">
         <Link href={localeHref(locale, '/')} className="shrink-0">
           <Logo className="text-caption sm:text-h4" />
         </Link>
@@ -64,7 +72,7 @@ export default function SiteHeader({ locale, pathname }: Props) {
           </Link>
         </nav>
 
-        <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-3">
+        <div className="-mr-1.5 ml-auto flex shrink-0 items-center gap-1.5 sm:mr-0 sm:gap-3">
           <LocaleSwitch locale={locale} pathname={pathname} />
 
           {/* Вход или ссылка в кабинет. Клиентский компонент: сервер

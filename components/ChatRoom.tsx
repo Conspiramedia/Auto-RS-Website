@@ -229,7 +229,7 @@ function Bubble({
 
         <div
           className={`mt-0.5 flex items-center justify-end gap-1 text-small ${
-            mine ? 'text-white/70' : 'text-neutral-50'
+            mine ? 'text-on-dark-70' : 'text-neutral-50'
           }`}
         >
           <span>{time(message.created_at, locale)}</span>

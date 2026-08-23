@@ -306,7 +306,7 @@ export default function ListPicker({
               ))}
 
               {filtered.length === 0 && !showCustom && (
-                <div className="px-4 py-6 text-center text-caption text-neutral-40">
+                <div className="px-4 py-6 text-center text-caption text-neutral-60">
                   {t('picker_nothing')}
                 </div>
               )}

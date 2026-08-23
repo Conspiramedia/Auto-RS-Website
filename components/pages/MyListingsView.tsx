@@ -79,7 +79,7 @@ export default async function MyListingsView({ locale }: Props) {
         // должна спорить с карточками за внимание. Стоит отдельной
         // строкой над сеткой, а не в боковой колонке: так она читается
         // одним движением глаз, а карточки получают всю ширину.
-        <div className="grid grid-cols-2 gap-3 rounded-card bg-surface-muted p-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 items-start gap-3 rounded-card bg-surface-muted p-4 sm:grid-cols-4">
           <Total label={t('my_totals_listings')} value={totals.listings_count} />
           <Total label={t('my_metric_views')} value={totals.views} />
           <Total label={t('my_metric_favorites')} value={totals.favorites} />
@@ -88,12 +88,17 @@ export default async function MyListingsView({ locale }: Props) {
       )}
 
       {/* Сетка карточек. На мобильном — один столбец (карточка
-          горизонтальная: фото слева, данные справа), с 1024px — две
+          горизонтальная: фото слева, данные справа), с 768px — две
           колонки, с 1280px — три.
+          Две колонки начинаются именно с 768, а не с 1024: на планшете
+          одна колонка растягивалась на все 736px, и метрики с кнопками
+          расползались по полупустой строке. Две дают 362px на карточку —
+          ровно та ширина, под которую она и спроектирована (см. шапку
+          MyListingCard).
           Больше трёх не делаем: карточка владельца несёт метрики,
           бейджи и до четырёх кнопок действий, и в узкой колонке они
           начали бы переноситься по одной в строку. */}
-      <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {listings.map((listing) => (
           <MyListingCard
             key={listing.car_id}
@@ -113,7 +118,13 @@ function Total({ label, value }: { label: string; value: number }) {
   return (
     <div>
       <div className="text-h3 font-bold">{value}</div>
-      <div className="text-caption text-neutral-60">{label}</div>
+      {/* min-h в две строки caption (20px × 2): подписи метрик разной
+          длины, и без резерва под перенос соседние ячейки ряда
+          получают разную высоту. С sm: подписи снова умещаются в
+          строку — резерв там не нужен и оставил бы пустой зазор. */}
+      <div className="min-h-10 text-caption text-neutral-60 sm:min-h-0">
+        {label}
+      </div>
     </div>
   );
 }

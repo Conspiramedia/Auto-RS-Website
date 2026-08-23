@@ -127,7 +127,7 @@ export default function SiteFooter({
           </Link>
         </div>
 
-        <div className="mt-6 text-small text-neutral-40">
+        <div className="mt-6 text-small text-neutral-60">
           © {year} {brand.name}. {t('site_tagline')}.
         </div>
       </div>

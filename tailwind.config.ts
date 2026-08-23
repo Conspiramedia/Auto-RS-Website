@@ -36,6 +36,8 @@ const config: Config = {
         // прозрачности (text-black/60 → text-neutral-60), поэтому
         // перевод разметки на токены цвет не меняет.
         neutral: brand.neutral,
+        // Нейтральная шкала для тёмных подложек: text-on-dark-70.
+        'on-dark': brand.onDark,
         // Заливки и состояния наведения.
         surface: brand.surface,
         // Семантические роли: bg-success читается лучше, чем bg-brand-green,

@@ -44,7 +44,7 @@ export default function ErrorView({ locale, reset }: Props) {
           на экране ошибки не должно быть ни CTA подачи, ни навигации
           по разделам — только выход в каталог и переключатель языка. */}
       <header className="border-b border-neutral-10 bg-white">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:gap-4 sm:px-4">
+        <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-4 sm:gap-4">
           <Link href={localeHref(locale, '/')} className="shrink-0">
             <Logo className="text-body sm:text-h4" />
           </Link>

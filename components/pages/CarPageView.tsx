@@ -274,7 +274,7 @@ export default async function CarPageView({
               </section>
             )}
 
-            <div className="mt-6 text-caption text-neutral-40">
+            <div className="mt-6 text-caption text-neutral-60">
               {t('car_published')}: {formatDate(car.created_at, locale)}
             </div>
           </div>
