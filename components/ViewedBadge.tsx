@@ -26,9 +26,15 @@ import { isCarViewed } from './RecentlyViewed';
 export default function ViewedBadge({
   locale,
   carId,
+  className = '',
 }: {
   locale: Locale;
   carId: string;
+  // Позиционирование задаёт РОДИТЕЛЬ. Собственного absolute у метки
+  // больше нет: она стоит в общем flex-ряду бейджей карточки, и
+  // абсолютное позиционирование выдернуло бы её из потока — ровно то,
+  // из-за чего она накладывалась на бейдж аренды на узких экранах.
+  className?: string;
 }) {
   const t = getT(locale);
   const [viewed, setViewed] = useState(false);
@@ -40,10 +46,14 @@ export default function ViewedBadge({
   if (!viewed) return null;
 
   return (
-    // Левый верхний угол: там же, где метка стоит в приложении.
     // Тёмная нейтральная плашка — это констатация, а не акцент, поэтому
     // она не спорит с бейджами промо и аренды.
-    <span className="absolute left-2 top-2 rounded-sm bg-neutral-60 px-2 py-1 text-xs font-semibold text-white">
+    // whitespace-nowrap: «Просмотрено» и сербское «Pogledano» — слова
+    // длинные, и на узкой карточке flex сжал бы плашку, разорвав слово
+    // посреди. Пусть лучше метка целиком уедет на вторую строку.
+    <span
+      className={`shrink-0 whitespace-nowrap rounded-sm bg-neutral-60 px-1.5 py-0.5 text-micro font-semibold text-white ${className}`}
+    >
       {t('car_viewed')}
     </span>
   );

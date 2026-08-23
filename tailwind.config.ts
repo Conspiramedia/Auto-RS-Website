@@ -104,6 +104,7 @@ const config: Config = {
           brand.typography.caption.lineHeight,
         ],
         small: [brand.typography.small.size, brand.typography.small.lineHeight],
+        micro: [brand.typography.micro.size, brand.typography.micro.lineHeight],
       },
     },
   },

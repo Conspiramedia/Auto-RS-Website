@@ -32,7 +32,14 @@ export default function NotFoundView({ locale }: { locale: Locale }) {
         <h1 className="mt-4 text-2xl font-bold">{t('nf_title')}</h1>
         <p className="mt-3 max-w-md text-neutral-60">{t('nf_text')}</p>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        {/* Столбик на мобильном, ряд с sm — тот же приём, что на экране
+            ошибки (ErrorView): inline-grid уравнивает кнопки по самой
+            широкой из них, поэтому ширина берётся по длине подписи и не
+            требует фиксированного значения под каждый перевод.
+            Держать эти два экрана одинаковыми обязательно: 404 и 500
+            стоят рядом в восприятии посетителя, и расхождение в
+            раскладке кнопок выглядело бы недоделкой. */}
+        <div className="mt-8 inline-grid grid-cols-1 gap-3 sm:flex sm:flex-row sm:items-center sm:justify-center">
           <Button size="lg" href={localeHref(locale, '/cars')}>
             {t('nf_catalog')}
           </Button>
