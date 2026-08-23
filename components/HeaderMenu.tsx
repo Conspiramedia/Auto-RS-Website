@@ -61,10 +61,15 @@
 //   LogOut         Выйти            только вошедшему, brand-red
 //
 // ЛИНИЙ МЕЖДУ ПУНКТАМИ НЕТ — ни одной. Единственная горизонтальная
-// линия в меню отделяет шапку («Меню» с крестиком) от списка. Группы
-// выше разделены только воздухом (mb-2/pb-2 у обёрток): список из
-// пятнадцати строк, расчерченный на четыре части, читался бы как
-// таблица, а не как навигация.
+// линия в меню отделяет шапку («Меню» с крестиком) от списка. Список
+// из пятнадцати строк, расчерченный на части, читался бы как таблица,
+// а не как навигация.
+//
+// РАССТОЯНИЕ МЕЖДУ ВСЕМИ ПУНКТАМИ ОДИНАКОВОЕ и задано единственным
+// способом — py-3 у самой строки. Обёртки групп своих отступов НЕ
+// добавляют: пока у них стояли mb-2/pb-2, зазор на стыке групп был
+// на 16px больше, чем между соседними разделами, и список выглядел
+// сбитым в неровные кучки. Не возвращать.
 //
 // Порядок групп при этом осмыслен и менять его нельзя: личный блок
 // сверху — это страницы аккаунта, а не разделы сайта; «Быстрый
@@ -309,13 +314,14 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
             {/* Список прокручивается сам: двенадцать пунктов у вошедшего
                 не помещаются на низком экране в альбомной ориентации. */}
             <div className="flex-1 overflow-y-auto py-2">
-              {/* ЛИЧНЫЙ БЛОК — первым и отделён линией: это страницы
-                  аккаунта, а не разделы сайта.
+              {/* ЛИЧНЫЙ БЛОК — первым: это страницы аккаунта, а не
+                  разделы сайта. Ни линии, ни отдельного отступа у него
+                  нет — порядок и есть единственный признак группы.
                   signedIn === null — проверка ещё идёт, не показываем
                   ничего: мелькнувшее «Войти» у вошедшего читается как
                   разлогин. */}
               {signedIn === true && (
-                <div className="mb-2 pb-2">
+                <div>
                   {MY_LINKS.map((link) => {
                     const count =
                       link.badge === 'messages'
@@ -375,7 +381,7 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                 <Link
                   href={loginHref}
                   onClick={() => setOpen(false)}
-                  className="mb-2 flex items-center gap-2.5 px-4 py-3 font-semibold transition-colors duration-fast ease-out hover:bg-surface-hover"
+                  className="flex items-center gap-2.5 px-4 py-3 font-semibold transition-colors duration-fast ease-out hover:bg-surface-hover"
                 >
                   <LogInIcon className={`${ICON_CLASS} text-neutral-60`} />
                   {t('nav_login')}
@@ -392,9 +398,10 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                   на домашний экран с телефона, и на десктопе строка
                   занимала бы место, ничего не предлагая.
 
-                  От соседних групп отделён только воздухом (mb-2/pb-2):
-                  линий в списке нет ни одной, см. эталон в шапке. */}
-              <div className="mb-2 pb-2">
+                  Ни линии, ни дополнительного отступа вокруг него нет:
+                  шаг между всеми пунктами одинаковый, см. эталон
+                  в шапке файла. */}
+              <div>
                 <Link
                   href={localeHref(locale, '/install')}
                   onClick={() => setOpen(false)}
@@ -469,7 +476,7 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                   остальных пунктов: без них подпись съехала бы на 4px
                   относительно списка выше. */}
               {signedIn === true && (
-                <div className="mt-2 pt-2">
+                <div>
                   <div className="border-l-4 border-transparent pr-4 pl-3">
                     <SignOutButton locale={locale} variant="menu" />
                   </div>
