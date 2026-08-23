@@ -30,6 +30,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 
 import type { DictKey, Locale } from '@/lib/i18n';
 import { getT, localeHref, stripLocale } from '@/lib/i18n';
@@ -38,20 +39,44 @@ import SignOutButton from './SignOutButton';
 import CloseButton from './ui/CloseButton';
 import CountBadge from './ui/CountBadge';
 import { InstallIcon } from './ui/InstallIcons';
+import {
+  BellIcon,
+  Building2Icon,
+  CarFrontIcon,
+  CircleHelpIcon,
+  CircleUserIcon,
+  InfoIcon,
+  KeyRoundIcon,
+  LightbulbIcon,
+  LogInIcon,
+  MailIcon,
+  MessageSquareIcon,
+  SmartphoneIcon,
+  TagIcon,
+} from './ui/NavIcons';
+
+// Значок пункта меню. Все иконки набора имеют одну сигнатуру, и тип
+// нужен, чтобы массивы ссылок ниже принимали любую из них.
+type NavIcon = (p: { className?: string }) => ReactNode;
+
+// Классы значка — одной строкой, а не россыпью по трём местам разметки.
+// 20px и neutral-60; цвет активного пункта наследуется от ссылки через
+// currentColor, поэтому здесь его нет.
+const ICON_CLASS = 'h-5 w-5 shrink-0';
 
 // Разделы сайта. Порядок осмысленный: сначала витрины (за ними приходят),
 // потом продавцам, затем справочные страницы и контакты.
-const LINKS: { path: string; label: DictKey }[] = [
+const LINKS: { path: string; label: DictKey; icon: NavIcon }[] = [
   // nav_catalog_menu, а не nav_catalog: в меню пункт стоит рядом с
   // «Арендой», и там это выбор вида сделки, а не название раздела.
-  { path: '/cars', label: 'nav_catalog_menu' },
-  { path: '/rent', label: 'nav_rent' },
-  { path: '/dealers', label: 'nav_dealers' },
-  { path: '/app', label: 'nav_app' },
-  { path: '/about', label: 'nav_about' },
-  { path: '/how-it-works', label: 'nav_how' },
-  { path: '/faq', label: 'nav_faq' },
-  { path: '/contact', label: 'nav_contact' },
+  { path: '/cars', label: 'nav_catalog_menu', icon: TagIcon },
+  { path: '/rent', label: 'nav_rent', icon: KeyRoundIcon },
+  { path: '/dealers', label: 'nav_dealers', icon: Building2Icon },
+  { path: '/app', label: 'nav_app', icon: SmartphoneIcon },
+  { path: '/about', label: 'nav_about', icon: InfoIcon },
+  { path: '/how-it-works', label: 'nav_how', icon: LightbulbIcon },
+  { path: '/faq', label: 'nav_faq', icon: CircleHelpIcon },
+  { path: '/contact', label: 'nav_contact', icon: MailIcon },
 ];
 
 // Личные страницы вошедшего. Каждая — ОТДЕЛЬНЫЙ пункт со своим
@@ -68,16 +93,23 @@ const LINKS: { path: string; label: DictKey }[] = [
 const MY_LINKS: {
   path: string;
   label: DictKey;
+  icon: NavIcon;
   badge?: 'messages' | 'notifications';
 }[] = [
-  { path: '/my', label: 'my_tab_listings' },
-  { path: '/my/messages', label: 'my_tab_messages', badge: 'messages' },
+  { path: '/my', label: 'my_tab_listings', icon: CarFrontIcon },
+  {
+    path: '/my/messages',
+    label: 'my_tab_messages',
+    icon: MessageSquareIcon,
+    badge: 'messages',
+  },
   {
     path: '/my/notifications',
     label: 'my_tab_notifications',
+    icon: BellIcon,
     badge: 'notifications',
   },
-  { path: '/my/profile', label: 'my_tab_profile' },
+  { path: '/my/profile', label: 'my_tab_profile', icon: CircleUserIcon },
 ];
 
 export default function HeaderMenu({ locale }: { locale: Locale }) {
@@ -270,7 +302,16 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                             : 'border-l-4 border-transparent pl-3 hover:bg-surface-hover',
                         ].join(' ')}
                       >
-                        <span>{t(link.label)}</span>
+                        {/* Значок и подпись — одной группой: строка
+                            разложена justify-between, и без обёртки
+                            значок улетел бы к левому краю, а подпись
+                            повисла бы посередине. */}
+                        <span className="flex items-center gap-2.5">
+                          <link.icon
+                            className={`${ICON_CLASS} ${active ? '' : 'text-neutral-60'}`}
+                          />
+                          <span>{t(link.label)}</span>
+                        </span>
                         {/* Счётчик у своего раздела: сумма на кнопке
                             меню отвечает на вопрос «есть ли что-то»,
                             а эти цифры — «где именно». */}
@@ -285,8 +326,9 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                 <Link
                   href={loginHref}
                   onClick={() => setOpen(false)}
-                  className="mb-2 block border-b border-neutral-10 px-4 py-3 font-semibold transition-colors duration-fast ease-out hover:bg-surface-hover"
+                  className="mb-2 flex items-center gap-2.5 border-b border-neutral-10 px-4 py-3 font-semibold transition-colors duration-fast ease-out hover:bg-surface-hover"
                 >
+                  <LogInIcon className={`${ICON_CLASS} text-neutral-60`} />
                   {t('nav_login')}
                 </Link>
               )}
@@ -322,7 +364,9 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                       опознаваться как одно действие, а копия путей
                       здесь разъехалась бы с оригиналом при первой
                       правке — что и произошло до этой замены. */}
-                  <InstallIcon className="h-[18px] w-[18px] shrink-0" />
+                  <InstallIcon
+                    className={`${ICON_CLASS} ${isActive('/install') ? '' : 'text-neutral-60'}`}
+                  />
                   <span>{t('nav_install')}</span>
                 </Link>
               </div>
@@ -337,7 +381,10 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                     onClick={() => setOpen(false)}
                     aria-current={active ? 'page' : undefined}
                     className={[
-                      'block py-3 pr-4 pl-3 transition-colors duration-fast ease-out',
+                      // flex вместо block — под значок. Отступы (py-3,
+                      // pr-4, pl-3) и полоса слева не менялись: строка
+                      // осталась той же высоты, значок встал в неё.
+                      'flex items-center gap-2.5 py-3 pr-4 pl-3 transition-colors duration-fast ease-out',
                       // Активный раздел ещё и жирнее: у разделов сайта
                       // обычное начертание (font-medium), и одной
                       // сменой цвета подсветка читалась бы слабее,
@@ -347,7 +394,10 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                         : 'border-l-4 border-transparent font-medium hover:bg-surface-hover',
                     ].join(' ')}
                   >
-                    {t(link.label)}
+                    <link.icon
+                      className={`${ICON_CLASS} ${active ? '' : 'text-neutral-60'}`}
+                    />
+                    <span>{t(link.label)}</span>
                   </Link>
                 );
               })}

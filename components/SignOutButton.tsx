@@ -49,6 +49,7 @@ import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import Button from './ui/Button';
 import CloseButton from './ui/CloseButton';
+import { LogOutIcon } from './ui/NavIcons';
 
 type Props = {
   locale: Locale;
@@ -118,10 +119,18 @@ export default function SignOutButton({
               // пунктов рядом. text-left обязателен — по умолчанию
               // кнопка центрирует подпись, и выход выбивался бы из
               // левого края списка.
-              'block w-full py-3 text-left font-medium text-brand-red transition-opacity duration-fast ease-out hover:opacity-80'
+              'flex w-full items-center gap-2.5 py-3 text-left font-medium text-brand-red transition-opacity duration-fast ease-out hover:opacity-80'
             : 'shrink-0 text-caption font-semibold text-brand-red transition-opacity duration-fast ease-out hover:opacity-80'
         }
       >
+        {/* Значок только в меню: в строке кабинета (variant inline)
+            выход стоит подписью рядом с другими ссылками, и иконка
+            там была бы единственной на весь ряд.
+            Цвет НЕ neutral-60, как у остальных пунктов меню, а
+            унаследованный красный: выход — действие над аккаунтом,
+            и приглушать его значок до цвета навигации значило бы
+            спорить с подписью, которая красная. */}
+        {variant === 'menu' && <LogOutIcon className="h-5 w-5 shrink-0" />}
         {t('my_logout')}
       </button>
 
