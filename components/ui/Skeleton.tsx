@@ -64,7 +64,16 @@ export function SkeletonCarGrid({ count = 8 }: { count?: number }) {
 export function SkeletonCatalogControls() {
   return (
     <>
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:gap-3">
+      {/* Раскладка повторяет ряд управления в components/CatalogView:
+          строка поиска переносом занимает всю ширину до 768px и встаёт
+          в ряд с md. Без неё скелетон показывал ряд БЕЗ поиска, и при
+          загрузке контролы подпрыгивали на высоту появившейся строки. */}
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+        {/* Строка поиска: h-10 у поля + кнопка «Найти» справа. */}
+        <div className="min-w-0 basis-full md:basis-0 md:flex-1">
+          <SkeletonBox className="h-10 w-full" />
+        </div>
+
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none sm:gap-3">
           {/* Габариты кнопки «Фильтры»: h-10 = px-4 py-2.5 + text-caption. */}
           <SkeletonBox className="h-10 w-28" />

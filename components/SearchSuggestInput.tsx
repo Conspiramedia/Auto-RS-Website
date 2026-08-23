@@ -198,11 +198,46 @@ export default function SearchSuggestInput({
   const fullText = active ? active.text[locale] : '';
 
   // ------------------------------------------------------------
+  // СИСТЕМНАЯ НАСТРОЙКА «МЕНЬШЕ ДВИЖЕНИЯ» — полная заморозка.
+  // ------------------------------------------------------------
+  // При prefers-reduced-motion печатной машинки нет вовсе: поле
+  // показывает статичный НЕЙТРАЛЬНЫЙ плейсхолдер из словаря, фразы
+  // не набираются и не сменяются. Половинчатый вариант (показать
+  // фразу целиком и заморозить) был хуже обоих концов: движения нет,
+  // а поле при этом выглядит заполненным чужим текстом, который
+  // никогда не изменится.
+  //
+  // Обнаруживаемость при этом НЕ теряется: ряд чипсов под полем
+  // остаётся и показывает те же живые фразы из каталога — он статичен
+  // по своей природе и настройке не противоречит.
+  //
+  // Читается в эффекте, а не при рендере: matchMedia на сервере нет,
+  // и прямой вызов расходился бы с серверной разметкой при гидратации.
+  // Слушатель нужен, потому что настройку меняют не перезагружая
+  // страницу — на Android она включается автоматически вместе с
+  // режимом энергосбережения.
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    if (!mq) return;
+
+    setReducedMotion(mq.matches);
+
+    const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  // ------------------------------------------------------------
   // Первая фраза: выбирается ТОЛЬКО после гидратации.
   // ------------------------------------------------------------
   // Случайное значение на сервере и на клиенте не совпало бы, и React
   // сообщил бы о расхождении разметки — поэтому index стартует с null,
   // а сервер отдаёт нейтральный плейсхолдер из словаря.
+  //
+  // Индекс выбирается и при reduced motion: сами ЧИПСЫ строятся от
+  // него, и без индекса под полем не было бы ни одной подсказки.
   useEffect(() => {
     if (!hasSuggestions) return;
     setIndex((current) => (current === null ? nextIndex(-1, total) : current));
@@ -224,16 +259,9 @@ export default function SearchSuggestInput({
     // за набранным текстом всё равно не виден.
     if (value.trim() !== '') return;
 
-    // Системная настройка «меньше движения» отключает ИМЕННО движение:
-    // фраза показывается целиком и застывает. Прятать её совсем
-    // неправильно — она информативна сама по себе.
-    if (
-      typeof window !== 'undefined' &&
-      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    ) {
-      setTyped(fullText.length);
-      return;
-    }
+    // «Меньше движения» — таймеры не заводятся вовсе. typed остаётся
+    // нулём, и плейсхолдер ниже сам отдаёт нейтральную подпись.
+    if (reducedMotion) return;
 
     let delay: number;
     let step: () => void;
@@ -275,7 +303,16 @@ export default function SearchSuggestInput({
 
     const timer = window.setTimeout(step, delay);
     return () => window.clearTimeout(timer);
-  }, [hasSuggestions, index, phase, typed, fullText, total, value]);
+  }, [
+    hasSuggestions,
+    index,
+    phase,
+    typed,
+    fullText,
+    total,
+    value,
+    reducedMotion,
+  ]);
 
   // Текст плейсхолдера на текущем кадре анимации.
   //
@@ -287,14 +324,23 @@ export default function SearchSuggestInput({
   //
   // Math.min страхует смену языка: fullText меняется мгновенно, а typed
   // остаётся от прежней фразы и может оказаться длиннее новой.
+  //
+  // reducedMotion проверяется ЯВНО, хотя при нём typed и так остаётся
+  // нулём: связь «нет таймеров → нет текста» держится на совпадении
+  // двух мест, и достаточно однажды выставить typed в другом эффекте,
+  // чтобы в поле навсегда застыл обрывок фразы. Здесь это исключено.
   const animatedPlaceholder =
-    active && typed > 0
+    active && typed > 0 && !reducedMotion
       ? fullText.slice(0, Math.min(typed, fullText.length))
       : null;
 
   // Чипсы: активная подсказка и следующие за ней по кругу. Берутся от
   // активного индекса, поэтому ряд меняется вместе с плейсхолдером и
   // человек видит связь между ними.
+  //
+  // При reduced motion индекс не сменяется, и ряд стоит неподвижно —
+  // это и требуется: сами подсказки остаются на месте и остаются
+  // кликабельными, теряется только движение.
   const chips: SearchSuggestion[] =
     index === null
       ? []
