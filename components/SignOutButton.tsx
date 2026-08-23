@@ -31,9 +31,15 @@
 // модального окна заводить нельзя — два разных диалога на сайте
 // читались бы как элементы разных продуктов.
 //
-// ВИД КНОПКИ. Третьестепенное действие: ссылка нейтрального тона, без
-// заливки. Заливка (тем более цветная) поставила бы выход в один ряд
-// с главными действиями кабинета, хотя это самое редкое из них.
+// ВИД КНОПКИ. Ссылка без заливки: заливка поставила бы выход в один
+// ряд с главными действиями кабинета, хотя это самое редкое из них.
+// Но подпись — красная, а не нейтральная: красный здесь роль, а не
+// акцент — он говорит «действие с последствиями», ровно то же, что
+// подтверждающая кнопка в диалоге. Нейтральный серый терял выход
+// среди соседних пунктов меню и не предупреждал ни о чём.
+// Наведение слегка гасит подпись (opacity 80%): прежняя подсветка
+// «серый → красный» при уже красном тексте ничего бы не показала,
+// а второго красного в палитре нет.
 // ============================================================
 
 import { useEffect, useState, useTransition } from 'react';
@@ -112,8 +118,8 @@ export default function SignOutButton({
               // пунктов рядом. text-left обязателен — по умолчанию
               // кнопка центрирует подпись, и выход выбивался бы из
               // левого края списка.
-              'block w-full py-3 text-left font-medium text-neutral-60 transition-colors duration-fast ease-out hover:text-brand-red'
-            : 'shrink-0 text-caption font-semibold text-neutral-60 transition-colors duration-fast ease-out hover:text-brand-red'
+              'block w-full py-3 text-left font-medium text-brand-red transition-opacity duration-fast ease-out hover:opacity-80'
+            : 'shrink-0 text-caption font-semibold text-brand-red transition-opacity duration-fast ease-out hover:opacity-80'
         }
       >
         {t('my_logout')}
