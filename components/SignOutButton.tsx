@@ -46,9 +46,19 @@ import CloseButton from './ui/CloseButton';
 
 type Props = {
   locale: Locale;
+  // Где стоит кнопка — от этого зависит только вид самой подписи,
+  // диалог в обоих случаях один и тот же.
+  //   'inline' — шапка кабинета: мелкая ссылка справа от заголовка;
+  //   'menu'   — пункт списка в меню шапки: размер и начертание как
+  //              у соседних разделов, иначе выход читался бы как
+  //              подпись под ними, а не как равноправный пункт.
+  variant?: 'inline' | 'menu';
 };
 
-export default function SignOutButton({ locale }: Props) {
+export default function SignOutButton({
+  locale,
+  variant = 'inline',
+}: Props) {
   const t = getT(locale);
   // useTransition, а не собственный useState: сюда попадает и время
   // серверного редиректа после выхода, поэтому кнопка остаётся
@@ -67,13 +77,27 @@ export default function SignOutButton({ locale }: Props) {
     document.body.style.overflow = 'hidden';
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !pending) setOpen(false);
+      if (e.key !== 'Escape') return;
+
+      // stopPropagation обязателен, когда диалог открыт ИЗ МЕНЮ: у
+      // меню свой слушатель Escape на document, и без остановки одно
+      // нажатие закрыло бы оба слоя разом — человек потерял бы и
+      // диалог, и список, из которого нажимал.
+      // Гасим и во время выхода: там Escape не закрывает ничего, но
+      // и меню закрывать посреди запроса тем более нельзя.
+      e.stopPropagation();
+      if (!pending) setOpen(false);
     };
-    document.addEventListener('keydown', onKey);
+    // capture: true — слушатель диалога обязан отработать РАНЬШЕ
+    // слушателя меню. Меню подписано в фазе всплытия, а перехват
+    // проходит до неё, поэтому stopPropagation выше успевает
+    // остановить событие: проверено в браузере — при открытом
+    // диалоге меню от Escape не закрывается.
+    document.addEventListener('keydown', onKey, true);
 
     return () => {
       document.body.style.overflow = previous;
-      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('keydown', onKey, true);
     };
   }, [open, pending]);
 
@@ -82,7 +106,15 @@ export default function SignOutButton({ locale }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="shrink-0 text-caption font-semibold text-neutral-60 transition-colors duration-fast ease-out hover:text-brand-red"
+        className={
+          variant === 'menu'
+            ? // В меню: во всю ширину и с той же высотой строки, что у
+              // пунктов рядом. text-left обязателен — по умолчанию
+              // кнопка центрирует подпись, и выход выбивался бы из
+              // левого края списка.
+              'block w-full py-3 text-left font-medium text-neutral-60 transition-colors duration-fast ease-out hover:text-brand-red'
+            : 'shrink-0 text-caption font-semibold text-neutral-60 transition-colors duration-fast ease-out hover:text-brand-red'
+        }
       >
         {t('my_logout')}
       </button>

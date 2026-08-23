@@ -34,6 +34,7 @@ import { useEffect, useState } from 'react';
 import type { DictKey, Locale } from '@/lib/i18n';
 import { getT, localeHref, stripLocale } from '@/lib/i18n';
 import { useBadgeCounts } from '@/lib/useBadgeCounts';
+import SignOutButton from './SignOutButton';
 import CloseButton from './ui/CloseButton';
 import CountBadge from './ui/CountBadge';
 
@@ -313,6 +314,30 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                   </Link>
                 );
               })}
+
+              {/* ВЫХОД — последним пунктом и отделён линией сверху:
+                  это действие над аккаунтом, а не раздел сайта, и
+                  соседство с «Контактами» без разделителя читалось бы
+                  как ещё одна страница.
+                  Показывается только вошедшему: гостю здесь стоит
+                  «Войти» — в самом верху, где он его и ищет.
+
+                  Меню НЕ закрывается по нажатию: SignOutButton
+                  открывает диалог подтверждения поверх (z-modal выше
+                  z-filter-sheet), и закрывать меню под ним нельзя —
+                  при отмене человек обязан вернуться туда, откуда
+                  нажал, а не на голую страницу.
+
+                  pl-3 + border-l-4 прозрачной — те же отступы, что у
+                  остальных пунктов: без них подпись съехала бы на 4px
+                  относительно списка выше. */}
+              {signedIn === true && (
+                <div className="mt-2 border-t border-neutral-10 pt-2">
+                  <div className="border-l-4 border-transparent pr-4 pl-3">
+                    <SignOutButton locale={locale} variant="menu" />
+                  </div>
+                </div>
+              )}
             </div>
           </nav>
         </div>
