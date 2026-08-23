@@ -47,7 +47,7 @@
 //   Bell           Уведомления      + счётчик справа
 //   CircleUser     Профиль
 //   ── действие над сайтом ─────────────────────────
-//   Download       Быстрый доступ   отбит линиями с обеих сторон
+//   Download       Быстрый доступ
 //   ── разделы сайта ───────────────────────────────
 //   Tag            Продажа
 //   KeyRound       Аренда
@@ -60,11 +60,16 @@
 //   ── выход ───────────────────────────────────────
 //   LogOut         Выйти            только вошедшему, brand-red
 //
-// Три группы отбиты горизонтальными линиями (border-neutral-10).
-// Личный блок сверху — это страницы аккаунта, а не разделы сайта;
-// «Быстрый доступ» между ними — действие над сайтом, а не раздел;
-// выход снизу — действие над аккаунтом. Его отличает цвет, а не
-// начертание.
+// ЛИНИЙ МЕЖДУ ПУНКТАМИ НЕТ — ни одной. Единственная горизонтальная
+// линия в меню отделяет шапку («Меню» с крестиком) от списка. Группы
+// выше разделены только воздухом (mb-2/pb-2 у обёрток): список из
+// пятнадцати строк, расчерченный на четыре части, читался бы как
+// таблица, а не как навигация.
+//
+// Порядок групп при этом осмыслен и менять его нельзя: личный блок
+// сверху — это страницы аккаунта, а не разделы сайта; «Быстрый
+// доступ» за ними — действие над сайтом, а не раздел; выход снизу —
+// действие над аккаунтом. Его отличает цвет, а не начертание.
 //
 // Значки — ui/NavIcons.tsx, кроме «Быстрого доступа»: там общий
 // InstallIcon из ui/InstallIcons, тот же, что у шага инструкции на
@@ -310,7 +315,7 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                   ничего: мелькнувшее «Войти» у вошедшего читается как
                   разлогин. */}
               {signedIn === true && (
-                <div className="mb-2 border-b border-neutral-10 pb-2">
+                <div className="mb-2 pb-2">
                   {MY_LINKS.map((link) => {
                     const count =
                       link.badge === 'messages'
@@ -370,7 +375,7 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                 <Link
                   href={loginHref}
                   onClick={() => setOpen(false)}
-                  className="mb-2 flex items-center gap-2.5 border-b border-neutral-10 px-4 py-3 font-semibold transition-colors duration-fast ease-out hover:bg-surface-hover"
+                  className="mb-2 flex items-center gap-2.5 px-4 py-3 font-semibold transition-colors duration-fast ease-out hover:bg-surface-hover"
                 >
                   <LogInIcon className={`${ICON_CLASS} text-neutral-60`} />
                   {t('nav_login')}
@@ -387,10 +392,9 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                   на домашний экран с телефона, и на десктопе строка
                   занимала бы место, ничего не предлагая.
 
-                  Единственный пункт меню со значком: значок здесь
-                  отличает действие от списка ссылок вокруг. Разделители
-                  сверху и снизу отделяют его от обеих групп. */}
-              <div className="mb-2 border-b border-neutral-10 pb-2">
+                  От соседних групп отделён только воздухом (mb-2/pb-2):
+                  линий в списке нет ни одной, см. эталон в шапке. */}
+              <div className="mb-2 pb-2">
                 <Link
                   href={localeHref(locale, '/install')}
                   onClick={() => setOpen(false)}
@@ -465,7 +469,7 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                   остальных пунктов: без них подпись съехала бы на 4px
                   относительно списка выше. */}
               {signedIn === true && (
-                <div className="mt-2 border-t border-neutral-10 pt-2">
+                <div className="mt-2 pt-2">
                   <div className="border-l-4 border-transparent pr-4 pl-3">
                     <SignOutButton locale={locale} variant="menu" />
                   </div>
