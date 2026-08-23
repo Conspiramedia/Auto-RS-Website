@@ -8,6 +8,7 @@
 // ============================================================
 
 import CarCard from './CarCard';
+import SearchSuggestInput from './SearchSuggestInput';
 import InfiniteCarFeed from './InfiniteCarFeed';
 import EmptyState from './EmptyState';
 import FilterChips from './FilterChips';
@@ -125,7 +126,36 @@ export default function CatalogView({
           sm:flex-nowrap: иначе широкий блок сортировки не помещается
           рядом с фильтрами и переносится на вторую строку, наезжая
           на счётчик — ровно то, что было видно на скриншоте. */}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:gap-3">
+      {/* Строка поиска. На мобильном — отдельным блоком во всю ширину
+          НАД рядом управления: рядом с «Фильтрами» и сортировкой ей
+          там не хватило бы места, а сжатая до половины экрана строка
+          поиска не читается как строка поиска.
+          С 768px (md) она встаёт первым элементом самого ряда, слева
+          от «Фильтров», и забирает свободную ширину. */}
+      <div className="mt-4 md:hidden">
+        <SearchSuggestInput
+          locale={locale}
+          filters={filters}
+          basePath={basePath}
+        />
+      </div>
+
+      {/* md:items-start — из-за чипсов под строкой поиска: при
+          выравнивании по центру «Фильтры» и сортировка съезжали бы
+          вниз на высоту ряда подсказок. По верху все контролы стоят
+          на одной линии независимо от того, есть чипсы или нет. */}
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:gap-3 md:items-start">
+        {/* На десктопе строка поиска идёт первой в ряду. min-w-0
+            обязателен: без него flex-элемент с input внутри отказывается
+            сжиматься и выталкивает сортировку за край. */}
+        <div className="hidden min-w-0 flex-1 md:block">
+          <SearchSuggestInput
+            locale={locale}
+            filters={filters}
+            basePath={basePath}
+          />
+        </div>
+
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none sm:gap-3">
           {/* action ОБЯЗАН нести префикс локали: форма фильтров уходит
               методом GET, и голый basePath уводил пользователя с
@@ -138,7 +168,6 @@ export default function CatalogView({
             cities={cities}
             models={models}
             action={localeHref(locale, basePath)}
-            basePath={basePath}
             activeCount={activeCount}
             mode={pageMode}
             lockedType={lockedType}

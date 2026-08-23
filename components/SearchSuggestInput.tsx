@@ -3,10 +3,18 @@
 // ============================================================
 // RS AUTO — Поле поиска с вращающимися подсказками. Client Component.
 // ============================================================
-// Поле свободного ввода в панели фильтров плюс ряд кликабельных
-// подсказок под ним. Фразы берутся из lib/searchSuggestions.ts —
-// файла, который собирается на сборке из живых данных каталога
+// Строка поиска НАД ВЫДАЧЕЙ каталога плюс ряд кликабельных подсказок
+// под ней. Фразы берутся из lib/searchSuggestions.ts — файла, который
+// собирается на сборке из живых данных каталога
 // (scripts/generate-suggestions.mjs, RPC get_suggestion_seeds).
+//
+// ПОЧЕМУ НЕ В ШТОРКЕ ФИЛЬТРОВ. Сначала поле стояло внутри неё, но
+// подсказка, которую видно только после нажатия «Фильтры», не
+// подсказывает: человек открывает фильтры, когда уже знает, что
+// ищет. Смысл вращающихся фраз в том, чтобы попасться на глаза
+// РАНЬШЕ этого момента. Поэтому строка вынесена на страницу, а из
+// шторки поле убрано — два одинаковых поля с разными состояниями
+// расходились бы в значениях.
 //
 // ЗАЧЕМ ВРАЩАЮЩИЙСЯ ПЛЕЙСХОЛДЕР. Пустое поле «Поиск» не сообщает,
 // ЧТО в него можно написать. Живая фраза из каталога отвечает на это
@@ -43,9 +51,11 @@ import { useEffect, useState } from 'react';
 
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
+import type { CatalogFilters } from '@/lib/queries';
 import { buildQuery } from '@/lib/searchParams';
 import { SEARCH_SUGGESTIONS } from '@/lib/searchSuggestions';
 import type { SearchSuggestion } from '@/lib/searchSuggestions';
+import Button from './ui/Button';
 import { fieldClassCompact } from './ui/Field';
 
 // Как часто меняется подсказка. 5 секунд — компромисс: реже фраза не
@@ -59,12 +69,14 @@ const CHIP_COUNT = 3;
 
 type Props = {
   locale: Locale;
-  // Текущее значение фильтра q: поле остаётся управляемым формой
-  // фильтров, как и было до появления подсказок.
-  defaultValue?: string;
-  // Куда ведут чипсы: '/cars' или '/rent'. Подсказки строятся по
-  // объявлениям на продажу, но в разделе аренды клик обязан оставить
-  // человека в аренде, а не выбросить в общий каталог.
+  // Уже применённые фильтры. Нужны целиком, а не только q: строка
+  // поиска — САМОСТОЯТЕЛЬНАЯ GET-форма, и без скрытых полей отправка
+  // запроса сбрасывала бы выбранную марку, цену и сортировку.
+  filters: CatalogFilters;
+  // Куда отправляется поиск и куда ведут чипсы: '/cars' или '/rent'.
+  // Подсказки строятся по объявлениям на продажу, но в разделе аренды
+  // клик обязан оставить человека в аренде, а не выбросить в общий
+  // каталог.
   basePath?: string;
 };
 
@@ -83,7 +95,7 @@ function nextIndex(current: number, total: number): number {
 
 export default function SearchSuggestInput({
   locale,
-  defaultValue = '',
+  filters,
   basePath = '/cars',
 }: Props) {
   const t = getT(locale);
@@ -100,7 +112,7 @@ export default function SearchSuggestInput({
   // Собственный ввод пользователя. Как только он непустой, ротация
   // останавливается: подсказка под набранным текстом отвлекает, а
   // плейсхолдер за ним всё равно не виден.
-  const [value, setValue] = useState(defaultValue);
+  const [value, setValue] = useState(filters.q ?? '');
 
   // ------------------------------------------------------------
   // Запуск ротации после гидратации.
@@ -145,29 +157,68 @@ export default function SearchSuggestInput({
           return SEARCH_SUGGESTIONS[(index + offset) % total];
         });
 
+  // Фильтры, которые нужно сохранить при отправке поиска. q исключён:
+  // его несёт само поле. page тоже — новый запрос начинается с первой
+  // страницы, иначе поиск открыл бы пустую пятую.
+  const keep = { ...filters, q: undefined, page: undefined };
+
+  // Пары «имя параметра → значение» для скрытых полей.
+  const hiddenFields = Array.from(
+    new URLSearchParams(buildQuery(keep).replace(/^\?/, '')),
+  );
+
   return (
     <div>
-      <label
-        className="mb-1 block text-caption text-neutral-60"
-        htmlFor="catalog-q"
+      {/* САМОСТОЯТЕЛЬНАЯ GET-форма. Раньше поле входило в форму
+          фильтров и уезжало вместе с ней; теперь строка стоит на
+          странице отдельно, поэтому отправку она обеспечивает сама.
+          Метод GET обязателен: фильтры каталога живут в адресе, это
+          условие SSR и шаринга ссылки. */}
+      <form
+        method="get"
+        action={localeHref(locale, basePath)}
+        className="flex gap-2"
+        onSubmit={(e) => {
+          // Пустое поле не должно попадать в адрес как «?q=»: это
+          // лишний вариант одного URL для краулера и мусор в ссылке,
+          // которой человек делится.
+          const input = e.currentTarget.querySelector<HTMLInputElement>(
+            'input[name="q"]',
+          );
+          if (input && input.value.trim() === '') input.disabled = true;
+        }}
       >
-        {t('filter_search')}
-      </label>
+        {/* Уже применённые фильтры переносятся скрытыми полями: поиск
+            СУЖАЕТ текущую выдачу, а не начинает её заново. Без этого
+            ввод текста сбрасывал бы выбранную марку и цену.
+            Поля строятся из готовой строки запроса: buildQuery уже
+            знает соответствие «ключ фильтра → имя параметра»
+            (yearFrom → year_from), и повторять эту таблицу здесь
+            значило бы завести второе место, где она может разойтись. */}
+        {hiddenFields.map(([name, v]) => (
+          <input key={name} type="hidden" name={name} value={v} />
+        ))}
 
-      <input
-        id="catalog-q"
-        type="text"
-        name="q"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        // До гидратации и при пустом списке — нейтральная подпись из
-        // словаря. Она же остаётся, когда человек начал печатать.
-        placeholder={active ? active.text[locale] : t('filter_search_ph')}
-        className={fieldClassCompact}
-      />
+        <input
+          id="catalog-q"
+          type="text"
+          name="q"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          aria-label={t('filter_search')}
+          // До гидратации и при пустом списке — нейтральная подпись из
+          // словаря. Она же остаётся, когда человек начал печатать.
+          placeholder={active ? active.text[locale] : t('filter_search_ph')}
+          className={`${fieldClassCompact} min-w-0 flex-1`}
+        />
+
+        <Button type="submit" variant="dark" size="sm" className="shrink-0">
+          {t('filter_search')}
+        </Button>
+      </form>
 
       {/* Ряд подсказок. Не рендерится вовсе, пока список пуст или
-          гидратация не прошла: пустой контейнер сдвигал бы форму. */}
+          гидратация не прошла: пустой контейнер сдвигал бы вёрстку. */}
       {chips.length > 0 && value.trim() === '' && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {chips.map((suggestion, i) => (

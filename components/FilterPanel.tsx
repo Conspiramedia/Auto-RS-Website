@@ -33,7 +33,6 @@ import { getBrowserClient } from '@/lib/supabaseClient';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import type { ListingType, SiteBrand, SiteCity } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
-import SearchSuggestInput from './SearchSuggestInput';
 import CloseButton from './ui/CloseButton';
 import { fieldClassCompact } from './ui/Field';
 import Button from './ui/Button';
@@ -53,10 +52,6 @@ type Props = {
   // Куда отправлять форму: '/cars', '/rent' или SEO-страница с маркой.
   // Уже с префиксом локали — форма уходит методом GET.
   action: string;
-  // Раздел БЕЗ префикса локали: '/cars' или '/rent'. Нужен подсказкам
-  // поиска — их ссылки собираются через localeHref сами, и готовый
-  // action с уже подставленным префиксом им не подходит.
-  basePath: string;
   // Число применённых фильтров для счётчика на кнопке.
   activeCount: number;
   // Витрина: в аренде фильтр цены работает по суточной ставке, поэтому
@@ -74,7 +69,6 @@ export default function FilterPanel({
   cities,
   models,
   action,
-  basePath,
   activeCount,
   mode = 'sale',
   lockedType = false,
@@ -324,17 +318,18 @@ export default function FilterPanel({
                 </div>
               )}
 
-              {/* Единственное поле свободного ввода — поиск по тексту
-                  объявления. В приложении он тоже отдельной строкой.
-                  Плейсхолдер вращает живые фразы из каталога, под полем
-                  стоят кликабельные подсказки. Пустой список подсказок
-                  компонент переживает молча: остаётся обычное поле с
-                  нейтральной подписью. */}
-              <SearchSuggestInput
-                locale={locale}
-                defaultValue={filters.q ?? ''}
-                basePath={basePath}
-              />
+              {/* Поля свободного поиска здесь БОЛЬШЕ НЕТ: строка
+                  поиска стоит над выдачей (components/CatalogView),
+                  где подсказки видно до открытия фильтров. Два
+                  одинаковых поля с независимыми состояниями разошлись
+                  бы в значениях, поэтому в шторке остались только
+                  фильтры.
+                  Но введённый текст обязан ПЕРЕЖИТЬ применение
+                  фильтров: без скрытого поля кнопка «Показать
+                  результаты» стирала бы поисковый запрос из адреса. */}
+              {filters.q && (
+                <input type="hidden" name="q" value={filters.q} />
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <ListPicker
