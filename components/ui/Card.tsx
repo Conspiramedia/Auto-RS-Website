@@ -53,8 +53,22 @@ export default function Card({
   const classes = [
     'rounded-card border border-neutral-10',
     PADDINGS[padding],
+    // hover:shadow-card после включения hoverOnlyWhenSupported
+    // (tailwind.config.ts) живёт только под мышью — на телефоне тень
+    // больше не залипает на карточках, через которые прошёл палец при
+    // прокрутке.
+    //
+    // Взамен пальцу нужен СВОЙ отклик на нажатие, иначе карточка
+    // перестала бы отзываться вовсе. Это active:bg-* — заливка, а НЕ
+    // тень и НЕ сдвиг: любое движение геометрии при касании читается
+    // как «страница поехала» и мешает отличить нажатие от начала
+    // прокрутки. Заливка сообщает то же самое, оставаясь на месте.
+    //
+    // transition только по shadow и background: перечислены явно,
+    // потому что transition-all на карточке ленты анимировал бы и
+    // размеры при перерисовке списка.
     hoverable
-      ? 'overflow-hidden transition-shadow duration-fast ease-out hover:shadow-card'
+      ? 'overflow-hidden transition-[box-shadow,background-color] duration-fast ease-out hover:shadow-card active:bg-surface-hover'
       : '',
     className,
   ]
