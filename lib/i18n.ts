@@ -603,7 +603,7 @@ export const dict = {
     // ------------------------------------------------------------
     // /install — установка сайта на телефон (PWA).
     // ------------------------------------------------------------
-    install_title: 'Instalirajte aplikaciju',
+    install_title: 'Brzi pristup',
     // Вводный блок над карточками платформ.
     install_intro_title: 'RS Auto radi kao aplikacija',
     install_intro_body:
@@ -1293,7 +1293,7 @@ export const dict = {
     // ------------------------------------------------------------
     // /install — установка сайта на телефон (PWA).
     // ------------------------------------------------------------
-    install_title: 'Установить приложение',
+    install_title: 'Быстрый доступ',
     // Вводный блок над карточками платформ.
     install_intro_title: 'RS Auto работает как приложение',
     install_intro_body:
