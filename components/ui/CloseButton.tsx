@@ -29,6 +29,10 @@ type Props = {
   // нет текста, и без неё она озвучивается как «кнопка».
   label: string;
   variant?: Variant;
+  // Закрытие запрещено, пока идёт необратимое действие: в диалоге
+  // выхода запрос уже ушёл на сервер, и убирать окно с индикатором
+  // происходящего нельзя.
+  disabled?: boolean;
   className?: string;
 };
 
@@ -49,15 +53,17 @@ export default function CloseButton({
   onClick,
   label,
   variant = 'plain',
+  disabled = false,
   className = '',
 }: Props) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-label={label}
       title={label}
-      className={`${VARIANTS[variant]} ${className}`.trim()}
+      className={`${VARIANTS[variant]} disabled:cursor-not-allowed disabled:opacity-40 ${className}`.trim()}
     >
       <svg
         width="20"

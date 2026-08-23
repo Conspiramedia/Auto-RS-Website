@@ -56,9 +56,14 @@ export default async function MyLayoutView({ locale, children }: Props) {
           <>
             {/* Заголовок и выход в одной строке: выход — действие
                 третьестепенное, поэтому уводится вправо и оформлен
-                ссылкой, а не кнопкой-акцентом. */}
-            <div className="flex items-center justify-between gap-4">
-              <h1 className="text-h2 font-bold sm:text-h1">
+                ссылкой, а не кнопкой-акцентом.
+                flex-wrap обязателен: при подтверждении выхода кнопка
+                разворачивается в «Выйти из аккаунта? Да Отмена», и на
+                360px этот блок рядом с заголовком в строку не влезает.
+                Без переноса он давил бы на заголовок. min-w-0 у h1 —
+                чтобы сжимался именно заголовок, а не блок с выбором. */}
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+              <h1 className="min-w-0 text-h2 font-bold sm:text-h1">
                 {t('my_title')}
               </h1>
               <SignOutButton locale={locale} />

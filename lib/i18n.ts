@@ -366,6 +366,14 @@ export const dict = {
     my_tab_notifications: 'Obaveštenja',
     my_tab_profile: 'Profil',
     my_logout: 'Odjavi se',
+    // Pitanje pre odjave. Ponovna prijava traži SMS kod, pa slučajan
+    // klik košta korisnika ceo postupak prijave iznova. Zato dijalog
+    // objašnjava i šta se NE gubi: oglasi i prepiska ostaju na nalogu,
+    // bez toga odjava deluje opasnije nego što jeste.
+    my_logout_confirm: 'Odjaviti se sa naloga?',
+    my_logout_confirm_text:
+      'Vaši oglasi i prepiska ostaju sačuvani — nalog se ne briše. Za ponovni ulazak biće potreban SMS kod na isti broj telefona.',
+    my_logout_confirm_yes: 'Odjavi se',
 
     // Ulaz u kabinet. Kod se traži samo kada sesije nema: sesija živi
     // između poseta, kao i u aplikaciji.
@@ -987,6 +995,15 @@ export const dict = {
     my_tab_notifications: 'Уведомления',
     my_tab_profile: 'Профиль',
     my_logout: 'Выйти',
+    // Вопрос перед выходом. Повторный вход требует SMS-кода, поэтому
+    // случайное нажатие стоит человеку всей процедуры входа заново.
+    // Диалог объясняет и то, что НЕ теряется: объявления и переписка
+    // остаются на аккаунте. Без этой строки выход выглядит опаснее,
+    // чем есть, — люди боятся, что удаляют профиль.
+    my_logout_confirm: 'Выйти из аккаунта?',
+    my_logout_confirm_text:
+      'Ваши объявления и переписка сохранятся — аккаунт не удаляется. Для повторного входа понадобится SMS-код на тот же номер телефона.',
+    my_logout_confirm_yes: 'Выйти',
 
     // Вход в кабинет. Код запрашивается только когда сессии нет: она
     // живёт между визитами, как и в приложении.
