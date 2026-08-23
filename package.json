@@ -5,6 +5,7 @@
   "description": "RS Auto — сайт маркетплейса автомобилей (Сербия). Второй клиент того же Supabase, что и приложение.",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/generate-suggestions.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

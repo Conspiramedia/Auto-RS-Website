@@ -2,7 +2,7 @@
 -- AUTO.RS — Миграция 0073: заготовки для подсказок в строке поиска.
 -- ============================================================
 -- ЗАЧЕМ. Строка поиска каталога показывает вращающиеся подсказки вида
--- «BMW X5, 2019», «Audi do 15.000 €», «Dizel u Beogradu». Фразы обязаны
+-- «Volkswagen Golf», «Audi do 16.000 €», «Dizel». Фразы обязаны
 -- строиться по ЖИВЫМ данным: подсказка, ведущая в пустую выдачу, хуже
 -- её отсутствия — человек решает, что поиск сломан.
 --
@@ -15,43 +15,76 @@
 --     холодном рендере;
 --   * список подсказок, меняющийся между рендерами, ломает SSR:
 --     сервер и клиент разошлись бы в разметке;
---   * фразы «BMW X5, 2019» устаревают месяцами, а не минутами —
+--   * фразы «Volkswagen Golf» устаревают месяцами, а не минутами —
 --     частота пересборки сайта здесь более чем достаточна.
 -- Результат генератор записывает в lib/searchSuggestions.ts, который
 -- лежит в git: сборка не падает, даже когда база недоступна.
 --
 -- ЧТО ОТДАЁТ. Не готовые фразы, а ЗАГОТОВКИ — сырые комбинации со
--- счётчиками. Склейка текста и склонение («u Beogradu» / «в Белграде»)
--- живут на стороне генератора: это работа со словарями локалей, а не
--- с данными, и в SQL ей делать нечего.
---
--- ПОРОГ. Комбинация возвращается, только если под неё есть минимум
--- p_min_count объявлений (по умолчанию 3). Одиночное объявление
--- продадут завтра, и подсказка станет ссылкой в пустоту.
+-- счётчиками. Склейка текста и локализация («Dizel» / «Дизель») живут
+-- на стороне генератора: это работа со словарями локалей, а не с
+-- данными, и в SQL ей делать нечего.
 --
 -- ТОЛЬКО status = 'active' и только продажа (is_for_sale). Проданные,
 -- архивные и снятые с публикации в подсказки не попадают — как и в
 -- sitemap (см. 0052). Аренда исключена намеренно: у неё свои цены за
--- сутки, и фраза «Audi до 15 000 €» рядом с арендной ставкой читалась
--- бы как ошибка.
+-- сутки, и фраза «Audi до 16 000 €» рядом с арендной ставкой читалась
+-- бы как ошибка. Подсказки для /rent — отдельный вид, фаза 2.
+--
+-- ------------------------------------------------------------
+-- ПОЧЕМУ ШАБЛОНЫ БЕЗ ГОДА И БЕЗ ГОРОДА (правка после первой версии).
+-- ------------------------------------------------------------
+-- Первая версия строила «BMW X5, 2019» и «Dizel u Beogradu». На живых
+-- данных это дало ОДНУ заготовку на пороге 3: при трёх десятках
+-- объявлений почти каждая тройка «марка+модель+год» уникальна, и
+-- добавление города к топливу дробит выборку ровно так же.
+--
+-- Чем детальнее комбинация, тем быстрее она распадается: конкретный
+-- «X5 2019 года» продаётся — и подсказка ведёт в пустоту. Поэтому
+-- year и city из группировки убраны:
+--   «Volkswagen Golf» переживает продажу одной машины,
+--   «BMW X5, 2019» — нет.
+-- Конкретика вернётся сама, когда объявлений станет больше: тем же
+-- порогом, без правки кода — просто под каждую пару наберётся
+-- достаточно машин.
 -- ============================================================
 
 begin;
 
+-- Старая сигнатура (p_min_count, p_limit_per_kind) заменяется на
+-- три отдельных порога. drop обязателен: create or replace не меняет
+-- список параметров, и без него в базе остались бы ДВЕ функции —
+-- перегрузки с разными аргументами, а генератор вызывал бы ту, что
+-- совпала по именам, то есть старую.
+drop function if exists public.get_suggestion_seeds(integer, integer);
+
 -- ------------------------------------------------------------
--- get_suggestion_seeds(p_min_count, p_limit_per_kind)
+-- get_suggestion_seeds(p_min_brand_model, p_min_brand, p_min_fuel, p_limit_per_kind)
 -- ------------------------------------------------------------
 -- Три вида заготовок в одной таблице, различаются колонкой kind.
 -- Неиспользуемые для данного вида колонки приходят как NULL:
 --
---   kind = 'brand_model_year'  → brand, model, year
---   kind = 'brand_price'       → brand, price_bucket
---   kind = 'fuel_city'         → fuel, city
+--   kind = 'brand_model' → brand, model
+--   kind = 'brand_price' → brand, price_bucket
+--   kind = 'fuel'        → fuel
 --
 -- Одна функция вместо трёх: генератор ходит в базу один раз, а на
 -- стороне SQL это три ветки union all с общим фильтром. Три отдельные
 -- RPC означали бы три круга сетевой задержки на сборке и три места,
 -- где нужно одинаково повторить условие «active и на продажу».
+--
+-- ПОРОГ У КАЖДОГО ВИДА СВОЙ, потому что виды по-разному устойчивы
+-- к продаже отдельной машины:
+--   * fuel — пять значений на весь каталог, за каждым всегда стоят
+--     десятки объявлений. Порог 3 здесь ничего не отсекает;
+--   * brand_price — марок два десятка, комбинация переживает уход
+--     одной машины, но у редкой марки объявление может быть одно;
+--   * brand_model — самый дробный вид: пар «марка+модель» почти
+--     столько же, сколько объявлений. Требовать от него тройку
+--     значит не получить ни одной фразы, пока каталог не вырастет.
+-- Значения по умолчанию подобраны под текущий объём каталога и
+-- поднимаются по мере его роста — правкой вызова в генераторе,
+-- без изменения функции.
 --
 -- price_bucket — ОКРУГЛЁННАЯ ВВЕРХ граница цены для фразы «до N €».
 -- Берётся 60-й процентиль цен марки и округляется вверх до 500 €:
@@ -63,16 +96,16 @@ begin;
 --     «до 14 837 €» как машинный мусор.
 -- ------------------------------------------------------------
 create or replace function public.get_suggestion_seeds(
-  p_min_count      integer default 3,
-  p_limit_per_kind integer default 40
+  p_min_brand_model integer default 1,
+  p_min_brand       integer default 2,
+  p_min_fuel        integer default 3,
+  p_limit_per_kind  integer default 40
 )
 returns table (
   kind         text,
   brand        text,
   model        text,
-  year         integer,
   fuel         text,
-  city         text,
   price_bucket integer,
   cars_count   bigint
 )
@@ -84,11 +117,9 @@ as $fn$
   -- Общая выборка: то, что вообще может попасть в подсказки.
   with base as (
     select
-      c.brand,
-      c.model,
-      c.year,
+      btrim(c.brand) as brand,
+      btrim(c.model) as model,
       c.fuel,
-      c.city,
       c.sale_price
     from public.cars c
     where c.status = 'active'
@@ -97,41 +128,35 @@ as $fn$
       -- показать осмысленную выдачу по подсказке.
       and c.sale_price is not null
       and c.sale_price > 0
-      -- Пустые строки в марке/модели/городе встречаются в старых
-      -- записях: в подсказку такая комбинация превратилась бы в
-      -- «  , 2019».
+      -- Пустые строки в марке и модели встречаются в старых записях:
+      -- в подсказку такая комбинация превратилась бы в пробел.
       and btrim(c.brand) <> ''
       and btrim(c.model) <> ''
-      and btrim(c.city)  <> ''
   ),
 
-  -- 1) Марка + модель + год: «BMW X5, 2019».
-  brand_model_year as (
+  -- 1) Марка + модель: «Volkswagen Golf».
+  brand_model as (
     select
-      'brand_model_year'::text as kind,
-      b.brand                  as brand,
-      b.model                  as model,
-      b.year                   as year,
-      null::text               as fuel,
-      null::text               as city,
-      null::integer            as price_bucket,
-      count(*)                 as cars_count
+      'brand_model'::text as kind,
+      b.brand             as brand,
+      b.model             as model,
+      null::text          as fuel,
+      null::integer       as price_bucket,
+      count(*)            as cars_count
     from base b
-    group by b.brand, b.model, b.year
-    having count(*) >= p_min_count
-    order by count(*) desc, b.brand, b.model, b.year desc
+    group by b.brand, b.model
+    having count(*) >= p_min_brand_model
+    order by count(*) desc, b.brand, b.model
     limit p_limit_per_kind
   ),
 
-  -- 2) Марка + ценовой ориентир: «Audi do 15.000 €».
+  -- 2) Марка + ценовой ориентир: «Audi do 16.000 €».
   brand_price as (
     select
       'brand_price'::text as kind,
       b.brand             as brand,
       null::text          as model,
-      null::integer       as year,
       null::text          as fuel,
-      null::text          as city,
       -- Округление 60-го процентиля вверх до 500 €.
       (ceil(
         percentile_cont(0.6) within group (order by b.sale_price) / 500.0
@@ -139,41 +164,39 @@ as $fn$
       count(*)            as cars_count
     from base b
     group by b.brand
-    having count(*) >= p_min_count
+    having count(*) >= p_min_brand
     order by count(*) desc, b.brand
     limit p_limit_per_kind
   ),
 
-  -- 3) Топливо + город: «Dizel u Beogradu».
-  fuel_city as (
+  -- 3) Топливо: «Dizel».
+  fuel_only as (
     select
-      'fuel_city'::text as kind,
-      null::text        as brand,
-      null::text        as model,
-      null::integer     as year,
+      'fuel'::text  as kind,
+      null::text    as brand,
+      null::text    as model,
       -- enum → text: генератор сверяет значение с ключами FUELS
       -- (lib/types.ts) и по ним же берёт подпись на нужном языке.
-      b.fuel::text      as fuel,
-      b.city            as city,
-      null::integer     as price_bucket,
-      count(*)          as cars_count
+      b.fuel::text  as fuel,
+      null::integer as price_bucket,
+      count(*)      as cars_count
     from base b
     where b.fuel is not null
-    group by b.fuel, b.city
-    having count(*) >= p_min_count
-    order by count(*) desc, b.city, b.fuel::text
+    group by b.fuel
+    having count(*) >= p_min_fuel
+    order by count(*) desc, b.fuel::text
     limit p_limit_per_kind
   )
 
-  select * from brand_model_year
+  select * from brand_model
   union all
   select * from brand_price
   union all
-  select * from fuel_city;
+  select * from fuel_only;
 $fn$;
 
-comment on function public.get_suggestion_seeds(integer, integer)
-  is 'Заготовки подсказок строки поиска по живым активным объявлениям на продажу. Вызывается только на сборке сайта (scripts/generate-suggestions.ts), не с клиента.';
+comment on function public.get_suggestion_seeds(integer, integer, integer, integer)
+  is 'Заготовки подсказок строки поиска по живым активным объявлениям на продажу. Шаблоны без года и города: детальная комбинация распадается при продаже одной машины. Вызывается только на сборке сайта (scripts/generate-suggestions.ts), не с клиента.';
 
 -- ------------------------------------------------------------
 -- Грант.
@@ -188,7 +211,8 @@ comment on function public.get_suggestion_seeds(integer, integer)
 -- полный доступ к базе ради выборки, которая и так публична по сути.
 -- Данные здесь не приватные: это агрегаты по объявлениям, которые
 -- каталог и так показывает поимённо.
-grant execute on function public.get_suggestion_seeds(integer, integer)
+grant execute on function
+  public.get_suggestion_seeds(integer, integer, integer, integer)
   to anon, authenticated;
 
 commit;
@@ -197,10 +221,13 @@ commit;
 -- ПРОВЕРКА ПОСЛЕ ПРИМЕНЕНИЯ
 -- ============================================================
 -- select kind, count(*) from public.get_suggestion_seeds() group by kind;
---   ожидаем три группы; пустая группа означает, что под её шаблон
---   не набралось комбинаций с 3+ объявлениями — на боевых данных
---   это нормально для fuel_city в начале жизни площадки.
+--   ожидаем три группы.
 --
--- select * from public.get_suggestion_seeds(1, 5) where kind = 'brand_price';
---   price_bucket должен быть кратен 500 и больше нуля.
+-- Убедиться, что старая перегрузка не осталась в базе:
+--   select count(*) from pg_proc p
+--     join pg_namespace n on n.oid = p.pronamespace
+--    where n.nspname = 'public' and p.proname = 'get_suggestion_seeds';
+--   должно быть РОВНО 1.
+--
+-- Полный набор проверок — supabase/checks/0073_suggestion_seeds_verify.sql
 -- ============================================================
