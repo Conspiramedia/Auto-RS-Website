@@ -38,6 +38,7 @@ import { useRouter } from 'next/navigation';
 import Alert from './ui/Alert';
 import Button from './ui/Button';
 import Card from './ui/Card';
+import CloseButton from './ui/CloseButton';
 import { fieldClass } from './ui/Field';
 import { trackEvent } from '@/lib/analytics';
 import { acceptPolicy, hasAcceptedPolicyHere, migrateGuestConsent } from '@/lib/consent';
@@ -62,9 +63,14 @@ type Props = {
   // Заголовок над формой. На отдельной странице входа он свой
   // («Вход в кабинет»), внутри кабинета — общий.
   title?: string;
+  // Куда уйти, если человек передумал входить. Путь БЕЗ префикса
+  // локали. Задаётся ТОЛЬКО на отдельной странице /login: там форма —
+  // это вся страница, и её можно покинуть. Внутри кабинета крестика
+  // нет — за формой ничего не стоит, закрывать нечего.
+  closeHref?: string;
 };
 
-export default function AuthGate({ locale, redirectTo, title }: Props) {
+export default function AuthGate({ locale, redirectTo, title, closeHref }: Props) {
   const t = getT(locale);
   const router = useRouter();
   const supabase = getBrowserClient();
@@ -229,11 +235,35 @@ export default function AuthGate({ locale, redirectTo, title }: Props) {
   return (
     <Card className="mx-auto max-w-md">
       <div className="space-y-3">
-        <div>
-          <h1 className="text-h3 font-semibold">
-            {title ?? t('my_auth_title')}
-          </h1>
-          <p className="mt-1 text-caption text-neutral-60">{t('my_auth_lead')}</p>
+        {/* Крестик — в одну строку с заголовком, прижат к правому краю
+            карточки. Отрицательные отступы -mr-2 -mt-2 втягивают его
+            кликабельную область 40px в поле внутреннего отступа
+            карточки: без них знак стоял бы заметно левее и ниже угла,
+            потому что вокруг него есть свободное место кнопки.
+            items-start — заголовок бывает в две строки на узком
+            экране, и крестик обязан остаться у верхнего края. */}
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-h3 font-semibold">
+              {title ?? t('my_auth_title')}
+            </h1>
+            <p className="mt-1 text-caption text-neutral-60">{t('my_auth_lead')}</p>
+          </div>
+
+          {closeHref && (
+            <CloseButton
+              // Уход со страницы входа — навигация, а не закрытие слоя,
+              // поэтому push, а не replace: человек передумал, но
+              // «назад» обязан вернуть его к форме, если он передумал
+              // ещё раз. Кнопка блокируется, пока идёт запрос: код уже
+              // ушёл в SMS, и уводить со страницы в этот момент значит
+              // потерять его.
+              onClick={() => router.push(localeHref(locale, closeHref))}
+              disabled={busy}
+              label={t('common_close')}
+              className="-mr-2 -mt-2 shrink-0"
+            />
+          )}
         </div>
 
         {!codeSent ? (
