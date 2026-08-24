@@ -30,8 +30,9 @@
 import Link from 'next/link';
 
 import Logo from './ui/Logo';
-import type { Locale } from '@/lib/i18n';
+import type { Locale, DictKey } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
+import { isSectionActive } from '@/lib/navigation';
 import LocaleSwitch from './LocaleSwitch';
 import LocaleSwitchHere from './LocaleSwitchHere';
 import HeaderLoginLink from './HeaderLoginLink';
@@ -54,8 +55,37 @@ type Props = {
   pathname: string | 'auto';
 };
 
+// Разделы десктопного ряда. Порядок и состав те же, что были заданы
+// ссылками по одной: сначала вид сделки (продажа, аренда), потом
+// дилеры и приложение.
+//
+// «Все авто» (/all) здесь НЕТ намеренно — подтверждённое решение
+// b0a58bf: ряд короткий, и в нём нужен выбор вида сделки, а не третья
+// витрина. Смешанная витрина остаётся в бургер-меню (HeaderMenu),
+// где список полный.
+const NAV_LINKS: { path: string; label: DictKey }[] = [
+  // nav_catalog_menu, а не nav_catalog: в ряду с «Арендой» это выбор
+  // вида сделки, а не название раздела (см. словарь lib/i18n).
+  { path: '/cars', label: 'nav_catalog_menu' },
+  { path: '/rent', label: 'nav_rent' },
+  { path: '/dealers', label: 'nav_dealers' },
+  { path: '/app', label: 'nav_app' },
+];
+
 export default function SiteHeader({ locale, pathname }: Props) {
   const t = getT(locale);
+
+  // Путь для сравнения с адресами разделов. Из pathname отсекается
+  // строка запроса: на выдаче сюда приходит '/cars?brand=bmw' (её
+  // передают страницы каталога, чтобы переключатель языка сохранял
+  // фильтры), а раздел определяется одним лишь путём.
+  //
+  // 'auto' — кабинет, где layout своего адреса не знает. Разделы сайта
+  // там не подсвечиваются ни один: пользователь находится на личной
+  // странице, а не в витрине. Пустая строка не совпадёт ни с одним
+  // адресом раздела и ни с одним префиксом.
+  const currentPath =
+    pathname === 'auto' ? '' : pathname.split('?')[0];
 
   return (
     <header className="sticky top-0 z-header border-b border-neutral-10 bg-white">
@@ -78,21 +108,30 @@ export default function SiteHeader({ locale, pathname }: Props) {
             на мобильном места нет, там навигация живёт в подвале, а в
             шапке остаётся лого + язык + CTA. */}
         <nav className="hidden flex-1 items-center gap-5 text-caption sm:flex">
-          {/* nav_catalog_menu: в ряду с «Арендой» это выбор вида
-              сделки. Название раздела (nav_catalog) остаётся в
-              хлебных крошках и JSON-LD. */}
-          <Link href={localeHref(locale, '/cars')} className="hover:underline">
-            {t('nav_catalog_menu')}
-          </Link>
-          <Link href={localeHref(locale, '/rent')} className="hover:underline">
-            {t('nav_rent')}
-          </Link>
-          <Link href={localeHref(locale, '/dealers')} className="hover:underline">
-            {t('nav_dealers')}
-          </Link>
-          <Link href={localeHref(locale, '/app')} className="hover:underline">
-            {t('nav_app')}
-          </Link>
+          {NAV_LINKS.map((link) => {
+            // То же правило, что в бургер-меню и вкладках кабинета
+            // (lib/navigation): раздел остаётся активным на своих
+            // вложенных страницах — '/cars' горит и на '/cars/bmw'.
+            const active = isSectionActive(currentPath, link.path);
+
+            return (
+              <Link
+                key={link.path}
+                href={localeHref(locale, link.path)}
+                // aria-current — единственный признак текущего раздела
+                // для скринридера: ни цвет, ни подчёркивание он не
+                // читает.
+                aria-current={active ? 'page' : undefined}
+                className={
+                  active
+                    ? 'font-semibold text-brand-primary'
+                    : 'hover:underline'
+                }
+              >
+                {t(link.label)}
+              </Link>
+            );
+          })}
 
           {/* «Войти» — последним в ряду разделов и только гостю.
               Клиентский компонент: состояние сессии нельзя читать в

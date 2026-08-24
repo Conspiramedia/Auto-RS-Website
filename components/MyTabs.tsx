@@ -23,6 +23,7 @@ import { usePathname } from 'next/navigation';
 
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref, stripLocale } from '@/lib/i18n';
+import { isParentSectionActive, isSectionActive } from '@/lib/navigation';
 
 type Props = {
   locale: Locale;
@@ -63,13 +64,19 @@ export default function MyTabs({ locale }: Props) {
     // подписями на 768px уже на пределе ширины.
     <nav className="mt-4 hidden gap-2 overflow-x-auto pb-1 sm:flex">
       {tabs.map((tab) => {
-        // Точное совпадение для '/my' и префикс для остальных: иначе
-        // вкладка «Мои объявления» подсвечивалась бы всегда, ведь её
-        // адрес — начало всех прочих.
+        // Правило то же, что в меню шапки (HeaderMenu), и физически
+        // это одна функция: lib/navigation. Раньше здесь стояло
+        // точное совпадение для '/my', и на /my/listing/{id}/edit не
+        // подсвечивалась ни одна вкладка — хотя правка объявления
+        // относится именно к «Моим объявлениям».
         const active =
           tab.href === '/my'
-            ? path === '/my'
-            : path === tab.href || path.startsWith(`${tab.href}/`);
+            ? isParentSectionActive(
+                path,
+                tab.href,
+                tabs.map((other) => other.href),
+              )
+            : isSectionActive(path, tab.href);
 
         return (
           <Link

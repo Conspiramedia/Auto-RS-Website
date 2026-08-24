@@ -89,6 +89,7 @@ import type { ReactNode } from 'react';
 
 import type { DictKey, Locale } from '@/lib/i18n';
 import { getT, localeHref, stripLocale } from '@/lib/i18n';
+import { isParentSectionActive, isSectionActive } from '@/lib/navigation';
 import { useBadgeCounts } from '@/lib/useBadgeCounts';
 import { useDismissableLayer } from '@/lib/useDismissableLayer';
 import SignOutButton from './SignOutButton';
@@ -212,39 +213,27 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
     return `${localeHref(locale, '/login')}${back}`;
   })();
 
-  // Активен ли пункт меню. Правило то же, что во вкладках кабинета
-  // (components/MyTabs.tsx), и расходиться они не должны: на одной
-  // странице подсветиться обязан один и тот же раздел.
+  // Активен ли пункт меню. Правило живёт в lib/navigation и оттуда же
+  // применяется во вкладках кабинета (components/MyTabs.tsx): на одной
+  // странице подсветиться обязан один и тот же раздел, а два описания
+  // одного правила уже однажды разошлись.
   //
-  // '/my' — особый случай. По префиксу «Мои объявления» горели бы
-  // одновременно с «Сообщениями» на /my/messages: два активных пункта
-  // вместо ориентира дают путаницу. Но и одного точного совпадения
-  // мало — редактирование объявления живёт на /my/listing/{id}/edit,
-  // и там не подсвечивался бы вообще ни один пункт, хотя человек
-  // находится внутри своих объявлений.
+  // '/my' — особый случай (isParentSectionActive): его адрес является
+  // началом адресов соседних личных разделов.
   //
-  // Поэтому: точное совпадение ИЛИ вложенный путь, не принадлежащий
-  // соседним разделам.
-  //
-  // Остальные пункты — по префиксу: '/cars' обязан оставаться
-  // подсвеченным на странице марки '/cars/bmw', это тот же раздел
-  // каталога. Пересечься здесь не с чем — среди прочих пунктов нет
-  // вложенных друг в друга.
+  // Остальные пункты — обычный раздел: '/cars' остаётся подсвеченным
+  // на странице марки '/cars/bmw'. Пересечься здесь не с чем — среди
+  // прочих пунктов нет вложенных друг в друга.
   const isActive = (linkPath: string) => {
     if (linkPath === '/my') {
-      if (currentPath === '/my') return true;
-      // Соседние личные разделы имеют собственные пункты меню и
-      // подсвечиваются сами.
-      const ownedByOthers = MY_LINKS.some(
-        (other) =>
-          other.path !== '/my' &&
-          (currentPath === other.path ||
-            currentPath.startsWith(`${other.path}/`)),
+      return isParentSectionActive(
+        currentPath,
+        linkPath,
+        MY_LINKS.map((other) => other.path),
       );
-      return currentPath.startsWith('/my/') && !ownedByOthers;
     }
 
-    return currentPath === linkPath || currentPath.startsWith(`${linkPath}/`);
+    return isSectionActive(currentPath, linkPath);
   };
 
   return (

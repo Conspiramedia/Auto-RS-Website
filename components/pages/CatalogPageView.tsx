@@ -15,7 +15,7 @@ import {
   fetchSiteCities,
 } from '@/lib/queries';
 import type { SearchParams } from '@/lib/searchParams';
-import { parseFilters } from '@/lib/searchParams';
+import { buildQuery, parseFilters } from '@/lib/searchParams';
 import type { ListingType } from '@/lib/types';
 
 // ТРИ ВИТРИНЫ, У КАЖДОЙ СВОЙ АДРЕС И СВОЙ ТИП СДЕЛКИ.
@@ -102,7 +102,20 @@ export default async function CatalogPageView({
   return (
     <>
       <SmartBanner locale={locale} />
-      <SiteHeader locale={locale} pathname={basePath} />
+      {/* Шапке передаётся адрес ВМЕСТЕ С ФИЛЬТРАМИ: из него
+          переключатель языка собирает ссылку на зеркало. С голым
+          basePath смена языка на отфильтрованной выдаче
+          (/cars?brand=bmw&city=beograd) уводила на пустой /ru/cars —
+          человек терял отбор и не понимал, куда делись машины.
+
+          Тип в query не пишется: его задаёт сам маршрут витрины, и
+          лишний ?type= раздвоил бы адрес (см. SECTIONS выше).
+          Страница переносится как есть: на зеркале та же выдача, и
+          пятая страница обязана остаться пятой. */}
+      <SiteHeader
+        locale={locale}
+        pathname={`${basePath}${buildQuery(filters, { listingType: undefined })}`}
+      />
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
         <CatalogView

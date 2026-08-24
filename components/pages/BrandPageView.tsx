@@ -20,7 +20,7 @@ import {
 } from '@/lib/queries';
 import { buildBreadcrumbJsonLd } from '@/lib/seo';
 import type { SearchParams } from '@/lib/searchParams';
-import { parseFilters } from '@/lib/searchParams';
+import { buildQuery, parseFilters } from '@/lib/searchParams';
 import { siteBaseUrl } from '@/lib/supabase';
 
 // Поиск марки по слагу. Возвращает отображаемое название из БД:
@@ -71,12 +71,21 @@ export default async function BrandPageView({
     fetchCatalogModels(brand.brand),
   ]);
 
+  // Хлебные крошки для поиска. Адреса собираются через localeHref —
+  // разметка обязана указывать на ТО ЖЕ зеркало, что видимые ссылки
+  // ниже: на /ru/cars/bmw крошка в JSON-LD ведёт на /ru/cars, а не на
+  // сербский /cars. Требование Google — соответствие разметки тому,
+  // что видит посетитель. Канонический адрес страницы остаётся
+  // сербским, но задаётся он через alternates (lib/seo), а не здесь.
   const breadcrumb = buildBreadcrumbJsonLd([
     {
       name: mode === 'rent' ? t('rent_title') : t('nav_catalog'),
-      url: `${siteBaseUrl}${root}`,
+      url: `${siteBaseUrl}${localeHref(locale, root)}`,
     },
-    { name: brand.brand, url: `${siteBaseUrl}${root}/${slug}` },
+    {
+      name: brand.brand,
+      url: `${siteBaseUrl}${localeHref(locale, `${root}/${slug}`)}`,
+    },
   ]);
 
   return (
@@ -87,7 +96,17 @@ export default async function BrandPageView({
       />
 
       <SmartBanner locale={locale} />
-      <SiteHeader locale={locale} pathname={`${root}/${slug}`} />
+      {/* Адрес с фильтрами — для переключателя языка (см. подробный
+          комментарий в CatalogPageView). Марка и тип сделки заданы
+          САМИМ МАРШРУТОМ и в query не переносятся: /ru/cars/bmw уже
+          несёт их в пути, а дубль в параметрах раздвоил бы адрес. */}
+      <SiteHeader
+        locale={locale}
+        pathname={`${root}/${slug}${buildQuery(filters, {
+          listingType: undefined,
+          brand: undefined,
+        })}`}
+      />
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
         <nav className="mb-4 text-caption text-neutral-50">

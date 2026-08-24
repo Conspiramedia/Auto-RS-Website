@@ -20,7 +20,7 @@ import {
 } from '@/lib/queries';
 import { buildBreadcrumbJsonLd } from '@/lib/seo';
 import type { SearchParams } from '@/lib/searchParams';
-import { parseFilters } from '@/lib/searchParams';
+import { buildQuery, parseFilters } from '@/lib/searchParams';
 import { siteBaseUrl } from '@/lib/supabase';
 
 // Разбор пары слагов в реальные названия из БД.
@@ -79,13 +79,24 @@ export default async function ModelPageView({
 
   const name = `${brand.brand} ${model.model}`;
 
+  // Адреса крошек — через localeHref: разметка обязана указывать на то
+  // же зеркало, что видимые ссылки ниже (подробнее — в BrandPageView).
   const breadcrumb = buildBreadcrumbJsonLd([
     {
       name: mode === 'rent' ? t('rent_title') : t('nav_catalog'),
-      url: `${siteBaseUrl}${root}`,
+      url: `${siteBaseUrl}${localeHref(locale, root)}`,
     },
-    { name: brand.brand, url: `${siteBaseUrl}${root}/${brandSlug}` },
-    { name: model.model, url: `${siteBaseUrl}${root}/${brandSlug}/${modelSlug}` },
+    {
+      name: brand.brand,
+      url: `${siteBaseUrl}${localeHref(locale, `${root}/${brandSlug}`)}`,
+    },
+    {
+      name: model.model,
+      url: `${siteBaseUrl}${localeHref(
+        locale,
+        `${root}/${brandSlug}/${modelSlug}`,
+      )}`,
+    },
   ]);
 
   return (
@@ -96,9 +107,16 @@ export default async function ModelPageView({
       />
 
       <SmartBanner locale={locale} />
+      {/* Адрес с фильтрами — для переключателя языка (см. подробный
+          комментарий в CatalogPageView). Марка, модель и тип сделки
+          заданы САМИМ МАРШРУТОМ и в query не переносятся. */}
       <SiteHeader
         locale={locale}
-        pathname={`${root}/${brandSlug}/${modelSlug}`}
+        pathname={`${root}/${brandSlug}/${modelSlug}${buildQuery(filters, {
+          listingType: undefined,
+          brand: undefined,
+          model: undefined,
+        })}`}
       />
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
