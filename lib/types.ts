@@ -427,3 +427,80 @@ export type AdminQueueItem = {
   created_at: string;
   user_id: string;
 };
+
+// Строка очереди модерации из admin_moderation_queue (0079).
+// AdminQueueItem выше остаётся для дашборда: там читается прямой
+// select без контекста доверия, и тянуть ради пяти строк тяжёлую RPC
+// со счётчиками по каждому владельцу незачем.
+export type AdminQueueRow = {
+  car_id: string;
+  brand: string;
+  model: string;
+  year: number;
+  city: string;
+  sale_price: number | null;
+  rent_price_daily: number | null;
+  currency: string;
+  photo_url: string | null;
+  photos_count: number;
+  owner_name: string | null;
+  // Контекст доверия: сколько всего подавал и сколько отклонено сейчас.
+  owner_listings_total: number;
+  owner_rejected_count: number;
+  created_at: string;
+  // Общее число в очереди — одинаково во всех строках ответа.
+  total_count: number;
+};
+
+// Фотография в карточке модерации (jsonb-массив из admin_get_car).
+export type AdminCarPhoto = {
+  image_url: string;
+  order_index: number;
+};
+
+// Запись истории модерации по объявлению (jsonb-массив из
+// admin_get_car). payload — свободный jsonb из журнала: у отклонения
+// там reason, у одобрения prev_status.
+export type AdminModerationEvent = {
+  action: 'car_approved' | 'car_rejected';
+  created_at: string;
+  actor_name: string;
+  payload: Record<string, unknown> | null;
+};
+
+// Карточка объявления для модерации: admin_get_car (0079).
+export type AdminCar = {
+  car_id: string;
+  user_id: string;
+  status: string;
+  is_for_sale: boolean;
+  is_for_rent: boolean;
+  brand: string;
+  model: string;
+  year: number;
+  mileage: number | null;
+  body_type: string | null;
+  transmission: string | null;
+  fuel: string | null;
+  currency: string;
+  sale_price: number | null;
+  rent_price_daily: number | null;
+  deposit_amount: number;
+  city: string;
+  description: string | null;
+  contact_phone: string | null;
+  moderation_comment: string | null;
+  created_at: string;
+  updated_at: string;
+  owner_name: string | null;
+  owner_email: string;
+  owner_phone: string | null;
+  // Язык продавца. Определяет, на каком языке он получит причину
+  // отклонения; null означает «не выбирал» → сербский.
+  owner_locale: string | null;
+  owner_created_at: string;
+  owner_listings_total: number;
+  owner_rejected_count: number;
+  photos: AdminCarPhoto[];
+  moderation_history: AdminModerationEvent[];
+};

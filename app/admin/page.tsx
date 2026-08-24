@@ -203,29 +203,28 @@ export default async function AdminDashboardPage() {
       ) : (
         <ul className="mt-3 divide-y divide-neutral-10 rounded-card border border-neutral-10">
           {queue.map((car) => (
-            <li
-              key={car.id}
-              // В M2 строка НЕ ссылка: карточка проверки
-              // /admin/queue/{id} появится в M4, и ссылка на неё сейчас
-              // вела бы в 404 из собственного дашборда. Как только
-              // карточка появится, li меняется на Link — разметка
-              // строки при этом не трогается.
-              //
-              // Высота ~40px по плотности админки; на мобильном текст
-              // переносится, а дата уходит под название.
-              className="
-                flex flex-col gap-1 px-4 py-2.5 text-caption
-                sm:flex-row sm:items-center sm:justify-between sm:gap-4
-              "
-            >
-              <span className="min-w-0 truncate font-medium">
-                {car.brand} {car.model}
-                {car.year ? ` · ${car.year}` : ''}
-                {car.city ? ` · ${car.city}` : ''}
-              </span>
-              <span className="shrink-0 tabular-nums text-neutral-50">
-                {QUEUE_TIME.format(new Date(car.created_at))}
-              </span>
+            <li key={car.id}>
+              {/* Строка целиком — ссылка на карточку проверки: она
+                  появилась в M4. Высота ~40px по плотности админки;
+                  на мобильном текст переносится, а дата уходит под
+                  название. */}
+              <Link
+                href={`/admin/queue/${car.id}`}
+                className="
+                  flex flex-col gap-1 px-4 py-2.5 text-caption
+                  transition-colors duration-fast hover:bg-surface-hover
+                  sm:flex-row sm:items-center sm:justify-between sm:gap-4
+                "
+              >
+                <span className="min-w-0 truncate font-medium">
+                  {car.brand} {car.model}
+                  {car.year ? ` · ${car.year}` : ''}
+                  {car.city ? ` · ${car.city}` : ''}
+                </span>
+                <span className="shrink-0 tabular-nums text-neutral-50">
+                  {QUEUE_TIME.format(new Date(car.created_at))}
+                </span>
+              </Link>
             </li>
           ))}
         </ul>

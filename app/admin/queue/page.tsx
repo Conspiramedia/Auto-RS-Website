@@ -1,43 +1,173 @@
 // ============================================================
-// RS AUTO — Очередь модерации. ЗАГЛУШКА ПАКЕТА M2.
+// RS AUTO — Очередь модерации. Server Component.
 // ============================================================
-// Полноценная очередь с карточкой проверки, кнопками «Одобрить» /
-// «Отклонить» и клавишами A/R — пакет M4. Этот файл существует по
-// одной причине: пункт «Очередь» стоит в сайдбаре с самого M2 (иначе
-// каркас нечем проверить), а меню, ведущее в 404, — брак.
+// Список того, что ждёт проверки. Порядок — FIFO (старые сверху), его
+// задаёт admin_moderation_queue (0079): при сортировке «новые сверху»
+// первое объявление продавца висело бы вечно, пока сверху сыплются
+// свежие.
 //
-// Здесь намеренно НЕТ ни списка объявлений, ни действий: показать
-// половину очереди означало бы, что модератор начнёт ею пользоваться
-// до того, как появятся кнопки решения, и будет открывать карточки,
-// из которых нечего сделать. Честная заглушка понятнее полурабочего
-// экрана.
+// Навигация — <Link> в колонке «Объявление», а не клик по строке:
+// страница остаётся серверной, ссылка открывается средней кнопкой и
+// копируется. Ровно тот путь, ради которого Table (M3) сделан
+// серверным.
 //
-// Счётчик в сайдбаре при этом живой уже сейчас — он читается в layout
-// прямым запросом к cars, а не отсюда.
+// Пагинации в интерфейсе пока нет намеренно. RPC её поддерживает
+// (p_limit/p_offset, total_count), но очередь, доросшая до второй
+// страницы, — сама по себе сигнал, что модерация не успевает.
+// Показываем первые 100 и общее число: если оно больше, это видно в
+// шапке и требует не листалки, а разбора.
 // ============================================================
 
-import Button from '@/components/ui/Button';
+import Link from 'next/link';
+
+import Table, { type Column } from '@/components/ui/Table';
+import { getServerClient } from '@/lib/supabaseServer';
+import type { AdminQueueRow } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
-export default function AdminQueuePage() {
+const QUEUE_LIMIT = 100;
+
+// Формат — на стороне вызова: Table про вёрстку, а не про локали.
+// С временем, а не только датой: по нему видно, объявление лежит час
+// или третьи сутки.
+const SUBMITTED = new Intl.DateTimeFormat('ru-RU', {
+  day: 'numeric',
+  month: 'short',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+const columns: Column<AdminQueueRow>[] = [
+  {
+    key: 'car',
+    header: 'Объявление',
+    render: (row) => (
+      <Link
+        href={`/admin/queue/${row.car_id}`}
+        className="font-medium hover:underline"
+      >
+        {row.brand} {row.model}
+      </Link>
+    ),
+  },
+  {
+    key: 'year',
+    header: 'Год',
+    width: '72px',
+    align: 'right',
+    render: (row) => row.year,
+  },
+  {
+    key: 'photos_count',
+    header: 'Фото',
+    width: '72px',
+    align: 'right',
+    hideBelow: 'sm',
+    // Ноль фотографий — почти всегда отказ, и это должно бросаться в
+    // глаза прямо в списке, до открытия карточки.
+    render: (row) =>
+      row.photos_count === 0 ? (
+        <span className="font-semibold text-error">0</span>
+      ) : (
+        row.photos_count
+      ),
+  },
+  {
+    key: 'city',
+    header: 'Город',
+    width: '140px',
+    hideBelow: 'lg',
+    render: (row) => row.city,
+  },
+  {
+    key: 'owner',
+    header: 'Продавец',
+    width: '200px',
+    hideBelow: 'md',
+    // Контекст доверия прямо в списке: продавец с отклонениями
+    // требует другого внимания, и знать об этом надо до открытия
+    // карточки, а не после.
+    render: (row) => (
+      <span className="block truncate">
+        {row.owner_name ?? 'без имени'}
+        {row.owner_rejected_count > 0 && (
+          <span className="ml-1 text-micro font-medium text-error">
+            ×{row.owner_rejected_count}
+          </span>
+        )}
+      </span>
+    ),
+  },
+  {
+    key: 'created_at',
+    header: 'Подано',
+    width: '132px',
+    align: 'right',
+    hideBelow: 'sm',
+    render: (row) => SUBMITTED.format(new Date(row.created_at)),
+  },
+];
+
+export default async function AdminQueuePage() {
+  const supabase = await getServerClient();
+
+  const { data, error } = await supabase.rpc('admin_moderation_queue', {
+    p_limit: QUEUE_LIMIT,
+    p_offset: 0,
+  });
+
+  if (error) {
+    return (
+      <>
+        <h1 className="text-h2 font-bold">Очередь</h1>
+        <div className="mt-6 rounded-card border border-error/30 bg-status-error p-4">
+          <p className="font-semibold text-error">Очередь не загрузилась</p>
+          <p className="mt-1 text-caption text-neutral-70">
+            Попробуйте обновить страницу.
+          </p>
+          <Link
+            href="/admin/queue"
+            className="mt-2 inline-block text-caption text-brand-blue hover:underline"
+          >
+            Обновить
+          </Link>
+        </div>
+      </>
+    );
+  }
+
+  const rows = (data ?? []) as AdminQueueRow[];
+  // total_count одинаков во всех строках; пустой ответ — пустая
+  // очередь, и это не ошибка.
+  const total = rows[0]?.total_count ?? 0;
+
   return (
     <>
-      <h1 className="text-h2 font-bold">Очередь</h1>
-
-      <div className="mt-6 rounded-card border border-neutral-10 px-6 py-12 text-center">
-        <h2 className="text-h3 font-semibold">Раздел в работе</h2>
-        <p className="mx-auto mt-2 max-w-md text-neutral-60">
-          Разбор очереди с карточкой проверки и решениями появится
-          следующим пакетом. Пока объявления модерируются в приложении —
-          правила и журнал у сайта и приложения общие.
+      <div className="flex items-baseline justify-between gap-4">
+        <h1 className="text-h2 font-bold">Очередь</h1>
+        <p className="shrink-0 text-caption text-neutral-60">
+          {total > 0 ? `Ждут проверки: ${total}` : 'Пусто'}
         </p>
+      </div>
 
-        <div className="mt-6">
-          <Button variant="secondary" size="sm" href="/admin">
-            На дашборд
-          </Button>
-        </div>
+      {total > QUEUE_LIMIT && (
+        // Очередь, не помещающаяся на страницу, — сигнал, а не повод
+        // для листалки.
+        <p className="mt-2 text-caption text-neutral-60">
+          Показаны первые {QUEUE_LIMIT}. Очередь растёт быстрее, чем
+          разбирается.
+        </p>
+      )}
+
+      <div className="mt-4">
+        <Table
+          columns={columns}
+          rows={rows}
+          rowKey={(row) => row.car_id}
+          empty="Очередь пуста"
+          stickyHeader
+        />
       </div>
     </>
   );
