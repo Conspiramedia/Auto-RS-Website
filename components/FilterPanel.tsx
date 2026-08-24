@@ -69,6 +69,10 @@ type Props = {
   // строкой в клиентском компоненте правило проекта запрещает.
   // Нужны только при lockedType.
   typeNavHrefs?: { both: string; sale: string; rent: string };
+  // Тип витрины для подсветки сегмента. ОТДЕЛЬНО от mode: тот схлопывает
+  // 'both' в 'sale' (смешанная выдача показывает цены как продажа), и
+  // подсветка по нему зажигала бы на /all «Продажу» вместо «Всё».
+  navType?: ListingType;
 };
 
 export default function FilterPanel({
@@ -82,6 +86,7 @@ export default function FilterPanel({
   mode = 'sale',
   lockedType = false,
   typeNavHrefs,
+  navType,
 }: Props) {
   const t = getT(locale);
   const [open, setOpen] = useState(false);
@@ -329,7 +334,7 @@ export default function FilterPanel({
                     // Активный сегмент: в режиме навигации активен тип
                     // самой страницы, в режиме фильтра — выбор в форме.
                     const active = lockedType
-                      ? value === mode
+                      ? value === (navType ?? mode)
                       : listingType === value;
 
                     const cls =
@@ -356,6 +361,10 @@ export default function FilterPanel({
                           key={value}
                           href={typeNavHrefs?.[value] ?? '#'}
                           className={cls}
+                          // «Всё» ведёт на служебную витрину /all: она
+                          // под noindex, и краулеру идти по ссылке
+                          // незачем. Два лендинга остаются проходимыми.
+                          rel={value === 'both' ? 'nofollow' : undefined}
                         >
                           {label}
                         </Link>

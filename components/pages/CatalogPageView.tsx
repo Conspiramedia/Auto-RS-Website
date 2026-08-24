@@ -18,31 +18,45 @@ import type { SearchParams } from '@/lib/searchParams';
 import { parseFilters } from '@/lib/searchParams';
 import type { ListingType } from '@/lib/types';
 
+// ТРИ ВИТРИНЫ, У КАЖДОЙ СВОЙ АДРЕС И СВОЙ ТИП СДЕЛКИ.
+//
+// Тип объявления задаётся МАРШРУТОМ, а не query-параметром: одна выдача
+// живёт по одному адресу, и ?type= на этих страницах игнорируется. Так
+// у каждой витрины остаётся собственный canonical, а сегмент «Тип
+// объявления» в фильтрах работает навигацией между ними (см. df0e812).
+//
+//   /cars — продажа. Главная витрина: сюда ведут герой главной,
+//           подвал, шапка и страницы ошибок;
+//   /rent — аренда. Отдельный SEO-лендинг со своей структурой запросов
+//           («rent a car Beograd») и своими ценами за сутки;
+//   /all  — продажа и аренда вперемешку. СЛУЖЕБНАЯ витрина: содержимым
+//           она дублирует два лендинга выше, поэтому закрыта от
+//           индексации и не входит в sitemap.
+const SECTIONS = {
+  catalog: { path: '/cars', type: 'sale' },
+  rent: { path: '/rent', type: 'rent' },
+  all: { path: '/all', type: 'both' },
+} as const;
+
+export type CatalogSection = keyof typeof SECTIONS;
+
 export default async function CatalogPageView({
   locale,
   searchParams,
-  // Раздел:
-  //   'catalog' — /cars, СМЕШАННЫЙ фид. Тип объявления выбирается
-  //     фильтром и приходит из query (?type=), по умолчанию «Всё»;
-  //   'rent' — SEO-лендинг /rent. Тип зафиксирован адресом, сегмент
-  //     выбора типа в фильтрах скрыт.
   section = 'catalog',
 }: {
   locale: Locale;
   searchParams: SearchParams;
-  section?: 'catalog' | 'rent';
+  section?: CatalogSection;
 }) {
   const t = getT(locale);
-  const isRentLanding = section === 'rent';
-  const basePath = isRentLanding ? '/rent' : '/cars';
+  const basePath = SECTIONS[section].path;
 
   const parsed = parseFilters(searchParams);
 
-  // На лендинге аренды тип задан адресом и перекрывает query.
-  // В каталоге тип берётся из фильтра, по умолчанию — смешанная выдача.
-  const listingType: ListingType = isRentLanding
-    ? 'rent'
-    : (parsed.listingType ?? 'both');
+  // Тип приходит от маршрута и ПЕРЕКРЫВАЕТ query: /cars?type=rent
+  // обязан показывать продажу, иначе адрес врёт о своём содержимом.
+  const listingType: ListingType = SECTIONS[section].type;
 
   const filters = { ...parsed, listingType };
 
@@ -93,7 +107,16 @@ export default async function CatalogPageView({
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
         <CatalogView
           locale={locale}
-          title={isRentLanding ? t('rent_title') : t('catalog_mixed_title')}
+          // Заголовок называет ИМЕННО ту выдачу, что под ним:
+          // «Автомобили на продажу», «Автомобили в аренду» либо
+          // «Автомобили в Сербии» для смешанной служебной витрины.
+          title={
+            section === 'rent'
+              ? t('rent_title')
+              : section === 'all'
+                ? t('catalog_mixed_title')
+                : t('catalog_title')
+          }
           filters={filters}
           result={result}
           brands={brands}
@@ -101,8 +124,9 @@ export default async function CatalogPageView({
           models={models}
           basePath={basePath}
           mode={cardMode}
-          // На лендинге аренды тип задан адресом — сегмент скрыт.
-          lockedType={isRentLanding}
+          // Тип задан адресом на ВСЕХ трёх витринах: сегмент типа
+          // работает навигацией между ними и не считается фильтром.
+          lockedType
           infinite={infinite}
         />
       </main>
@@ -112,7 +136,7 @@ export default async function CatalogPageView({
       <SiteFooter
         locale={locale}
         brands={brands.slice(0, 12)}
-        mode={isRentLanding ? 'rent' : 'sale'}
+        mode={section === 'rent' ? 'rent' : 'sale'}
       />
     </>
   );

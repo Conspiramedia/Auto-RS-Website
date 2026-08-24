@@ -9,7 +9,7 @@
 //
 // Формы повторяют общепринятые (те же, что в lucide под именами
 // LogIn, Tag, KeyRound, Building2, Smartphone, Info, Lightbulb,
-// CircleHelp, Mail, CarFront, MessageSquare, Bell, CircleUser,
+// CircleHelp, Mail, Car, CarFront, MessageSquare, Bell, CircleUser,
 // LogOut): меню — не место для авторской иконографики, узнаваемость
 // здесь важнее оригинальности.
 //
@@ -96,6 +96,20 @@ export function CarFrontIcon({ className }: IconProps) {
       <path d="M4 13h16a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1z" />
       <path d="M6.5 16h.01M17.5 16h.01" />
       <path d="M6 19v1.5M18 19v1.5" />
+    </Icon>
+  );
+}
+
+// Car — «Все авто»: машина в профиль. Намеренно НЕ CarFront: тот занят
+// пунктом «Мои объявления», и два одинаковых силуэта в одном меню
+// читались бы как один раздел, показанный дважды.
+export function CarIcon({ className }: IconProps) {
+  return (
+    <Icon className={className}>
+      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18.4 7.6A2 2 0 0 0 16.6 6.5H7.4a2 2 0 0 0-1.8 1.1L3.5 11.1C2.7 11.3 2 12.1 2 13v3c0 .6.4 1 1 1h2" />
+      <circle cx="7" cy="17" r="2" />
+      <path d="M9 17h6" />
+      <circle cx="17" cy="17" r="2" />
     </Icon>
   );
 }

@@ -125,6 +125,11 @@ export const dict = {
     //     как разные основания деления: в аренде тоже автомобили.
     nav_catalog: 'Automobili',
     nav_catalog_menu: 'Prodaja',
+    // Пункт меню и подпись витрины /all — смешанной выдачи «продажа
+    // и аренда вместе». В сегменте типа то же состояние называется
+    // короче (filter_type_all, «Sve»): там рядом стоят «Prodaja» и
+    // «Izdavanje», и слово «automobili» повторялось бы трижды.
+    nav_all_cars: 'Svi automobili',
     nav_sell: 'Prodaj auto',
     nav_dealers: 'Autosaloni',
     nav_app: 'Aplikacija',
@@ -806,7 +811,12 @@ export const dict = {
     meta_home_title: 'Automobili u Srbiji — kupovina, prodaja i izdavanje',
     meta_home_desc:
       'Oglasi za automobile u Srbiji: prodaja i iznajmljivanje. Besplatno objavljivanje oglasa, pretraga po marki, modelu, gradu i ceni.',
+    // meta_catalog_desc — витрина ПРОДАЖИ /cars; meta_all_desc —
+    // служебная смешанная витрина /all (она под noindex, но описание
+    // нужно для превью при шаринге ссылки).
     meta_catalog_desc:
+      'Automobili na prodaju u Srbiji. Pretraga po marki, modelu, gradu i ceni.',
+    meta_all_desc:
       'Automobili u Srbiji: prodaja i izdavanje. Pretraga po marki, modelu, gradu i ceni.',
     meta_rent_desc:
       'Automobili za izdavanje u Srbiji: cena po danu, depozit i uslovi. Pretraga po marki, modelu i gradu.',
@@ -835,6 +845,8 @@ export const dict = {
     // nav_catalog_menu — пункт меню в паре с «Арендой».
     nav_catalog: 'Автомобили',
     nav_catalog_menu: 'Продажа',
+    // См. комментарий в сербском словаре.
+    nav_all_cars: 'Все авто',
     nav_sell: 'Продать авто',
     nav_dealers: 'Автосалоны',
     nav_app: 'Приложение',
@@ -1496,7 +1508,10 @@ export const dict = {
     meta_home_title: 'Автомобили в Сербии — покупка, продажа и аренда',
     meta_home_desc:
       'Объявления об автомобилях в Сербии: продажа и аренда. Бесплатное размещение объявлений, поиск по марке, модели, городу и цене.',
+    // См. комментарий в сербском словаре.
     meta_catalog_desc:
+      'Автомобили на продажу в Сербии. Поиск по марке, модели, городу и цене.',
+    meta_all_desc:
       'Автомобили в Сербии: продажа и аренда. Поиск по марке, модели, городу и цене.',
     meta_rent_desc:
       'Автомобили в аренду в Сербии: цена за сутки, залог и условия. Поиск по марке, модели и городу.',

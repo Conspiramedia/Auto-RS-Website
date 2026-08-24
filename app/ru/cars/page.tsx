@@ -27,8 +27,8 @@ export async function generateMetadata({
   return buildMetadata({
     locale,
     path: '/cars',
-    // Каталог — смешанный фид (продажа и аренда), заголовок это отражает.
-    title: t('catalog_mixed_title'),
+    // /cars — витрина ПРОДАЖИ. Смешанная выдача переехала на /all.
+    title: t('catalog_title'),
     description: t('meta_catalog_desc'),
     noindex: hasActiveFilters(filters) || (filters.page ?? 1) > 1,
   });

@@ -49,6 +49,7 @@
 //   ── действие над сайтом ─────────────────────────
 //   Download       Быстрый доступ
 //   ── разделы сайта ───────────────────────────────
+//   Car            Все авто
 //   Tag            Продажа
 //   KeyRound       Аренда
 //   Building2      Автосалоны
@@ -98,6 +99,7 @@ import {
   BellIcon,
   Building2Icon,
   CarFrontIcon,
+  CarIcon,
   CircleHelpIcon,
   CircleUserIcon,
   InfoIcon,
@@ -121,9 +123,21 @@ const ICON_CLASS = 'h-5 w-5 shrink-0';
 
 // Разделы сайта. Порядок осмысленный: сначала витрины (за ними приходят),
 // потом продавцам, затем справочные страницы и контакты.
-const LINKS: { path: string; label: DictKey; icon: NavIcon }[] = [
+// nofollow — для служебных витрин, закрытых от индексации: краулеру
+// незачем идти по ссылке, которая всё равно отдаёт noindex.
+const LINKS: {
+  path: string;
+  label: DictKey;
+  icon: NavIcon;
+  nofollow?: boolean;
+}[] = [
   // nav_catalog_menu, а не nav_catalog: в меню пункт стоит рядом с
   // «Арендой», и там это выбор вида сделки, а не название раздела.
+  // «Все авто» — смешанная витрина /all, первой в группе: она шире
+  // двух следующих и ведёт человека, который ещё не выбрал между
+  // покупкой и арендой. В десктопную шапку пункт НЕ выносится: там
+  // ряд короткий и нужен выбор вида сделки, а не третья ссылка.
+  { path: '/all', label: 'nav_all_cars', icon: CarIcon, nofollow: true },
   { path: '/cars', label: 'nav_catalog_menu', icon: TagIcon },
   { path: '/rent', label: 'nav_rent', icon: KeyRoundIcon },
   { path: '/dealers', label: 'nav_dealers', icon: Building2Icon },
@@ -417,6 +431,7 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                     href={localeHref(locale, link.path)}
                     onClick={() => setOpen(false)}
                     aria-current={active ? 'page' : undefined}
+                    rel={link.nofollow ? 'nofollow' : undefined}
                     className={[
                       // flex вместо block — под значок. Отступы (py-3,
                       // pr-4, pl-3) и полоса слева не менялись: строка

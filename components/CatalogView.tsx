@@ -78,10 +78,14 @@ export default function CatalogView({
   // адресом страницы, в счётчик не входят — их нельзя снять, не уйдя
   // со страницы, и пользователь их не выбирал:
   //   * марка и модель на SEO-страницах /cars/bmw и /cars/bmw/x5;
-  //   * тип объявления на лендинге /rent (lockedType) — именно из-за
-  //     него счётчик показывал «1 фильтр» на чистом /rent.
-  const rootPath = mode === 'rent' ? '/rent' : '/cars';
-  const isBrandPage = basePath !== rootPath;
+  //   * тип объявления на любой из трёх витрин (lockedType) — именно
+  //     из-за него чистый /rent показывал «1 фильтр включён».
+  //
+  // Признак SEO-подстраницы — вложенность пути, а НЕ сравнение с
+  // корнем, вычисленным из mode: у /all витрина mode='sale', и такое
+  // сравнение объявило бы саму витрину страницей марки, вычеркнув из
+  // счётчика выбранную пользователем марку.
+  const isBrandPage = basePath.split('/').filter(Boolean).length > 1;
   const countable: CatalogFilters = {
     ...filters,
     ...(isBrandPage ? { brand: undefined, model: undefined } : null),
@@ -101,25 +105,17 @@ export default function CatalogView({
   // Марка и модель SEO-страницы переносятся в query автоматически:
   // они лежат в filters, куда их положил сам маршрут (BrandPageView).
   //
-  // Целевой раздел всегда /cars: аренда живёт на собственном лендинге,
-  // а смешанная и продажная выдача — в каталоге.
+  // У каждого положения сегмента — собственная витрина: /all (продажа
+  // и аренда вперемешку), /cars (продажа), /rent (аренда). Тип в query
+  // не пишется вовсе: его задаёт сам адрес, а лишний ?type= вернул бы
+  // параметр в счётчик фильтров и раздвоил canonical.
+  const navQuery = buildQuery(filters, { listingType: undefined, page: 1 });
+
   const typeNavHrefs = lockedType
     ? {
-        both: localePath(
-          locale,
-          '/cars',
-          buildQuery(filters, { listingType: undefined, page: 1 }),
-        ),
-        sale: localePath(
-          locale,
-          '/cars',
-          buildQuery(filters, { listingType: 'sale', page: 1 }),
-        ),
-        rent: localePath(
-          locale,
-          '/rent',
-          buildQuery(filters, { listingType: undefined, page: 1 }),
-        ),
+        both: localePath(locale, '/all', navQuery),
+        sale: localePath(locale, '/cars', navQuery),
+        rent: localePath(locale, '/rent', navQuery),
       }
     : undefined;
 
@@ -233,6 +229,7 @@ export default function CatalogView({
             mode={pageMode}
             lockedType={lockedType}
             typeNavHrefs={typeNavHrefs}
+            navType={mode}
           />
           {/* Счётчик в этом ряду показывается только в диапазоне
               640–767px: ниже он стоит отдельной строкой, выше —
@@ -298,6 +295,7 @@ export default function CatalogView({
           mode={pageMode}
           lockedType={lockedType}
           typeNavHrefs={typeNavHrefs}
+          navType={mode}
         />
 
         <SortSelect
