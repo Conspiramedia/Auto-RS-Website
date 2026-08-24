@@ -391,3 +391,39 @@ export type SiteNotification = {
   is_read: boolean;
   created_at: string;
 };
+
+// ------------------------------------------------------------
+// АДМИН-КОМНАТА (/admin)
+// ------------------------------------------------------------
+
+// Сводка дашборда: одна строка из admin_dashboard_stats() (0078).
+// Все счётчики приходят как bigint, а PostgREST отдаёт bigint строкой,
+// когда значение не помещается в number. На наших объёмах этого не
+// случится, но supabase-js типизирует такие поля как number — оставляем
+// number и не изобретаем разбор строки для гипотетического триллиона
+// объявлений.
+export type AdminDashboardStats = {
+  queue_count: number;
+  rejected_today: number;
+  approved_today: number;
+  active_total: number;
+  users_total: number;
+  users_new_7d: number;
+  email_pending: number;
+  // Провалившиеся письма — операционный инцидент, а не статистика:
+  // продавцы не получают решений модерации, а очередь молчит.
+  email_failed: number;
+};
+
+// Строка очереди модерации для дашборда и списка проверки.
+// Собирается обычным select по cars под админской RLS-политикой
+// cars_select_admin_moderation (0015) — отдельная RPC не нужна.
+export type AdminQueueItem = {
+  id: string;
+  brand: string;
+  model: string;
+  year: number | null;
+  city: string | null;
+  created_at: string;
+  user_id: string;
+};

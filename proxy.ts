@@ -117,6 +117,29 @@ async function refreshSession(
 export default async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
+  // ------------------------------------------------------------
+  // АДМИН-КОМНАТА: /admin вне языковой машинерии.
+  // ------------------------------------------------------------
+  // Раздел одноязычный (русский) и зеркала /ru/admin у него нет.
+  // Проверка стоит ДО цикла PREFIXED, потому что иначе модератора с
+  // cookie 'ru' увело бы редиректом на несуществующий /ru/admin, а
+  // модератора с сербской cookie — оставило бы на /admin, и поведение
+  // раздела зависело бы от языка, выбранного когда-то в каталоге.
+  //
+  // Сессию продлеваем: без этого токен модератора протухал бы через
+  // час прямо посреди разбора очереди, и layout выбросил бы его на
+  // 404 как не-админа.
+  //
+  // ПРАВАМИ ЗДЕСЬ НЕ ЗАНИМАЕМСЯ. Роль проверяет app/admin/layout.tsx,
+  // а по-настоящему — is_admin() внутри каждой RPC. Документация Next
+  // прямо предупреждает: proxy выполняется до рендера и не должен
+  // быть местом принятия решения о доступе.
+  if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+    const response = NextResponse.next();
+    await refreshSession(request, response);
+    return response;
+  }
+
   // Путь уже несёт префикс локали — фиксируем выбор в cookie и пропускаем.
   for (const code of PREFIXED) {
     if (pathname === `/${code}` || pathname.startsWith(`/${code}/`)) {
