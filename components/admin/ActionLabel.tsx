@@ -17,6 +17,36 @@ const ACTIONS: Record<string, { label: string; className: string }> = {
   car_rejected: { label: 'Объявление отклонено', className: 'text-error' },
   car_archived: { label: 'Снято с публикации', className: 'text-error' },
   car_restored: { label: 'Возвращено в выдачу', className: 'text-success' },
+
+  // Действия над салонами (0085).
+  dealer_trusted_on: {
+    label: 'Салон: без модерации включено',
+    className: 'text-neutral-70',
+  },
+  dealer_trusted_off: {
+    label: 'Салон: без модерации выключено',
+    className: 'text-neutral-70',
+  },
+  dealer_blocked: { label: 'Салон заблокирован', className: 'text-error' },
+
+  // Автопубликация (0086). Актор в этих записях — сам салон, а не
+  // администратор: решение приняла система по выданному салону праву.
+  //
+  // car_auto_approved НЕ красим зелёным, в отличие от ручного
+  // car_approved: зелёный в журнале означает «модератор посмотрел и
+  // одобрил», а здесь никто не смотрел. Нейтральный цвет честнее.
+  car_auto_approved: {
+    label: 'Опубликовано автоматически',
+    className: 'text-neutral-70',
+  },
+  // Не отклонение, а уход в обычную очередь — поэтому не красный.
+  // И не золотой (цвет статуса moderation на сайте): brand.gold как
+  // ЦВЕТ ТЕКСТА даёт на белом 2.09:1 при норме WCAG AA 4.5:1 — на
+  // заливке он работает, набранный текстом нечитаем.
+  car_autopublish_skipped: {
+    label: 'Автопубликация не прошла — в очередь',
+    className: 'text-neutral-70',
+  },
 };
 
 export function actionLabel(action: string): string {
