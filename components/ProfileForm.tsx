@@ -184,7 +184,9 @@ export default function ProfileForm({ locale, profile, balance }: Props) {
               className={`${fieldClass} bg-surface-muted text-neutral-60`}
             />
             <p className="mt-1 text-small text-neutral-50">
-              {t('profile_phone_hint')}
+              {/* У аккаунта без номера (вход по почте) подсказка про
+                  «номер для входа» была бы неверной: входят не им. */}
+              {t(profile.phone ? 'profile_phone_hint' : 'profile_phone_none')}
             </p>
           </div>
 

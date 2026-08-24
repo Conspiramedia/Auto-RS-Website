@@ -121,6 +121,14 @@ const DICT = {
     rejected_hint:
       'Ispravite oglas u svom nalogu i pošaljite ga ponovo na proveru.',
 
+    // Код входа по почте.
+    login_subject: 'Kod za prijavu',
+    login_title: 'Kod za prijavu',
+    login_lead: 'Unesite ovaj kod na sajtu da biste se prijavili:',
+    login_expires: 'Kod važi 10 minuta.',
+    login_ignore:
+      'Ako niste tražili prijavu, jednostavno zanemarite ovu poruku — niko nije ušao u vaš nalog.',
+
     // Снято администратором. Отдельно от «не одобрено»: там оглас
     // никогда не публиковался, а здесь он был виден покупателям и
     // исчез — человек это заметит и заслуживает объяснения.
@@ -169,6 +177,13 @@ const DICT = {
     rejected_no_reason: 'Причина не указана.',
     rejected_hint:
       'Исправьте объявление в личном кабинете и отправьте его на проверку заново.',
+
+    login_subject: 'Код для входа',
+    login_title: 'Код для входа',
+    login_lead: 'Введите этот код на сайте, чтобы войти:',
+    login_expires: 'Код действует 10 минут.',
+    login_ignore:
+      'Если вы не запрашивали вход, просто не обращайте внимания на это письмо — в ваш аккаунт никто не вошёл.',
 
     archived_subject: 'Объявление снято с публикации',
     archived_title: 'Объявление снято с публикации',
@@ -452,6 +467,60 @@ function carRejected(
   };
 }
 
+// ---------- 1b) Код для входа по почте ----------
+// Отправляется НЕ из очереди, а синхронно — из auth-email-hook, когда
+// GoTrue просит доставить код. Очередь тут не годится: она
+// разбирается раз в пять минут, а код нужен человеку сейчас.
+//
+// В письме НЕТ НИ ОДНОЙ ССЫЛКИ, и это осознанно. Письмо с кодом —
+// главная мишень фишинга: приучив администратора нажимать в нём
+// кнопку «Войти», мы делаем поддельное письмо с такой же кнопкой
+// рабочим. Код вводится на той вкладке, где его запросили.
+//
+// Код набран моноширинным шрифтом и разрежен трекингом: шесть цифр
+// подряд обычным шрифтом переписываются с ошибкой чаще, чем кажется.
+function loginCode(
+  locale: Locale,
+  payload: Payload,
+  siteUrl: string,
+): RenderedEmail {
+  const code = str(payload, 'code');
+  const subject = `${t(locale, 'login_subject')}: ${code}`;
+
+  const bodyHtml = [
+    h1(t(locale, 'login_title')),
+    p(esc(t(locale, 'login_lead'))),
+    // Панель с кодом вместо кнопки: нажимать нечего, читать — есть.
+    panel(
+      `<span style="font-family: 'SF Mono', Consolas, 'Courier New', monospace;` +
+        ` font-size: 32px; font-weight: 700; letter-spacing: 6px;` +
+        ` color: ${COLOR.text};">${esc(code)}</span>`,
+      COLOR.primary,
+    ),
+    p(esc(t(locale, 'login_expires')), true),
+    p(esc(t(locale, 'login_ignore')), true),
+  ].join('
+');
+
+  const text = [
+    t(locale, 'login_title'),
+    '',
+    t(locale, 'login_lead'),
+    '',
+    code,
+    '',
+    t(locale, 'login_expires'),
+    t(locale, 'login_ignore'),
+  ].join('
+');
+
+  return {
+    subject,
+    html: layout({ locale, title: subject, bodyHtml, siteUrl, accent: COLOR.primary }),
+    text,
+  };
+}
+
 // ---------- 2b) Объявление снято администратором ----------
 // Отдельный шаблон, а не переиспользование carRejected. Разница не в
 // формулировке, а в положении дел: отклонённое объявление никогда не
@@ -686,6 +755,8 @@ export function renderEmail(
       return carRejected(locale, payload, siteUrl);
     case 'car_archived_by_admin':
       return carArchivedByAdmin(locale, payload, siteUrl);
+    case 'login_code':
+      return loginCode(locale, payload, siteUrl);
     case 'contact_received':
       return contactReceived(locale, payload, siteUrl);
     case 'contact_admin':

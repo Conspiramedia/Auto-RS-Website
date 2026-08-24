@@ -422,6 +422,21 @@ export const dict = {
     my_auth_phone: 'Broj telefona',
     my_auth_code: 'Kod iz SMS-a',
     my_auth_send: 'Pošalji kod',
+
+    // Вход по почте. Второй способ входа, заведён для администраторов
+    // (у первого администратора площадки нет телефона).
+    auth_tab_phone: 'Telefon',
+    auth_tab_email: 'E-mail',
+    auth_email_label: 'E-mail adresa',
+    auth_email_ph: 'vasa@posta.rs',
+    auth_email_code: 'Kod iz poruke',
+    auth_email_sent_to: 'Kod smo poslali na adresu',
+    auth_email_change: 'Promeni adresu',
+    // Нейтральный отказ: одинаков и для несуществующего адреса, и для
+    // существующего пользователя без прав. Разные тексты превратили бы
+    // форму входа в способ проверять, кто зарегистрирован.
+    auth_email_not_allowed: 'Za ovu adresu prijava e-mailom nije podešena.',
+    auth_email_invalid: 'Unesite ispravnu e-mail adresu.',
     my_auth_submit: 'Prijavi se',
     my_auth_checking: 'Proveravamo…',
     // Privremeni tekst sekcija koje stižu u sledećim paketima.
@@ -537,6 +552,9 @@ export const dict = {
     profile_name_ph: 'Kako da vas oslovimo',
     profile_phone: 'Telefon',
     profile_phone_hint: 'Broj se koristi za prijavu i ne može se promeniti',
+    // Подсказка для аккаунта БЕЗ номера (вход по e-mail): текст про
+    // «номер для входа» там был бы неверным — входят не им.
+    profile_phone_none: 'Broj nije vezan za nalog — prijavljujete se e-mailom',
     profile_email: 'E-mail',
     // Podnaslov polja e-pošte. Prijava ide preko SMS-a, pa je adresa
     // prazna dok je vlasnik sam ne unese — a bez nje odluka moderacije
@@ -1135,6 +1153,16 @@ export const dict = {
     my_auth_phone: 'Номер телефона',
     my_auth_code: 'Код из SMS',
     my_auth_send: 'Получить код',
+
+    auth_tab_phone: 'Телефон',
+    auth_tab_email: 'Почта',
+    auth_email_label: 'Адрес электронной почты',
+    auth_email_ph: 'vasha@pochta.rs',
+    auth_email_code: 'Код из письма',
+    auth_email_sent_to: 'Мы отправили код на адрес',
+    auth_email_change: 'Изменить адрес',
+    auth_email_not_allowed: 'Для этого адреса вход по почте не настроен.',
+    auth_email_invalid: 'Введите корректный адрес электронной почты.',
     my_auth_submit: 'Войти',
     my_auth_checking: 'Проверяем…',
     // Временный текст разделов, которые приходят в следующих пакетах.
@@ -1250,6 +1278,7 @@ export const dict = {
     profile_name_ph: 'Как к вам обращаться',
     profile_phone: 'Телефон',
     profile_phone_hint: 'Номер используется для входа и не меняется',
+    profile_phone_none: 'Номер не привязан к аккаунту — вход выполняется по почте',
     profile_email: 'E-mail',
     // Подпись под полем почты. Вход идёт по SMS, поэтому адрес пуст,
     // пока владелец не укажет его сам, — а без адреса решение

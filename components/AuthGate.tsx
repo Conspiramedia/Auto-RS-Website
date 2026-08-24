@@ -75,8 +75,20 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
   const router = useRouter();
   const supabase = getBrowserClient();
 
+  // Способ входа. 'phone' — SMS на сербский мобильный (основной путь
+  // площадки); 'email' — код на почту.
+  //
+  // ПОЧЕМУ ПОЧТА ВООБЩЕ ПОЯВИЛАСЬ: первый администратор площадки
+  // зарегистрирован без телефона, и вход по SMS ему недоступен —
+  // сербского мобильного у него нет. Канал открыт ТОЛЬКО для
+  // администраторов, гейт стоит на сервере (rpc_check_email_login,
+  // миграция 0082), и это вход в существующий аккаунт: регистрации
+  // по почте нет.
+  const [mode, setMode] = useState<'phone' | 'email'>('phone');
+
   // Поле стартует с кодом страны: набирать «+381» руками незачем.
   const [phone, setPhone] = useState(SERBIAN_PHONE_PREFIX);
+  const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
   // Номер, на который реально ушёл код, в формате E.164. Держим отдельно
@@ -175,7 +187,85 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
     }
   }
 
-  // Возврат к вводу номера — как «Изменить номер» в приложении.
+  // ---------- Отправка кода на почту ----------
+  // Отличается от SMS двумя вещами, и обе принципиальны.
+  //
+  // 1. Гейт. rpc_check_email_login (0082) отвечает нейтральным
+  //    allowed=false и для несуществующего адреса, и для
+  //    существующего пользователя без прав. Разные тексты
+  //    превратили бы форму входа в способ выяснять, кто
+  //    зарегистрирован на площадке.
+  //
+  // 2. Кто шлёт письмо. Код генерирует GoTrue, а доставляет наша
+  //    Edge Function auth-email-hook через Resend — Send Email Hook
+  //    настроен в Dashboard. Здесь мы только просим код: письмо
+  //    уходит на стороне сервера, и клиент про него ничего не знает.
+  //
+  // ВТОРОЙ ПУТЬ АУТЕНТИФИКАЦИИ НЕ ЗАВОДИТСЯ: сессию, как и при SMS,
+  // выдаёт verifyOtp. Своей таблицы кодов и своего обмена кода на
+  // сессию у площадки нет.
+  async function sendEmailCode(resend = false) {
+    setError(null);
+    setNotice(null);
+
+    if (!agreed) {
+      setError(t('legal_consent_required'));
+      return;
+    }
+    acceptPolicy(null);
+
+    const clean = (resend && sentTo ? sentTo : email).trim().toLowerCase();
+
+    // Грубая проверка формы адреса — до запроса: незачем тратить
+    // квоту на заведомую опечатку.
+    if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(clean)) {
+      setError(t('auth_email_invalid'));
+      return;
+    }
+
+    setBusy(true);
+    try {
+      // Квота и гейт — ДО обращения к Auth. Отказ здесь означает, что
+      // signInWithOtp не вызывается вовсе: код не генерируется, письмо
+      // не уходит, GoTrue не тревожится.
+      const { data: gate, error: gateError } = await supabase.rpc(
+        'rpc_check_email_login',
+        { p_email: clean },
+      );
+
+      if (gateError) throw new Error(gateError.message);
+
+      if (!gate || gate.allowed === false) {
+        // Один текст на все причины отказа: нет такого адреса, нет
+        // прав, исчерпана квота. Различать их — значит подсказывать.
+        setError(t('auth_email_not_allowed'));
+        return;
+      }
+
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email: clean,
+        options: {
+          // Аккаунт обязан существовать: вход по почте открывает уже
+          // заведённый, а не создаёт новый. Это дублирует настройку
+          // «Allow new users to sign up» в Dashboard — второй рубеж на
+          // случай, если её включат обратно.
+          shouldCreateUser: false,
+        },
+      });
+      if (otpError) throw new Error(otpError.message);
+
+      setSentTo(clean);
+      setCodeSent(true);
+      setResendAt(Date.now() + RESEND_DELAY_SEC * 1000);
+      if (resend) setNotice(t('otp_resent'));
+    } catch (e) {
+      setError(humanOtpError(e, t));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Возврат к вводу номера или адреса — «Изменить номер» в приложении.
   function changeNumber() {
     setCodeSent(false);
     setCode('');
@@ -192,11 +282,14 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
     setBusy(true);
 
     try {
-      const { data, error: verifyError } = await supabase.auth.verifyOtp({
-        phone: sentTo,
-        token: code.trim(),
-        type: 'sms',
-      });
+      // Сессию в обоих режимах выдаёт GoTrue одним и тем же
+      // verifyOtp — меняются только поле идентификатора и тип.
+      // Второго пути к сессии у площадки нет намеренно.
+      const { data, error: verifyError } = await supabase.auth.verifyOtp(
+        mode === 'email'
+          ? { email: sentTo, token: code.trim(), type: 'email' }
+          : { phone: sentTo, token: code.trim(), type: 'sms' },
+      );
 
       if (verifyError) throw new Error(verifyError.message);
       if (!data.session) throw new Error(t('otp_err_failed'));
@@ -273,20 +366,70 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
 
         {!codeSent ? (
           <>
+            {/* Переключатель способа входа. Сегмент, а не выпадающий
+                список: вариантов два, и оба должны быть видны сразу.
+                Телефон стоит первым и выбран по умолчанию — это
+                основной путь площадки, а почта заведена для
+                администраторов. */}
+            <div
+              role="tablist"
+              aria-label={t('my_auth_title')}
+              className="flex gap-1 rounded-control bg-surface-muted p-1"
+            >
+              {(['phone', 'email'] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === m}
+                  onClick={() => {
+                    // Смена способа сбрасывает ошибку: сообщение
+                    // «неверный номер» рядом с полем почты
+                    // бессмысленно.
+                    setMode(m);
+                    setError(null);
+                    setNotice(null);
+                  }}
+                  disabled={busy}
+                  className={[
+                    'flex-1 rounded-control px-3 py-1.5 text-caption',
+                    'transition-colors duration-fast',
+                    mode === m
+                      ? 'bg-white font-semibold shadow-sticky'
+                      : 'text-neutral-60 hover:text-neutral-100',
+                  ].join(' ')}
+                >
+                  {t(m === 'phone' ? 'auth_tab_phone' : 'auth_tab_email')}
+                </button>
+              ))}
+            </div>
+
             <div>
               <label className="mb-1 block text-caption text-neutral-60">
-                {t('my_auth_phone')}
+                {t(mode === 'email' ? 'auth_email_label' : 'my_auth_phone')}
               </label>
-              {/* Маска «+381 6X XXX XXX(X)» — та же, что в приложении
-                  (SerbianPhoneFormatter) и в форме подачи. */}
-              <input
-                type="tel"
-                inputMode="tel"
-                value={phone}
-                onChange={(e) => setPhone(formatSerbianPhone(e.target.value))}
-                placeholder="6X XXX XXX"
-                className={fieldClass}
-              />
+              {mode === 'email' ? (
+                <input
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t('auth_email_ph')}
+                  className={fieldClass}
+                />
+              ) : (
+                /* Маска «+381 6X XXX XXX(X)» — та же, что в приложении
+                   (SerbianPhoneFormatter) и в форме подачи. */
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(formatSerbianPhone(e.target.value))}
+                  placeholder="6X XXX XXX"
+                  className={fieldClass}
+                />
+              )}
             </div>
 
             {/* Согласие с условиями и политикой — ОБЯЗАТЕЛЬНО до кнопки
@@ -327,11 +470,19 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
                 шаг, зелёный акцент на сайте закреплён за главным
                 действием (публикация объявления). */}
             <Button
-              onClick={() => sendCode()}
-              // Проверка ПО СУЩЕСТВУ, а не на непустоту: в поле всегда
-              // стоит код страны «+381 », и phone.trim() был бы истинным
-              // ещё до единой введённой цифры.
-              disabled={busy || !isValidSerbianPhone(phone) || !agreed}
+              onClick={() => (mode === 'email' ? sendEmailCode() : sendCode())}
+              // Проверка ПО СУЩЕСТВУ, а не на непустоту: в поле телефона
+              // всегда стоит код страны «+381 », и phone.trim() был бы
+              // истинным ещё до единой введённой цифры. Для почты
+              // достаточно наличия «@» — точную форму проверит
+              // sendEmailCode, а сервер проверит ещё раз.
+              disabled={
+                busy ||
+                !agreed ||
+                (mode === 'email'
+                  ? !email.includes('@')
+                  : !isValidSerbianPhone(phone))
+              }
               variant="info"
               fullWidth
             >
@@ -341,12 +492,13 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
         ) : (
           <>
             <p className="text-caption text-neutral-60">
-              {t('otp_sent_to')} {sentTo}
+              {t(mode === 'email' ? 'auth_email_sent_to' : 'otp_sent_to')}{' '}
+              {sentTo}
             </p>
 
             <div>
               <label className="mb-1 block text-caption text-neutral-60">
-                {t('my_auth_code')}
+                {t(mode === 'email' ? 'auth_email_code' : 'my_auth_code')}
               </label>
               <input
                 type="text"
@@ -370,11 +522,15 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
                 disabled={busy}
                 className="font-semibold text-brand-blue disabled:opacity-40"
               >
-                {t('otp_change_number')}
+                {t(
+                  mode === 'email' ? 'auth_email_change' : 'otp_change_number',
+                )}
               </button>
               <button
                 type="button"
-                onClick={() => sendCode(true)}
+                onClick={() =>
+                  mode === 'email' ? sendEmailCode(true) : sendCode(true)
+                }
                 disabled={busy || resendIn > 0}
                 className="font-semibold text-brand-blue disabled:opacity-40"
               >
