@@ -415,6 +415,46 @@ export type AdminDashboardStats = {
   email_failed: number;
 };
 
+// ------------------------------------------------------------
+// Автосалоны в админке (миграция 0085).
+// ------------------------------------------------------------
+// Карточка салона на главной админки. Все счётчики приходят из
+// admin_dealer_cards() одним запросом — по одному вызову на салон
+// (N+1) экран не собирается.
+export type AdminDealerCard = {
+  user_id: string;
+  company_name: string;
+  logo_url: string | null;
+  company_city: string | null;
+  // Публикует без модерации. Управляется тумблером в окне салона.
+  trusted_seller: boolean;
+  active_count: number;
+  queue_count: number;
+  rejected_count: number;
+};
+
+// Профиль салона для окна. Поля города, контактного лица и даты
+// договора появились в 0085 и у существующих салонов пусты — окно
+// не печатает незаполненные строки заглушками.
+export type AdminDealerProfile = {
+  user_id: string;
+  company_name: string;
+  logo_url: string | null;
+  company_city: string | null;
+  contact_person: string | null;
+  // Два телефона: contact_phone — для связи по объявлениям,
+  // phone — номер входа в аккаунт.
+  contact_phone: string | null;
+  phone: string | null;
+  email: string | null;
+  contract_date: string | null;
+  trusted_seller: boolean;
+  created_at: string;
+  active_count: number;
+  queue_count: number;
+  rejected_count: number;
+};
+
 // Строка очереди модерации для дашборда и списка проверки.
 // Собирается обычным select по cars под админской RLS-политикой
 // cars_select_admin_moderation (0015) — отдельная RPC не нужна.

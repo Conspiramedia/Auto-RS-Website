@@ -20,6 +20,7 @@
 
 import Link from 'next/link';
 
+import AdminBackBar from '@/components/admin/AdminBackBar';
 import Table, { type Column } from '@/components/ui/Table';
 import { getServerClient } from '@/lib/supabaseServer';
 import type { AdminQueueRow } from '@/lib/types';
@@ -120,7 +121,8 @@ export default async function AdminQueuePage() {
   if (error) {
     return (
       <>
-        <h1 className="text-h2 font-bold">Очередь</h1>
+        <AdminBackBar current="Очередь" />
+        <h1 className="mt-2 text-h2 font-bold">Очередь</h1>
         <div className="mt-6 rounded-card border border-error/30 bg-status-error p-4">
           <p className="font-semibold text-error">Очередь не загрузилась</p>
           <p className="mt-1 text-caption text-neutral-70">
@@ -144,7 +146,9 @@ export default async function AdminQueuePage() {
 
   return (
     <>
-      <div className="flex items-baseline justify-between gap-4">
+      <AdminBackBar current="Очередь" />
+
+      <div className="mt-2 flex items-baseline justify-between gap-4">
         <h1 className="text-h2 font-bold">Очередь</h1>
         <p className="shrink-0 text-caption text-neutral-60">
           {total > 0 ? `Ждут проверки: ${total}` : 'Пусто'}

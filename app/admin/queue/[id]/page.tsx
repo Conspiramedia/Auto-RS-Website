@@ -21,8 +21,8 @@
 // ============================================================
 
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
 
+import AdminBackBar from '@/components/admin/AdminBackBar';
 import ModerationActions from '@/components/admin/ModerationActions';
 import ModerationCard from '@/components/admin/ModerationCard';
 import { getServerClient } from '@/lib/supabaseServer';
@@ -62,15 +62,13 @@ export default async function AdminCarPage({
 
   return (
     <>
-      {/* Возврат в очередь. Обычная ссылка, а не router.back():
-          в карточку приходят и из журнала, и по прямому адресу,
-          и «назад» увело бы в непредсказуемое место. */}
-      <Link
-        href="/admin/queue"
-        className="text-caption text-brand-blue hover:underline"
-      >
-        ← Очередь
-      </Link>
+      {/* Возврат на главную плюс крошка в очередь. Обычные ссылки, а
+          не router.back(): в карточку приходят и из журнала, и по
+          прямому адресу, и «назад» увело бы в непредсказуемое место. */}
+      <AdminBackBar
+        parent={{ label: 'Очередь', href: '/admin/queue' }}
+        current="Проверка объявления"
+      />
 
       <div className="mt-4">
         <ModerationCard car={car} />

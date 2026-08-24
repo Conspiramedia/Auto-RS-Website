@@ -198,3 +198,111 @@ export async function setCarStatusByAdmin(
 
   return { ok: true };
 }
+
+// ============================================================
+// ДЕЙСТВИЯ НАД АВТОСАЛОНОМ (0085)
+// ============================================================
+// Те же правила, что и у модерации выше: вся логика в базе, здесь
+// только вызов и сброс кэша. Проверка прав, вида продавца, длины
+// причины и запись в журнал — внутри admin_set_trusted и
+// admin_block_dealer.
+
+// Общий сброс кэша после действия над салоном. Затрагивает три
+// экрана: окно самого салона, главную (там карточка салона со
+// счётчиками и метка «без модерации») и журнал.
+function revalidateDealer(userId: string): void {
+  revalidatePath('/admin');
+  revalidatePath(`/admin/dealers/${userId}`);
+  revalidatePath('/admin/log');
+}
+
+// ------------------------------------------------------------
+// Тумблер «публиковать без модерации».
+// ------------------------------------------------------------
+// Возвращает НОВОЕ состояние флага из ответа сервера, а не то, что
+// предположил интерфейс. Разойдись они — админ видел бы включённый
+// тумблер при выключенном праве, а это ровно та ошибка, которую
+// нельзя допускать в разрешении публиковать без проверки.
+export type TrustedResult =
+  | { ok: true; trusted: boolean }
+  | { ok: false; error: string };
+
+export async function setDealerTrusted(
+  userId: string,
+  trusted: boolean,
+): Promise<TrustedResult> {
+  const supabase = await getServerClient();
+
+  const { data, error } = await supabase.rpc('admin_set_trusted', {
+    p_user_id: userId,
+    p_trusted: trusted,
+  });
+
+  if (error) {
+    if (error.code === '42501') {
+      return {
+        ok: false,
+        error: 'Нет прав. Обновите страницу и войдите заново.',
+      };
+    }
+    if (error.code === 'P0002') {
+      return { ok: false, error: 'Салон больше не существует.' };
+    }
+    return { ok: false, error: 'Не удалось изменить флаг. Попробуйте ещё раз.' };
+  }
+
+  revalidateDealer(userId);
+
+  return { ok: true, trusted: data === true };
+}
+
+// ------------------------------------------------------------
+// Блокировка салона.
+// ------------------------------------------------------------
+// Снимает флаг доверия и убирает активные объявления из выдачи —
+// одной транзакцией на стороне базы. Возвращает число скрытых
+// объявлений: интерфейсу нужно показать, что именно произошло
+// («скрыто 12 объявлений»), а не просто «готово».
+//
+// Обратимо: объявления возвращаются существующей кнопкой на карточке
+// каждого из них (admin_set_car_status, переход archived → active).
+export type BlockResult =
+  | { ok: true; hidden: number }
+  | { ok: false; error: string };
+
+export async function blockDealer(
+  userId: string,
+  reason: string,
+): Promise<BlockResult> {
+  const supabase = await getServerClient();
+
+  const { data, error } = await supabase.rpc('admin_block_dealer', {
+    p_user_id: userId,
+    p_reason: reason.trim(),
+  });
+
+  if (error) {
+    // Короткая причина приходит как check_violation. Диалог не даёт
+    // её отправить, так что сюда она попадает только в обход
+    // интерфейса — честный текст сервера уместнее выдуманного.
+    if (error.code === '23514') {
+      return { ok: false, error: error.message };
+    }
+    if (error.code === '42501') {
+      return {
+        ok: false,
+        error: 'Нет прав. Обновите страницу и войдите заново.',
+      };
+    }
+    if (error.code === 'P0002') {
+      return { ok: false, error: 'Салон больше не существует.' };
+    }
+    return { ok: false, error: 'Не удалось заблокировать. Попробуйте ещё раз.' };
+  }
+
+  revalidateDealer(userId);
+  // Списки объявлений устарели: часть строк сменила статус.
+  revalidatePath('/admin/listings');
+
+  return { ok: true, hidden: Number(data ?? 0) };
+}

@@ -19,6 +19,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import AdminBackBar from '@/components/admin/AdminBackBar';
 import ActionLabel from '@/components/admin/ActionLabel';
 import StatusChip from '@/components/admin/StatusChip';
 import { getServerClient } from '@/lib/supabaseServer';
@@ -77,12 +78,10 @@ export default async function AdminUserPage({
 
   return (
     <>
-      <Link
-        href="/admin/users"
-        className="text-caption text-brand-blue hover:underline"
-      >
-        ← Пользователи
-      </Link>
+      <AdminBackBar
+        parent={{ label: 'Пользователи', href: '/admin/users' }}
+        current={user.full_name ?? 'Профиль'}
+      />
 
       <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <h1 className="text-h3 font-semibold">

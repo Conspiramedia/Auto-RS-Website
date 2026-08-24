@@ -20,6 +20,7 @@ import AdminFilters, {
   CONTROL_CLASS,
   FilterField,
 } from '@/components/admin/AdminFilters';
+import AdminBackBar from '@/components/admin/AdminBackBar';
 import AdminPagination from '@/components/admin/AdminPagination';
 import Table, { type Column } from '@/components/ui/Table';
 import { getServerClient } from '@/lib/supabaseServer';
@@ -145,6 +146,11 @@ type SearchParams = {
   q?: string;
   type?: string;
   offset?: string;
+  // Только зарегистрированные за N дней. Приходит с карточки «Новых за
+  // 7 дней» на главной админки: без фильтра то число не на чем
+  // проверить. Отдельного поля в форме фильтров нет — это не режим
+  // работы со списком, а один конкретный переход.
+  new_days?: string;
 };
 
 export default async function AdminUsersPage({
@@ -157,7 +163,18 @@ export default async function AdminUsersPage({
   const offset = Math.max(Number(sp.offset ?? 0) || 0, 0);
   const query = sp.q || undefined;
   const type = sp.type || undefined;
-  const hasFilters = Boolean(query || type);
+
+  // Число дней разбираем строго: мусор в адресной строке не должен
+  // превращаться в NaN, который RPC получит как null и молча покажет
+  // весь список — админ решил бы, что новых пользователей столько же,
+  // сколько всего.
+  const newDaysRaw = Number(sp.new_days);
+  const newDays =
+    Number.isFinite(newDaysRaw) && newDaysRaw > 0
+      ? Math.floor(newDaysRaw)
+      : undefined;
+
+  const hasFilters = Boolean(query || type || newDays);
 
   const supabase = await getServerClient();
 
@@ -166,6 +183,7 @@ export default async function AdminUsersPage({
     p_type: type ?? null,
     p_limit: PAGE_SIZE,
     p_offset: offset,
+    p_new_days: newDays ?? null,
   });
 
   const rows = error ? [] : ((data ?? []) as AdminUserRow[]);
@@ -173,7 +191,9 @@ export default async function AdminUsersPage({
 
   return (
     <>
-      <div className="flex items-baseline justify-between gap-4">
+      <AdminBackBar current="Пользователи" />
+
+      <div className="mt-2 flex items-baseline justify-between gap-4">
         <h1 className="text-h2 font-bold">Пользователи</h1>
         {!error && (
           <p className="shrink-0 text-caption text-neutral-60">
@@ -203,7 +223,29 @@ export default async function AdminUsersPage({
             ))}
           </select>
         </FilterField>
+
+        {/* Фильтр по дате регистрации выставляется ссылкой с главной и
+            переносится скрытым полем: без него «Сбросить» в форме
+            снимал бы поиск и категорию, но список оставался бы
+            урезанным по дате — и это выглядело бы как поломка. */}
+        {newDays && (
+          <input type="hidden" name="new_days" value={String(newDays)} />
+        )}
       </AdminFilters>
+
+      {/* Явная пометка, что список сокращён по дате. Без неё короткий
+          список читается как «пользователей мало», а не «показаны
+          только новые». Тот же приём, что у фильтра по объекту в
+          журнале. */}
+      {newDays && (
+        <p className="mt-2 text-caption text-neutral-60">
+          Показаны зарегистрированные за последние {newDays}{' '}
+          {newDays === 1 ? 'день' : newDays < 5 ? 'дня' : 'дней'}.{' '}
+          <Link href="/admin/users" className="text-brand-blue hover:underline">
+            Показать всех
+          </Link>
+        </p>
+      )}
 
       {error ? (
         <div className="mt-4 rounded-card border border-error/30 bg-status-error p-4">

@@ -24,6 +24,7 @@
 
 import Link from 'next/link';
 
+import AdminBackBar from '@/components/admin/AdminBackBar';
 import ActionLabel from '@/components/admin/ActionLabel';
 import AdminFilters, {
   CONTROL_CLASS,
@@ -50,6 +51,13 @@ const ACTIONS = [
   { value: 'car_rejected', label: 'Объявление отклонено' },
   { value: 'car_archived', label: 'Снято с публикации' },
   { value: 'car_restored', label: 'Возвращено в выдачу' },
+  // Действия над салонами (0085). Право публиковать без модерации
+  // выдаётся и отзывается людьми, и через месяц нужно уметь ответить,
+  // кто и когда его дал, — поэтому оба перехода отдельными строками,
+  // а не одним «изменён флаг».
+  { value: 'dealer_trusted_on', label: 'Салон: без модерации включено' },
+  { value: 'dealer_trusted_off', label: 'Салон: без модерации выключено' },
+  { value: 'dealer_blocked', label: 'Салон заблокирован' },
 ];
 
 // Подписи полей payload. Неизвестный ключ выводится как есть:
@@ -61,6 +69,11 @@ const PAYLOAD_LABELS: Record<string, string> = {
   brand: 'Марка',
   model: 'Модель',
   user_id: 'Владелец',
+  // Поля действий над салонами (0085).
+  company: 'Салон',
+  from: 'Было',
+  to: 'Стало',
+  hidden: 'Скрыто объявлений',
 };
 
 // Служебные поля, которые не показываем: они дублируют колонки или
@@ -135,7 +148,9 @@ export default async function AdminLogPage({
 
   return (
     <>
-      <div className="flex items-baseline justify-between gap-4">
+      <AdminBackBar current="Журнал" />
+
+      <div className="mt-2 flex items-baseline justify-between gap-4">
         <h1 className="text-h2 font-bold">Журнал</h1>
         {!logResult.error && (
           <p className="shrink-0 text-caption text-neutral-60">

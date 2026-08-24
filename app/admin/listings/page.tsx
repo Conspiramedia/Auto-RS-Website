@@ -20,6 +20,7 @@ import AdminFilters, {
   CONTROL_CLASS,
   FilterField,
 } from '@/components/admin/AdminFilters';
+import AdminBackBar from '@/components/admin/AdminBackBar';
 import AdminPagination from '@/components/admin/AdminPagination';
 import CarStatusButton from '@/components/admin/CarStatusButton';
 import StatusChip from '@/components/admin/StatusChip';
@@ -178,7 +179,9 @@ export default async function AdminListingsPage({
 
   return (
     <>
-      <div className="flex items-baseline justify-between gap-4">
+      <AdminBackBar current="Объявления" />
+
+      <div className="mt-2 flex items-baseline justify-between gap-4">
         <h1 className="text-h2 font-bold">Объявления</h1>
         {!error && (
           <p className="shrink-0 text-caption text-neutral-60">
