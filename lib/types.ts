@@ -461,8 +461,13 @@ export type AdminCarPhoto = {
 // Запись истории модерации по объявлению (jsonb-массив из
 // admin_get_car). payload — свободный jsonb из журнала: у отклонения
 // там reason, у одобрения prev_status.
+//
+// action — строка, а не union из четырёх кодов: перечень открытый.
+// Новое действие в журнале не должно ломать типизацию страниц,
+// которые его просто покажут как есть. Известные коды разбираются в
+// components/admin/ActionLabel.tsx, остальные выводятся сырыми.
 export type AdminModerationEvent = {
-  action: 'car_approved' | 'car_rejected';
+  action: string;
   created_at: string;
   actor_name: string;
   payload: Record<string, unknown> | null;
@@ -503,4 +508,103 @@ export type AdminCar = {
   owner_rejected_count: number;
   photos: AdminCarPhoto[];
   moderation_history: AdminModerationEvent[];
+};
+
+// ------------------------------------------------------------
+// АДМИНКА: объявления, пользователи, журнал (миграция 0080)
+// ------------------------------------------------------------
+
+// Строка списка «Все объявления»: admin_list_cars.
+export type AdminCarRow = {
+  car_id: string;
+  brand: string;
+  model: string;
+  year: number;
+  city: string;
+  status: string;
+  is_for_sale: boolean;
+  is_for_rent: boolean;
+  sale_price: number | null;
+  rent_price_daily: number | null;
+  currency: string;
+  photo_url: string | null;
+  photos_count: number;
+  owner_id: string;
+  owner_name: string | null;
+  created_at: string;
+  updated_at: string;
+  total_count: number;
+};
+
+// Строка списка пользователей: admin_list_users.
+// last_sign_in_at — единственное поле, приходящее из auth.users;
+// наружу оттуда не отдаётся больше ничего (см. комментарий в 0080).
+export type AdminUserRow = {
+  user_id: string;
+  full_name: string | null;
+  email: string;
+  phone: string | null;
+  role: string;
+  is_admin: boolean;
+  verification_status: string;
+  locale: string | null;
+  listings_total: number;
+  listings_active: number;
+  created_at: string;
+  last_sign_in_at: string | null;
+  total_count: number;
+};
+
+// Объявление в карточке пользователя (jsonb из admin_get_user).
+export type AdminUserListing = {
+  car_id: string;
+  brand: string;
+  model: string;
+  year: number;
+  status: string;
+  created_at: string;
+};
+
+// Карточка пользователя: admin_get_user.
+export type AdminUser = {
+  user_id: string;
+  full_name: string | null;
+  email: string;
+  phone: string | null;
+  role: string;
+  // Показывается, но НЕ редактируется: флаг ставится вручную в SQL.
+  is_admin: boolean;
+  verification_status: string;
+  verification_comment: string | null;
+  locale: string | null;
+  avatar_url: string | null;
+  rating_avg: number;
+  reviews_count: number;
+  created_at: string;
+  last_sign_in_at: string | null;
+  listings_total: number;
+  listings_active: number;
+  listings_rejected: number;
+  listings: AdminUserListing[];
+  actions: AdminModerationEvent[];
+};
+
+// Строка журнала: admin_action_list.
+export type AdminLogRow = {
+  id: number;
+  action: string;
+  actor_id: string;
+  actor_name: string;
+  target_table: string | null;
+  target_id: string | null;
+  payload: Record<string, unknown> | null;
+  created_at: string;
+  total_count: number;
+};
+
+// Администратор с числом действий: admin_actors (фильтр журнала).
+export type AdminActor = {
+  actor_id: string;
+  actor_name: string;
+  actions: number;
 };

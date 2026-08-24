@@ -152,3 +152,49 @@ export async function rejectCar(
   revalidateAdmin(carId);
   return { ok: true };
 }
+
+// ------------------------------------------------------------
+// Снять объявление с публикации или вернуть в выдачу.
+// ------------------------------------------------------------
+// admin_set_car_status (0080) в одной транзакции: проверяет права,
+// матрицу переходов (только active↔archived) и длину причины, пишет
+// журнал ПЕРЕД сменой статуса и кладёт уведомление в колокольчик.
+// Письмо о снятии ставит триггер email_on_car_moderation — он
+// отличает снятие администратором от снятия владельцем по свежей
+// записи в журнале.
+//
+// Причина обязательна в обе стороны: снятие опубликованного
+// объявления продавец обнаружит сам и без объяснения воспримет как
+// поломку сайта.
+export async function setCarStatusByAdmin(
+  carId: string,
+  status: 'archived' | 'active',
+  reason: string,
+): Promise<ModerationResult> {
+  const supabase = await getServerClient();
+
+  const { error } = await supabase.rpc('admin_set_car_status', {
+    p_car_id: carId,
+    p_status: status,
+    p_reason: reason.trim(),
+  });
+
+  if (error) {
+    // Причина короче 10 символов приходит тем же check_violation, что
+    // и запрещённый переход, — различаем по тексту. Диалог не даёт
+    // отправить короткую, так что сюда она попадает только в обход
+    // интерфейса, и честный текст сервера уместнее выдуманного.
+    if (error.code === '23514' && error.message.includes('Причина')) {
+      return { ok: false, error: error.message };
+    }
+    return humanError(error.code, error.message);
+  }
+
+  revalidateAdmin(carId);
+  // Списки объявлений и журнал тоже устарели: там изменились и
+  // статус, и число записей.
+  revalidatePath('/admin/listings');
+  revalidatePath('/admin/log');
+
+  return { ok: true };
+}

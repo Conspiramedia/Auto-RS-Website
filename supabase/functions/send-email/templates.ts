@@ -121,6 +121,16 @@ const DICT = {
     rejected_hint:
       'Ispravite oglas u svom nalogu i pošaljite ga ponovo na proveru.',
 
+    // Снято администратором. Отдельно от «не одобрено»: там оглас
+    // никогда не публиковался, а здесь он был виден покупателям и
+    // исчез — человек это заметит и заслуживает объяснения.
+    archived_subject: 'Oglas je uklonjen sa sajta',
+    archived_title: 'Oglas je uklonjen sa sajta',
+    archived_lead:
+      'Vaš oglas je uklonjen iz pretrage odlukom administracije.',
+    archived_hint:
+      'Ako smatrate da je došlo do greške, odgovorite na ovu poruku ili nam pišite preko kontakt forme.',
+
     // Копия обращения.
     contact_subject: 'Primili smo vašu poruku',
     contact_title: 'Primili smo vašu poruku',
@@ -159,6 +169,13 @@ const DICT = {
     rejected_no_reason: 'Причина не указана.',
     rejected_hint:
       'Исправьте объявление в личном кабинете и отправьте его на проверку заново.',
+
+    archived_subject: 'Объявление снято с публикации',
+    archived_title: 'Объявление снято с публикации',
+    archived_lead:
+      'Ваше объявление убрано из поиска решением администрации.',
+    archived_hint:
+      'Если вы считаете, что произошла ошибка, ответьте на это письмо или напишите нам через форму обратной связи.',
 
     contact_subject: 'Мы получили ваше обращение',
     contact_title: 'Мы получили ваше обращение',
@@ -435,6 +452,65 @@ function carRejected(
   };
 }
 
+// ---------- 2b) Объявление снято администратором ----------
+// Отдельный шаблон, а не переиспользование carRejected. Разница не в
+// формулировке, а в положении дел: отклонённое объявление никогда не
+// публиковалось и правится дальше по той же дороге, а снятое БЫЛО
+// видно покупателям и исчезло. Второе человек замечает сам и,
+// не получив письма, идёт в поддержку выяснять, что сломалось.
+//
+// Поэтому здесь нет кнопки «исправьте и отправьте заново»: снятие —
+// решение администрации, и правильный следующий шаг — не повторная
+// подача, а разговор с площадкой. Ссылка ведёт в кабинет, где
+// объявление лежит в архиве.
+function carArchivedByAdmin(
+  locale: Locale,
+  payload: Payload,
+  siteUrl: string,
+): RenderedEmail {
+  const title = carTitle(payload);
+  const reason = str(payload, 'reason');
+  const subject = `${t(locale, 'archived_subject')}: ${title}`;
+
+  const prefix = locale === 'ru' ? '/ru' : '';
+  const myUrl = `${siteUrl}${prefix}/my`;
+
+  const bodyHtml = [
+    h1(t(locale, 'archived_title')),
+    p(esc(t(locale, 'archived_lead'))),
+    panel(
+      [
+        `<strong style="font-size:16px;">${esc(title)}</strong><br>`,
+        `<span style="color:${COLOR.textMuted};">${esc(t(locale, 'rejected_reason_label'))}:</span> `,
+        reason
+          ? escMultiline(reason)
+          : `<em style="color:${COLOR.textMuted};">${esc(t(locale, 'rejected_no_reason'))}</em>`,
+      ].join(''),
+      COLOR.red,
+    ),
+    p(esc(t(locale, 'archived_hint')), true),
+    button(t(locale, 'btn_open_my'), myUrl, COLOR.primary),
+  ].join('\n');
+
+  const text = [
+    t(locale, 'archived_title'),
+    '',
+    t(locale, 'archived_lead'),
+    '',
+    title,
+    `${t(locale, 'rejected_reason_label')}: ${reason || t(locale, 'rejected_no_reason')}`,
+    '',
+    t(locale, 'archived_hint'),
+    myUrl,
+  ].join('\n');
+
+  return {
+    subject,
+    html: layout({ locale, title: subject, bodyHtml, siteUrl, accent: COLOR.red }),
+    text,
+  };
+}
+
 // ---------- 3) Копия обращения автору ----------
 function contactReceived(
   locale: Locale,
@@ -608,6 +684,8 @@ export function renderEmail(
       return carApproved(locale, payload, siteUrl);
     case 'car_rejected':
       return carRejected(locale, payload, siteUrl);
+    case 'car_archived_by_admin':
+      return carArchivedByAdmin(locale, payload, siteUrl);
     case 'contact_received':
       return contactReceived(locale, payload, siteUrl);
     case 'contact_admin':
