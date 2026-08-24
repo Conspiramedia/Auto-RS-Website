@@ -351,9 +351,11 @@ id = auth.uid()` под сессией этого пользователя).
       2. задать секреты функции:
          `supabase secrets set RESEND_API_KEY=re_…`,
          `supabase secrets set MAIL_FROM=noreply@rsauto.rs`,
-         необязательно `MAIL_REPLY_TO=support@rsauto.rs`;
-      3. задать адрес служебного ящика в базе:
-         `select public.set_admin_email('support@rsauto.rs');`
+         необязательно `MAIL_REPLY_TO=info.rsauto.rs@gmail.com`;
+      3. адрес служебного ящика в базе уже задан миграцией `0084`
+         (`info.rsauto.rs@gmail.com` — тот же, что `OPERATOR.email`);
+         сменить можно так:
+         `select public.set_admin_email('info.rsauto.rs@gmail.com');`
       4. задеплоить функцию и повесить расписание `*/5 * * * *`
          (см. `supabase/functions/README.md`).
 

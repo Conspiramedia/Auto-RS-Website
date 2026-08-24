@@ -63,10 +63,16 @@ export const OPERATOR: OperatorDetails = {
   // выводится ни на /contact, ни в разделах «Контакты» документов
   // (см. OPERATOR_VERIFIED ниже).
   address: '',
-  email: 'info@rsauto.rs',
+  // Контактный ящик проекта для ВХОДЯЩИХ обращений. Он же печатается
+  // в разделах «Контакты» обоих документов и выводится ссылкой в
+  // подвале и на /contact.
+  //
+  // Не путать с MAIL_FROM (noreply@rsauto.rs) — это ИСХОДЯЩИЙ адрес
+  // транзакционных писем через Resend, другая роль: на него не пишут,
+  // и его смена к этой строке отношения не имеет.
+  email: 'info.rsauto.rs@gmail.com',
   // ТЕЛЕФОН ПОДДЕРЖКИ НЕ ЗАВОДИТСЯ. Решение владельца площадки:
-  // поддержка работает только по электронной почте (support@rsauto.rs
-  // для обращений, info@rsauto.rs как адрес оператора в документах).
+  // поддержка работает только по электронной почте — по адресу выше.
   // Поле оставлено в типе намеренно — вся разметка уже проверяет его
   // на непустоту, и удаление поля потребовало бы правок в четырёх
   // местах ради строки, которая всё равно останется пустой.
@@ -96,6 +102,14 @@ export const POLICY_UPDATED: Record<Locale, string> = {
 export type LegalSection = {
   heading?: string;
   paragraphs: string[];
+  // Контактный адрес раздела «Контакты». Вынесен из paragraphs
+  // отдельным полем, потому что абзацы печатаются как обычный текст,
+  // а почта обязана быть кликабельной ссылкой mailto: — иначе с
+  // телефона по ней нельзя написать, а именно с телефона документ и
+  // читают. Хранить здесь HTML-строку было бы хуже: разметка внутри
+  // юридического текста рано или поздно попадёт на страницу как есть.
+  // Подпись к адресу локализуется (contact_email), сам адрес — нет.
+  email?: string;
 };
 
 // ------------------------------------------------------------
@@ -190,7 +204,6 @@ const PRIVACY_RU: LegalSection[] = [
     paragraphs: [
       'По любым вопросам, связанным с обработкой, изменением или удалением персональных данных, вы можете обратиться к нам через страницу «Контакты» на сайте, через форму обратной связи или по электронной почте.',
       `Оператор: ${OPERATOR.legalName}.`,
-      `Электронная почта: ${OPERATOR.email}.`,
       // Регистрационные данные печатаются только когда заполнены:
       // строка «MB: [номер APR]» в публичном документе хуже её отсутствия.
       ...(OPERATOR_VERIFIED
@@ -200,6 +213,7 @@ const PRIVACY_RU: LegalSection[] = [
           ]
         : []),
     ],
+    email: OPERATOR.email,
   },
 ];
 
@@ -292,7 +306,6 @@ const PRIVACY_SR: LegalSection[] = [
     paragraphs: [
       'Za sva pitanja u vezi sa obradom, izmenom ili brisanjem ličnih podataka možete nam se obratiti putem stranice „Kontakt“ na sajtu, obrasca za kontakt ili e-poštom.',
       `Rukovalac: ${OPERATOR.legalName}.`,
-      `E-pošta: ${OPERATOR.email}.`,
       ...(OPERATOR_VERIFIED
         ? [
             `Matični broj (MB): ${OPERATOR.registrationNumber}. PIB: ${OPERATOR.taxNumber}.`,
@@ -300,6 +313,7 @@ const PRIVACY_SR: LegalSection[] = [
           ]
         : []),
     ],
+    email: OPERATOR.email,
   },
 ];
 
@@ -379,7 +393,6 @@ const TERMS_RU: LegalSection[] = [
     paragraphs: [
       'По вопросам, связанным с работой Приложения и настоящими Условиями, обращайтесь через страницу «Контакты» на сайте или по электронной почте.',
       `Оператор: ${OPERATOR.legalName}.`,
-      `Электронная почта: ${OPERATOR.email}.`,
       ...(OPERATOR_VERIFIED
         ? [
             `Матичный номер (MB): ${OPERATOR.registrationNumber}. ПИБ: ${OPERATOR.taxNumber}.`,
@@ -387,6 +400,7 @@ const TERMS_RU: LegalSection[] = [
           ]
         : []),
     ],
+    email: OPERATOR.email,
   },
 ];
 
@@ -463,7 +477,6 @@ const TERMS_SR: LegalSection[] = [
     paragraphs: [
       'Za pitanja u vezi sa radom Aplikacije i ovim Uslovima obratite se putem stranice „Kontakt“ na sajtu ili e-poštom.',
       `Rukovalac: ${OPERATOR.legalName}.`,
-      `E-pošta: ${OPERATOR.email}.`,
       ...(OPERATOR_VERIFIED
         ? [
             `Matični broj (MB): ${OPERATOR.registrationNumber}. PIB: ${OPERATOR.taxNumber}.`,
@@ -471,6 +484,7 @@ const TERMS_SR: LegalSection[] = [
           ]
         : []),
     ],
+    email: OPERATOR.email,
   },
 ];
 

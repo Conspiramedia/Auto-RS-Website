@@ -59,6 +59,22 @@ export default function LegalPageView({
                     {p}
                   </p>
                 ))}
+
+                {/* Почта — отдельным абзацем ссылкой, а не строкой в
+                    paragraphs: документ читают преимущественно с
+                    телефона, и по неактивному адресу оттуда написать
+                    нельзя. Подпись локализуется, сам адрес — нет. */}
+                {section.email && (
+                  <p className="leading-relaxed text-neutral-75">
+                    {t('contact_email')}:{' '}
+                    <a
+                      href={`mailto:${section.email}`}
+                      className="text-brand-blue hover:underline"
+                    >
+                      {section.email}
+                    </a>
+                  </p>
+                )}
               </div>
             </section>
           ))}

@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { brand } from '@/lib/brand';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
+import { OPERATOR } from '@/lib/legal';
 
 type Props = {
   locale: Locale;
@@ -130,6 +131,17 @@ export default function SiteFooter({
           >
             {t('legal_privacy_title')}
           </Link>
+
+          {/* Контактная почта прямо в подвале: посетителю, которому
+              нужно просто написать, не приходится сначала открывать
+              /contact и искать адрес там. Ссылка mailto:, адрес не
+              локализуется — он один для обеих локалей. */}
+          <a
+            href={`mailto:${OPERATOR.email}`}
+            className="hover:underline"
+          >
+            {OPERATOR.email}
+          </a>
         </div>
 
         <div className="mt-6 text-small text-neutral-60">

@@ -67,10 +67,10 @@ supabase secrets set MAIL_FROM=noreply@rsauto.rs
 Необязательные. `MAIL_FROM_NAME` — отображаемое имя отправителя (по
 умолчанию «RS Auto»); `MAIL_REPLY_TO` — адрес для ответов: письма уходят
 с `noreply@`, но на служебные письма о заявках салонов отвечать удобно
-на почту поддержки:
+на контактный ящик проекта:
 
 ```bash
-supabase secrets set MAIL_REPLY_TO=support@rsauto.rs
+supabase secrets set MAIL_REPLY_TO=info.rsauto.rs@gmail.com
 ```
 
 `SITE_BASE_URL` задавать не нужно: если секрета нет, функция берёт адрес
@@ -79,10 +79,13 @@ canonical сайта и `site_url` объявлений. Это гарантир
 письме совпадает с адресом в выдаче.
 
 Адрес служебного ящика, на который приходят заявки салонов и обращения,
-живёт не в секретах, а в базе — его читают SQL-триггеры:
+живёт не в секретах, а в базе — его читают SQL-триггеры. Значение
+задано миграцией `0084` и совпадает с `OPERATOR.email` (lib/legal.ts):
+адрес, который видит пользователь, и адрес доставки обязаны быть одним
+и тем же. Сменить:
 
 ```sql
-select public.set_admin_email('support@rsauto.rs');
+select public.set_admin_email('info.rsauto.rs@gmail.com');
 ```
 
 Проверить, что секреты на месте (значения не показываются, только имена):
