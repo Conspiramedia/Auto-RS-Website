@@ -25,12 +25,35 @@ import { buildOrganizationJsonLd, buildWebSiteJsonLd } from '@/lib/seo';
 export default async function HomeView({ locale }: { locale: Locale }) {
   const t = getT(locale);
 
+  // ------------------------------------------------------------
+  // ГЛАВНАЯ НЕ ПАДАЕТ ИЗ-ЗА ВИТРИН.
+  // ------------------------------------------------------------
+  // fetchCatalog бросает исключение при недоступной базе — и это
+  // верно для /cars, где без объявлений показывать нечего. Но главная
+  // устроена иначе: витрины свежих объявлений и аренды здесь лишь
+  // ОДИН из блоков, рядом с оффером продавцу, списком марок и
+  // навигацией. Ронять всю страницу (а вместе с ней и сборку сайта,
+  // ведь главная генерируется статически) из-за пустого блока —
+  // несоразмерно.
+  //
+  // Пустая витрина отрисуется как отсутствие блока: разметка ниже уже
+  // проверяет длину массива, потому что новый сайт с нулём объявлений
+  // — штатное состояние на старте.
+  const emptyFeed = {
+    cars: [],
+    total: 0,
+    page: 1,
+    perPage: 0,
+    totalPages: 1,
+    seed: null,
+  };
+
   const [fresh, rent, brands, stats] = await Promise.all([
     // Дефолтная сортировка 'fresh' — новые объявления первыми.
-    fetchCatalog({ perPage: 8 }),
+    fetchCatalog({ perPage: 8 }).catch(() => emptyFeed),
     // Витрина аренды на главной: раздел новый, и без неё пользователь
     // о нём не узнает.
-    fetchCatalog({ perPage: 4, listingType: 'rent' }),
+    fetchCatalog({ perPage: 4, listingType: 'rent' }).catch(() => emptyFeed),
     fetchSiteBrands(),
     fetchSiteStats(),
   ]);

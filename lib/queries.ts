@@ -200,6 +200,24 @@ export async function fetchSimilarCars(
 // ------------------------------------------------------------
 // Справочники для SEO-страниц и фильтров (миграция 0052).
 // ------------------------------------------------------------
+// ОШИБКУ ГЛУШИМ, А НЕ БРОСАЕМ — в отличие от каталога и карточки выше.
+// Причина в том, ГДЕ эти две функции вызываются: из
+// generateStaticParams на страницах марок и моделей, то есть во время
+// СБОРКИ. Брошенное отсюда исключение роняет не страницу, а весь
+// `next build` целиком — с сообщением «Failed to collect page data»,
+// по которому причина не читается.
+//
+// Так и происходило: сборка без доступа к базе (недоступный Supabase
+// во время деплоя, локальный запуск без поднятого стека) падала
+// полностью, хотя единственное последствие недоступности справочника —
+// что SEO-страницы марок не будут предгенерированы. Они и так
+// пересобираются по расписанию (revalidate) и отдаются на лету при
+// первом обращении, поэтому пустой список на этапе сборки —
+// восстановимая ситуация, а несобравшийся сайт — нет.
+//
+// Каталог и карточка объявления ошибку по-прежнему бросают: там она
+// означает, что человеку нечего показать, и молчаливая пустая витрина
+// хуже честной страницы ошибки.
 export async function fetchSiteBrands(
   listingType: ListingType = 'sale',
 ): Promise<SiteBrand[]> {
@@ -207,7 +225,10 @@ export async function fetchSiteBrands(
     p_listing_type: listingType,
   });
   if (error) {
-    throw new Error(`Ошибка загрузки марок: ${error.message}`);
+    // Пишем в лог сборки: молчаливый пустой список означал бы, что
+    // отсутствие SEO-страниц марок осталось незамеченным.
+    console.warn(`[queries] Не удалось загрузить марки: ${error.message}`);
+    return [];
   }
   return (data ?? []) as SiteBrand[];
 }
@@ -221,7 +242,12 @@ export async function fetchSiteModels(
     p_listing_type: listingType,
   });
   if (error) {
-    throw new Error(`Ошибка загрузки моделей: ${error.message}`);
+    // См. пояснение к fetchSiteBrands: вызывается из
+    // generateStaticParams, и исключение здесь роняет сборку.
+    console.warn(
+      `[queries] Не удалось загрузить модели марки ${brand}: ${error.message}`,
+    );
+    return [];
   }
   return (data ?? []) as SiteModel[];
 }
@@ -247,6 +273,11 @@ export async function fetchCatalogModels(
   return (data ?? []) as { id: string; name: string }[];
 }
 
+// Города для фильтра. Ошибку глушим по той же причине, что у марок:
+// список наполняет ВЫПАДАЮЩИЙ СПИСОК фильтра на страницах, которые
+// генерируются при сборке. Без него фильтр по городу останется пустым,
+// но каталог продолжит работать — а брошенное исключение уронило бы
+// сборку целиком.
 export async function fetchSiteCities(
   listingType: ListingType = 'sale',
 ): Promise<SiteCity[]> {
@@ -254,17 +285,25 @@ export async function fetchSiteCities(
     p_listing_type: listingType,
   });
   if (error) {
-    throw new Error(`Ошибка загрузки городов: ${error.message}`);
+    console.warn(`[queries] Не удалось загрузить города: ${error.message}`);
+    return [];
   }
   return (data ?? []) as SiteCity[];
 }
 
+// Счётчики для главной («N объявлений, M марок»). Запасной вариант с
+// нулями уже был предусмотрен ниже на случай пустого ответа — теперь
+// он же используется при ошибке.
+//
+// Нули на главной честнее упавшей сборки: цифры в этом блоке
+// иллюстративные, и их отсутствие не мешает ни поиску, ни подаче
+// объявления.
 export async function fetchSiteStats(): Promise<SiteStats> {
   const { data, error } = await supabase.rpc('get_site_stats');
   if (error) {
-    throw new Error(`Ошибка загрузки статистики: ${error.message}`);
+    console.warn(`[queries] Не удалось загрузить статистику: ${error.message}`);
   }
-  const rows = (data ?? []) as SiteStats[];
+  const rows = (error ? [] : (data ?? [])) as SiteStats[];
   return (
     rows[0] ?? {
       cars_total: 0,
