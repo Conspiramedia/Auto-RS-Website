@@ -573,9 +573,21 @@ export default function FilterPanel({
                 <input type="hidden" name="sort" value={filters.sort} />
               )}
 
-              <Button type="submit" fullWidth>
-                {t('catalog_apply')}
-              </Button>
+              {/* Зазор под кнопкой задаётся ЗДЕСЬ, а не отступом формы.
+                  Кнопка — последний элемент прокручиваемого контейнера
+                  (max-h-[90vh] + overflow-y-auto), а его нижний padding
+                  в конце прокрутки не даёт гарантированного просвета:
+                  длинная форма /cars упирала кнопку в край шторки, а
+                  короткая /rent (без сегмента типа) помещалась целиком
+                  и зазор сохраняла. Разница зависела от длины формы.
+                  Собственный padding-bottom принадлежит содержимому и
+                  прокручивается вместе с ним — просвет одинаков и при
+                  скролле, и без него. */}
+              <div className="pb-2">
+                <Button type="submit" fullWidth>
+                  {t('catalog_apply')}
+                </Button>
+              </div>
             </form>
           </div>
         </div>
