@@ -27,7 +27,7 @@ import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
 import Logo from '@/components/ui/Logo';
 import type { Locale } from '@/lib/i18n';
-import { getT, localeHref } from '@/lib/i18n';
+import { getT, localeAwareHref } from '@/lib/i18n';
 import { getCurrentUser } from '@/lib/supabaseServer';
 
 type Props = {
@@ -59,7 +59,7 @@ export default async function LoginPageView({
   const target = safeRedirect(redirectParam);
 
   const user = await getCurrentUser();
-  if (user) redirect(localeHref(locale, target));
+  if (user) redirect(localeAwareHref(locale, target));
 
   return (
     <>

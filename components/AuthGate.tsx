@@ -49,7 +49,7 @@ import {
   serbianPhoneToE164,
 } from '@/lib/inputFormat';
 import type { Locale } from '@/lib/i18n';
-import { getT, localeHref } from '@/lib/i18n';
+import { getT, localeAwareHref, localeHref } from '@/lib/i18n';
 import { RESEND_DELAY_SEC, humanOtpError } from '@/lib/otp';
 import { getBrowserClient } from '@/lib/supabaseClient';
 
@@ -217,7 +217,12 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
         // Отдельная страница входа: уводим туда, откуда пришёл
         // пользователь. replace, а не push: возврат «назад» на форму
         // входа после успешного входа — тупик.
-        router.replace(localeHref(locale, redirectTo));
+        //
+        // localeAwareHref, а не localeHref: у админки нет языковых
+        // зеркал, и модератора с русской cookie обычный localeHref
+        // увёл бы на несуществующий /ru/admin сразу после верно
+        // введённого кода из SMS.
+        router.replace(localeAwareHref(locale, redirectTo));
       } else {
         // Форма вместо содержимого кабинета: просим сервер
         // перерисовать страницу уже от имени вошедшего.
