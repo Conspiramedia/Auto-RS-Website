@@ -78,6 +78,11 @@ export default async function BrandPageView({
   // что видит посетитель. Канонический адрес страницы остаётся
   // сербским, но задаётся он через alternates (lib/seo), а не здесь.
   const breadcrumb = buildBreadcrumbJsonLd([
+    // Цепочка начинается с главной: Google считает полной ту, что
+    // ведёт от корня сайта. Ссылка на главную в интерфейсе есть —
+    // это логотип в шапке, поэтому требование «разметка повторяет
+    // видимую навигацию» соблюдено.
+    { name: t('nav_home'), url: `${siteBaseUrl}${localeHref(locale, '/')}` },
     {
       name: mode === 'rent' ? t('rent_title') : t('nav_catalog'),
       url: `${siteBaseUrl}${localeHref(locale, root)}`,

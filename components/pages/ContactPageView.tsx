@@ -20,7 +20,7 @@ import SiteHeader from '@/components/SiteHeader';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { OPERATOR, OPERATOR_VERIFIED } from '@/lib/legal';
-import { buildPageJsonLd } from '@/lib/seo';
+import { buildOrganizationJsonLd, buildPageJsonLd } from '@/lib/seo';
 
 export default function ContactPageView({ locale }: { locale: Locale }) {
   const t = getT(locale);
@@ -31,7 +31,7 @@ export default function ContactPageView({ locale }: { locale: Locale }) {
   //
   // Телефон и адрес подставляются, только если заполнены в lib/legal:
   // пустая строка в разметке означала бы, что контакта не существует.
-  const jsonLd = {
+  const pageJsonLd = {
     ...buildPageJsonLd({
       type: 'ContactPage',
       locale,
@@ -49,11 +49,30 @@ export default function ContactPageView({ locale }: { locale: Locale }) {
     },
   };
 
+  // Organization рядом с ContactPage. Раньше её здесь не было, и
+  // получалось противоречие: страница контактов — главный машиночитаемый
+  // источник реквизитов на сайте, но само юридическое лицо с логотипом
+  // и наименованием разметка называла только на главной и на /about.
+  // Поисковик, пришедший на /contact по запросу «RS Auto контакти»,
+  // видел контактные данные, не связанные ни с какой организацией.
+  //
+  // Дубля с /about не возникает: Organization описывает одну и ту же
+  // сущность с одинаковым url — так поисковик и склеивает упоминания в
+  // одну карточку компании, а не плодит несколько.
+  const orgJsonLd = buildOrganizationJsonLd({
+    legalName: OPERATOR.legalName,
+    email: OPERATOR.email,
+    phone: OPERATOR.phone || undefined,
+    address: OPERATOR_VERIFIED ? OPERATOR.address : undefined,
+  });
+
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([pageJsonLd, orgJsonLd]),
+        }}
       />
 
       <SiteHeader locale={locale} pathname="/contact" />

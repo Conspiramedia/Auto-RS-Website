@@ -77,6 +77,8 @@ export default async function DealerPageView({
     : null;
 
   const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    // Корень цепочки — главная (см. пояснение в BrandPageView).
+    { name: t('nav_home'), url: `${siteBaseUrl}${localeHref(locale, '/')}` },
     {
       name: t('nav_catalog'),
       url: `${siteBaseUrl}${localeHref(locale, '/cars')}`,

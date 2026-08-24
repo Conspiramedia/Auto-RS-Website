@@ -111,6 +111,8 @@ export default async function CarPageView({
   // должна соответствовать тому, что видит посетитель.
   // Последний элемент — сама страница, поэтому его url канонический.
   const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    // Корень цепочки — главная (см. пояснение в BrandPageView).
+    { name: t('nav_home'), url: `${siteBaseUrl}${localeHref(locale, '/')}` },
     {
       name: catalogLabel,
       url: `${siteBaseUrl}${localeHref(locale, catalogPath)}`,

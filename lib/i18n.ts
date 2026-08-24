@@ -147,6 +147,13 @@ export const dict = {
     //     как разные основания деления: в аренде тоже автомобили.
     nav_catalog: 'Automobili',
     nav_catalog_menu: 'Prodaja',
+    // Корень хлебных крошек. Используется ТОЛЬКО в JSON-LD
+    // BreadcrumbList: в видимой навигации ссылка на главную — это
+    // логотип в шапке, и дублировать её текстом незачем. Google
+    // считает цепочку от главной полной, а начатую с раздела —
+    // обрезанной: без первого звена он не понимает, что /cars/bmw
+    // лежит внутри сайта, а не является отдельной точкой входа.
+    nav_home: 'Početna',
     // Пункт меню и подпись витрины /all — смешанной выдачи «продажа
     // и аренда вместе». В сегменте типа то же состояние называется
     // короче (filter_type_all, «Sve»): там рядом стоят «Prodaja» и
@@ -873,8 +880,12 @@ export const dict = {
       'Postavite oglase vašeg autosalona na RS Auto. Prva 3 meseca besplatno.',
     meta_app_desc:
       'Aplikacija RS Auto: poruke sa prodavcem, obaveštenja o novim oglasima i sniženjima cena.',
+    // Телефон в описании НЕ упоминается: поддержка работает только по
+    // почте (OPERATOR.phone пуст — см. lib/legal). Обещание в сниппете
+    // того, чего на странице нет, — прямой повод для отказа посетителя,
+    // а для поисковика расхождение сниппета с содержимым страницы.
     meta_contact_desc:
-      'Kontaktirajte RS Auto: e-pošta, telefon podrške i obrazac za poruku.',
+      'Kontaktirajte RS Auto: e-pošta podrške i obrazac za poruku. Odgovaramo radnim danima.',
     meta_terms_desc:
       'Uslovi korišćenja platforme RS Auto — oglasi za prodaju i izdavanje automobila u Srbiji.',
     meta_privacy_desc:
@@ -892,6 +903,8 @@ export const dict = {
     // nav_catalog_menu — пункт меню в паре с «Арендой».
     nav_catalog: 'Автомобили',
     nav_catalog_menu: 'Продажа',
+    // См. комментарий в сербском словаре: корень крошек в JSON-LD.
+    nav_home: 'Главная',
     // См. комментарий в сербском словаре.
     nav_all_cars: 'Все авто',
     nav_sell: 'Продать авто',
@@ -1582,8 +1595,9 @@ export const dict = {
       'Размещайте объявления вашего автосалона на RS Auto. Первые 3 месяца бесплатно.',
     meta_app_desc:
       'Приложение RS Auto: переписка с продавцом, уведомления о новых объявлениях и снижении цен.',
+    // См. комментарий в сербском словаре: телефона поддержки нет.
     meta_contact_desc:
-      'Свяжитесь с RS Auto: электронная почта, телефон поддержки и форма обращения.',
+      'Свяжитесь с RS Auto: электронная почта поддержки и форма обращения. Отвечаем по будням.',
     meta_terms_desc:
       'Условия использования платформы RS Auto — объявления о продаже и аренде автомобилей в Сербии.',
     meta_privacy_desc:

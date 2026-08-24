@@ -82,6 +82,8 @@ export default async function ModelPageView({
   // Адреса крошек — через localeHref: разметка обязана указывать на то
   // же зеркало, что видимые ссылки ниже (подробнее — в BrandPageView).
   const breadcrumb = buildBreadcrumbJsonLd([
+    // Корень цепочки — главная (см. пояснение в BrandPageView).
+    { name: t('nav_home'), url: `${siteBaseUrl}${localeHref(locale, '/')}` },
     {
       name: mode === 'rent' ? t('rent_title') : t('nav_catalog'),
       url: `${siteBaseUrl}${localeHref(locale, root)}`,
