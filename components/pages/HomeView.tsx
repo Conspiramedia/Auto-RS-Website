@@ -90,10 +90,17 @@ export default async function HomeView({ locale }: { locale: Locale }) {
               {/* Герой лежит на серой подложке, поэтому вторичная кнопка
                   здесь белая, а не прозрачная: на bg-surface-subtle
                   контурная кнопка без заливки теряется. */}
+              {/* «Все автомобили» ведут на /all — смешанную витрину, а не
+                  на /cars: там продажа, и подпись обещала бы больше, чем
+                  показывает страница. Обе ссылки с этой подписью
+                  (здесь и над свежими объявлениями) идут в одно место.
+                  rel=nofollow — витрина служебная и закрыта от
+                  индексации, краулеру идти по ссылке незачем. */}
               <Button
                 variant="secondary"
                 size="xl"
-                href={localeHref(locale, '/cars')}
+                href={localeHref(locale, '/all')}
+                rel="nofollow"
                 className="sm:flex-1"
                 fullWidth
               >
@@ -128,8 +135,11 @@ export default async function HomeView({ locale }: { locale: Locale }) {
           <section className="mx-auto max-w-6xl px-4 py-10">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-h3 font-semibold">{t('home_fresh')}</h2>
+              {/* Тот же адрес, что у кнопки в герое: одна подпись —
+                  одно назначение. */}
               <Link
-                href={localeHref(locale, '/cars')}
+                href={localeHref(locale, '/all')}
+                rel="nofollow"
                 className="text-caption font-semibold text-brand-primary hover:underline"
               >
                 {t('home_all_cars')} →
