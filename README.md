@@ -301,12 +301,15 @@ id = auth.uid()` под сессией этого пользователя).
       Все демо-записи принадлежат одному служебному продавцу
       `00000000-0000-4000-a000-0000000000de` и помечены `[DEMO]` в описании,
       поэтому удаляются одним запросом, не задевая реальные объявления.
-- [x] **Домен.** Боевой адрес — `https://rsauto-rs.vercel.app`. Задан в
-      `NEXT_PUBLIC_SITE_BASE_URL` и на сервере (`app_settings.site_base_url`),
-      обе стороны проверены: canonical, OG, hreflang, sitemap и `site_url`
-      из БД совпадают. При переезде на собственный домен менять в двух
-      местах: переменную окружения на Vercel **и**
-      `select public.set_site_base_url('https://новый-домен');`
+- [x] **Домен.** Боевой адрес — `https://rsauto.rs`. Домен куплен, URL
+      унифицирован: на фронтенде единственный источник — `siteBaseUrl`
+      из [`lib/supabase.ts`](lib/supabase.ts) (читает
+      `NEXT_PUBLIC_SITE_BASE_URL`, запасное значение — тот же боевой
+      домен), на сервере — `app_settings.site_base_url` (миграция
+      `0083`). Временных адресов `*.vercel.app` в коде не осталось.
+      canonical, OG, hreflang, sitemap и `site_url` из БД совпадают.
+      При переезде менять в двух местах: переменную окружения
+      на Vercel **и** `select public.set_site_base_url('https://новый-домен');`
 - [ ] **Deep links.** В `public/.well-known/` заменить плейсхолдеры —
       **значения доступны только владельцу, из репозитория их взять негде:**
       - `TEAM_ID` в `apple-app-site-association` — Apple Developer Portal →
@@ -387,7 +390,7 @@ id = auth.uid()` под сессией этого пользователя).
       сигнатуры: без него в схеме останутся две перегрузки.
 - [ ] **Заголовки безопасности: проверка на проде.** Заданы в
       `next.config.mjs` (`headers()`), проверяются только на задеплоенном
-      домене: `https://securityheaders.com/?q=rsauto-rs.vercel.app`.
+      домене: `https://securityheaders.com/?q=rsauto.rs`.
       Цель — A+. HSTS с `preload` требует, чтобы домен отдавался
       исключительно по HTTPS.
 
@@ -477,7 +480,7 @@ id = auth.uid()` под сессией этого пользователя).
 
 ## Деплой (Vercel)
 
-Боевой адрес: **https://rsauto-rs.vercel.app**
+Боевой адрес: **https://rsauto.rs**
 
 Автодеплой при пушах **отключён** (`vercel.json` → `git.deploymentEnabled: false`).
 Публикация выполняется вручную:
@@ -493,7 +496,7 @@ scope Production и Preview:
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | URL проекта Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Публичный anon-ключ |
-| `NEXT_PUBLIC_SITE_BASE_URL` | `https://rsauto-rs.vercel.app` |
+| `NEXT_PUBLIC_SITE_BASE_URL` | `https://rsauto.rs` |
 
 Ключи из блока «только для скриптов» (`SUPABASE_SERVICE_ROLE_KEY`,
 `UNSPLASH_ACCESS_KEY`, `PEXELS_API_KEY`) на Vercel **не задаются**: они нужны
