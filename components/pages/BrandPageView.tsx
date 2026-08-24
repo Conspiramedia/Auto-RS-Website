@@ -109,7 +109,12 @@ export default async function BrandPageView({
       />
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
-        <nav className="mb-4 text-caption text-neutral-50">
+        {/* Крошки — именованная навигация: на странице есть ещё
+            <nav> шапки и подвала, и без имени они неразличимы. */}
+        <nav
+          className="mb-4 text-caption text-neutral-50"
+          aria-label={t('nav_aria_breadcrumbs')}
+        >
           <Link href={localeHref(locale, root)} className="hover:underline">
             {mode === 'rent' ? t('rent_title') : t('nav_catalog')}
           </Link>

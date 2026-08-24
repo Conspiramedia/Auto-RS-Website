@@ -107,7 +107,12 @@ export default function SiteHeader({ locale, pathname }: Props) {
         {/* Разделы сайта. Показываются только на десктопе (sm:flex):
             на мобильном места нет, там навигация живёт в подвале, а в
             шапке остаётся лого + язык + CTA. */}
-        <nav className="hidden flex-1 items-center gap-5 text-caption sm:flex">
+        {/* aria-label различает этот <nav> от крошек, подвала и
+            пагинации: без имени скринридер объявляет их одинаково. */}
+        <nav
+          className="hidden flex-1 items-center gap-5 text-caption sm:flex"
+          aria-label={t('nav_aria_main')}
+        >
           {NAV_LINKS.map((link) => {
             // То же правило, что в бургер-меню и вкладках кабинета
             // (lib/navigation): раздел остаётся активным на своих

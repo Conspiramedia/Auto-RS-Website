@@ -13,7 +13,7 @@ import CarPageView from '@/components/pages/CarPageView';
 import { carTitle, formatMileage, formatPrice } from '@/lib/format';
 import type { Locale } from '@/lib/i18n';
 import { fetchCarDetails } from '@/lib/queries';
-import { buildMetadata } from '@/lib/seo';
+import { buildMetadata, truncateDescription } from '@/lib/seo';
 
 // Объявления меняются (цена, статус, фото), поэтому страница
 // перегенерируется раз в 5 минут вместо статической сборки навсегда.
@@ -54,8 +54,11 @@ export async function generateMetadata({
   }
 
   const title = `${carTitle(car)} — ${formatPrice(car.sale_price, car.currency, locale)}`;
+  // Описание режется по границе слова и укладывается в 160 символов —
+  // столько показывает Google. Раньше здесь стоял slice(0, 200), и
+  // текст продавца обрывался посреди слова.
   const description = car.description
-    ? car.description.slice(0, 200)
+    ? truncateDescription(car.description)
     : `${carTitle(car)}, ${car.city}. ${formatMileage(car.mileage, locale)}.`;
 
   return buildMetadata({
@@ -63,7 +66,11 @@ export async function generateMetadata({
     path: `/car/${id}`,
     title,
     description,
-    // OG-картинка генерируется динамически соседним роутом opengraph-image.
+    // OG-картинка генерируется динамически соседним роутом
+    // opengraph-image: фотография объявления с ценой. Флаг говорит
+    // buildMetadata не подставлять брендовую картинку по умолчанию —
+    // иначе она перекрыла бы свою, более ценную для репоста.
+    ownOgImage: true,
   });
 }
 

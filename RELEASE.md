@@ -165,6 +165,22 @@ Cookie-баннер не требуется: Plausible не ставит cookie 
 - [ ] Прогнать **Lighthouse по боевому URL** после деплоя: главная,
       каталог, карточка объявления. Локально не показательно —
       dev-сборка медленнее продакшена в разы.
+      Режим — **мобильный** (там и трафик, и пороги строже).
+      Цель: Performance ≥ 90, а внутри него Core Web Vitals —
+      **LCP** ≤ 2.5 с, **CLS** ≤ 0.1, **INP** ≤ 200 мс.
+      До покупки домена проверка невозможна в принципе: сайт живёт
+      на `*.vercel.app`, и замеры по нему не отражают боевой CDN.
+      Отмечено аудитом SEO как единственный пункт, который нельзя
+      закрыть кодом.
+- [ ] После деплоя прогнать **Rich Results Test** (search.google.com/
+      test/rich-results) по четырём адресам: главная (Organization +
+      WebSite), каталог (ItemList), карточка объявления (Vehicle +
+      Offer + BreadcrumbList + ItemList похожих), `/how-it-works`
+      (HowTo). Разметка собирается в `lib/seo.ts`.
+- [ ] Проверить превью ссылок в **Facebook Sharing Debugger** и
+      **Twitter Card Validator**: og:image должен отдаваться на всех
+      страницах, включая `/ru` и справочные (после правки og-fallback
+      в `lib/seo.ts`).
 - [ ] Проверить `robots.txt` и `sitemap.xml` на боевом домене:
       адреса должны быть на `rsauto.rs`, а не на `*.vercel.app`.
 

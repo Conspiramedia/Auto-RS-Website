@@ -11,6 +11,7 @@ import Card from '@/components/ui/Card';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import type { DictKey } from '@/lib/i18n';
+import { buildPageJsonLd } from '@/lib/seo';
 
 // Выгоды для салона. Ключи словаря, а не готовый текст: раньше здесь
 // лежал объект с обеими локалями, и правка формулировки требовала
@@ -25,8 +26,30 @@ const BENEFITS: { title: DictKey; text: DictKey }[] = [
 export default function DealersPageView({ locale }: { locale: Locale }) {
   const t = getT(locale);
 
+  // Тип — WebPage, а НЕ CollectionPage с ItemList салонов, хотя в
+  // задаче значился он. Причина в содержимом: /dealers — предложение
+  // автосалонам с формой заявки, списка салонов на ней нет. ItemList
+  // описывал бы то, чего на странице не существует, и Google
+  // отклоняет разметку, не совпадающую с видимым содержимым.
+  //
+  // Витрины отдельных салонов размечены на своих страницах
+  // (/dealer/{id} → AutoDealer, см. DealerPageView) и попадают в
+  // sitemap оттуда.
+  const jsonLd = buildPageJsonLd({
+    type: 'WebPage',
+    locale,
+    path: '/dealers',
+    name: t('dealers_title'),
+    description: t('meta_dealers_desc'),
+  });
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <SmartBanner locale={locale} />
       <SiteHeader locale={locale} pathname="/dealers" />
 

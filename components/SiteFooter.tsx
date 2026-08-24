@@ -32,7 +32,12 @@ export default function SiteFooter({
 
   return (
     <footer className="mt-12 border-t border-neutral-10 bg-surface-subtle">
-      <div className="mx-auto max-w-6xl px-4 py-8">
+      {/* Именованная навигация: на странице несколько <nav>, и
+          скринридер обязан их различать. */}
+      <nav
+        className="mx-auto max-w-6xl px-4 py-8"
+        aria-label={t('nav_aria_footer')}
+      >
         {brands.length > 0 && (
           <div className="mb-6">
             <div className="mb-2 text-caption font-semibold">{t('home_brands')}</div>
@@ -130,7 +135,7 @@ export default function SiteFooter({
         <div className="mt-6 text-small text-neutral-60">
           © {year} {brand.name}. {t('site_tagline')}.
         </div>
-      </div>
+      </nav>
     </footer>
   );
 }

@@ -20,7 +20,9 @@ import type { Locale } from '@/lib/i18n';
 import { getT, localeHref, localePath } from '@/lib/i18n';
 import { countNoun } from '@/lib/plural';
 import type { CatalogFilters, CatalogResult } from '@/lib/queries';
+import { buildItemListJsonLd } from '@/lib/seo';
 import { buildQuery, hasActiveFilters } from '@/lib/searchParams';
+import { siteBaseUrl } from '@/lib/supabase';
 import type { ListingType, SiteBrand, SiteCity } from '@/lib/types';
 
 type Props = {
@@ -139,8 +141,38 @@ export default function CatalogView({
     countable.fuel,
   ].filter(Boolean).length;
 
+  // JSON-LD ItemList текущей выдачи. Ставится ЗДЕСЬ, а не в каждой
+  // странице-обёртке: этот компонент обслуживает все шесть витрин
+  // (/cars, /rent, /all и страницы марок и моделей обеих витрин), и
+  // разметка обязана описывать ровно тот список, который отрисован
+  // ниже. Отдельные копии в обёртках разошлись бы с выдачей при первой
+  // же правке сортировки.
+  //
+  // position сквозная по выдаче: на второй странице отсчёт продолжается
+  // (см. buildItemListJsonLd) — иначе два разных объявления заявлены
+  // под одним номером.
+  const itemListJsonLd = buildItemListJsonLd({
+    items: result.cars.map((car) => ({
+      name: `${car.brand} ${car.model}, ${car.year}`,
+      url: `${siteBaseUrl}${localeHref(locale, `/car/${car.id}`)}`,
+    })),
+    startPosition: (result.page - 1) * result.perPage + 1,
+    totalItems: result.total,
+  });
+
   return (
     <>
+      {/* Разметка списка объявлений: сообщает поисковику, что страница —
+          витрина товаров, и открывает карусель в выдаче.
+          Пустую выдачу не размечаем: ItemList без элементов ничего не
+          сообщает, а для валидатора это ошибка. */}
+      {result.cars.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+        />
+      )}
+
       {/* rel=prev/next для соседних страниц пагинации. Next поднимает
           эти <link> в <head> сам. */}
       <PaginationLinks

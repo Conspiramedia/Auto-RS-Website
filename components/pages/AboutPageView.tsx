@@ -14,6 +14,8 @@ import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
 import type { DictKey, Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
+import { OPERATOR, OPERATOR_VERIFIED } from '@/lib/legal';
+import { buildOrganizationJsonLd, buildPageJsonLd } from '@/lib/seo';
 
 // Три блока «как устроена площадка». Ключи, а не готовый текст:
 // строки живут в dict и переводятся вместе со всем интерфейсом.
@@ -52,8 +54,37 @@ const AUDIENCES: { title: DictKey; items: DictKey[] }[] = [
 export default function AboutPageView({ locale }: { locale: Locale }) {
   const t = getT(locale);
 
+  // AboutPage + Organization. Страница отвечает на вопрос «кто стоит за
+  // площадкой», и разметка обязана отвечать на него машиночитаемо:
+  // без Organization поисковик не связывает сайт с юридическим лицом.
+  //
+  // Реквизиты — из lib/legal, того же источника, что тексты документов
+  // и страница /contact. Незаполненный адрес не подставляется: разметка
+  // с пустым полем хуже разметки без него (см. buildOrganizationJsonLd).
+  const pageJsonLd = buildPageJsonLd({
+    type: 'AboutPage',
+    locale,
+    path: '/about',
+    name: t('about_title'),
+    description: t('about_meta_desc'),
+  });
+
+  const orgJsonLd = buildOrganizationJsonLd({
+    legalName: OPERATOR.legalName,
+    email: OPERATOR.email,
+    phone: OPERATOR.phone || undefined,
+    address: OPERATOR_VERIFIED ? OPERATOR.address : undefined,
+  });
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([pageJsonLd, orgJsonLd]),
+        }}
+      />
+
       <SiteHeader locale={locale} pathname="/about" />
 
       <main className="mx-auto max-w-3xl px-4 py-8 sm:py-12">

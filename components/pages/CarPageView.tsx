@@ -38,7 +38,11 @@ import {
   fetchCarImages,
   fetchSimilarCars,
 } from '@/lib/queries';
-import { buildBreadcrumbJsonLd, buildVehicleJsonLd } from '@/lib/seo';
+import {
+  buildBreadcrumbJsonLd,
+  buildItemListJsonLd,
+  buildVehicleJsonLd,
+} from '@/lib/seo';
 import { siteBaseUrl } from '@/lib/supabase';
 
 export default async function CarPageView({
@@ -114,6 +118,19 @@ export default async function CarPageView({
     { name: title, url: canonicalUrl },
   ]);
 
+  // Похожие объявления как ItemList: тот же механизм, что на витринах
+  // каталога (CatalogView). Блок — полноценный список товаров, и без
+  // разметки поисковик видит в нём просто набор ссылок.
+  const similarJsonLd =
+    similar.length > 0
+      ? buildItemListJsonLd({
+          items: similar.map((s) => ({
+            name: `${s.brand} ${s.model}, ${s.year}`,
+            url: `${siteBaseUrl}${localeHref(locale, `/car/${s.id}`)}`,
+          })),
+        })
+      : null;
+
   const specs = [
     { label: t('car_year'), value: String(car.year) },
     { label: t('car_mileage'), value: formatMileage(car.mileage, locale) },
@@ -133,7 +150,11 @@ export default async function CarPageView({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([jsonLd, breadcrumbJsonLd]),
+          __html: JSON.stringify(
+            similarJsonLd
+              ? [jsonLd, breadcrumbJsonLd, similarJsonLd]
+              : [jsonLd, breadcrumbJsonLd],
+          ),
         }}
       />
 
@@ -163,7 +184,12 @@ export default async function CarPageView({
       <SiteHeader locale={locale} pathname={`/car/${id}`} />
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
-        <nav className="mb-4 text-caption text-neutral-50">
+        {/* Крошки — именованная навигация: на странице есть ещё
+            <nav> шапки и подвала, и без имени они неразличимы. */}
+        <nav
+          className="mb-4 text-caption text-neutral-50"
+          aria-label={t('nav_aria_breadcrumbs')}
+        >
           <Link
             href={localeHref(locale, catalogPath)}
             className="hover:underline"

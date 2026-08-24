@@ -15,6 +15,7 @@ import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
 import type { DictKey, Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
+import { buildHowToJsonLd, buildPageJsonLd } from '@/lib/seo';
 
 type Scenario = {
   title: DictKey;
@@ -65,8 +66,49 @@ const SCENARIOS: Scenario[] = [
 export default function HowItWorksPageView({ locale }: { locale: Locale }) {
   const t = getT(locale);
 
+  // HowTo размечает ОДИН сценарий — подачу объявления, а не все три.
+  // Схема описывает одну процедуру с одной последовательностью шагов;
+  // три HowTo на странице (покупатель, продавец, салон) поисковик
+  // читает как три конкурирующие инструкции и не показывает ни одной.
+  //
+  // Выбран сценарий продавца: подача объявления — главная бизнес-цель
+  // сайта, и расширенный сниппет со списком шагов нужен именно ей.
+  // Шаги берутся из того же SCENARIOS, что рендерится ниже: требование
+  // Google — совпадение разметки с видимым текстом.
+  const sellerScenario = SCENARIOS.find((s) => s.ctaPath === '/sell');
+
+  const howToJsonLd = sellerScenario
+    ? buildHowToJsonLd({
+        locale,
+        path: '/how-it-works',
+        name: t(sellerScenario.title),
+        description: t('how_meta_desc'),
+        steps: sellerScenario.steps.map((step) => ({
+          name: t(step.title),
+          text: t(step.text),
+        })),
+      })
+    : null;
+
+  const pageJsonLd = buildPageJsonLd({
+    type: 'WebPage',
+    locale,
+    path: '/how-it-works',
+    name: t('how_title'),
+    description: t('how_meta_desc'),
+  });
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            howToJsonLd ? [pageJsonLd, howToJsonLd] : [pageJsonLd],
+          ),
+        }}
+      />
+
       <SiteHeader locale={locale} pathname="/how-it-works" />
 
       <main className="mx-auto max-w-3xl px-4 py-8 sm:py-12">

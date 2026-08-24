@@ -546,6 +546,13 @@ export const dict = {
     nav_how: 'Kako funkcioniše',
     nav_faq: 'Česta pitanja',
     nav_menu: 'Meni',
+    // Подписи для скринридера на <nav>. На странице их несколько
+    // (шапка, крошки, подвал, пагинация), и без имени каждый читается
+    // просто как «навигация» — по списку ориентиров не различить.
+    // Видимого текста эти строки не дают.
+    nav_aria_main: 'Glavna navigacija',
+    nav_aria_breadcrumbs: 'Putanja',
+    nav_aria_footer: 'Navigacija u podnožju',
     // Вход и кабинет: шапка, бургер, подвал, страница /login.
     nav_login: 'Prijava',
     nav_my: 'Moji oglasi',
@@ -1251,6 +1258,9 @@ export const dict = {
     nav_how: 'Как это работает',
     nav_faq: 'Вопросы',
     nav_menu: 'Меню',
+    nav_aria_main: 'Основная навигация',
+    nav_aria_breadcrumbs: 'Хлебные крошки',
+    nav_aria_footer: 'Навигация в подвале',
     // Вход и кабинет: шапка, бургер, подвал, страница /login.
     nav_login: 'Войти',
     nav_my: 'Мои объявления',

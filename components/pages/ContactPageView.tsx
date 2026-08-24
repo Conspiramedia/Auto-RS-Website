@@ -20,12 +20,42 @@ import SiteHeader from '@/components/SiteHeader';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { OPERATOR, OPERATOR_VERIFIED } from '@/lib/legal';
+import { buildPageJsonLd } from '@/lib/seo';
 
 export default function ContactPageView({ locale }: { locale: Locale }) {
   const t = getT(locale);
 
+  // ContactPage со способами связи. contactPoint дописывается к базовой
+  // разметке страницы: именно он даёт поисковику почту и телефон
+  // поддержки в машиночитаемом виде.
+  //
+  // Телефон и адрес подставляются, только если заполнены в lib/legal:
+  // пустая строка в разметке означала бы, что контакта не существует.
+  const jsonLd = {
+    ...buildPageJsonLd({
+      type: 'ContactPage',
+      locale,
+      path: '/contact',
+      name: t('contact_title'),
+      description: t('meta_contact_desc'),
+    }),
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      email: OPERATOR.email,
+      ...(OPERATOR.phone ? { telephone: OPERATOR.phone } : {}),
+      areaServed: 'RS',
+      availableLanguage: ['sr', 'ru'],
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <SiteHeader locale={locale} pathname="/contact" />
 
       <main className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
