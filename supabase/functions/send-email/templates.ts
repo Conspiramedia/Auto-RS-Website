@@ -21,6 +21,28 @@
 // нельзя: Edge Function выполняется в Deno на стороне Supabase и к
 // файлам Next-проекта доступа не имеет. Значения обязаны совпадать с
 // lib/brand.ts — при смене палитры править оба места.
+//
+// ------------------------------------------------------------
+// ЭТОТ ФАЙЛ НЕ ПРОВЕРЯЕТСЯ НИ npm run build, НИ tsc --noEmit.
+// ------------------------------------------------------------
+// Он вне tsconfig проекта (supabase/functions в exclude): здесь
+// Deno-рантайм и импорты по URL, которые сборка Next не понимает.
+// Значит СИНТАКСИЧЕСКАЯ ошибка тут не всплывёт ни в одной локальной
+// проверке — она проявится только на деплое, отказом bundle-фазы:
+//
+//   Failed to bundle the function (reason: The module's source code
+//   could not be parsed: Expected ',', got 'string literal' ...)
+//
+// Так уже случилось однажды: в .join() попал НАСТОЯЩИЙ перевод строки
+// внутри одинарных кавычек вместо escape-последовательности. Для
+// JavaScript это незакрытая строка, и деплой упал.
+//
+// Перед деплоем прогоняйте парсер вручную:
+//
+//   npx tsc --noEmit --ignoreConfig --skipLibCheck --target esnext //     --module esnext --moduleResolution bundler //     supabase/functions/send-email/templates.ts
+//
+// Ошибки резолва импортов по URL здесь ожидаемы и не важны — ловим
+// именно синтаксис (TS1xxx).
 // ============================================================
 
 // Дизайн-токены бренда. Зеркало lib/brand.ts → brand.colors.
@@ -499,8 +521,7 @@ function loginCode(
     ),
     p(esc(t(locale, 'login_expires')), true),
     p(esc(t(locale, 'login_ignore')), true),
-  ].join('
-');
+  ].join('\n');
 
   const text = [
     t(locale, 'login_title'),
@@ -511,8 +532,7 @@ function loginCode(
     '',
     t(locale, 'login_expires'),
     t(locale, 'login_ignore'),
-  ].join('
-');
+  ].join('\n');
 
   return {
     subject,
