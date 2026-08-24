@@ -50,7 +50,12 @@ import {
 } from '@/lib/inputFormat';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeAwareHref, localeHref } from '@/lib/i18n';
-import { RESEND_DELAY_SEC, humanOtpError } from '@/lib/otp';
+import {
+  OTP_LEN,
+  RESEND_DELAY_SEC,
+  humanOtpError,
+  isOtpComplete,
+} from '@/lib/otp';
 import { getBrowserClient } from '@/lib/supabaseClient';
 
 type Props = {
@@ -504,7 +509,10 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
                 type="text"
                 inputMode="numeric"
                 autoComplete="one-time-code"
-                maxLength={6}
+                // Длина зависит от канала: SMS всегда 6, email-код
+                // GoTrue настраивается и бывает длиннее (см. OTP_LEN).
+                // Жёсткие 6 здесь молча обрезали длинный код из письма.
+                maxLength={OTP_LEN[mode].max}
                 value={code}
                 // Только цифры: в приложении поле кода тоже ограничено
                 // digitsOnly.
@@ -542,7 +550,7 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
 
             <Button
               onClick={submit}
-              disabled={busy || code.trim().length < 4}
+              disabled={busy || !isOtpComplete(code, mode)}
               variant="info"
               fullWidth
             >
