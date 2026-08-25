@@ -8,9 +8,9 @@
 // Обновление: node scripts/generate-suggestions.mjs
 // Автоматически — из npm-скрипта prebuild перед next build.
 //
-// Сгенерировано: 2026-08-24
-// Заготовок из базы: 36, фраз в файле: 36
-// По видам: brand_model=27, brand_price=9
+// Сгенерировано: 2026-08-25
+// Заготовок из базы: 37, фраз в файле: 37
+// По видам: brand_model=28, brand_price=9
 //
 // В списке ТОЛЬКО фразы с маркой авто: «марка+модель» и «марка+цена».
 // Голое топливо («Бензин», «Дизель») исключено — такая подсказка не
@@ -56,52 +56,56 @@ export const SEARCH_SUGGESTIONS: SearchSuggestion[] = [
     filters: {"brand":"BMW","priceTo":3000},
   },
   {
-    text: { sr: "Audi A3", ru: "Audi A3" },
-    filters: {"brand":"Audi","model":"A3"},
+    text: { sr: "Acura MDX", ru: "Acura MDX" },
+    filters: {"brand":"Acura","model":"MDX"},
   },
   {
     text: { sr: "Ford do 15.000 €", ru: "Ford до 15 000 €" },
     filters: {"brand":"Ford","priceTo":15000},
   },
   {
-    text: { sr: "Audi A4", ru: "Audi A4" },
-    filters: {"brand":"Audi","model":"A4"},
+    text: { sr: "Audi A3", ru: "Audi A3" },
+    filters: {"brand":"Audi","model":"A3"},
   },
   {
     text: { sr: "Mercedes-Benz do 4.500 €", ru: "Mercedes-Benz до 4 500 €" },
     filters: {"brand":"Mercedes-Benz","priceTo":4500},
   },
   {
-    text: { sr: "BMW Serija 3", ru: "BMW Serija 3" },
-    filters: {"brand":"BMW","model":"Serija 3"},
+    text: { sr: "Audi A4", ru: "Audi A4" },
+    filters: {"brand":"Audi","model":"A4"},
   },
   {
     text: { sr: "Opel do 6.500 €", ru: "Opel до 6 500 €" },
     filters: {"brand":"Opel","priceTo":6500},
   },
   {
-    text: { sr: "BMW X5", ru: "BMW X5" },
-    filters: {"brand":"BMW","model":"X5"},
+    text: { sr: "BMW Serija 3", ru: "BMW Serija 3" },
+    filters: {"brand":"BMW","model":"Serija 3"},
   },
   {
     text: { sr: "Peugeot do 11.500 €", ru: "Peugeot до 11 500 €" },
     filters: {"brand":"Peugeot","priceTo":11500},
   },
   {
-    text: { sr: "Citroën C4", ru: "Citroën C4" },
-    filters: {"brand":"Citroën","model":"C4"},
+    text: { sr: "BMW X5", ru: "BMW X5" },
+    filters: {"brand":"BMW","model":"X5"},
   },
   {
     text: { sr: "Renault do 8.000 €", ru: "Renault до 8 000 €" },
     filters: {"brand":"Renault","priceTo":8000},
   },
   {
-    text: { sr: "Dacia Duster", ru: "Dacia Duster" },
-    filters: {"brand":"Dacia","model":"Duster"},
+    text: { sr: "Citroën C4", ru: "Citroën C4" },
+    filters: {"brand":"Citroën","model":"C4"},
   },
   {
     text: { sr: "Škoda do 10.500 €", ru: "Škoda до 10 500 €" },
     filters: {"brand":"Škoda","priceTo":10500},
+  },
+  {
+    text: { sr: "Dacia Duster", ru: "Dacia Duster" },
+    filters: {"brand":"Dacia","model":"Duster"},
   },
   {
     text: { sr: "Fiat Punto", ru: "Fiat Punto" },
