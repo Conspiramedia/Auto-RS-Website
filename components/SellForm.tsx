@@ -48,10 +48,9 @@ import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { BRANDS, CITIES, YEAR_MIN, yearMax } from '@/lib/referenceData';
 import {
-  MAX_MILEAGE,
-  MAX_PRICE,
+  MAX_MILEAGE_DIGITS,
+  MAX_PRICE_DIGITS,
   formatSerbianPhone,
-  handleNumberInput,
   isValidSerbianPhone,
   parseThousands,
   SERBIAN_PHONE_PREFIX,
@@ -64,6 +63,7 @@ import PhotoPicker, { type PhotoItem } from './PhotoPicker';
 import CloseButton from './ui/CloseButton';
 import Alert from './ui/Alert';
 import { fieldClass, fieldClassTextarea } from './ui/Field';
+import NumberInput from './ui/NumberInput';
 import { RESEND_DELAY_SEC, humanOtpError } from '@/lib/otp';
 import Button from './ui/Button';
 import Card from './ui/Card';
@@ -290,34 +290,23 @@ export default function SellForm({
       setFuel((car.fuel as string) ?? '');
       setDescription((car.description as string) ?? '');
 
-      // Числовые поля хранят ФОРМАТИРОВАННУЮ строку («12 500»): их
-      // читает parseThousands при отправке. Поэтому и предзаполняем
-      // через тот же форматтер, иначе первая же правка поля сбила бы
-      // разделители разрядов.
-      setMileage(
-        car.mileage != null
-          ? handleNumberInput(String(car.mileage), MAX_MILEAGE)
-          : '',
-      );
+      // Числовые поля хранят ЧИСТЫЕ ЦИФРЫ («125000»): разделители
+      // рисует NumberInput при показе, наружу они не выходят. Поэтому
+      // предзаполняем просто строкой числа — форматировать нечего.
+      setMileage(car.mileage != null ? String(car.mileage) : '');
       setPrice(
         car.sale_price != null
-          ? handleNumberInput(String(Math.round(Number(car.sale_price))), MAX_PRICE)
+          ? String(Math.round(Number(car.sale_price)))
           : '',
       );
       setRentPrice(
         car.rent_price_daily != null
-          ? handleNumberInput(
-              String(Math.round(Number(car.rent_price_daily))),
-              MAX_PRICE,
-            )
+          ? String(Math.round(Number(car.rent_price_daily)))
           : '',
       );
       setDeposit(
         car.deposit_amount != null && Number(car.deposit_amount) > 0
-          ? handleNumberInput(
-              String(Math.round(Number(car.deposit_amount))),
-              MAX_PRICE,
-            )
+          ? String(Math.round(Number(car.deposit_amount)))
           : '',
       );
 
@@ -624,11 +613,10 @@ export default function SellForm({
         p_brand: brand.trim(),
         p_model: model.trim(),
         p_year: Number(year),
-        // ВАЖНО: поля цен и пробега хранят ФОРМАТИРОВАННУЮ строку
-        // («12 500»), поэтому наружу они идут через parseThousands.
-        // Number('12 500') вернул бы NaN, и объявление ушло бы без цены.
-        // Пустые необязательные поля уходят как null, а не как 0:
-        // ноль пробега БД поймёт как «новая машина».
+        // Поля цен и пробега хранят чистые цифры, но через
+        // parseThousands они идут всё равно: он переводит пустую строку
+        // в null, а не в 0. Ноль пробега БД поймёт как «новая машина»,
+        // ноль цены — как «отдаю бесплатно».
         p_mileage: parseThousands(mileage),
         // Цена продажи нужна только продающим объявлениям, суточная
         // ставка — только сдающимся. Лишние значения не отправляем,
@@ -792,9 +780,9 @@ export default function SellForm({
   function validateDetails(): string | null {
     const needsRent = listingType === 'rent';
 
-    // Сравнения идут по РАСПАРСЕННОМУ значению: поля хранят строку
-    // с разделителями тысяч, и Number('12 500') дал бы NaN, из-за чего
-    // проверка «> 0» молча пропустила бы что угодно.
+    // Сравнения идут через parseThousands, а не через Number: пустое
+    // поле обязано отличаться от нуля. Number('') даёт 0, и проверка
+    // «> 0» приняла бы незаполненную цену аренды за нулевую.
     if (needsRent) {
       const rent = parseThousands(rentPrice);
       if (rent === null) return t('sell_err_rent_price');
@@ -984,16 +972,17 @@ export default function SellForm({
               Пустое значение допустимо: это «Договорная». */}
           {listingType === 'sale' && (
             <div className="lg:w-1/2 lg:pr-1.5">
-              <label className="mb-1 block text-caption text-neutral-60">
+              <label
+                className="mb-1 block text-caption text-neutral-60"
+                htmlFor="sell-price"
+              >
                 {t('sell_sale_price')}, €
               </label>
-              <input
-                type="text"
-                inputMode="numeric"
+              <NumberInput
+                id="sell-price"
                 value={price}
-                onChange={(e) =>
-                  setPrice(handleNumberInput(e.target.value, MAX_PRICE))
-                }
+                onChange={setPrice}
+                maxDigits={MAX_PRICE_DIGITS}
                 placeholder={t('car_price_negotiable')}
                 className={field}
               />
@@ -1006,31 +995,33 @@ export default function SellForm({
           {listingType === 'rent' && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-caption text-neutral-60">
+                <label
+                  className="mb-1 block text-caption text-neutral-60"
+                  htmlFor="sell-rent-price"
+                >
                   {t('sell_rent_price')}, € *
                 </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
+                <NumberInput
+                  id="sell-rent-price"
                   value={rentPrice}
-                  onChange={(e) =>
-                    setRentPrice(handleNumberInput(e.target.value, MAX_PRICE))
-                  }
+                  onChange={setRentPrice}
+                  maxDigits={MAX_PRICE_DIGITS}
                   required
                   className={field}
                 />
               </div>
               <div>
-                <label className="mb-1 block text-caption text-neutral-60">
+                <label
+                  className="mb-1 block text-caption text-neutral-60"
+                  htmlFor="sell-deposit"
+                >
                   {t('sell_deposit')}, €
                 </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
+                <NumberInput
+                  id="sell-deposit"
                   value={deposit}
-                  onChange={(e) =>
-                    setDeposit(handleNumberInput(e.target.value, MAX_PRICE))
-                  }
+                  onChange={setDeposit}
+                  maxDigits={MAX_PRICE_DIGITS}
                   placeholder="0"
                   className={field}
                 />
@@ -1042,16 +1033,17 @@ export default function SellForm({
               1152px они выглядели бы пустыми. Половина строки —
               достаточно для семи цифр с разделителями. */}
           <div className="lg:w-1/2 lg:pr-1.5">
-            <label className="mb-1 block text-caption text-neutral-60">
+            <label
+              className="mb-1 block text-caption text-neutral-60"
+              htmlFor="sell-mileage"
+            >
               {t('car_mileage')}, {t('common_km')}
             </label>
-            <input
-              type="text"
-              inputMode="numeric"
+            <NumberInput
+              id="sell-mileage"
               value={mileage}
-              onChange={(e) =>
-                setMileage(handleNumberInput(e.target.value, MAX_MILEAGE))
-              }
+              onChange={setMileage}
+              maxDigits={MAX_MILEAGE_DIGITS}
               className={field}
             />
           </div>

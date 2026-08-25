@@ -70,6 +70,18 @@ export function formatMileage(value: number | null, locale: Locale): string {
   return `${num} ${dict[locale].common_km}`;
 }
 
+// Год выпуска. Через Intl.NumberFormat НЕ проходит и разрядами не
+// группируется: «2019», а не «2 019» (ru) и не «2.019» (sr). Год — метка
+// на шкале, а не количество.
+//
+// Функция существует ради этого правила: без неё год выводится голой
+// интерполяцией, и первый же, кто пропустит его через общий числовой
+// форматтер, получит «2 019», не заметив ошибки.
+export function formatYear(value: number | null): string {
+  if (value === null || value === undefined) return '—';
+  return String(value);
+}
+
 // Дата публикации в читаемом виде.
 export function formatDate(value: string, locale: Locale): string {
   return new Intl.DateTimeFormat(INTL_LOCALE[locale], {

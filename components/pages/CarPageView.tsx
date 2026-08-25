@@ -27,6 +27,7 @@ import {
   formatMileage,
   formatPrice,
   formatRentPrice,
+  formatYear,
   labelBodyType,
   labelFuel,
   labelTransmission,
@@ -134,7 +135,7 @@ export default async function CarPageView({
       : null;
 
   const specs = [
-    { label: t('car_year'), value: String(car.year) },
+    { label: t('car_year'), value: formatYear(car.year) },
     { label: t('car_mileage'), value: formatMileage(car.mileage, locale) },
     { label: t('car_body'), value: labelBodyType(car.body_type, locale) },
     {

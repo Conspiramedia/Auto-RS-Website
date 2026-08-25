@@ -7,7 +7,12 @@
 
 import Image from 'next/image';
 
-import { formatMileage, formatPrice, formatRentPrice } from '@/lib/format';
+import {
+  formatMileage,
+  formatPrice,
+  formatRentPrice,
+  formatYear,
+} from '@/lib/format';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import type { ListingType } from '@/lib/types';
@@ -175,7 +180,7 @@ export default function CarCard({
         )}
 
         <div className="mt-1 text-caption text-neutral-60">
-          {car.year} · {formatMileage(car.mileage, locale)}
+          {formatYear(car.year)} · {formatMileage(car.mileage, locale)}
         </div>
 
         <div className="mt-0.5 truncate text-caption text-neutral-50">{car.city}</div>

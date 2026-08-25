@@ -11,7 +11,8 @@
 // (filters_screen.dart): марка, модель, город, кузов, коробка, топливо.
 // Свободного текста нет нигде, кроме поиска по объявлениям.
 // Цена, год и пробег остаются числовыми полями — в приложении это тоже
-// TextField, а не список.
+// TextField, а не список. Разряды в них разделяются так же, как в форме
+// подачи (NumberInput), а год показывается без разделителя.
 //
 // Форма отправляется методом GET на тот же адрес: значения пикеров
 // уходят в query-параметры через скрытые input, страница
@@ -29,7 +30,12 @@ import { useEffect, useState } from 'react';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import type { CatalogFilters } from '@/lib/queries';
-import { BRANDS, CITIES, YEAR_MIN, yearMax } from '@/lib/referenceData';
+import { BRANDS, CITIES } from '@/lib/referenceData';
+import {
+  MAX_MILEAGE_DIGITS,
+  MAX_PRICE_DIGITS,
+  YEAR_DIGITS,
+} from '@/lib/inputFormat';
 import { getBrowserClient } from '@/lib/supabaseClient';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import { useDismissableLayer } from '@/lib/useDismissableLayer';
@@ -37,6 +43,7 @@ import type { ListingType, SiteBrand, SiteCity } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
 import CloseButton from './ui/CloseButton';
 import { fieldClassCompact } from './ui/Field';
+import NumberInput from './ui/NumberInput';
 import Button from './ui/Button';
 
 type Props = {
@@ -123,16 +130,31 @@ export default function FilterPanel({
   // полей много, и они плотнее, чем в формах подачи.
   const field = fieldClassCompact;
 
-  // Числовые поля фильтров (цена, год, пробег) остаются НЕуправляемыми:
-  // они уходят обычной GET-формой, и значение читает браузер, а не React.
-  // Поэтому здесь не форматирование с разделителями тысяч (пробелы
-  // попали бы в URL), а только отсечение нецифр прямо при вводе —
-  // ровно как ограничение digitsOnly в приложении.
-  function onlyDigits(e: React.FormEvent<HTMLInputElement>) {
-    const input = e.currentTarget;
-    const clean = input.value.replace(/[^0-9]/g, '');
-    if (input.value !== clean) input.value = clean;
-  }
+  // Числовые поля фильтров УПРАВЛЯЕМЫЕ — в состоянии лежат чистые
+  // цифры, а разделители разрядов рисует NumberInput при показе.
+  //
+  // Раньше поля были неуправляемыми, и форматирования здесь не было
+  // вовсе: панель уходит обычной GET-формой, и «125 000» с пробелами
+  // уехало бы прямо в query-строку, где Number() дал бы NaN. Из-за
+  // этого цена в подаче показывалась как «125 000», а в фильтрах — как
+  // «125000». NumberInput снимает противоречие: видимое поле имени не
+  // несёт, а рядом с ним стоит скрытое поле с чистым числом — в адрес
+  // попадает только оно.
+  const [priceFrom, setPriceFrom] = useState(
+    filters.priceFrom != null ? String(filters.priceFrom) : '',
+  );
+  const [priceTo, setPriceTo] = useState(
+    filters.priceTo != null ? String(filters.priceTo) : '',
+  );
+  const [yearFrom, setYearFrom] = useState(
+    filters.yearFrom != null ? String(filters.yearFrom) : '',
+  );
+  const [yearTo, setYearTo] = useState(
+    filters.yearTo != null ? String(filters.yearTo) : '',
+  );
+  const [mileageMax, setMileageMax] = useState(
+    filters.mileageMax != null ? String(filters.mileageMax) : '',
+  );
 
   // Догрузка моделей при смене марки прямо в панели. На сервере модели
   // уже пришли для марки из URL — повторный запрос делаем только когда
@@ -459,26 +481,22 @@ export default function FilterPanel({
                       : `${t('filter_price')}, €`}
                   </label>
                   <div className="flex gap-2">
-                    <input
-                      type="text"
-
-                      inputMode="numeric"
+                    <NumberInput
                       name="price_from"
-                      onInput={onlyDigits}
-                      min={0}
-                      defaultValue={filters.priceFrom ?? ''}
+                      value={priceFrom}
+                      onChange={setPriceFrom}
+                      maxDigits={MAX_PRICE_DIGITS}
                       placeholder={t('filter_from')}
+                      aria-label={`${t('filter_price')} ${t('filter_from')}`}
                       className={field}
                     />
-                    <input
-                      type="text"
-
-                      inputMode="numeric"
+                    <NumberInput
                       name="price_to"
-                      onInput={onlyDigits}
-                      min={0}
-                      defaultValue={filters.priceTo ?? ''}
+                      value={priceTo}
+                      onChange={setPriceTo}
+                      maxDigits={MAX_PRICE_DIGITS}
                       placeholder={t('filter_to')}
+                      aria-label={`${t('filter_price')} ${t('filter_to')}`}
                       className={field}
                     />
                   </div>
@@ -491,34 +509,26 @@ export default function FilterPanel({
                   {/* Границы совпадают с constraint chk_year таблицы cars:
                       от 1900 до следующего года включительно. */}
                   <div className="flex gap-2">
-                    <input
-                      type="text"
-
-                      inputMode="numeric"
-
-                      maxLength={4}
+                    {/* separator={false}: год — метка на шкале, а не
+                        количество. «2019», а не «2 019». */}
+                    <NumberInput
                       name="year_from"
-
-                      onInput={onlyDigits}
-                      min={YEAR_MIN}
-                      max={yearMax()}
-                      defaultValue={filters.yearFrom ?? ''}
+                      value={yearFrom}
+                      onChange={setYearFrom}
+                      maxDigits={YEAR_DIGITS}
+                      separator={false}
                       placeholder={t('filter_from')}
+                      aria-label={`${t('filter_year')} ${t('filter_from')}`}
                       className={field}
                     />
-                    <input
-                      type="text"
-
-                      inputMode="numeric"
-
-                      maxLength={4}
+                    <NumberInput
                       name="year_to"
-
-                      onInput={onlyDigits}
-                      min={YEAR_MIN}
-                      max={yearMax()}
-                      defaultValue={filters.yearTo ?? ''}
+                      value={yearTo}
+                      onChange={setYearTo}
+                      maxDigits={YEAR_DIGITS}
+                      separator={false}
                       placeholder={t('filter_to')}
+                      aria-label={`${t('filter_year')} ${t('filter_to')}`}
                       className={field}
                     />
                   </div>
@@ -529,14 +539,12 @@ export default function FilterPanel({
                 <label className="mb-1 block text-caption text-neutral-60">
                   {t('filter_mileage')}, {t('common_km')}
                 </label>
-                <input
-                  type="text"
-
-                  inputMode="numeric"
+                <NumberInput
                   name="mileage_max"
-                  onInput={onlyDigits}
-                  min={0}
-                  defaultValue={filters.mileageMax ?? ''}
+                  value={mileageMax}
+                  onChange={setMileageMax}
+                  maxDigits={MAX_MILEAGE_DIGITS}
+                  aria-label={`${t('filter_mileage')}, ${t('common_km')}`}
                   className={field}
                 />
               </div>
