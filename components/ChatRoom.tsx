@@ -177,7 +177,13 @@ export default function ChatRoom({
           </p>
         ) : (
           <>
-            <div className="flex gap-2">
+            {/* НА МОБИЛЬНОМ — В ДВЕ СТРОКИ: поле сверху, кнопка под ним
+                по центру. В один ряд «Отправить» съедала треть ширины
+                узкого экрана, и на поле оставалось меньше места, чем
+                занимает сама подпись кнопки.
+                С 640px возвращается обычный ряд: там ширины хватает
+                обоим, а лишняя строка только отодвигала бы ленту. */}
+            <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-stretch">
               <input
                 type="text"
                 value={text}
@@ -191,7 +197,10 @@ export default function ChatRoom({
                   }
                 }}
                 placeholder={t('chat_placeholder')}
-                className={`${fieldClass} flex-1`}
+                // w-full нужен для мобильной колонки: flex-1 управляет
+                // размером вдоль главной оси, а она там вертикальная,
+                // и поле сжалось бы по содержимому.
+                className={`${fieldClass} w-full sm:flex-1`}
                 aria-label={t('chat_placeholder')}
               />
               <Button
