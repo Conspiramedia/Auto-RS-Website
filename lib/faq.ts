@@ -36,18 +36,6 @@ const FAQ_SR: FaqItem[] = [
   },
   {
     group: 'general',
-    question: 'Da li moram da instaliram aplikaciju?',
-    answer:
-      'Za pregled oglasa i postavljanje oglasa — ne, sve radi na sajtu. Aplikacija je potrebna za poruke i pozive sa prodavcem, za sačuvane pretrage i obaveštenja o novim vozilima i sniženjima cena.',
-  },
-  {
-    group: 'general',
-    question: 'Da li su sajt i aplikacija ista baza oglasa?',
-    answer:
-      'Da. Oglas postavljen na sajtu odmah je vidljiv u aplikaciji, i obrnuto. Ne postoje dve odvojene ponude i ne treba objavljivati oglas dva puta.',
-  },
-  {
-    group: 'general',
     question: 'Da li RS Auto učestvuje u kupoprodaji?',
     answer:
       'Ne. RS Auto je platforma za oglase i nije strana u poslu — ne nastupa kao prodavac, kupac ni posrednik. Pregled vozila, proveru dokumentacije i plaćanje dogovaraju kupac i prodavac neposredno, na sopstvenu odgovornost.',
@@ -58,13 +46,13 @@ const FAQ_SR: FaqItem[] = [
     group: 'buyer',
     question: 'Kako da kontaktiram prodavca?',
     answer:
-      'Na stranici oglasa pritisnite „Nastavi u aplikaciji“. Poruke i pozivi idu kroz aplikaciju RS Auto, pa vaš broj telefona ostaje skriven, a cela prepiska je na jednom mestu.',
+      'Na stranici oglasa pritisnite „Pošalji poruku prodavcu“. Prepiska ide direktno na sajtu, pa vaš broj telefona ostaje skriven, a sve poruke su na jednom mestu — u vašem kabinetu.',
   },
   {
     group: 'buyer',
     question: 'Nema automobila koji mi odgovara. Šta da radim?',
     answer:
-      'Sačuvajte pretragu u aplikaciji sa svojim uslovima — marka, godište, cena, grad. Poslaćemo obaveštenje čim se pojavi vozilo koje im odgovara, kao i kada prodavac snizi cenu automobila koji pratite.',
+      'Sačuvajte link pretrage sa svojim uslovima — marka, godište, cena, grad. Filteri ostaju u adresi, pa se vraćate na njega i odmah vidite nove oglase.',
   },
   {
     group: 'buyer',
@@ -84,7 +72,7 @@ const FAQ_SR: FaqItem[] = [
     group: 'seller',
     question: 'Koliko traje provera oglasa?',
     answer:
-      'Obično do jednog dana. Nakon odobrenja oglas se pojavljuje u katalogu sajta i u aplikaciji. Ako oglas bude odbijen, obavestićemo vas o razlogu.',
+      'Obično do jednog dana. Nakon odobrenja oglas se pojavljuje u katalogu i vide ga kupci iz cele Srbije. Ako oglas bude odbijen, obavestićemo vas o razlogu.',
   },
   {
     group: 'seller',
@@ -124,18 +112,6 @@ const FAQ_RU: FaqItem[] = [
   },
   {
     group: 'general',
-    question: 'Обязательно ли устанавливать приложение?',
-    answer:
-      'Для просмотра объявлений и подачи объявления — нет, всё работает на сайте. Приложение нужно для сообщений и звонков продавцу, для сохранённых поисков и уведомлений о новых машинах и снижении цен.',
-  },
-  {
-    group: 'general',
-    question: 'У сайта и приложения одна база объявлений?',
-    answer:
-      'Да. Объявление, поданное на сайте, сразу видно в приложении, и наоборот. Двух разных витрин не существует, подавать объявление дважды не нужно.',
-  },
-  {
-    group: 'general',
     question: 'RS Auto участвует в сделке?',
     answer:
       'Нет. RS Auto — площадка объявлений, а не сторона сделки: мы не выступаем продавцом, покупателем или посредником. Осмотр автомобиля, проверку документов и расчёты покупатель и продавец ведут напрямую, под свою ответственность.',
@@ -146,13 +122,13 @@ const FAQ_RU: FaqItem[] = [
     group: 'buyer',
     question: 'Как связаться с продавцом?',
     answer:
-      'На странице объявления нажмите «Продолжить в приложении». Сообщения и звонки идут через приложение RS Auto, поэтому ваш номер телефона остаётся скрытым, а вся переписка — в одном месте.',
+      'На странице объявления нажмите «Написать продавцу». Переписка идёт прямо на сайте, поэтому ваш номер телефона остаётся скрытым, а все сообщения собраны в одном месте — в личном кабинете.',
   },
   {
     group: 'buyer',
     question: 'Подходящей машины нет. Что делать?',
     answer:
-      'Сохраните поиск в приложении со своими условиями — марка, год, цена, город. Пришлём уведомление, как только появится подходящий автомобиль, а также когда продавец снизит цену на отслеживаемую машину.',
+      'Сохраните ссылку на поиск со своими условиями — марка, год, цена, город. Фильтры остаются в адресе: вернитесь по ней и сразу увидите новые объявления.',
   },
   {
     group: 'buyer',
@@ -172,7 +148,7 @@ const FAQ_RU: FaqItem[] = [
     group: 'seller',
     question: 'Сколько идёт проверка объявления?',
     answer:
-      'Обычно до суток. После одобрения объявление появляется в каталоге сайта и в приложении. Если объявление отклонено, мы сообщим причину.',
+      'Обычно до суток. После одобрения объявление появляется в каталоге, и его видят покупатели по всей Сербии. Если объявление отклонено, мы сообщим причину.',
   },
   {
     group: 'seller',

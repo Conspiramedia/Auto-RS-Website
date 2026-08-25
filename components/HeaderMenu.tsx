@@ -109,7 +109,6 @@ import {
   LogInIcon,
   MailIcon,
   MessageSquareIcon,
-  SmartphoneIcon,
   TagIcon,
 } from './ui/NavIcons';
 
@@ -142,7 +141,6 @@ const LINKS: {
   { path: '/cars', label: 'nav_catalog_menu', icon: TagIcon },
   { path: '/rent', label: 'nav_rent', icon: KeyRoundIcon },
   { path: '/dealers', label: 'nav_dealers', icon: Building2Icon },
-  { path: '/app', label: 'nav_app', icon: SmartphoneIcon },
   { path: '/about', label: 'nav_about', icon: InfoIcon },
   { path: '/how-it-works', label: 'nav_how', icon: LightbulbIcon },
   { path: '/faq', label: 'nav_faq', icon: CircleHelpIcon },

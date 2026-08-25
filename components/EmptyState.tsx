@@ -5,9 +5,13 @@
 // появится». Просто «ничего не найдено» — тупик, из которого пользователь
 // уходит с сайта.
 //
-// «Сообщить, когда появится» ведёт в приложение: механика сохранённых
-// поисков и пуш-уведомлений уже реализована на бэкенде (saved_searches,
-// push_queue) и работает именно там.
+// Третий элемент — не кнопка, а подсказка empty_notify_hint: она
+// объясняет, что фильтры остаются в адресе и ссылку на поиск можно
+// сохранить. Кнопка «Сообщить, когда появится» вела на /app и обещала
+// подписку, которой на сайте нет: механика сохранённых поисков
+// реализована только на бэкенде (saved_searches, push_queue), UI для
+// неё не построен. Обещать её раньше времени — тупик хуже пустой
+// выдачи, поэтому здесь честная подсказка вместо кнопки.
 // ============================================================
 
 import Button from './ui/Button';
@@ -48,25 +52,11 @@ export default function EmptyState({
       text={t('empty_reason')}
       hint={t('empty_notify_hint')}
       actions={
-        <>
-          {showReset && (
-            <Button
-              variant="dark"
-              size="sm"
-              href={localeHref(locale, resetPath)}
-            >
-              {t('empty_reset')}
-            </Button>
-          )}
-
-          <Button
-            variant="secondary"
-            size="sm"
-            href={localeHref(locale, '/app')}
-          >
-            {t('empty_notify')}
+        showReset ? (
+          <Button variant="dark" size="sm" href={localeHref(locale, resetPath)}>
+            {t('empty_reset')}
           </Button>
-        </>
+        ) : null
       }
     />
   );

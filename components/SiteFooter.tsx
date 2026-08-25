@@ -69,10 +69,6 @@ export default function SiteFooter({
           <Link href={localeHref(locale, '/dealers')} className="hover:underline">
             {t('nav_dealers')}
           </Link>
-          <Link href={localeHref(locale, '/app')} className="hover:underline">
-            {t('nav_app')}
-          </Link>
-
           {/* Кабинет продавца. Ссылка нужна людям — она даёт вход в
               «Мои объявления» с любой страницы, включая те, где шапка
               прокручена далеко вверх.

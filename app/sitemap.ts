@@ -60,7 +60,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/rent', priority: 0.9, changeFrequency: 'hourly' as const },
     { path: '/sell', priority: 0.8, changeFrequency: 'monthly' as const },
     { path: '/dealers', priority: 0.6, changeFrequency: 'monthly' as const },
-    { path: '/app', priority: 0.5, changeFrequency: 'monthly' as const },
     // Контентные страницы. Приоритет средний: трафика они приносят
     // немного, но отвечают на вопросы «что это за площадка» и «можно ли
     // ей доверять» — а это влияет на конверсию подачи объявления.
