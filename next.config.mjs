@@ -55,6 +55,24 @@ const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin
   : '';
 
+// Тот же адрес, но по схеме WebSocket. Нужен Realtime-подписке чата
+// (components/ChatRoom.tsx): она открывает
+// wss://<проект>.supabase.co/realtime/v1/websocket.
+//
+// ОТДЕЛЬНАЯ ЗАПИСЬ ОБЯЗАТЕЛЬНА. CSP управляет WebSocket через
+// connect-src, но сопоставляет источники ВМЕСТЕ СО СХЕМОЙ: запись
+// https://*.supabase.co НЕ разрешает wss://*.supabase.co, хотя хост тот
+// же. Без этой строки браузер отказывал в соединении, subscribe() падал
+// с исключением, и страница диалога показывала экран ошибки — при том
+// что сервер отдавал её со статусом 200.
+//
+// Схему выводим из origin, а не пишем 'wss' константой: локальный стек
+// (`supabase start`) живёт на http://127.0.0.1:54321, и там WebSocket
+// идёт по ws://, а не по wss://. Константа сломала бы чат локально.
+const supabaseWsOrigin = supabaseOrigin
+  ? supabaseOrigin.replace(/^http/, 'ws')
+  : '';
+
 // Источник скрипта аналитики. Добавляется в CSP только когда аналитика
 // настроена: без переменной окружения скрипт не подключается вовсе,
 // и открывать ему доступ незачем. Self-hosted установка Plausible
@@ -78,7 +96,11 @@ const csp = [
   `img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com${supabaseOrigin ? ` ${supabaseOrigin}` : ''}`,
   // connect-src нужен аналитике отдельно от script-src: события
   // отправляются fetch-запросом на /api/event того же origin.
-  `connect-src 'self' https://*.supabase.co${supabaseOrigin ? ` ${supabaseOrigin}` : ''}${plausibleOrigin ? ` ${plausibleOrigin}` : ''}`,
+  //
+  // wss://*.supabase.co — Realtime-канал чата. Идёт рядом с https-записью,
+  // а не вместо неё: по https работают RPC, авторизация и Storage, по
+  // wss — только подписка на новые сообщения.
+  `connect-src 'self' https://*.supabase.co wss://*.supabase.co${supabaseOrigin ? ` ${supabaseOrigin}` : ''}${supabaseWsOrigin ? ` ${supabaseWsOrigin}` : ''}${plausibleOrigin ? ` ${plausibleOrigin}` : ''}`,
   "font-src 'self' data:",
   "frame-ancestors 'none'",
   "object-src 'none'",
