@@ -561,42 +561,89 @@ export default function SellForm({
       // готовому адресу — заново отправлять их в хранилище незачем:
       // это лишний трафик и дубли одного файла в бакете. Грузятся
       // только те, что продавец добавил сейчас.
-      const photoUrls: string[] = [];
+      //
+      // ЗАГРУЗКА ИДЁТ ПО ТРИ ФАЙЛА ПАРАЛЛЕЛЬНО. Раньше файлы уходили
+      // строго по одному, и на мобильной сети это была основная часть
+      // ожидания: каждый запрос почти всё время ждёт сеть, а не процессор.
+      // Три потока дают выигрыш в 2–3 раза и при этом не забивают канал
+      // так, чтобы страница перестала отвечать.
+      //
+      // ПОРЯДОК РЕЗУЛЬТАТА ОБЯЗАН СОВПАДАТЬ С ПОРЯДКОМ В ФОРМЕ: индекс
+      // в photoUrls становится order_index в car_images, а нулевой
+      // элемент — обложкой объявления в каталоге. Поэтому результат
+      // кладётся В ЯЧЕЙКУ ПО ИНДЕКСУ, а не push-ем: при параллельной
+      // загрузке файлы финишируют в произвольной очерёдности, и push
+      // перемешал бы фотографии — обложкой стал бы случайный снимок.
+      const photoUrls: string[] = new Array<string>(files.length);
       setUploadProgress(0);
 
       // Прогресс считаем по НОВЫМ файлам: существующие не грузятся, и
       // включать их в знаменатель значило бы показать «50%» там, где
       // работы нет вовсе.
-      const toUpload = files.filter((item) => item.kind === 'file').length;
+      const pending = files
+        .map((item, index) => ({ item, index }))
+        .filter((entry) => entry.item.kind === 'file');
+      const toUpload = pending.length;
       let uploaded = 0;
 
-      for (const [i, item] of files.entries()) {
-        if (item.kind === 'url') {
-          photoUrls.push(item.url);
-          continue;
+      // Уже загруженные (режим правки) — сразу на свои места.
+      files.forEach((item, index) => {
+        if (item.kind === 'url') photoUrls[index] = item.url;
+      });
+
+      // Общий курсор по очереди: три воркера разбирают из него задачи,
+      // пока они не кончатся. Это ровно «три одновременно», тогда как
+      // разбиение на куски по три ждало бы самый медленный файл в куске.
+      let cursor = 0;
+      const UPLOAD_CONCURRENCY = 3;
+
+      async function uploadWorker() {
+        for (;;) {
+          const next = cursor++;
+          if (next >= pending.length) return;
+
+          const { item, index } = pending[next];
+          if (item.kind !== 'file') continue;
+
+          const file = item.file;
+          // Расширение всегда .jpg: preparePhoto перекодирует любой
+          // вход в JPEG и переименовывает файл. Запасной вариант
+          // оставлен на случай, если сюда попадёт файл мимо пикера.
+          const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+          // Путь ОБЯЗАН начинаться с uid: политика car_images_insert_own
+          // разрешает запись только в свою папку. Индекс в имени — из
+          // позиции в форме, иначе два воркера могли бы взять одну
+          // метку времени и перетереть файл друг друга.
+          const path = `${uid}/${Date.now()}_${index}.${ext}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('car-images')
+            .upload(path, file, { upsert: false });
+          if (uploadError) throw new Error(uploadError.message);
+
+          const { data: pub } = supabase.storage
+            .from('car-images')
+            .getPublicUrl(path);
+          photoUrls[index] = pub.publicUrl;
+
+          // Прогресс после КАЖДОГО файла: при десяти снимках это
+          // единственная обратная связь на протяжении десятков секунд.
+          uploaded += 1;
+          setUploadProgress(Math.round((uploaded / toUpload) * 100));
         }
-
-        const file = item.file;
-        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-        // Путь ОБЯЗАН начинаться с uid: политика car_images_insert_own
-        // разрешает запись только в свою папку.
-        const path = `${uid}/${Date.now()}_${i}.${ext}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('car-images')
-          .upload(path, file, { upsert: false });
-        if (uploadError) throw new Error(uploadError.message);
-
-        const { data: pub } = supabase.storage
-          .from('car-images')
-          .getPublicUrl(path);
-        photoUrls.push(pub.publicUrl);
-
-        // Прогресс после КАЖДОГО файла: при десяти снимках это
-        // единственная обратная связь на протяжении десятков секунд.
-        uploaded += 1;
-        setUploadProgress(Math.round((uploaded / toUpload) * 100));
       }
+
+      // Promise.all, а не allSettled: отказ хотя бы одного файла обязан
+      // прервать публикацию — объявление с молча пропавшей фотографией
+      // хуже, чем понятная ошибка. Остальные воркеры при этом
+      // дорабатывают свои текущие запросы, лишние файлы подчистит
+      // фоновая уборка временной папки.
+      await Promise.all(
+        Array.from(
+          { length: Math.min(UPLOAD_CONCURRENCY, toUpload) },
+          uploadWorker,
+        ),
+      );
 
       stage = 'create';
 

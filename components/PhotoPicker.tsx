@@ -19,9 +19,24 @@
 // мобильный. Две кнопки работают одинаково везде и доступны
 // с клавиатуры.
 //
-// ВАЛИДАЦИЯ на клиенте: тип и размер файла. Она дублирует ограничения
-// бакета car-images, но сообщает о проблеме ДО загрузки — иначе
+// ПЕРЕЖАТИЕ ПРИ ВЫБОРЕ. Каждый файл проходит через
+// preparePhoto (lib/imagePrepare.ts) СРАЗУ ПОСЛЕ выбора, а не
+// перед отправкой: длинная сторона до 1600px, JPEG 0.82,
+// EXIF-поворот применён однократно — тот же конвейер, что
+// у image_picker в приложении.
+//
+// ПОЧЕМУ ПРИ ВЫБОРЕ, А НЕ ПРИ ОТПРАВКЕ. Превью тогда
+// показывает РОВНО то, что уйдёт в хранилище: если снимок
+// повернулся по EXIF или потерял в качестве, это видно сразу,
+// а не после публикации. И ошибка формата (HEIC вне Safari)
+// приходит до того, как человек заполнил всю форму.
+//
+// ВАЛИДАЦИЯ на клиенте: тип и размер файла. Она дублирует
+// ограничения бакета car-images (миграция 0087: allowed_mime_types
+// и file_size_limit), но сообщает о проблеме ДО загрузки — иначе
 // человек ждёт отправки 12 мегабайт, чтобы получить отказ.
+// Серверный предел при этом НЕ единственный рубеж: клиентские
+// проверки обходятся прямым вызовом Storage API.
 //
 // ------------------------------------------------------------
 // ДВА ВИДА ФОТОГРАФИЙ В ОДНОМ НАБОРЕ
@@ -46,14 +61,11 @@ import { useEffect, useRef, useState } from 'react';
 import Alert from './ui/Alert';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
-
-// Разрешённые форматы. HEIC с iPhone намеренно НЕ включён: браузер не
-// умеет его показывать, и превью осталось бы пустым квадратом.
-// Мобильная камера отдаёт JPEG при выборе через файловый диалог.
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-
-// 10 МБ на файл. Снимок современного телефона укладывается с запасом.
-const MAX_SIZE_BYTES = 10 * 1024 * 1024;
+import {
+  ACCEPT_ATTR,
+  PhotoPrepareError,
+  preparePhoto,
+} from '@/lib/imagePrepare';
 
 // Один снимок в наборе: либо выбранный на устройстве файл, либо уже
 // загруженное фото объявления, известное по адресу.
@@ -92,6 +104,13 @@ export default function PhotoPicker({
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Идёт пережатие выбранных файлов. Отдельно от uploading: это разные
+  // фазы с разной причиной ожидания. Пережатие занимает доли секунды на
+  // снимок, но десять снимков на слабом телефоне — уже несколько секунд
+  // молчания сразу после закрытия файлового диалога, и без индикатора
+  // это выглядит как «кнопка не сработала».
+  const [preparing, setPreparing] = useState(false);
+
   // URL превью. Держим в состоянии, а не вычисляем при рендере:
   // createObjectURL на каждый рендер создавал бы новые ссылки и
   // протекал бы памятью, пока вкладка открыта.
@@ -120,44 +139,74 @@ export default function PhotoPicker({
     };
   }, [files]);
 
-  function handlePick(picked: FileList | null) {
+  // Сообщение по причине отказа. Отдельной функцией, а не цепочкой
+  // тернарников в обработчике: причин четыре, и каждая ведёт
+  // к своему действию пользователя.
+  function messageFor(reason: PhotoPrepareError['reason']): string {
+    switch (reason) {
+      case 'type':
+        return t('sell_err_photo_type');
+      case 'size':
+        return t('sell_err_photo_size');
+      case 'heic':
+        return t('sell_err_photo_heic');
+      default:
+        return t('sell_err_photo_decode');
+    }
+  }
+
+  async function handlePick(picked: FileList | null) {
     if (!picked) return;
     setError(null);
-
-    const accepted: File[] = [];
-
-    for (const file of Array.from(picked)) {
-      if (!ALLOWED_TYPES.includes(file.type)) {
-        setError(t('sell_err_photo_type'));
-        continue;
-      }
-      if (file.size > MAX_SIZE_BYTES) {
-        setError(t('sell_err_photo_size'));
-        continue;
-      }
-      accepted.push(file);
-    }
 
     // Лимит считается от УЖЕ выбранных: пользователь может добавлять
     // фотографии в несколько заходов, и каждый раз обнулять набор
     // было бы неожиданным поведением.
     const room = maxPhotos - files.length;
-    if (accepted.length > room) {
+    const chosen = Array.from(picked);
+
+    if (chosen.length > room) {
       setError(t('sell_err_photos_max'));
     }
-
-    if (room > 0) {
-      onChange([
-        ...files,
-        ...accepted
-          .slice(0, room)
-          .map((file): PhotoItem => ({ kind: 'file', file })),
-      ]);
+    if (room <= 0) {
+      if (inputRef.current) inputRef.current.value = '';
+      return;
     }
 
-    // Сброс значения поля: без него повторный выбор того же файла
-    // не вызовет onChange (значение не изменилось).
+    // Сброс значения поля ДО await: без него повторный выбор того
+    // же файла не вызовет onChange (значение не изменилось). После await
+    // элемент мог бы уже уйти из дерева.
     if (inputRef.current) inputRef.current.value = '';
+
+    setPreparing(true);
+    try {
+      // Пережатие ПОСЛЕДОВАТЕЛЬНОЕ, в отличие от загрузки в SellForm.
+      // Каждый файл держит декодированный битмап вне кучи JS
+      // (для 6000×4000 это ~96 МБ), и три таких параллельно уронили бы
+      // вкладку на телефоне. Сеть здесь не задействована — выигрыша
+      // от параллелизма всё равно не было бы.
+      const prepared: PhotoItem[] = [];
+      let firstError: string | null = null;
+
+      for (const file of chosen.slice(0, room)) {
+        try {
+          prepared.push({ kind: 'file', file: await preparePhoto(file) });
+        } catch (e) {
+          // Один бракованный файл не отменяет остальные: человек
+          // выбрал десять снимков, и терять девять из-за одного
+          // HEIC было бы грубо. Показываем ПЕРВУЮ причину:
+          // при выборе пачкой они почти всегда одной природы.
+          const reason =
+            e instanceof PhotoPrepareError ? e.reason : ('decode' as const);
+          firstError ??= messageFor(reason);
+        }
+      }
+
+      if (firstError) setError(firstError);
+      if (prepared.length > 0) onChange([...files, ...prepared]);
+    } finally {
+      setPreparing(false);
+    }
   }
 
   function remove(index: number) {
@@ -183,10 +232,13 @@ export default function PhotoPicker({
       <input
         ref={inputRef}
         type="file"
-        accept={ALLOWED_TYPES.join(',')}
+        // image/*, а не перечень MIME: часть галерей Android при жёстком
+        // списке не показывает вообще ничего. Расширения .heic/.heif
+        // дописаны для iOS — там HEIC мимо image/* проходит не всегда.
+        accept={ACCEPT_ATTR}
         multiple
-        disabled={uploading || files.length >= maxPhotos}
-        onChange={(e) => handlePick(e.target.files)}
+        disabled={uploading || preparing || files.length >= maxPhotos}
+        onChange={(e) => void handlePick(e.target.files)}
         className="sr-only"
         id="photo-input"
       />
@@ -195,7 +247,7 @@ export default function PhotoPicker({
         htmlFor="photo-input"
         className={
           'flex h-11 w-full cursor-pointer items-center justify-center rounded-control border border-dashed border-neutral-30 px-4 text-caption font-semibold transition-colors duration-fast ease-out ' +
-          (uploading || files.length >= maxPhotos
+          (uploading || preparing || files.length >= maxPhotos
             ? 'cursor-not-allowed text-neutral-30'
             : 'text-neutral-60 hover:border-brand-primary hover:text-brand-primary')
         }
@@ -213,9 +265,18 @@ export default function PhotoPicker({
         </Alert>
       )}
 
+      {/* Пережатие выбранных файлов. Без процентов: фаза короткая, и
+          счётчик успевал бы только мигнуть. */}
+      {preparing && (
+        <p className="mt-2 text-caption text-neutral-60">
+          {t('sell_photos_preparing')}
+        </p>
+      )}
+
       {/* Прогресс загрузки. Показывается на месте сетки превью, когда
-          файлы уже уходят на сервер: десять фотографий по 10 МБ грузятся
-          заметное время, и без индикатора это выглядит как зависание. */}
+          файлы уже уходят на сервер. После пережатия снимок весит
+          сотни килобайт вместо десятка мегабайт, но на слабой сети
+          пятнадцать таких файлов всё равно идут заметное время. */}
       {uploading && (
         <div className="mt-4">
           <div className="flex items-center justify-between text-caption text-neutral-60">
@@ -231,7 +292,7 @@ export default function PhotoPicker({
         </div>
       )}
 
-      {files.length > 0 && !uploading && (
+      {files.length > 0 && !uploading && !preparing && (
         <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
           {files.map((item, i) => (
             <div
@@ -245,6 +306,11 @@ export default function PhotoPicker({
                   // Обычный <img>, а не next/image: это blob-адрес
                   // локального файла, оптимизировать через сервер
                   // Next его нельзя и не нужно.
+                  //
+                  // Показывается УЖЕ ПЕРЕЖАТЫЙ файл (preparePhoto
+                  // отработал при выборе), поэтому превью совпадает
+                  // с тем, что ляжет в хранилище, — включая применённый
+                  // EXIF-поворот.
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={previews[i]}

@@ -16,6 +16,18 @@
 // плодить в бакете старые копии при каждой замене незачем. Из-за этого
 // адрес не меняется, и браузер показал бы кэшированную картинку —
 // поэтому к ссылке добавляется метка времени.
+//
+// ПРОВЕРКИ И ПЕРЕЖАТИЕ — ТЕ ЖЕ, ЧТО В PhotoPicker. Раньше здесь не было
+// ни одной: атрибут accept — подсказка файловому диалогу, а не защита,
+// и в бакет спокойно уходил 20-мегабайтный PNG, чтобы показаться
+// в кружке 32px. Теперь файл проходит через preparePhoto: тип и размер
+// проверяются, EXIF применяется однократно, на выходе JPEG.
+//
+// Длинная сторона у аватара та же 1600px, что у фотографий объявления.
+// Отдельная константа под 512 (как maxWidth в profile_screen.dart)
+// не заводится намеренно: один конвейер на оба сценария проще, чем два
+// почти одинаковых, а разницу в вес добирает next/image — он всё равно
+// отдаёт кружок по sizes="96px".
 // ============================================================
 
 import Image from 'next/image';
@@ -23,6 +35,11 @@ import Link from 'next/link';
 import { useRef, useState, useTransition } from 'react';
 
 import { saveContactEmail, saveProfile } from '@/app/my/actions';
+import {
+  ACCEPT_ATTR,
+  PhotoPrepareError,
+  preparePhoto,
+} from '@/lib/imagePrepare';
 import Alert from './ui/Alert';
 import Button from './ui/Button';
 import Card from './ui/Card';
@@ -56,17 +73,40 @@ export default function ProfileForm({ locale, profile }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  async function uploadAvatar(file: File) {
+  async function uploadAvatar(picked: File) {
     setError(null);
     setUploading(true);
 
     try {
+      // Пережатие ДО обращения к сети: незачем открывать сессию и
+      // занимать канал, если файл всё равно будет отклонён.
+      let file: File;
+      try {
+        file = await preparePhoto(picked);
+      } catch (e) {
+        // Причина отказа важна: «включите Наиболее совместимый» —
+        // это инструкция, а «не удалось загрузить» — тупик.
+        setError(
+          e instanceof PhotoPrepareError && e.reason === 'heic'
+            ? t('sell_err_photo_heic')
+            : e instanceof PhotoPrepareError && e.reason === 'size'
+              ? t('sell_err_photo_size')
+              : e instanceof PhotoPrepareError && e.reason === 'type'
+                ? t('sell_err_photo_type')
+                : t('profile_avatar_error'),
+        );
+        return;
+      }
+
       const supabase = getBrowserClient();
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) throw new Error('no session');
 
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-      const path = `${auth.user.id}/avatar.${ext}`;
+      // Расширение всегда .jpg: preparePhoto перекодирует любой вход
+      // в JPEG. Прежний вариант брал его из имени исходного файла,
+      // и после смены png → jpg в бакете оставался осиротевший
+      // avatar.png, который никто уже не показывал.
+      const path = `${auth.user.id}/avatar.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
@@ -328,7 +368,7 @@ export default function ProfileForm({ locale, profile }: Props) {
             <input
               ref={fileRef}
               type="file"
-              accept="image/jpeg,image/png,image/webp"
+              accept={ACCEPT_ATTR}
               className="sr-only"
               onChange={(e) => {
                 const file = e.target.files?.[0];

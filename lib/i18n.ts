@@ -579,6 +579,7 @@ export const dict = {
     profile_saved: 'Promene su sačuvane',
     profile_error: 'Nije uspelo. Pokušajte ponovo.',
     profile_avatar_error: 'Nije uspelo učitavanje fotografije',
+    profile_avatar_preparing: 'Pripremamo…',
 
     // Общее
     // ------------------------------------------------------------
@@ -744,15 +745,22 @@ export const dict = {
     // ------------------------------------------------------------
     sell_photos_add: 'Dodaj fotografije',
     sell_photos_hint:
-      'JPG, PNG ili WebP, do 10 MB. Prva fotografija je naslovna.',
+      'JPG, PNG, WebP ili HEIC. Prva fotografija je naslovna.',
+    sell_photos_preparing: 'Pripremamo fotografije…',
     sell_photos_cover: 'Naslovna',
     sell_photos_move_left: 'Pomeri levo',
     sell_photos_move_right: 'Pomeri desno',
     sell_photos_remove: 'Ukloni fotografiju',
     sell_photos_uploading: 'Otpremanje fotografija',
     sell_err_photos_required: 'Dodajte bar jednu fotografiju automobila.',
-    sell_err_photo_type: 'Podržani su samo JPG, PNG i WebP formati.',
-    sell_err_photo_size: 'Fotografija je prevelika — najviše 10 MB.',
+    sell_err_photo_type: 'Podržani su JPG, PNG, WebP i HEIC formati.',
+    sell_err_photo_size: 'Fotografija je prevelika — najviše 25 MB.',
+    // HEIC u pregledaču bez sistemskog dekodera (sve osim Safarija).
+    // Poruka mora da kaže ŠTA DA SE URADI, a ne samo šta nije uspelo.
+    sell_err_photo_heic:
+      'HEIC format radi samo u Safariju. Na iPhone-u uključite «Najkompatibilniji» (Podešavanja → Kamera → Formati) ili pošaljite JPG.',
+    sell_err_photo_decode:
+      'Fotografiju nije moguće obraditi. Pokušajte drugu.',
     sell_err_photos_max: 'Najviše 15 fotografija.',
 
     // ------------------------------------------------------------
@@ -1309,6 +1317,7 @@ export const dict = {
     profile_saved: 'Изменения сохранены',
     profile_error: 'Не удалось. Попробуйте ещё раз.',
     profile_avatar_error: 'Не удалось загрузить фотографию',
+    profile_avatar_preparing: 'Готовим…',
 
     // ------------------------------------------------------------
     // Навигация по контентным страницам.
@@ -1459,15 +1468,22 @@ export const dict = {
     // ------------------------------------------------------------
     sell_photos_add: 'Добавить фотографии',
     sell_photos_hint:
-      'JPG, PNG или WebP, до 10 МБ. Первая фотография — главная.',
+      'JPG, PNG, WebP или HEIC. Первая фотография — главная.',
+    sell_photos_preparing: 'Готовим фотографии…',
     sell_photos_cover: 'Главная',
     sell_photos_move_left: 'Сдвинуть влево',
     sell_photos_move_right: 'Сдвинуть вправо',
     sell_photos_remove: 'Удалить фотографию',
     sell_photos_uploading: 'Загрузка фотографий',
     sell_err_photos_required: 'Добавьте хотя бы одну фотографию автомобиля.',
-    sell_err_photo_type: 'Поддерживаются только форматы JPG, PNG и WebP.',
-    sell_err_photo_size: 'Фотография слишком большая — не больше 10 МБ.',
+    sell_err_photo_type: 'Поддерживаются форматы JPG, PNG, WebP и HEIC.',
+    sell_err_photo_size: 'Фотография слишком большая — не больше 25 МБ.',
+    // HEIC в браузере без системного декодера (всё, кроме Safari).
+    // Сообщение обязано говорить ЧТО СДЕЛАТЬ, а не только что не вышло.
+    sell_err_photo_heic:
+      'HEIC открывается только в Safari. На iPhone включите «Наиболее совместимые» (Настройки → Камера → Форматы) или отправьте JPG.',
+    sell_err_photo_decode:
+      'Не удалось обработать фотографию. Попробуйте другую.',
     sell_err_photos_max: 'Не больше 15 фотографий.',
 
     // ------------------------------------------------------------
