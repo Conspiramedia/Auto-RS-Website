@@ -93,8 +93,13 @@ export default defineConfig({
   // Порт 3100 (см. tests/env.ts): на 3000 обычно работает `next dev`
   // разработчика, и переиспользование его сервера означало бы прогон
   // тестов против дев-сборки.
+  // В CI сборка уже сделана работой «Типы и сборка» и восстановлена из
+  // артефакта — пересобирать её здесь значило бы делать одну и ту же
+  // работу дважды и упираться в таймаут на каждом прогоне матрицы.
   webServer: {
-    command: `npm run build && npm run start -- --port ${TEST_PORT} --hostname 127.0.0.1`,
+    command: isCI
+      ? `npm run start -- --port ${TEST_PORT} --hostname 127.0.0.1`
+      : `npm run build && npm run start -- --port ${TEST_PORT} --hostname 127.0.0.1`,
     url: TEST_BASE_URL,
     // Сборка Next занимает заметно больше дефолтных 60 секунд.
     timeout: 300_000,
