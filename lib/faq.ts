@@ -92,7 +92,7 @@ const FAQ_SR: FaqItem[] = [
     group: 'dealer',
     question: 'Kako da priključim svoj autosalon?',
     answer:
-      'Popunite obrazac na stranici za autosalone: naziv salona, kontakt osoba i telefon. Javljamo se i dogovaramo detalje. Objavljivanje je bez naknade dok platforma raste.',
+      'Popunite obrazac na stranici za autosalone: naziv salona, kontakt osoba i telefon. Javljamo se i dogovaramo detalje. Za partnerske salone objavljivanje je besplatno.',
   },
   {
     group: 'dealer',
@@ -168,7 +168,7 @@ const FAQ_RU: FaqItem[] = [
     group: 'dealer',
     question: 'Как подключить автосалон?',
     answer:
-      'Заполните форму на странице для автосалонов: название салона, контактное лицо и телефон. Мы свяжемся и обсудим детали. Размещение бесплатно в период роста платформы.',
+      'Заполните форму на странице для автосалонов: название салона, контактное лицо и телефон. Мы свяжемся и обсудим детали. Для салонов-партнёров размещение бесплатно.',
   },
   {
     group: 'dealer',

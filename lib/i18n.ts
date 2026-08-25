@@ -275,7 +275,7 @@ export const dict = {
     // Дилеры
     dealers_title: 'Za autosalone',
     dealers_offer: 'Sopstvena stranica salona i kupci iz cele Srbije',
-    dealers_offer_note: 'Bez naknade dok platforma raste',
+    dealers_offer_note: 'Za partnerske salone objavljivanje je besplatno',
     dealers_cta: 'Pošalji zahtev',
 
     // Аренда
@@ -1010,7 +1010,7 @@ export const dict = {
 
     dealers_title: 'Автосалонам',
     dealers_offer: 'Своя страница салона и покупатели со всей Сербии',
-    dealers_offer_note: 'Бесплатно в период роста платформы',
+    dealers_offer_note: 'Для салонов-партнёров размещение бесплатно',
     dealers_cta: 'Оставить заявку',
 
     // Аренда
