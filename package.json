@@ -8,7 +8,7 @@
     "prebuild": "node scripts/generate-suggestions.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "//lint": "Скрипта lint нет намеренно. next lint удалён в Next 16, а ESLint в проекте не установлен — ни пакета, ни конфига. Заводить его сейчас значило бы тянуть зависимость и разбирать её замечания по всей кодовой базе; проверка типов эту роль закрывает. Понадобится линтер — ставится eslint + eslint-config-next отдельной задачей.",
     "typecheck": "tsc --noEmit",
     "//test": "Тесты ВСЕГДА идут через dotenv -e .env.test: он перекрывает .env.local, который указывает на БОЕВОЙ Supabase. Второй рубеж — tests/env.ts, он падает при попытке запуска против прода.",
     "test": "npm run test:e2e",
