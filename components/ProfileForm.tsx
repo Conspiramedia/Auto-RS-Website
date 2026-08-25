@@ -35,12 +35,9 @@ import type { MyProfile } from '@/lib/types';
 type Props = {
   locale: Locale;
   profile: MyProfile;
-  // Баланс кошелька. Только чтение: пополнение на сайте не подключено,
-  // начисления делает администратор (миграция 0043).
-  balance: number;
 };
 
-export default function ProfileForm({ locale, profile, balance }: Props) {
+export default function ProfileForm({ locale, profile }: Props) {
   const t = getT(locale);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -302,9 +299,9 @@ export default function ProfileForm({ locale, profile, balance }: Props) {
         </div>
       </Card>
 
-      {/* Правая колонка — аватар и баланс. На десктопе стоит сбоку:
-          это не редактируемые поля формы, а сведения об аккаунте, и
-          мешать их с полями ввода незачем. На мобильном уходит вниз. */}
+      {/* Правая колонка — аватар. На десктопе стоит сбоку: это не
+          редактируемое поле формы, а сведения об аккаунте, и мешать
+          его с полями ввода незачем. На мобильном уходит вниз. */}
       <div className="space-y-4">
         <Card>
           <div className="flex flex-col items-center text-center">
@@ -351,21 +348,6 @@ export default function ProfileForm({ locale, profile, balance }: Props) {
             >
               {uploading ? t('profile_saving') : t('profile_avatar_change')}
             </Button>
-          </div>
-        </Card>
-
-        {/* Баланс. Только чтение: пополнение на сайте не подключено,
-            начисления делает администратор. */}
-        <Card>
-          <div className="text-caption text-neutral-60">
-            {t('profile_balance')}
-          </div>
-          <div className="mt-1 text-h3 font-bold">
-            {new Intl.NumberFormat(locale === 'ru' ? 'ru-RU' : 'sr-Latn-RS', {
-              style: 'currency',
-              currency: 'EUR',
-              maximumFractionDigits: 2,
-            }).format(balance)}
           </div>
         </Card>
       </div>

@@ -241,6 +241,9 @@ export default async function HomeView({ locale }: { locale: Locale }) {
             <div>
               <h2 className="text-h3 font-semibold">{t('dealers_title')}</h2>
               <p className="mt-1 text-neutral-60">{t('dealers_offer')}</p>
+              <p className="mt-1 text-caption text-neutral-50">
+                {t('dealers_offer_note')}
+              </p>
             </div>
             <Button
               variant="dark"

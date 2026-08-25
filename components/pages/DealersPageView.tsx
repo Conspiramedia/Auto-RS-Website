@@ -64,9 +64,14 @@ export default function DealersPageView({ locale }: { locale: Locale }) {
           <h1 className="text-h2 font-bold sm:text-h1">{t('dealers_title')}</h1>
           <BackCloseButton locale={locale} className="-mr-2 shrink-0" />
         </div>
+        {/* Оффер в две строки: первая называет ценность, вторая
+            снимает вопрос цены. Разделены намеренно — зелёным
+            акцентом продаётся выгода, а условие набрано спокойно
+            и не спорит с ней за внимание. */}
         <p className="mt-2 text-h3 font-semibold text-brand-green">
           {t('dealers_offer')}
         </p>
+        <p className="mt-1 text-neutral-60">{t('dealers_offer_note')}</p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           {BENEFITS.map((b) => (

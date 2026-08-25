@@ -16,7 +16,6 @@ import { notFound } from 'next/navigation';
 import ProfileForm from '@/components/ProfileForm';
 import StateCard from '@/components/ui/StateCard';
 import type { Locale } from '@/lib/i18n';
-import { getT } from '@/lib/i18n';
 import { getCurrentUser, getServerClient } from '@/lib/supabaseServer';
 import type { MyProfile } from '@/lib/types';
 
@@ -25,22 +24,16 @@ type Props = {
 };
 
 export default async function ProfilePageView({ locale }: Props) {
-  const t = getT(locale);
-
   const user = await getCurrentUser();
   if (!user) notFound();
 
   const supabase = await getServerClient();
 
-  // Профиль и баланс — параллельно: запросы независимы.
-  const [profileResult, balanceResult] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('id, email, full_name, phone, avatar_url, seller_kind, company_name, logo_url')
-      .eq('id', user.id)
-      .maybeSingle(),
-    supabase.rpc('get_balance'),
-  ]);
+  const profileResult = await supabase
+    .from('profiles')
+    .select('id, email, full_name, phone, avatar_url, seller_kind, company_name, logo_url')
+    .eq('id', user.id)
+    .maybeSingle();
 
   if (profileResult.error || !profileResult.data) {
     return (
@@ -57,9 +50,5 @@ export default async function ProfilePageView({ locale }: Props) {
     phone: user.phone ? `+${user.phone.replace(/^\+/, '')}` : row.phone,
   };
 
-  // Ошибку баланса не считаем фатальной: профиль важнее, а ноль
-  // честнее пустого места — денежных операций на сайте пока нет.
-  const balance = balanceResult.error ? 0 : Number(balanceResult.data ?? 0);
-
-  return <ProfileForm locale={locale} profile={profile} balance={balance} />;
+  return <ProfileForm locale={locale} profile={profile} />;
 }

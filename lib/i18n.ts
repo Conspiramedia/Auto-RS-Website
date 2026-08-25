@@ -279,7 +279,8 @@ export const dict = {
 
     // Дилеры
     dealers_title: 'Za autosalone',
-    dealers_offer: 'Prva 3 meseca besplatno',
+    dealers_offer: 'Sopstvena stranica salona i kupci sa sajta i iz aplikacije',
+    dealers_offer_note: 'Bez naknade dok platforma raste',
     dealers_cta: 'Pošalji zahtev',
 
     // Аренда
@@ -578,7 +579,6 @@ export const dict = {
     profile_company: 'Naziv autosalona',
     profile_company_required: 'Unesite naziv autosalona',
     profile_showcase: 'Moja stranica',
-    profile_balance: 'Stanje',
     profile_save: 'Sačuvaj',
     profile_saving: 'Čuvamo…',
     profile_saved: 'Promene su sačuvane',
@@ -624,9 +624,9 @@ export const dict = {
     // ------------------------------------------------------------
     // /dealers — выгоды для автосалона.
     // ------------------------------------------------------------
-    dealers_benefit_1_title: 'Prva 3 meseca besplatno',
+    dealers_benefit_1_title: 'Objavljivanje bez čekanja',
     dealers_benefit_1_text:
-      'Objavite ceo vozni park bez naknade i procenite rezultat.',
+      'Oglasi partnerskih salona idu na sajt odmah, bez moderacije.',
     dealers_benefit_2_title: 'Stranica autosalona',
     dealers_benefit_2_text:
       'Svi vaši automobili na jednom mestu, sa logotipom i nazivom salona.',
@@ -799,7 +799,7 @@ export const dict = {
 
     about_dealer_title: 'Za autosalone',
     about_dealer_1: 'Posebna stranica salona sa celim voznim parkom.',
-    about_dealer_2: 'Prva 3 meseca bez naknade.',
+    about_dealer_2: 'Objavljivanje bez čekanja za partnerske salone.',
     about_dealer_3: 'Oznaka „Autosalon“ na svakom oglasu.',
     about_dealer_4: 'Kupci iz cele Srbije, sa sajta i iz aplikacije.',
 
@@ -844,9 +844,9 @@ export const dict = {
     how_dealer_2_title: 'Dobijate stranicu salona',
     how_dealer_2_text:
       'Sva vaša vozila na jednom mestu, sa nazivom i logotipom salona. Svaki oglas nosi oznaku „Autosalon“ — kupci vide da imaju posla sa firmom.',
-    how_dealer_3_title: 'Prva 3 meseca besplatno',
+    how_dealer_3_title: 'Objavljujete ceo vozni park',
     how_dealer_3_text:
-      'Testirajte platformu bez naknade i procenite rezultat. O uslovima nakon probnog perioda dogovaramo se pojedinačno.',
+      'Oglasi partnerskih salona idu na sajt odmah, bez čekanja na moderaciju. Vide ih posetioci sajta i korisnici mobilne aplikacije.',
 
     how_step: 'Korak',
 
@@ -882,7 +882,7 @@ export const dict = {
     meta_sell_desc:
       'Objavite oglas za prodaju automobila besplatno — bez instaliranja aplikacije. Potvrda broja SMS kodom.',
     meta_dealers_desc:
-      'Postavite oglase vašeg autosalona na RS Auto. Prva 3 meseca besplatno.',
+      'Postavite oglase vašeg autosalona na RS Auto: sopstvena stranica salona sa celim voznim parkom i kupci sa sajta i iz aplikacije.',
     meta_app_desc:
       'Aplikacija RS Auto: poruke sa prodavcem, obaveštenja o novim oglasima i sniženjima cena.',
     // Телефон в описании НЕ упоминается: поддержка работает только по
@@ -1019,7 +1019,8 @@ export const dict = {
     home_all_cars: 'Все автомобили',
 
     dealers_title: 'Автосалонам',
-    dealers_offer: 'Первые 3 месяца бесплатно',
+    dealers_offer: 'Своя страница салона и покупатели с сайта и из приложения',
+    dealers_offer_note: 'Бесплатно в период роста платформы',
     dealers_cta: 'Оставить заявку',
 
     // Аренда
@@ -1313,7 +1314,6 @@ export const dict = {
     profile_company: 'Название автосалона',
     profile_company_required: 'Укажите название автосалона',
     profile_showcase: 'Моя витрина',
-    profile_balance: 'Баланс',
     profile_save: 'Сохранить',
     profile_saving: 'Сохраняем…',
     profile_saved: 'Изменения сохранены',
@@ -1345,9 +1345,9 @@ export const dict = {
     // ------------------------------------------------------------
     // /dealers — выгоды для автосалона.
     // ------------------------------------------------------------
-    dealers_benefit_1_title: 'Первые 3 месяца бесплатно',
+    dealers_benefit_1_title: 'Публикация без ожидания',
     dealers_benefit_1_text:
-      'Разместите весь автопарк без оплаты и оцените результат.',
+      'Объявления салонов-партнёров попадают на сайт сразу, без модерации.',
     dealers_benefit_2_title: 'Страница автосалона',
     dealers_benefit_2_text:
       'Все ваши автомобили в одном месте, с логотипом и названием салона.',
@@ -1519,7 +1519,7 @@ export const dict = {
 
     about_dealer_title: 'Автосалонам',
     about_dealer_1: 'Отдельная страница салона со всем автопарком.',
-    about_dealer_2: 'Первые 3 месяца без оплаты.',
+    about_dealer_2: 'Публикация без ожидания для салонов-партнёров.',
     about_dealer_3: 'Пометка «Автосалон» на каждом объявлении.',
     about_dealer_4: 'Покупатели со всей Сербии — с сайта и из приложения.',
 
@@ -1564,9 +1564,9 @@ export const dict = {
     how_dealer_2_title: 'Получаете страницу салона',
     how_dealer_2_text:
       'Все ваши машины в одном месте, с названием и логотипом салона. На каждом объявлении — пометка «Автосалон»: покупатели видят, что имеют дело с компанией.',
-    how_dealer_3_title: 'Первые 3 месяца бесплатно',
+    how_dealer_3_title: 'Размещаете весь автопарк',
     how_dealer_3_text:
-      'Попробуйте площадку без оплаты и оцените результат. Условия после пробного периода обсуждаем индивидуально.',
+      'Объявления салонов-партнёров попадают на сайт сразу, без ожидания модерации. Их видят и посетители сайта, и пользователи мобильного приложения.',
 
     how_step: 'Шаг',
 
@@ -1600,7 +1600,7 @@ export const dict = {
     meta_sell_desc:
       'Разместите объявление о продаже автомобиля бесплатно — без установки приложения. Подтверждение номера кодом из SMS.',
     meta_dealers_desc:
-      'Размещайте объявления вашего автосалона на RS Auto. Первые 3 месяца бесплатно.',
+      'Размещайте объявления вашего автосалона на RS Auto: своя страница салона со всем автопарком и покупатели с сайта и из приложения.',
     meta_app_desc:
       'Приложение RS Auto: переписка с продавцом, уведомления о новых объявлениях и снижении цен.',
     // См. комментарий в сербском словаре: телефона поддержки нет.
