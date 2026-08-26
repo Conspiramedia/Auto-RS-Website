@@ -322,10 +322,25 @@ export default function ListingActions({
               : t(confirming.action.confirmKey)}
           </p>
 
-          {/* Ряд кнопок. Подтверждение слева, отказ справа — тот же
-              порядок, что в подтверждении выхода (SignOutButton), где
-              «Отмена» тоже стоит второй. */}
-          <div className="mt-2 flex flex-wrap items-center gap-2">
+          {/* ------------------------------------------------------
+              Ряд кнопок: две равные половины во всю ширину карточки.
+              ------------------------------------------------------
+              Подтверждение слева, отказ справа — тот же порядок, что в
+              подтверждении выхода (SignOutButton), где «Отмена» тоже
+              стоит второй.
+
+              Ширину задаёт flex-1 basis-0 на каждой кнопке (см. ниже),
+              а не содержимое: подписи разной длины («Да» против
+              «Отмена», «Сохраняем…» в момент отправки) иначе давали бы
+              кнопки разного размера, и ряд выглядел бы случайным.
+              basis-0 обязателен — с базой auto остаток делится поверх
+              ширины текста, и половины снова разъезжаются.
+
+              flex-wrap здесь НЕ нужен: две половины помещаются в любую
+              колонку кабинета вплоть до 360px, а перенос сломал бы
+              равенство — нижняя кнопка растянулась бы во всю ширину
+              под верхней. */}
+          <div className="mt-2 flex items-stretch gap-2">
             {/* Красная, а не нейтральная тёмная: вопросы про снятие и
                 продажу убирают объявление из выдачи, и цвет обязан
                 предупреждать о последствии до нажатия. Тёмная плашка
@@ -343,7 +358,12 @@ export default function ListingActions({
                 подменять переход обработчиком нельзя (сломались бы
                 новая вкладка, средняя кнопка мыши, предзагрузка). */}
             {confirming.kind === 'edit' ? (
-              <Button size="sm" variant="destructive" href={editHref}>
+              <Button
+                size="sm"
+                variant="destructive"
+                href={editHref}
+                className="flex-1 basis-0"
+              >
                 {t('my_confirm_yes')}
               </Button>
             ) : (
@@ -351,6 +371,7 @@ export default function ListingActions({
                 size="sm"
                 variant="destructive"
                 disabled={pending}
+                className="flex-1 basis-0"
                 onClick={() =>
                   run(() => setCarStatus(carId, confirming.action.target))
                 }
@@ -363,6 +384,7 @@ export default function ListingActions({
               size="sm"
               variant="secondary"
               disabled={pending}
+              className="flex-1 basis-0"
               onClick={() => setConfirming(null)}
             >
               {t('my_confirm_no')}
