@@ -46,16 +46,29 @@ export default async function EditListingView({ locale, carId }: Props) {
     p_car_id: carId,
   });
 
-  const car = (data ?? [])[0] as { user_id?: string; status?: string } | undefined;
+  const car = (data ?? [])[0] as
+    | { user_id?: string; status?: string; archived_by?: string | null }
+    | undefined;
 
   // Нет объявления, ошибка выборки или объявление чужое — 404.
   if (error || !car || car.user_id !== user.id) notFound();
 
-  // Проданное и архивное сначала возвращают в публикацию: правка
-  // завершённой сделки означала бы подмену её условий задним числом.
+  // Объявление, снятое администратором, редактируется: правка по
+  // существу отправляет его на повторную модерацию (update_car_v3,
+  // миграция 0090). Это единственный путь такого объявления обратно в
+  // выдачу, и закрывать перед ним форму нельзя.
+  const fromAdminArchive =
+    car.status === 'archived' && car.archived_by === 'admin';
+
+  // Проданное и СВОЙ архив сначала возвращают в публикацию: правка
+  // завершённой сделки означала бы подмену её условий задним числом,
+  // а для своего архива есть кнопка «Вернуть» — путь короче.
   // Тот же список статусов проверяет update_car_v3 — здесь мы лишь не
   // показываем форму, которую сервер всё равно отклонит.
-  if (!['moderation', 'rejected', 'active'].includes(car.status ?? '')) {
+  if (
+    !['moderation', 'rejected', 'active'].includes(car.status ?? '') &&
+    !fromAdminArchive
+  ) {
     notFound();
   }
 

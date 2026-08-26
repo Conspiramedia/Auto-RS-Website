@@ -459,8 +459,11 @@ export const dict = {
     // takav oglas ne može sam da vrati, i mora da vidi zašto.
     my_status_archived_by_admin: 'Sklonjeno od strane administratora',
     my_archived_reason: 'Razlog sklanjanja',
-    // Jedini put nazad vodi preko podrške — dugmeta „Vrati“ nema.
-    my_archived_support: 'Obratite se podršci',
+    // Put nazad u ponudu: ispraviti primedbu i poslati na ponovnu
+    // proveru. Dugmeta „Vrati“ nema — odluku administratora prodavac
+    // ne poništava, ali primedbu može da otkloni sam.
+    my_archived_fix_hint:
+      'Ispravite primedbu i sačuvajte — oglas ide na ponovnu proveru.',
 
     // Metrike oglasa.
     my_metric_views: 'Pregledi',
@@ -1207,8 +1210,11 @@ export const dict = {
     // за что его сняли.
     my_status_archived_by_admin: 'Снято администратором',
     my_archived_reason: 'Причина снятия',
-    // Единственный путь назад — через поддержку: кнопки «Вернуть» нет.
-    my_archived_support: 'Обратиться в поддержку',
+    // Путь назад в выдачу: исправить замечание и отправить на
+    // повторную проверку. Кнопки «Вернуть» нет — решение
+    // администратора продавец не отменяет, но замечание устраняет сам.
+    my_archived_fix_hint:
+      'Исправьте замечание и сохраните — объявление уйдёт на повторную проверку.',
 
     // Метрики объявления.
     my_metric_views: 'Просмотры',

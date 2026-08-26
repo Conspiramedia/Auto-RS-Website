@@ -132,9 +132,11 @@ export default function MyListingCard({ locale, listing }: Props) {
 
           {/* Причина снятия администратором + единственный доступный
               продавцу путь дальше. Кнопки «Вернуть» у такого объявления
-              нет (ListingActions), и без ссылки на поддержку карточка
-              оказалась бы тупиком: статус объясняет, что случилось, но
-              не что теперь делать.
+              нет (ListingActions): решение администратора владелец
+              прямым возвратом не отменяет. Зато замечание он может
+              исправить сам — правка по существу отправляет объявление
+              на повторную модерацию (update_car_v3, миграция 0090), и
+              подсказка ведёт именно туда.
 
               Причина выводится, только если она есть: у архива времён
               до 0089 archived_by = null, и до этой ветки такой случай
@@ -149,12 +151,7 @@ export default function MyListingCard({ locale, listing }: Props) {
                   {listing.archived_reason}{' '}
                 </>
               )}
-              <Link
-                href={localeHref(locale, '/contact')}
-                className="font-semibold underline"
-              >
-                {t('my_archived_support')}
-              </Link>
+              {t('my_archived_fix_hint')}
             </Alert>
           )}
         </div>
