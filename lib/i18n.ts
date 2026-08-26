@@ -478,6 +478,11 @@ export const dict = {
     my_confirm_archive: 'Skloniti oglas sa objave?',
     my_confirm_restore: 'Vratiti oglas u objavu?',
     my_confirm_sold: 'Označiti kao prodato?',
+    // Pitanje pred izmenu AKTIVNOG oglasa: izmena po suštini šalje ga
+    // na ponovnu moderaciju (update_car_v3), pa privremeno nestaje iz
+    // pretrage. Oglas koji je već na moderaciji ili odbijen ovo pitanje
+    // ne dobija — tamo se nema šta izgubiti.
+    my_confirm_edit: 'Izmena šalje oglas na ponovnu moderaciju — privremeno nestaje iz pretrage. Nastaviti?',
     my_confirm_yes: 'Da',
     my_confirm_no: 'Otkaži',
     my_action_busy: 'Čuvamo…',
@@ -1192,6 +1197,12 @@ export const dict = {
     my_confirm_archive: 'Снять объявление с публикации?',
     my_confirm_restore: 'Вернуть объявление в публикацию?',
     my_confirm_sold: 'Отметить проданным?',
+    // Вопрос перед правкой АКТИВНОГО объявления: правка по существу
+    // отправляет его на повторную модерацию (update_car_v3), и оно
+    // временно пропадает из выдачи. Объявление, которое уже на
+    // модерации или отклонено, этот вопрос не получает — там терять
+    // нечего.
+    my_confirm_edit: 'Правка отправит объявление на повторную модерацию — оно временно пропадёт из выдачи. Продолжить?',
     my_confirm_yes: 'Да',
     my_confirm_no: 'Отмена',
     my_action_busy: 'Сохраняем…',
