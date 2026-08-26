@@ -56,8 +56,8 @@ export const SEARCH_SUGGESTIONS: SearchSuggestion[] = [
     filters: {"brand":"BMW","priceTo":3000},
   },
   {
-    text: { sr: "Acura MDX", ru: "Acura MDX" },
-    filters: {"brand":"Acura","model":"MDX"},
+    text: { sr: "Alfa Romeo Junior", ru: "Alfa Romeo Junior" },
+    filters: {"brand":"Alfa Romeo","model":"Junior"},
   },
   {
     text: { sr: "Ford do 15.000 €", ru: "Ford до 15 000 €" },
