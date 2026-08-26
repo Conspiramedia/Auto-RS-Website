@@ -474,7 +474,10 @@ export const dict = {
     my_action_archive: 'Skloni',
     my_action_restore: 'Vrati',
     my_action_sold: 'Prodato',
-    my_action_promote: 'Promoviši',
+    // «Podigni», a ne «Promoviši»: na oglasnim sajtovima to je uobičajen
+    // naziv radnje, i kraći je — bitno za dugme u uskoj koloni kabineta.
+    // Isto rešenje kao u ruskom rečniku (my_action_promote: «Поднять»).
+    my_action_promote: 'Podigni',
     // Potvrda u dva koraka: pitanje + Da/Otkaži.
     my_confirm_archive: 'Skloniti oglas sa objave?',
     my_confirm_restore: 'Vratiti oglas u objavu?',
