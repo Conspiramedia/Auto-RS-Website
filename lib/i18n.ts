@@ -507,6 +507,10 @@ export const dict = {
     edit_saving: 'Čuvamo…',
     edit_loading: 'Učitavamo oglas…',
     edit_err_load: 'Nije uspelo učitavanje oglasa.',
+    // Sesija je istekla dok je forma bila otvorena. Ranije je ovde
+    // stajala poruka o SMS kodu — u režimu izmene to je besmisleno:
+    // kod se uopšte ne traži.
+    edit_err_session: 'Sesija je istekla. Prijavite se ponovo i pokušajte opet.',
     // Upozorenje iznad dugmeta: izmena sadržaja vraća oglas na proveru
     // i gasi promociju (migracija 0067).
     edit_moderation_warning:
@@ -1258,6 +1262,10 @@ export const dict = {
     edit_saving: 'Сохраняем…',
     edit_loading: 'Загружаем объявление…',
     edit_err_load: 'Не удалось загрузить объявление.',
+    // Сессия истекла, пока форма была открыта. Раньше здесь стояло
+    // сообщение про SMS-код — в режиме правки оно бессмысленно:
+    // никакого кода форма не запрашивает.
+    edit_err_session: 'Сессия истекла. Войдите заново и попробуйте ещё раз.',
     // Предупреждение над кнопкой: правка контента возвращает объявление
     // на проверку и гасит продвижение (миграция 0067).
     edit_moderation_warning:

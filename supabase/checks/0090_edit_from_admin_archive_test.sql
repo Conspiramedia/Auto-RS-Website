@@ -22,6 +22,8 @@
 --      как «оспорить решение»);
 --   5) автопубликация ПОСЛЕ такой правки не срабатывает — даже у
 --      доверенного салона, даже когда объявление формально идеально;
+--  5а) замена фотографий при правке из архива: старый снимок уходит,
+--      новый становится обложкой, объявление уезжает на модерацию;
 --   6) свой архив в update_car_v3 по-прежнему не редактируется;
 --   7) get_car_details отдаёт archived_by владельцу и скрывает от
 --      постороннего.
@@ -147,9 +149,12 @@ $fn$;
 -- описанием. Описание — единственное, что меняется между вызовами,
 -- поэтому «существенная правка» и «правка без изменений» отличаются
 -- ровно одним аргументом.
+-- p_photos: NULL — набор фотографий не трогаем (правка только текста);
+-- массив — полная замена, как это делает форма сайта.
 create or replace function pg_temp.edit_car(
   p_car_id uuid,
-  p_desc   text
+  p_desc   text,
+  p_photos text[] default null
 )
 returns text
 language plpgsql
@@ -175,7 +180,7 @@ begin
       v_car.currency::text,
       v_car.city,
       null, null,
-      null,                      -- фотографии не трогаем
+      p_photos,
       v_car.body_type,
       v_car.transmission,
       v_car.fuel,
@@ -483,6 +488,114 @@ begin
   end if;
 
   raise notice 'ТЕСТ 5 ok: барьер держит, обычная автопубликация жива';
+end $$;
+
+
+-- ============================================================
+-- ТЕСТ 5а. ЗАМЕНА ФОТОГРАФИЙ ПРИ ПРАВКЕ ИЗ АДМИНСКОГО АРХИВА
+-- ============================================================
+-- Самый частый повод для снятия — именно фотографии («на снимках
+-- другой автомобиль», «чужое фото»), и исправить замечание значит
+-- удалить один снимок и добавить другой. Если набор фото в статусе
+-- archived не заменяется, весь цикл правки бесполезен: продавец не
+-- может устранить то, за что его сняли.
+--
+-- Проверяется полная замена: старого снимка в car_images не остаётся,
+-- новые лежат в переданном порядке (первый — обложка), объявление
+-- уходит на модерацию, метки архива сброшены.
+do $$
+declare
+  v_car     uuid;
+  v_status  text;
+  v_by      text;
+  v_reason  text;
+  v_photos  text[];
+begin
+  v_car := pg_temp.mk_car('00000000-0000-4000-f100-0000000000c2', 'active');
+
+  -- Исходный набор: два снимка, один из которых и вызвал замечание.
+  insert into public.car_images (car_id, image_url, order_index)
+  values
+    (v_car, 'https://example.test/old-wrong-car.jpg', 0),
+    (v_car, 'https://example.test/old-keep.jpg',      1);
+
+  perform pg_temp.act_as('00000000-0000-4000-f100-0000000000c1');
+  set local role authenticated;
+
+  perform public.admin_set_car_status(
+    v_car, 'archived', 'на первом снимке другой автомобиль, замените фото'
+  );
+
+  reset role;
+
+  perform pg_temp.act_as('00000000-0000-4000-f100-0000000000c2');
+  set local role authenticated;
+
+  -- Владелец удаляет бракованный снимок и добавляет новый.
+  -- Порядок в массиве = order_index: новый снимок становится обложкой.
+  perform pg_temp.edit_car(
+    v_car,
+    'Прежнее описание объявления.',        -- текст НЕ меняем
+    array[
+      'https://example.test/new-correct-car.jpg',
+      'https://example.test/old-keep.jpg'
+    ]
+  );
+
+  reset role;
+
+  select c.status::text, c.archived_by::text, c.archived_reason
+    into v_status, v_by, v_reason
+    from public.cars c where c.id = v_car;
+
+  -- Замена фотографий — существенная правка сама по себе, даже когда
+  -- ни одно текстовое поле не тронуто: покупатель видит прежде всего
+  -- снимки, и модератор обязан их проверить.
+  if v_status <> 'moderation' then
+    raise exception
+      'ТЕСТ 5а ПРОВАЛЕН: после замены фотографий статус «%», ожидался '
+      'moderation. Замена фото не считается изменением контента.',
+      v_status;
+  end if;
+
+  if v_by is not null or v_reason is not null then
+    raise exception
+      'ТЕСТ 5а ПРОВАЛЕН: метки архива не сброшены (archived_by = «%», '
+      'причина «%»)', v_by, v_reason;
+  end if;
+
+  select array_agg(ci.image_url order by ci.order_index)
+    into v_photos
+    from public.car_images ci
+   where ci.car_id = v_car;
+
+  if array_length(v_photos, 1) is distinct from 2 then
+    raise exception
+      'ТЕСТ 5а ПРОВАЛЕН: в объявлении % фотографий, ожидалось 2',
+      coalesce(array_length(v_photos, 1), 0);
+  end if;
+
+  -- Удалённый снимок не должен остаться ни на какой позиции.
+  if 'https://example.test/old-wrong-car.jpg' = any(v_photos) then
+    raise exception
+      'ТЕСТ 5а ПРОВАЛЕН: удалённая фотография осталась в объявлении — '
+      'замечание модератора не устранено, набор = %', v_photos;
+  end if;
+
+  -- Порядок: новый снимок первый, значит он и обложка в каталоге.
+  if v_photos[1] <> 'https://example.test/new-correct-car.jpg' then
+    raise exception
+      'ТЕСТ 5а ПРОВАЛЕН: обложкой стал «%», ожидался новый снимок',
+      v_photos[1];
+  end if;
+
+  if v_photos[2] <> 'https://example.test/old-keep.jpg' then
+    raise exception
+      'ТЕСТ 5а ПРОВАЛЕН: второй снимок «%», ожидался сохранённый',
+      v_photos[2];
+  end if;
+
+  raise notice 'ТЕСТ 5а ok: фотографии заменились, объявление на проверке';
 end $$;
 
 
