@@ -35,6 +35,7 @@ import { trackEvent } from '@/lib/analytics';
 import type { DictKey } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
+import { supabaseErrorText } from '@/lib/otp';
 import { getBrowserClient } from '@/lib/supabaseClient';
 
 // Коды ошибок RPC → ключи словаря. Тот же приём, что в ContactForm:
@@ -64,7 +65,7 @@ export default function AppWaitlist({ locale }: { locale: Locale }) {
         { p_email: email, p_locale: locale },
       );
 
-      if (rpcError) throw new Error(rpcError.message);
+      if (rpcError) throw new Error(supabaseErrorText(rpcError));
 
       if (data && data.ok === false) {
         setError(t(ERROR_KEY[data.error] ?? 'app_wait_err_failed'));
@@ -78,9 +79,7 @@ export default function AppWaitlist({ locale }: { locale: Locale }) {
       setDone(true);
     } catch (err) {
       // В консоль — только текст ошибки, без адреса.
-      console.error('[RS Auto] Ошибка подписки на релиз приложения', {
-        message: err instanceof Error ? err.message : String(err),
-      });
+      console.error('[RS Auto] Ошибка подписки на релиз приложения', supabaseErrorText(err));
       setError(t('app_wait_err_failed'));
     } finally {
       setBusy(false);

@@ -46,6 +46,7 @@ import Card from './ui/Card';
 import { fieldClass } from './ui/Field';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
+import { supabaseErrorText } from '@/lib/otp';
 import { getBrowserClient } from '@/lib/supabaseClient';
 import type { MyProfile } from '@/lib/types';
 
@@ -111,7 +112,7 @@ export default function ProfileForm({ locale, profile }: Props) {
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(path, file, { upsert: true });
-      if (uploadError) throw new Error(uploadError.message);
+      if (uploadError) throw new Error(supabaseErrorText(uploadError));
 
       const { data: pub } = supabase.storage
         .from('avatars')

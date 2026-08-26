@@ -55,6 +55,7 @@ import {
   RESEND_DELAY_SEC,
   humanOtpError,
   isOtpComplete,
+  supabaseErrorText,
 } from '@/lib/otp';
 import { getBrowserClient } from '@/lib/supabaseClient';
 
@@ -169,7 +170,7 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
         { p_phone: e164 },
       );
 
-      if (quotaError) throw new Error(quotaError.message);
+      if (quotaError) throw new Error(supabaseErrorText(quotaError));
 
       if (quota && quota.allowed === false) {
         setError(t('otp_err_quota'));
@@ -179,7 +180,7 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
       const { error: otpError } = await supabase.auth.signInWithOtp({
         phone: e164,
       });
-      if (otpError) throw new Error(otpError.message);
+      if (otpError) throw new Error(supabaseErrorText(otpError));
 
       setSentTo(e164);
       setCodeSent(true);
@@ -238,7 +239,7 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
         { p_email: clean },
       );
 
-      if (gateError) throw new Error(gateError.message);
+      if (gateError) throw new Error(supabaseErrorText(gateError));
 
       if (!gate || gate.allowed === false) {
         // Один текст на все причины отказа: нет такого адреса, нет
@@ -257,7 +258,7 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
           shouldCreateUser: false,
         },
       });
-      if (otpError) throw new Error(otpError.message);
+      if (otpError) throw new Error(supabaseErrorText(otpError));
 
       setSentTo(clean);
       setCodeSent(true);
@@ -296,7 +297,7 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
           : { phone: sentTo, token: code.trim(), type: 'sms' },
       );
 
-      if (verifyError) throw new Error(verifyError.message);
+      if (verifyError) throw new Error(supabaseErrorText(verifyError));
       if (!data.session) throw new Error(t('otp_err_failed'));
 
       // Согласие давалось гостем — переносим на созданный аккаунт,

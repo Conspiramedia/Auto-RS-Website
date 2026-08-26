@@ -17,6 +17,7 @@ import { useState } from 'react';
 
 import type { Locale } from '@/lib/i18n';
 import { getT, type DictKey } from '@/lib/i18n';
+import { supabaseErrorText } from '@/lib/otp';
 import { getBrowserClient } from '@/lib/supabaseClient';
 import { trackEvent } from '@/lib/analytics';
 import Alert from './ui/Alert';
@@ -89,7 +90,7 @@ export default function ContactForm({ locale }: Props) {
         },
       );
 
-      if (rpcError) throw new Error(rpcError.message);
+      if (rpcError) throw new Error(supabaseErrorText(rpcError));
 
       if (data && data.ok === false) {
         setError(t(ERROR_KEY[data.error] ?? 'contact_err_unknown'));
@@ -105,9 +106,7 @@ export default function ContactForm({ locale }: Props) {
     } catch (e) {
       // В консоль — только текст ошибки: имя и почта отправителя это
       // персональные данные, и в логе браузера им не место.
-      console.error('[RS Auto] Ошибка отправки обращения', {
-        message: e instanceof Error ? e.message : String(e),
-      });
+      console.error('[RS Auto] Ошибка отправки обращения', supabaseErrorText(e));
       setError(t('contact_err_unknown'));
     } finally {
       setBusy(false);

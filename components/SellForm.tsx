@@ -64,7 +64,11 @@ import CloseButton from './ui/CloseButton';
 import Alert from './ui/Alert';
 import { fieldClass, fieldClassTextarea } from './ui/Field';
 import NumberInput from './ui/NumberInput';
-import { RESEND_DELAY_SEC, humanOtpError } from '@/lib/otp';
+import {
+  RESEND_DELAY_SEC,
+  humanOtpError,
+  supabaseErrorText,
+} from '@/lib/otp';
 import Button from './ui/Button';
 import Card from './ui/Card';
 import { SkeletonBox } from './ui/Skeleton';
@@ -432,7 +436,7 @@ export default function SellForm({
         { p_phone: e164 },
       );
 
-      if (quotaError) throw new Error(quotaError.message);
+      if (quotaError) throw new Error(supabaseErrorText(quotaError));
 
       if (quota && quota.allowed === false) {
         setError(t('otp_err_quota'));
@@ -442,7 +446,7 @@ export default function SellForm({
       const { error: otpError } = await supabase.auth.signInWithOtp({
         phone: e164,
       });
-      if (otpError) throw new Error(otpError.message);
+      if (otpError) throw new Error(supabaseErrorText(otpError));
 
       setSentTo(e164);
       setCodeSent(true);
@@ -533,7 +537,7 @@ export default function SellForm({
             token: code.trim(),
             type: 'sms',
           });
-        if (verifyError) throw new Error(verifyError.message);
+        if (verifyError) throw new Error(supabaseErrorText(verifyError));
         if (!auth.session) throw new Error(t('otp_err_failed'));
         uid = auth.user?.id;
 
@@ -619,7 +623,7 @@ export default function SellForm({
           const { error: uploadError } = await supabase.storage
             .from('car-images')
             .upload(path, file, { upsert: false });
-          if (uploadError) throw new Error(uploadError.message);
+          if (uploadError) throw new Error(supabaseErrorText(uploadError));
 
           const { data: pub } = supabase.storage
             .from('car-images')
@@ -691,7 +695,7 @@ export default function SellForm({
           'update_car_v3',
           { p_car_id: carId, ...payload },
         );
-        if (updateError) throw new Error(updateError.message);
+        if (updateError) throw new Error(supabaseErrorText(updateError));
 
         // Ушло ли объявление на повторную проверку, решает СЕРВЕР:
         // он сравнивает новый контент со старым (миграция 0067).
@@ -708,7 +712,7 @@ export default function SellForm({
           'create_car_v3',
           payload,
         );
-        if (createError) throw new Error(createError.message);
+        if (createError) throw new Error(supabaseErrorText(createError));
 
         // Целевое действие сайта: объявление создано и ушло на
         // модерацию. Число фотографий — полезный признак качества
@@ -724,10 +728,19 @@ export default function SellForm({
       // В консоль — только шаг и текст ошибки. Ни uid, ни номер телефона
       // сюда не пишутся: консоль браузера доступна расширениям, а это
       // персональные данные продавца.
-      console.error('[RS Auto] Ошибка публикации объявления', {
-        stage,
-        message: e instanceof Error ? e.message : String(e),
-      });
+      //
+      // Текст собирает supabaseErrorText: он никогда не возвращает
+      // пустую строку. Раньше здесь стоял `e.message`, и у ошибок
+      // Supabase с пустым message в консоль уходило `{stage, message:''}`
+      // — запись, по которой нельзя понять ни причину, ни даже то, что
+      // ошибка вообще произошла.
+      //
+      // Шаг выводим отдельным аргументом строкой: свёрнутый объект в
+      // консоли пришлось бы разворачивать, чтобы увидеть хоть что-то.
+      console.error(
+        `[RS Auto] Ошибка публикации объявления (шаг: ${stage})`,
+        supabaseErrorText(e),
+      );
 
       setError(humanOtpError(e, t));
     } finally {

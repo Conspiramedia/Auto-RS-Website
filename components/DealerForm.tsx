@@ -14,6 +14,7 @@ import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import type { DictKey } from '@/lib/i18n';
 import { CITIES } from '@/lib/referenceData';
+import { supabaseErrorText } from '@/lib/otp';
 import { getBrowserClient } from '@/lib/supabaseClient';
 import { trackEvent } from '@/lib/analytics';
 import {
@@ -92,7 +93,7 @@ export default function DealerForm({ locale }: Props) {
         },
       );
 
-      if (rpcError) throw new Error(rpcError.message);
+      if (rpcError) throw new Error(supabaseErrorText(rpcError));
 
       if (data && data.ok === false) {
         setError(t(ERROR_KEY[data.error] ?? 'dealers_err_unknown'));

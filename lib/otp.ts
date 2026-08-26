@@ -62,8 +62,64 @@ export function isOtpComplete(code: string, mode: keyof typeof OTP_LEN) {
 //
 // Неизвестную ошибку возвращаем как есть: молча заменять её общей
 // фразой хуже — пропадёт единственная подсказка о том, что случилось.
+// ------------------------------------------------------------
+// Текст произвольной ошибки Supabase.
+// ------------------------------------------------------------
+// ЗАЧЕМ ОТДЕЛЬНАЯ ФУНКЦИЯ. Клиент бросал ошибки как
+// `new Error(err.message)`, и этого достаточно ровно до тех пор, пока
+// message непустой. Но у ошибок Supabase он пустым БЫВАЕТ:
+//   * PostgrestError при отказе на уровне прав или сети приходит с
+//     заполненными code/details/hint и пустым message;
+//   * StorageError при ответе без тела (413 от лимита бакета, 403 от
+//     политики) несёт только statusCode.
+// В этих случаях `new Error('')` давал Error с пустым текстом: в Alert
+// продавцу — пустое место, в консоли — `{stage:'create', message:''}`,
+// то есть отладочная запись, по которой нельзя понять вообще ничего.
+// Ровно этот симптом и наблюдался при сохранении правки.
+//
+// Собираем текст из всех полей, какие есть, и только если не нашлось
+// ни одного — отдаём явную заглушку с типом значения. Пустой строки
+// эта функция не возвращает никогда: это её главное свойство, на него
+// опираются и лог, и показ пользователю.
+export function supabaseErrorText(e: unknown): string {
+  if (e === null || e === undefined) return 'неизвестная ошибка (пусто)';
+
+  if (typeof e === 'string') {
+    return e.trim() || 'неизвестная ошибка (пустая строка)';
+  }
+
+  if (typeof e === 'object') {
+    const err = e as Record<string, unknown>;
+    const parts: string[] = [];
+
+    // Порядок важен: message первым, потому что он единственный
+    // пригоден для показа пользователю, остальное — уточнения.
+    for (const key of ['message', 'details', 'hint', 'error'] as const) {
+      const value = err[key];
+      if (typeof value === 'string' && value.trim()) parts.push(value.trim());
+    }
+
+    // Код добавляем в скобках: '23514' или 'PGRST202' сами по себе
+    // ничего не значат для продавца, но именно они делают сообщение
+    // пригодным для разбора, когда человек присылает скриншот.
+    const code = err.code ?? err.statusCode;
+    if (typeof code === 'string' || typeof code === 'number') {
+      const asText = String(code).trim();
+      if (asText) parts.push(`(${asText})`);
+    }
+
+    if (parts.length > 0) return parts.join(' · ');
+
+    // Error без message и без полей Supabase — берём имя класса, оно
+    // хотя бы называет природу сбоя (TypeError, AbortError).
+    if (e instanceof Error && e.name) return e.name;
+  }
+
+  return 'неизвестная ошибка';
+}
+
 export function humanOtpError(e: unknown, t: Translate): string {
-  const raw = e instanceof Error ? e.message : String(e);
+  const raw = supabaseErrorText(e);
   const message = raw.toLowerCase();
 
   if (message.includes('expired')) return t('otp_err_expired');
