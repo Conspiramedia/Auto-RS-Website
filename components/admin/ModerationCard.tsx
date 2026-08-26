@@ -14,13 +14,12 @@
 // (пробег, кузов, коробка) идёт компактной таблицей: оно нужно, чтобы
 // сверить с фото, но само по себе решения не определяет.
 //
-// Фотографии — обычные <img>, а не next/image. Снимки лежат в Supabase
-// Storage, их адреса динамические, и оптимизатор Next пропускал бы
-// каждый через себя без пользы: карточку открывает один модератор
-// несколько раз в день, а не тысячи посетителей.
+// Фотографии вынесены в ModerationGallery (Client): просмотр всего
+// набора крупно требует переключения кадра, а это интерактив.
 // ============================================================
 
 import ActionLabel from './ActionLabel';
+import ModerationGallery from './ModerationGallery';
 import type { AdminCar } from '@/lib/types';
 import {
   formatDeposit,
@@ -75,49 +74,11 @@ export default function ModerationCard({ car }: { car: AdminCar }) {
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(320px,2fr)]">
       {/* ---------- Слева: фотографии ---------- */}
+      {/* Галерея клиентская: модератору нужно посмотреть каждый снимок
+          крупно, а переключение кадра — интерактив. Всё остальное на
+          карточке остаётся серверным. */}
       <div className="min-w-0">
-        {car.photos.length === 0 ? (
-          // Объявление без единого снимка — почти всегда отказ, и
-          // сказать об этом надо прямо, а не пустым местом.
-          <div className="rounded-card border border-error/30 bg-status-error px-6 py-12 text-center">
-            <p className="font-semibold text-error">Фотографий нет</p>
-            <p className="mt-1 text-caption text-neutral-70">
-              Объявление без снимков публиковать нельзя.
-            </p>
-          </div>
-        ) : (
-          <>
-            {/* Первое фото крупно: именно оно станет обложкой в
-                каталоге, и именно к нему больше всего претензий —
-                чужой снимок, не тот автомобиль, скриншот. */}
-            <img
-              src={car.photos[0].image_url}
-              alt=""
-              className="w-full rounded-card border border-neutral-10 object-cover"
-            />
-
-            {car.photos.length > 1 && (
-              // Остальные — сеткой во всю ширину, а не лентой с
-              // прокруткой: модератор должен окинуть взглядом весь
-              // набор сразу, чтобы заметить разнобой (разные машины,
-              // разные номера, разный фон).
-              <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
-                {car.photos.slice(1).map((photo) => (
-                  <img
-                    key={photo.order_index}
-                    src={photo.image_url}
-                    alt=""
-                    className="aspect-[4/3] w-full rounded-control border border-neutral-10 object-cover"
-                  />
-                ))}
-              </div>
-            )}
-
-            <p className="mt-2 text-micro text-neutral-50">
-              Фотографий: {car.photos.length}
-            </p>
-          </>
-        )}
+        <ModerationGallery photos={car.photos} />
       </div>
 
       {/* ---------- Справа: данные ---------- */}
