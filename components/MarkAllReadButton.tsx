@@ -22,9 +22,14 @@ import { getT } from '@/lib/i18n';
 
 type Props = {
   locale: Locale;
+  // Непрочитанных нет — гасить нечего. Кнопка при этом НЕ скрывается
+  // (см. комментарий в NotificationsPageView): она остаётся на месте
+  // неактивной, чтобы не пропадать из раскладки и не заставлять
+  // человека гадать, куда делась.
+  disabled?: boolean;
 };
 
-export default function MarkAllReadButton({ locale }: Props) {
+export default function MarkAllReadButton({ locale, disabled = false }: Props) {
   const t = getT(locale);
   const [pending, startTransition] = useTransition();
 
@@ -35,7 +40,7 @@ export default function MarkAllReadButton({ locale }: Props) {
     // что у «Выйти» в шапке кабинета, — ссылка-действие.
     <button
       type="button"
-      disabled={pending}
+      disabled={pending || disabled}
       // Результат действия сознательно игнорируется, и фигурные скобки
       // здесь обязательны: startTransition ожидает функцию без
       // возвращаемого значения, а стрелка без блока вернула бы Promise
