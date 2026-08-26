@@ -122,6 +122,32 @@ export function humanOtpError(e: unknown, t: Translate): string {
   const raw = supabaseErrorText(e);
   const message = raw.toLowerCase();
 
+  // ------------------------------------------------------------
+  // Отказ по дублю объявления.
+  // ------------------------------------------------------------
+  // Гейт дублей (trg_cars_prevent_duplicate, миграция 0093) бросает
+  // unique_violation, а PostgREST доносит его как code '23505'.
+  //
+  // ПОЧЕМУ ЭТА ВЕТКА ПЕРВАЯ. Без неё ошибка проваливалась в `return
+  // raw` внизу, и сербский продавец получал РУССКИЙ текст из RPC
+  // вместе с «(23505)» в скобках — причём на последнем шаге формы,
+  // уже после загрузки фотографий и SMS. Это была самая дорогая
+  // точка сценария и самое неудачное место для сырого текста.
+  //
+  // Проверяем и код, и подстроку: код приходит отдельным полем у
+  // PostgrestError, но supabaseErrorText склеивает всё в одну строку,
+  // и опираться только на неё нельзя — формат склейки может
+  // измениться.
+  const code = String(
+    (typeof e === 'object' && e !== null
+      ? ((e as Record<string, unknown>).code ?? '')
+      : '') || '',
+  );
+
+  if (code === '23505' || message.includes('23505')) {
+    return t('sell_err_duplicate');
+  }
+
   if (message.includes('expired')) return t('otp_err_expired');
 
   if (message.includes('invalid') || message.includes('incorrect')) {

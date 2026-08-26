@@ -58,6 +58,7 @@ import {
   validateYear,
 } from '@/lib/inputFormat';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
+import type { SimilarListing } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
 import PhotoPicker, { type PhotoItem } from './PhotoPicker';
 import CloseButton from './ui/CloseButton';
@@ -417,6 +418,77 @@ export default function SellForm({
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [resendAt]);
+
+  // ---------- Своё похожее объявление (уровень 1 защиты от дублей) ----------
+  // Найденное объявление того же продавца с тем же brand+model+year.
+  // null — либо ещё не искали, либо не нашли.
+  //
+  // ЭТО ПРЕДУПРЕЖДЕНИЕ, А НЕ БЛОКИРОВКА. Кнопка «Далее» остаётся
+  // рабочей: у продавца может быть законная причина подать вторую
+  // такую же машину, и решать это должен он, а не форма. Жёсткий
+  // отказ живёт на бэкенде (trg_cars_prevent_duplicate, 0093) и
+  // сработает при публикации.
+  //
+  // Смысл плашки — показать своё же объявление НА ПЕРВОМ ШАГЕ, до
+  // фотографий и SMS. Раньше продавец узнавал о дубле только отказом
+  // на последнем шаге, потратив на форму несколько минут.
+  const [duplicate, setDuplicate] = useState<SimilarListing | null>(null);
+  // Закрыл ли продавец плашку кнопкой «Всё равно подать новое».
+  // Держим отдельно от duplicate: при смене марки/модели/года поиск
+  // идёт заново, и скрытие не должно переезжать на другую машину.
+  const [dupDismissed, setDupDismissed] = useState(false);
+
+  // ---------- Поиск своего похожего объявления ----------
+  // Идёт, когда заполнена вся тройка марка + модель + год: по неполному
+  // ключу искать нечего, а дёргать сервер на каждую букву в поле марки
+  // незачем.
+  //
+  // ТОЛЬКО ПРИ ПОДАЧЕ. В режиме правки плашка вредна: продавец
+  // редактирует своё же объявление, и оно само окажется «похожим» —
+  // предупреждение указывало бы на ту карточку, которая открыта.
+  //
+  // ТОЛЬКО ВОШЕДШЕМУ. У гостя объявлений нет по определению, а RPC
+  // читает по auth.uid() и без сессии вернула бы пустой список.
+  useEffect(() => {
+    if (isEdit || !signedIn) return;
+
+    const y = Number(year);
+    if (!brand.trim() || !model.trim() || !y) {
+      setDuplicate(null);
+      return;
+    }
+
+    // Ключ изменился — прежнее скрытие плашки больше не действует:
+    // продавец закрывал предупреждение про другую машину.
+    setDupDismissed(false);
+
+    let cancelled = false;
+
+    (async () => {
+      const { data, error: rpcError } = await supabase.rpc(
+        'get_my_similar_listings',
+        { p_brand: brand.trim(), p_model: model.trim(), p_year: y },
+      );
+
+      if (cancelled) return;
+
+      // Ошибку не показываем и в консоль не пишем: плашка —
+      // необязательная подсказка, и сбой её загрузки не должен ни
+      // мешать подаче, ни выглядеть как проблема с формой. Жёсткая
+      // проверка всё равно ждёт на сервере.
+      if (rpcError) {
+        setDuplicate(null);
+        return;
+      }
+
+      const found = (data ?? []) as SimilarListing[];
+      setDuplicate(found[0] ?? null);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [brand, model, year, isEdit, signedIn, supabase]);
 
   // Honeypot: поле скрыто от человека и пустое у него всегда. Заполненное
   // значение — признак бота, и такую отправку мы молча не публикуем.
@@ -1087,6 +1159,54 @@ export default function SellForm({
               onChange={setCity}
             />
           </div>
+
+          {/* Предупреждение о своём же объявлении об этой машине.
+              Не Alert: тот рендерит <p>, а сюда нужны ссылка и кнопка
+              внутри блока — вложить их в абзац нельзя.
+              Тон предупреждения (жёлтый) взят у Alert tone="warning":
+              это не ошибка, подача продолжается. */}
+          {duplicate && !dupDismissed && (
+            <div
+              role="status"
+              className="rounded-control bg-status-warning px-3 py-2.5 text-caption text-brand-gold"
+            >
+              <p className="font-semibold">{t('sell_dup_title')}</p>
+              <p className="mt-0.5">
+                {duplicate.brand} {duplicate.model} {duplicate.year}
+                {/* Статус уточняем только для объявления на проверке:
+                    активное продавец и так видит в каталоге, а вот
+                    «оно ещё на модерации» объясняет, почему его нет
+                    в выдаче, и снимает повод подавать заново. */}
+                {duplicate.status === 'moderation' &&
+                  ` — ${t('sell_dup_moderation')}`}
+              </p>
+
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+                {/* Ссылка на карточку. site_url приходит с сервера
+                    готовым (f_car_site_url) — на сербском зеркале.
+                    Для /ru собирать путь заново незачем: localeHref
+                    даёт адрес нужной локали по id. */}
+                <Link
+                  href={localeHref(locale, `/car/${duplicate.car_id}`)}
+                  className="font-semibold underline underline-offset-2"
+                >
+                  {t('sell_dup_open')}
+                </Link>
+
+                {/* Скрыть предупреждение и продолжить. Именно кнопка,
+                    а не крестик: действие нужно назвать словами —
+                    продавец должен понимать, что подаёт ВТОРОЕ
+                    объявление, а не закрывает случайную плашку. */}
+                <button
+                  type="button"
+                  onClick={() => setDupDismissed(true)}
+                  className="underline underline-offset-2"
+                >
+                  {t('sell_dup_ignore')}
+                </button>
+              </div>
+            </div>
+          )}
 
           <Button disabled={!canNext1} onClick={() => setStep(2)} fullWidth>
             {t('sell_next')}

@@ -252,6 +252,15 @@ export const dict = {
     sell_step_details: 'Detalji',
     sell_step_photos: 'Fotografije',
     sell_step_contact: 'Kontakt',
+
+    // Upozorenje o sopstvenom sličnom oglasu (nivo 1 zaštite od
+    // duplikata). Ovo je UPOZORENJE, ne zabrana: prodavac sme da
+    // nastavi. Naziv automobila se dodaje zasebno u JSX — rečnik nema
+    // interpolaciju.
+    sell_dup_title: 'Već imate oglas za ovaj automobil',
+    sell_dup_open: 'Otvori postojeći oglas',
+    sell_dup_ignore: 'Ipak objavi novi',
+    sell_dup_moderation: 'na proveri',
     sell_phone: 'Broj telefona',
     sell_code: 'Kod iz SMS-a',
     sell_send_code: 'Pošalji kod',
@@ -392,6 +401,11 @@ export const dict = {
     otp_err_failed: 'Nije uspelo potvrđivanje koda. Pokušajte ponovo',
     otp_err_quota:
       'Prekoračen je dnevni limit SMS poruka za ovaj broj. Pokušajte sutra.',
+    // Odbijanje zbog duplikata (trg_cars_prevent_duplicate, migracija
+    // 0093). Baza vraća tekst na ruskom — bez ovog prevoda prodavac bi
+    // ga video takvog kakav jeste, zajedno sa šifrom greške.
+    sell_err_duplicate:
+      'Oglas za ovaj automobil već postoji. Izmenite postojeći oglas ili ga uklonite iz objave.',
 
     // ------------------------------------------------------------
     // Kabinet prodavca (/my). Sve stranice su noindex.
@@ -975,6 +989,15 @@ export const dict = {
     sell_step_details: 'Детали',
     sell_step_photos: 'Фотографии',
     sell_step_contact: 'Контакты',
+
+    // Предупреждение о своём похожем объявлении (уровень 1 защиты от
+    // дублей). Это ПРЕДУПРЕЖДЕНИЕ, а не запрет: продавец вправе
+    // продолжить. Название машины подставляется отдельно в JSX —
+    // интерполяции в словаре нет.
+    sell_dup_title: 'У вас уже есть объявление об этой машине',
+    sell_dup_open: 'Открыть существующее',
+    sell_dup_ignore: 'Всё равно подать новое',
+    sell_dup_moderation: 'на проверке',
     sell_phone: 'Номер телефона',
     sell_code: 'Код из SMS',
     sell_send_code: 'Отправить код',
@@ -1114,6 +1137,11 @@ export const dict = {
     otp_err_failed: 'Не удалось подтвердить код. Попробуйте ещё раз',
     otp_err_quota:
       'Превышен суточный лимит SMS на этот номер. Попробуйте завтра.',
+    // Отказ по дублю (trg_cars_prevent_duplicate, миграция 0093).
+    // База отдаёт свой текст, но он технический и с кодом ошибки —
+    // продавцу показываем этот.
+    sell_err_duplicate:
+      'Объявление об этой машине уже существует. Отредактируйте его или снимите с публикации.',
 
     // ------------------------------------------------------------
     // Кабинет продавца (/my). Все страницы — noindex.
