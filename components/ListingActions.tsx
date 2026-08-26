@@ -260,28 +260,52 @@ export default function ListingActions({
   return (
     <div className="mt-3">
       {confirming ? (
-        // Шаг подтверждения. Вопрос и обе кнопки в одной строке:
-        // выбор должен читаться целиком, без прокрутки взглядом.
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-caption text-neutral-70">
+        // ------------------------------------------------------------
+        // Шаг подтверждения: вопрос строкой, обе кнопки рядом под ним.
+        // ------------------------------------------------------------
+        // Раньше вопрос и кнопки лежали в одном flex-wrap-ряду, и в
+        // узкой колонке кабинета перенос рвал их как придётся: «Да»
+        // прилипало к вопросу, а «Отмена» уезжала на строку ниже одна.
+        // Две кнопки выбора обязаны стоять рядом — их сравнивают
+        // взглядом, а не читают подряд.
+        <div>
+          <p className="text-caption text-neutral-70">
             {t(confirming.confirmKey)}
-          </span>
-          <Button
-            size="sm"
-            variant="dark"
-            disabled={pending}
-            onClick={() => run(() => setCarStatus(carId, confirming.target))}
-          >
-            {pending ? t('my_action_busy') : t('my_confirm_yes')}
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            disabled={pending}
-            onClick={() => setConfirming(null)}
-          >
-            {t('my_confirm_no')}
-          </Button>
+          </p>
+
+          {/* Ряд кнопок. Подтверждение слева, отказ справа — тот же
+              порядок, что в подтверждении выхода (SignOutButton), где
+              «Отмена» тоже стоит второй. */}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {/* Красная, а не нейтральная тёмная: два из трёх вопросов
+                («Снять с публикации?», «Отметить проданным?») убирают
+                объявление из выдачи, и цвет обязан предупреждать о
+                последствии до нажатия. Тёмная плашка выглядела как
+                обычная кнопка, а стоит она рядом с белой «Отменой» —
+                различить их нужно мгновенно.
+
+                Третий вопрос — «Вернуть в публикацию?» — под красным
+                строже, чем заслуживает, но заводить цвет в описание
+                действий (ACTIONS) ради одного случая значит сделать
+                диалог непредсказуемым: одна и та же кнопка меняла бы
+                смысл цвета от карточки к карточке. */}
+            <Button
+              size="sm"
+              variant="destructive"
+              disabled={pending}
+              onClick={() => run(() => setCarStatus(carId, confirming.target))}
+            >
+              {pending ? t('my_action_busy') : t('my_confirm_yes')}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={pending}
+              onClick={() => setConfirming(null)}
+            >
+              {t('my_confirm_no')}
+            </Button>
+          </div>
         </div>
       ) : (
         // КНОПКИ СТОЛБЦОМ ВО ВСЮ ШИРИНУ КАРТОЧКИ, а не рядом с
