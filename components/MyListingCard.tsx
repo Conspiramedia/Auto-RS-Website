@@ -193,7 +193,8 @@ export default function MyListingCard({ locale, listing }: Props) {
         locale={locale}
         carId={listing.car_id}
         status={listing.status}
-        isPromoted={listing.is_promoted}
+        promoState={listing.promo_state}
+        promoAvailableAt={listing.promo_available_at}
         archivedByAdmin={archivedByAdmin}
       />
     </Card>

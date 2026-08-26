@@ -5,7 +5,6 @@
 import CatalogView from '@/components/CatalogView';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
-import SmartBanner from '@/components/SmartBanner';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import {
@@ -101,7 +100,6 @@ export default async function CatalogPageView({
 
   return (
     <>
-      <SmartBanner locale={locale} />
       {/* Шапке передаётся адрес ВМЕСТЕ С ФИЛЬТРАМИ: из него
           переключатель языка собирает ссылку на зеркало. С голым
           basePath смена языка на отфильтрованной выдаче

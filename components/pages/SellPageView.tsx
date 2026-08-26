@@ -5,7 +5,6 @@
 import SellForm from '@/components/SellForm';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
-import SmartBanner from '@/components/SmartBanner';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 
@@ -14,7 +13,6 @@ export default function SellPageView({ locale }: { locale: Locale }) {
 
   return (
     <>
-      <SmartBanner locale={locale} />
       <SiteHeader locale={locale} pathname="/sell" />
 
       {/* max-w-3xl на десктопе вместо 2xl: форма подачи получила парные

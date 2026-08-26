@@ -309,17 +309,3 @@ export const brand = {
     },
   },
 } as const;
-
-// Идентификаторы приложения для deep links и смарт-баннера.
-// Значения взяты из docs/well-known/ репозитория приложения и менять их нельзя:
-// на них завязаны AASA и assetlinks.json.
-export const appIds = {
-  ios: {
-    bundleId: 'rs.auto.autoRs',
-    // TODO: заполнить после публикации в App Store (нужен числовой ID).
-    appStoreId: '',
-  },
-  android: {
-    packageName: 'rs.auto.auto_rs',
-  },
-} as const;

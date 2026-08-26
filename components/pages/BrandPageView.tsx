@@ -8,7 +8,6 @@ import { notFound } from 'next/navigation';
 import CatalogView from '@/components/CatalogView';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
-import SmartBanner from '@/components/SmartBanner';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import {
@@ -100,7 +99,6 @@ export default async function BrandPageView({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
 
-      <SmartBanner locale={locale} />
       {/* Адрес с фильтрами — для переключателя языка (см. подробный
           комментарий в CatalogPageView). Марка и тип сделки заданы
           САМИМ МАРШРУТОМ и в query не переносятся: /ru/cars/bmw уже

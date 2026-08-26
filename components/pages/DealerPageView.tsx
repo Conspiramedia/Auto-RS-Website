@@ -23,7 +23,6 @@ import StateCard from '@/components/ui/StateCard';
 import CarCard from '@/components/CarCard';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
-import SmartBanner from '@/components/SmartBanner';
 import { formatDate } from '@/lib/format';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
@@ -97,7 +96,6 @@ export default async function DealerPageView({
         }}
       />
 
-      <SmartBanner locale={locale} />
       <SiteHeader locale={locale} pathname={`/dealer/${id}`} />
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">

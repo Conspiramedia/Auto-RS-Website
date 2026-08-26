@@ -18,7 +18,6 @@ import ContactSellerButton from '@/components/ContactSellerButton';
 import ShareButton from '@/components/ShareButton';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
-import SmartBanner from '@/components/SmartBanner';
 import TrackCardView from '@/components/TrackCardView';
 import {
   carTitle,
@@ -181,9 +180,6 @@ export default async function CarPageView({
         listingType={mode}
       />
 
-      {/* На мобильных ведём в приложение по каноническому адресу: при
-          установленном приложении App Link перехватит ссылку. */}
-      <SmartBanner locale={locale} deepLink={canonicalUrl} />
       <SiteHeader locale={locale} pathname={`/car/${id}`} />
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
@@ -215,12 +211,27 @@ export default async function CarPageView({
 
             <h1 className="mt-5 text-h2 font-bold sm:text-h1">{title}</h1>
 
+            {/* Бейджи состояния. На карточке они крупнее, чем на плитке
+                каталога: здесь это ключевой факт об объявлении, а не
+                пометка поверх фотографии.
+
+                Продвижение показывается и здесь, а не только в каталоге:
+                покупатель, пришедший по прямой ссылке (из поиска, из
+                чата, по QR), плитки не видел вовсе — и признак,
+                объясняющий позицию объявления в выдаче, обязан быть на
+                самой странице тоже.
+
+                Продано и продвигается одновременно не бывает: переход в
+                sold гасит продвижение триггером (миграция 0089). */}
             {car.status === 'sold' && (
-              // Бейдж на карточке крупнее, чем на плитке каталога:
-              // здесь это ключевой факт об объявлении, а не пометка
-              // поверх фотографии.
               <Badge tone="sold" size="md" className="mt-2">
                 {t('car_sold')}
+              </Badge>
+            )}
+
+            {car.is_promoted && car.status !== 'sold' && (
+              <Badge tone="promoted" size="md" className="mt-2">
+                {t('car_promoted')}
               </Badge>
             )}
 
@@ -308,7 +319,7 @@ export default async function CarPageView({
             </div>
           </div>
 
-          {/* Правая колонка: цена и воронка в приложение. */}
+          {/* Правая колонка: цена и связь с продавцом. */}
           <aside className="md:sticky md:top-20 md:self-start">
             <Card padding="lg">
               {/* Блок цен. У объявления может быть две цены сразу
@@ -361,11 +372,7 @@ export default async function CarPageView({
                 </div>
               </div>
 
-              {/* Связь с продавцом. Переписка работает НА САЙТЕ: это
-                  требование web-first — сценарий не должен упираться в
-                  установку приложения. Раньше здесь стояла кнопка
-                  «Продолжить в приложении», и покупатель без него не мог
-                  написать вовсе.
+              {/* Связь с продавцом. Переписка работает на сайте целиком.
                   Кнопка клиентская: сама решает, показать вход гостю,
                   открыть диалог покупателю или скрыться у владельца. */}
               <div className="mt-4 border-t border-neutral-10 pt-4">
@@ -382,7 +389,10 @@ export default async function CarPageView({
                 </div>
               </div>
 
-              {/* QR — путь в приложение с десктопа, где смарт-баннера нет. */}
+              {/* QR — способ перенести объявление на телефон с десктопа:
+                  человек смотрит каталог за компьютером, а звонит и
+                  переписывается с телефона. Код ведёт на тот же
+                  канонический адрес страницы. */}
               <div className="mt-4 hidden border-t border-neutral-10 pt-4 lg:block">
                 <AppQr url={canonicalUrl} />
                 <p className="mt-2 text-small text-neutral-50">{t('car_qr_hint')}</p>

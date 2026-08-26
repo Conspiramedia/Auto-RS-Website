@@ -14,7 +14,6 @@ import RecentlyViewed from '@/components/RecentlyViewed';
 import Button from '@/components/ui/Button';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
-import SmartBanner from '@/components/SmartBanner';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { nounFor } from '@/lib/plural';
@@ -81,7 +80,6 @@ export default async function HomeView({ locale }: { locale: Locale }) {
         }}
       />
 
-      <SmartBanner locale={locale} />
       <SiteHeader locale={locale} pathname="/" />
 
       <main>

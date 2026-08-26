@@ -6,7 +6,6 @@ import DealerForm from '@/components/DealerForm';
 import BackCloseButton from '@/components/BackCloseButton';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
-import SmartBanner from '@/components/SmartBanner';
 import Card from '@/components/ui/Card';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
@@ -50,7 +49,6 @@ export default function DealersPageView({ locale }: { locale: Locale }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <SmartBanner locale={locale} />
       <SiteHeader locale={locale} pathname="/dealers" />
 
       <main className="mx-auto max-w-6xl px-4 py-8 sm:py-12">

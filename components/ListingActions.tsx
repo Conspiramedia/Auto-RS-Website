@@ -7,6 +7,14 @@
 // выполнения. Сама работа делается на сервере (app/my/actions.ts →
 // RPC set_my_car_status / activate_promotion) — здесь только интерфейс.
 //
+// ПРОДВИЖЕНИЕ. Кнопка «Поднять» видна у любого активного объявления,
+// но сработает не всегда: правила из миграции 0092 требуют, чтобы
+// объявлению было не меньше 15 дней и чтобы с прошлого подъёма прошло
+// не меньше 30. Оба правила проверяет сервер; здесь кнопка по нажатию
+// показывает подсказку с датой — «включено до …» или «будет доступно
+// с …». Прятать кнопку в эти периоды было бы хуже: продавец не видел
+// бы услуги вовсе и не знал, когда она появится.
+//
 // КАКИЕ ДЕЙСТВИЯ ДОСТУПНЫ, решает статус, и набор в точности повторяет
 // матрицу переходов из миграции 0070:
 //   active     → «Снять» (archived), «Продано» (sold), «Поднять»
@@ -55,17 +63,34 @@ import { useState, useTransition } from 'react';
 import { promoteCar, setCarStatus } from '@/app/my/actions';
 import Alert from './ui/Alert';
 import Button from './ui/Button';
+import { formatDate } from '@/lib/format';
 import type { DictKey, Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
+
+// Длительность продвижения. Совпадает с f_promo_duration() в базе
+// (миграция 0092) и используется ровно для одного: показать дату
+// окончания сразу после нажатия, не дожидаясь перерисовки карточки.
+// Правило живёт на сервере — здесь только его отображение.
+const PROMO_DAYS = 7;
 
 type Props = {
   locale: Locale;
   carId: string;
   status: string;
-  // Действует ли продвижение прямо сейчас: у продвигаемого объявления
-  // кнопку «Поднять» не показываем — продлевать нечего, срок и так
-  // идёт, а повторное нажатие только запутает.
-  isPromoted: boolean;
+  // ----------------------------------------------------------
+  // Состояние продвижения (миграция 0092).
+  // ----------------------------------------------------------
+  // Считает сервер, здесь только показ. Кнопка «Поднять» видна ВСЕГДА,
+  // пока объявление активно, — прятать её было хуже: продавец, чьё
+  // объявление ещё молодое, не видел кнопки вовсе и не понимал, есть
+  // ли услуга в природе и когда она появится. Теперь кнопка на месте,
+  // а по нажатию объясняет, до какого числа продвижение уже работает
+  // или с какого числа станет доступно.
+  //   'available' | 'active' | 'too_young' | 'cooldown' | 'blocked'
+  promoState: string;
+  // Дата для подсказки: «включено до» у active, «доступно с» у
+  // too_young и cooldown. null у available и blocked.
+  promoAvailableAt: string | null;
   // Объявление снято администратором (cars.archived_by = 'admin').
   // Отключает все действия — см. комментарий в шапке файла.
   // Необязательный: карточка кабинета передаёт его всегда, но пропс
@@ -125,7 +150,8 @@ export default function ListingActions({
   locale,
   carId,
   status,
-  isPromoted,
+  promoState,
+  promoAvailableAt,
   archivedByAdmin = false,
 }: Props) {
   const t = getT(locale);
@@ -133,15 +159,29 @@ export default function ListingActions({
   // Действие, ожидающее подтверждения. null — показан обычный ряд кнопок.
   const [confirming, setConfirming] = useState<StatusAction | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Подсказка по продвижению: и отказ («доступно с …»), и успех
+  // («включено до …»). Одно состояние на оба случая — они никогда не
+  // показываются одновременно, а тон плашки задаётся отдельно.
+  const [promoNote, setPromoNote] = useState<
+    { tone: 'success' | 'warning'; text: string } | null
+  >(null);
 
   // У снятого администратором нет НИ ОДНОГО действия смены статуса:
   // ни «Вернуть» (решение администратора владелец не отменяет), ни
   // «Продано» — матрица переходов из archived ведёт только в active,
   // и этот путь для него закрыт.
   const actions = archivedByAdmin ? [] : (ACTIONS[status] ?? []);
-  // Продвигать можно только активное и только если промо не идёт —
-  // те же условия проверяет activate_promotion на сервере.
-  const canPromote = status === 'active' && !isPromoted;
+  // Кнопка «Поднять» показывается у любого активного объявления,
+  // независимо от того, доступно продвижение прямо сейчас или нет:
+  // причину и дату она объясняет по нажатию (см. комментарий к
+  // пропсам). У неактивного её нет вовсе — там продвижение
+  // неприменимо, и сервер отказал бы по статусу.
+  const showPromote = status === 'active' && !archivedByAdmin;
+  // Дата подсказки в локальном формате. Считаем один раз здесь:
+  // ниже она нужна в двух ветках.
+  const promoDate = promoAvailableAt
+    ? formatDate(promoAvailableAt, locale)
+    : null;
   // Редактировать — рабочие статусы ПЛЮС админский архив: правка по
   // существу отправляет такое объявление на повторную модерацию
   // (update_car_v3, миграция 0090), и это единственный доступный
@@ -159,7 +199,7 @@ export default function ListingActions({
   const soldAction = actions.find((a) => a.target === 'sold') ?? null;
   const otherActions = actions.filter((a) => a.target !== 'sold');
 
-  if (actions.length === 0 && !canPromote && !canEdit) return null;
+  if (actions.length === 0 && !showPromote && !canEdit) return null;
 
   function run(fn: () => Promise<{ ok: boolean; error?: string }>) {
     setError(null);
@@ -169,6 +209,51 @@ export default function ListingActions({
       // по-английски. Пользователю — своя формулировка на его языке.
       if (!result.ok) setError(t('my_action_error'));
       setConfirming(null);
+    });
+  }
+
+  // ------------------------------------------------------------
+  // Нажатие «Поднять».
+  // ------------------------------------------------------------
+  // Реакция зависит от состояния, которое посчитал сервер:
+  //   active               — «Продвижение включено до …»;
+  //   too_young / cooldown — «Поднять объявление будет доступно с …»;
+  //   available            — продвигаем и показываем ту же строку
+  //                          «включено до …», но уже как результат.
+  //
+  // Дата успеха считается на клиенте (сегодня + 7 дней), а не берётся
+  // из ответа: promoteCar возвращает только признак успеха, а тянуть
+  // ради одной строки полный объект объявления незачем — срок
+  // фиксирован правилами и известен заранее. После revalidateMy
+  // карточка всё равно перерисуется серверными данными.
+  function onPromote() {
+    setError(null);
+
+    if (promoState === 'active' && promoDate) {
+      setPromoNote({ tone: 'success', text: `${t('my_promote_done')} ${promoDate}` });
+      return;
+    }
+
+    if ((promoState === 'too_young' || promoState === 'cooldown') && promoDate) {
+      setPromoNote({ tone: 'warning', text: `${t('my_promote_wait')} ${promoDate}` });
+      return;
+    }
+
+    setPromoNote(null);
+    startTransition(async () => {
+      const result = await promoteCar(carId);
+
+      if (!result.ok) {
+        setError(t('my_action_error'));
+        return;
+      }
+
+      const until = new Date();
+      until.setDate(until.getDate() + PROMO_DAYS);
+      setPromoNote({
+        tone: 'success',
+        text: `${t('my_promote_done')} ${formatDate(until.toISOString(), locale)}`,
+      });
     });
   }
 
@@ -221,13 +306,13 @@ export default function ListingActions({
           {/* Продвижение подтверждения не требует: оно ничего не
               ломает и пока бесплатно. Лишний вопрос здесь только
               мешал бы. */}
-          {canPromote && (
+          {showPromote && (
             <Button
               size="sm"
               variant="secondary"
               fullWidth
               disabled={pending}
-              onClick={() => run(() => promoteCar(carId))}
+              onClick={onPromote}
             >
               {pending ? t('my_action_busy') : t('my_action_promote')}
             </Button>
@@ -287,11 +372,23 @@ export default function ListingActions({
 
       {/* Условия продвижения — видимой строкой, а не подсказкой при
           наведении: на телефоне наведения нет вовсе, и продавец не
-          узнал бы ни про бесплатность, ни про срок. */}
-      {canPromote && !confirming && (
+          узнал бы ни про бесплатность, ни про срок.
+          Показываем только когда продвижение действительно доступно:
+          у молодого объявления и внутри окна ожидания эта строка
+          противоречила бы подсказке с датой. */}
+      {showPromote && promoState === 'available' && !confirming && (
         <p className="mt-1.5 text-small text-neutral-50">
           {t('my_promote_days')}
         </p>
+      )}
+
+      {/* Подсказка по продвижению. role="status" внутри Alert читается
+          скринридером при появлении — нажатие обязано о чём-то
+          сообщить и незрячему пользователю тоже. */}
+      {promoNote && !confirming && (
+        <Alert tone={promoNote.tone} className="mt-2">
+          {promoNote.text}
+        </Alert>
       )}
 
       {error && (

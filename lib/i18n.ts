@@ -240,10 +240,6 @@ export const dict = {
     car_contact_title: 'Kontakt sa prodavcem',
     car_qr_hint: 'Skenirajte kod telefonom da otvorite oglas na telefonu',
 
-    // Смарт-баннер
-    banner_title: 'RS Auto',
-    banner_text: 'Dodajte na početni ekran',
-    banner_open: 'Otvori',
 
     // Подача объявления
     sell_title: 'Prodajte automobil',
@@ -488,6 +484,9 @@ export const dict = {
     // Promocija je za sada besplatna (activate_promotion, 7 dana).
     my_promoted_until: 'Promoviše se do',
     my_promote_days: 'Besplatno, 7 dana u vrhu pretrage',
+    // Vidi ruski rečnik: datum se dodaje pored teksta, ne u string.
+    my_promote_done: 'Promocija je uključena do',
+    my_promote_wait: 'Podizanje oglasa biće dostupno od',
 
     // Zbirna statistika (get_my_stats_totals).
     my_totals_title: 'Ukupno',
@@ -618,9 +617,6 @@ export const dict = {
     nav_my: 'Moji oglasi',
     login_title: 'Prijava na nalog',
     nav_menu_close: 'Zatvori meni',
-    // Закрытие смарт-баннера. Раньше строка была зашита по-сербски
-    // прямо в компоненте и в русской локали читалась как чужая.
-    banner_close: 'Zatvori',
     // Общие подписи закрытия для всех оверлеев: шторка фильтров,
     // список выбора, форма подачи, галерея объявления. Раньше в этих
     // местах стоял aria-label="×" — скринридер зачитывал имя символа
@@ -662,22 +658,6 @@ export const dict = {
     dealers_err_unknown: 'Došlo je do greške. Pokušajte ponovo.',
 
     // ------------------------------------------------------------
-    // /app — преимущества приложения.
-    // ------------------------------------------------------------
-    app_feature_1_title: 'Poruke i pozivi',
-    app_feature_1_text:
-      'Kontaktirajte prodavca direktno — bez deljenja ličnog broja.',
-    app_feature_2_title: 'Obaveštenja',
-    app_feature_2_text:
-      'Sačuvajte pretragu i saznajte prvi kada se pojavi odgovarajući automobil.',
-    app_feature_3_title: 'Sniženja cena',
-    app_feature_3_text:
-      'Obavestićemo vas kada prodavac snizi cenu automobila koji pratite.',
-
-    // ------------------------------------------------------------
-    // /app — заглушка «приложение в разработке» вместо кнопок сторов.
-    // ------------------------------------------------------------
-    // ------------------------------------------------------------
     // /install — установка сайта на телефон (PWA).
     // ------------------------------------------------------------
     install_title: 'Brzi pristup',
@@ -714,29 +694,6 @@ export const dict = {
     // Плашка на карточке платформы, с которой человек зашёл.
     install_your_device: 'vaš uređaj',
 
-    app_soon_badge: 'U izradi',
-    app_soon_title: 'Sve već radi na sajtu',
-    app_soon_text:
-      'Pretraga, objava oglasa, poruke i obaveštenja — sve radi na sajtu, '
-      + 'sa telefona i sa računara, bez ikakve instalacije.',
-    // Честная формулировка: пуш придёт только тому, у кого приложение
-    // уже установлено, — то есть на сайте это всегда письмо.
-    app_soon_note:
-      'Na dan izlaska: jedno obaveštenje u kabinetu i jedan imejl. Bez spama.',
-    // Подпись поля адреса. Видимой её не делаем: строка выше (app_soon_note)
-    // уже стоит над формой, и два призыва подряд читались бы как повтор.
-    // Здесь она работает как имя поля для скринридера.
-    app_soon_cta: 'Ostavite imejl — javićemo vam na dan izlaska',
-    app_soon_qr: 'Skenirajte kod telefonom da otvorite sajt na telefonu',
-    // Подсказка ВНУТРИ поля (placeholder). Имя поля для скринридера —
-    // отдельный ключ app_soon_cta выше: placeholder именем поля не является.
-    app_soon_email: 'Unesite vaš imejl',
-    app_soon_submit: 'Obavesti me',
-    app_soon_sending: 'Šaljemo…',
-    app_soon_done: 'Javićemo vam kada bude novosti.',
-    app_wait_err_invalid_email: 'Proverite adresu e-pošte.',
-    app_wait_err_rate_limited: 'Previše zahteva. Pokušajte za minut.',
-    app_wait_err_failed: 'Nije uspelo. Pokušajte ponovo.',
 
     // ------------------------------------------------------------
     // Страница продавца / автосалона.
@@ -903,8 +860,6 @@ export const dict = {
       'Objavite oglas za prodaju automobila besplatno — direktno sa sajta. Potvrda broja SMS kodom.',
     meta_dealers_desc:
       'Postavite oglase vašeg autosalona na RS Auto: sopstvena stranica salona sa celim voznim parkom i kupci iz cele Srbije.',
-    meta_app_desc:
-      'Aplikacija RS Auto: poruke sa prodavcem, obaveštenja o novim oglasima i sniženjima cena.',
     // Телефон в описании НЕ упоминается: поддержка работает только по
     // почте (OPERATOR.phone пуст — см. lib/legal). Обещание в сниппете
     // того, чего на странице нет, — прямой повод для отказа посетителя,
@@ -1004,9 +959,6 @@ export const dict = {
     car_contact_title: 'Связь с продавцом',
     car_qr_hint: 'Отсканируйте код телефоном, чтобы открыть объявление на телефоне',
 
-    banner_title: 'RS Auto',
-    banner_text: 'Добавьте на главный экран',
-    banner_open: 'Открыть',
 
     sell_title: 'Продайте автомобиль',
     sell_subtitle: 'Разместите объявление бесплатно — прямо на сайте, за несколько минут.',
@@ -1243,9 +1195,21 @@ export const dict = {
     my_confirm_yes: 'Да',
     my_confirm_no: 'Отмена',
     my_action_busy: 'Сохраняем…',
-    // Продвижение пока бесплатное (activate_promotion, 7 дней).
+    // ------------------------------------------------------------
+    // Продвижение (activate_promotion, миграция 0092).
+    // ------------------------------------------------------------
+    // Правила: 7 дней, доступно с 15-го дня после подачи, не чаще
+    // одного раза в 30 дней. Даты в подсказках подставляются рядом
+    // с текстом, а не внутрь строки: словарь здесь плоский, без
+    // шаблонов, и такой приём уже используется (my_promoted_until).
     my_promoted_until: 'Продвигается до',
     my_promote_days: 'Бесплатно, 7 дней в начале выдачи',
+    // Тост после успешного нажатия и подсказка при повторном.
+    my_promote_done: 'Продвижение включено до',
+    // Кнопка нажата раньше срока: объявление молодое либо не прошло
+    // 30 дней с прошлого подъёма. Текст один на оба случая —
+    // человеку важна дата, а не то, какое из двух правил сработало.
+    my_promote_wait: 'Поднять объявление будет доступно с',
 
     // Сводная статистика (get_my_stats_totals).
     my_totals_title: 'Всего',
@@ -1369,7 +1333,6 @@ export const dict = {
     nav_my: 'Мои объявления',
     login_title: 'Вход в кабинет',
     nav_menu_close: 'Закрыть меню',
-    banner_close: 'Закрыть',
     common_close: 'Закрыть',
     // См. пояснение в сербском словаре: крестик кабинета уводит на
     // главную, и подпись обязана это называть.
@@ -1402,22 +1365,6 @@ export const dict = {
     dealers_err_rate: 'С этого номера заявка уже отправлена. Попробуйте завтра.',
     dealers_err_unknown: 'Произошла ошибка. Попробуйте ещё раз.',
 
-    // ------------------------------------------------------------
-    // /app — преимущества приложения.
-    // ------------------------------------------------------------
-    app_feature_1_title: 'Сообщения и звонки',
-    app_feature_1_text:
-      'Свяжитесь с продавцом напрямую — не раскрывая личный номер.',
-    app_feature_2_title: 'Уведомления',
-    app_feature_2_text:
-      'Сохраните поиск и узнайте первым, когда появится подходящий автомобиль.',
-    app_feature_3_title: 'Снижение цены',
-    app_feature_3_text:
-      'Сообщим, когда продавец снизит цену на отслеживаемый автомобиль.',
-
-    // ------------------------------------------------------------
-    // /app — заглушка «приложение в разработке» вместо кнопок сторов.
-    // ------------------------------------------------------------
     // ------------------------------------------------------------
     // /install — установка сайта на телефон (PWA).
     // ------------------------------------------------------------
@@ -1455,29 +1402,6 @@ export const dict = {
     // Плашка на карточке платформы, с которой человек зашёл.
     install_your_device: 'ваше устройство',
 
-    app_soon_badge: 'В разработке',
-    app_soon_title: 'Всё уже работает на сайте',
-    app_soon_text:
-      'Поиск, подача объявления, сообщения и уведомления — всё работает на '
-      + 'сайте, с телефона и с компьютера, без всякой установки.',
-    // Честная формулировка: пуш придёт только тому, у кого приложение
-    // уже установлено, — то есть на сайте это всегда письмо.
-    app_soon_note:
-      'В день выхода пришлём одно уведомление в кабинет и одно письмо. Без спама.',
-    // Подпись поля адреса. Видимой её не делаем: строка выше (app_soon_note)
-    // уже стоит над формой, и два призыва подряд читались бы как повтор.
-    // Здесь она работает как имя поля для скринридера.
-    app_soon_cta: 'Оставьте почту — сообщим в день выхода',
-    app_soon_qr: 'Отсканируйте код телефоном, чтобы открыть сайт на телефоне',
-    // Подсказка ВНУТРИ поля (placeholder). Имя поля для скринридера —
-    // отдельный ключ app_soon_cta выше: placeholder именем поля не является.
-    app_soon_email: 'Введите ваш Email',
-    app_soon_submit: 'Сообщить о выходе',
-    app_soon_sending: 'Отправляем…',
-    app_soon_done: 'Сообщим, когда появятся новости.',
-    app_wait_err_invalid_email: 'Проверьте адрес почты.',
-    app_wait_err_rate_limited: 'Слишком много запросов. Попробуйте через минуту.',
-    app_wait_err_failed: 'Не получилось. Попробуйте ещё раз.',
 
     // ------------------------------------------------------------
     // Страница продавца / автосалона.
@@ -1642,8 +1566,6 @@ export const dict = {
       'Разместите объявление о продаже автомобиля бесплатно — прямо на сайте. Подтверждение номера кодом из SMS.',
     meta_dealers_desc:
       'Размещайте объявления вашего автосалона на RS Auto: своя страница салона со всем автопарком и покупатели со всей Сербии.',
-    meta_app_desc:
-      'Приложение RS Auto: переписка с продавцом, уведомления о новых объявлениях и снижении цен.',
     // См. комментарий в сербском словаре: телефона поддержки нет.
     meta_contact_desc:
       'Свяжитесь с RS Auto: электронная почта поддержки и форма обращения. Отвечаем по будням.',
