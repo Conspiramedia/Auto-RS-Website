@@ -47,6 +47,15 @@ type Props = {
 export default function MyListingCard({ locale, listing }: Props) {
   const t = getT(locale);
 
+  // Объявление, снятое администратором (миграция 0089). Показывается
+  // иначе, чем обычный архив, по существу дела: обычный архив продавец
+  // создал сам и может отменить кнопкой, а этот — решение модератора,
+  // которое кнопкой не отменяется. Карточка обязана объяснить разницу,
+  // иначе продавец ищет исчезнувшую кнопку «Вернуть» и пишет в
+  // поддержку с вопросом «почему не работает».
+  const archivedByAdmin =
+    listing.status === 'archived' && listing.archived_by === 'admin';
+
   // Какую цену показывать. Объявление «только аренда» не имеет цены
   // продажи, и без этой проверки карточка написала бы «Цена по запросу»
   // там, где на самом деле указана суточная ставка.
@@ -95,9 +104,17 @@ export default function MyListingCard({ locale, listing }: Props) {
             {listing.city} · {price}
           </div>
 
-          {/* Статус и промо — одной строкой, как в приложении. */}
+          {/* Статус и промо — одной строкой, как в приложении.
+
+              У снятого администратором вместо нейтрального «В архиве»
+              стоит красная плашка: серый цвет читается как «я убрал
+              объявление сам», а это не так. */}
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <StatusBadge locale={locale} status={listing.status} />
+            {archivedByAdmin ? (
+              <Badge tone="error">{t('my_status_archived_by_admin')}</Badge>
+            ) : (
+              <StatusBadge locale={locale} status={listing.status} />
+            )}
             {listing.is_promoted && (
               <Badge tone="promoted">{t('car_promoted')}</Badge>
             )}
@@ -110,6 +127,34 @@ export default function MyListingCard({ locale, listing }: Props) {
             <Alert tone="error" className="mt-2">
               <span className="font-semibold">{t('my_rejected_reason')}:</span>{' '}
               {listing.moderation_comment}
+            </Alert>
+          )}
+
+          {/* Причина снятия администратором + единственный доступный
+              продавцу путь дальше. Кнопки «Вернуть» у такого объявления
+              нет (ListingActions), и без ссылки на поддержку карточка
+              оказалась бы тупиком: статус объясняет, что случилось, но
+              не что теперь делать.
+
+              Причина выводится, только если она есть: у архива времён
+              до 0089 archived_by = null, и до этой ветки такой случай
+              не доходит вовсе. */}
+          {archivedByAdmin && (
+            <Alert tone="error" className="mt-2">
+              {listing.archived_reason && (
+                <>
+                  <span className="font-semibold">
+                    {t('my_archived_reason')}:
+                  </span>{' '}
+                  {listing.archived_reason}{' '}
+                </>
+              )}
+              <Link
+                href={localeHref(locale, '/contact')}
+                className="font-semibold underline"
+              >
+                {t('my_archived_support')}
+              </Link>
             </Alert>
           )}
         </div>
@@ -152,6 +197,7 @@ export default function MyListingCard({ locale, listing }: Props) {
         carId={listing.car_id}
         status={listing.status}
         isPromoted={listing.is_promoted}
+        archivedByAdmin={archivedByAdmin}
       />
     </Card>
   );

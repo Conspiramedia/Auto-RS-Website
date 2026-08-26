@@ -20,6 +20,7 @@
 // несколько раз в день, а не тысячи посетителей.
 // ============================================================
 
+import ActionLabel from './ActionLabel';
 import type { AdminCar } from '@/lib/types';
 import {
   formatDeposit,
@@ -41,6 +42,19 @@ const DATE_TIME = new Intl.DateTimeFormat('ru-RU', {
   hour: '2-digit',
   minute: '2-digit',
 });
+
+// Кто отправил объявление в архив (cars.archived_by, миграция 0089).
+// Формулировки развёрнутые, а не 'admin'/'owner': карточку читает
+// человек, и «снято администратором» отвечает на его вопрос сразу, без
+// перевода кода в голове.
+const ARCHIVED_BY_LABEL: Record<string, string> = {
+  admin: 'снято администратором',
+  owner: 'убрано самим продавцом',
+  // Регламентные снятия. Значение заведено в enum заранее и сегодня не
+  // проставляется ни одним путём — подпись готова к тому дню, когда
+  // появится первый такой путь.
+  system: 'снято автоматически',
+};
 
 // Пара «подпись — значение» в таблице характеристик.
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
@@ -115,6 +129,46 @@ export default function ModerationCard({ car }: { car: AdminCar }) {
         <p className="mt-1 text-caption text-neutral-60">
           {car.city} · подано {DATE_TIME.format(new Date(car.created_at))}
         </p>
+
+        {/* ---------- Кто снял объявление (0089) ---------- */}
+        {/* Блок стоит ВЫШЕ цен и характеристик намеренно: он меняет
+            смысл всего остального. Объявление, снятое коллегой,
+            модератор смотрит иначе, чем убранное самим продавцом, —
+            в первом случае решение уже принято и его надо либо
+            подтвердить, либо отменить, во втором решать нечего.
+
+            Показывается только для архива: у активного объявления
+            archived_by пуст (его чистит триггер), и пустая плашка
+            «снял: никто» была бы шумом. */}
+        {car.status === 'archived' && (
+          <div
+            className={[
+              'mt-3 rounded-card border p-3',
+              car.archived_by === 'admin'
+                ? 'border-error/30 bg-status-error'
+                : 'border-neutral-10',
+            ].join(' ')}
+          >
+            <p className="text-micro text-neutral-50">Снято с публикации</p>
+            <p
+              className={[
+                'mt-0.5 font-medium',
+                car.archived_by === 'admin' ? 'text-error' : '',
+              ].join(' ')}
+            >
+              {ARCHIVED_BY_LABEL[car.archived_by ?? ''] ??
+                // Архив времён до 0089: авторство не фиксировалось.
+                // Честнее сказать «неизвестно», чем молча показать
+                // «продавцом» и ввести модератора в заблуждение.
+                'автор снятия неизвестен (до миграции 0089)'}
+            </p>
+            {car.archived_reason && (
+              <p className="mt-1 whitespace-pre-wrap break-words text-caption text-neutral-70">
+                {car.archived_reason}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Цены. Показываем обе, если объявление и на продажу, и в
             аренду: заниженная цена — типовая причина отказа, и
@@ -200,15 +254,21 @@ export default function ModerationCard({ car }: { car: AdminCar }) {
             Зачем он нужен: объявление приходит на повторную проверку
             после правки, и модератор обязан видеть, за что его
             отклонили в прошлый раз. Иначе он либо придирается к уже
-            исправленному, либо пропускает то же нарушение. */}
+            исправленному, либо пропускает то же нарушение.
+
+            С 0089 сюда попадают все события журнала по объявлению, а
+            не только решения модерации. Причина та же: снятие с
+            публикации и возврат из архива — часть той же истории, и
+            спор «кто вернул объявление в выдачу» разбирается именно
+            по этому списку. */}
         {car.moderation_history.length > 0 && (
           <div className="mt-4">
             <p className="text-micro text-neutral-50">История модерации</p>
             <ul className="mt-2 space-y-2">
               {car.moderation_history.map((event, i) => {
-                const rejected = event.action === 'car_rejected';
                 // payload — свободный jsonb из журнала: у отклонения
-                // там reason. Читаем аккуратно: строка или ничего.
+                // и у снятия там reason. Читаем аккуратно: строка или
+                // ничего.
                 const reason =
                   typeof event.payload?.reason === 'string'
                     ? event.payload.reason
@@ -219,13 +279,14 @@ export default function ModerationCard({ car }: { car: AdminCar }) {
                     key={`${event.created_at}-${i}`}
                     className="rounded-control border border-neutral-10 p-2 text-caption"
                   >
-                    <span
-                      className={
-                        rejected ? 'font-medium text-error' : 'font-medium text-success'
-                      }
-                    >
-                      {rejected ? 'Отклонено' : 'Одобрено'}
-                    </span>
+                    {/* Подпись берём из общего словаря журнала, а не
+                        из тернарника «отклонено/одобрено». После 0089
+                        в историю попадают ВСЕ события по объявлению —
+                        снятие, возврат администратором, возврат
+                        владельцем, — и деление надвое показывало бы
+                        «Одобрено» там, где объявление на самом деле
+                        сняли с публикации. */}
+                    <ActionLabel action={event.action} />
                     <span className="text-neutral-60">
                       {' · '}
                       {event.actor_name}
