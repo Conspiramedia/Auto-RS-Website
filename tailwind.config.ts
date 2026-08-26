@@ -58,6 +58,19 @@ const config: Config = {
         status: brand.statusSurface,
         // Заливки и состояния наведения.
         surface: brand.surface,
+        // Палитра экрана переписки. Отдельная группа, потому что цвет
+        // там означает принадлежность реплики, а не роль действия
+        // (см. brand.chat). В разметке: bg-chat-surface,
+        // bg-chat-bubble-peer, from-chat-accent-from.
+        chat: {
+          surface: brand.chat.surface,
+          input: brand.chat.inputSurface,
+          'bubble-peer': brand.chat.bubblePeer,
+          // Концы градиента своего пузыря. Меняются на accentGreen
+          // ровно здесь — разметка ссылается на имя, а не на цвет.
+          'accent-from': brand.chat.accentBlue.from,
+          'accent-to': brand.chat.accentBlue.to,
+        },
         // Семантические роли: bg-success читается лучше, чем bg-brand-green,
         // когда речь о статусе, а не о брендовом акценте.
         success: brand.semantic.success,
@@ -72,6 +85,9 @@ const config: Config = {
         control: brand.radius.control,
         card: brand.radius.card,
         pill: brand.radius.pill,
+        // Радиус пузыря сообщения — своя ступень вне шкалы
+        // «контрол/контейнер»: см. brand.chat.bubbleRadius.
+        bubble: brand.chat.bubbleRadius,
       },
 
       // Отступы из брендовой сетки, кратной 4. Доступны как p-md, gap-lg,
@@ -85,6 +101,14 @@ const config: Config = {
         dropdown: brand.shadow.dropdown,
         modal: brand.shadow.modal,
         sticky: brand.shadow.sticky,
+        // Тень своего пузыря: цветная под градиент (см. brand.chat).
+        bubble: brand.chat.bubbleShadow,
+      },
+
+      maxWidth: {
+        // Ширина ленты переписки на десктопе — токен, а не max-w-3xl
+        // в разметке: значение подобрано под читаемость строки.
+        chat: brand.chat.maxWidth,
       },
 
       zIndex: {

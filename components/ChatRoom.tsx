@@ -24,14 +24,18 @@
 // вверх, и открывать её на первом сообщении месячной давности
 // бессмысленно. Прокрутка к низу делается и при монтировании, и при
 // каждом новом сообщении.
+//
+// ОФОРМЛЕНИЕ — минимализм мессенджера: воздух вместо рамок, свой пузырь
+// градиентом, чужой — светло-серой заливкой, дни разделены капсулой.
+// Все цвета берутся из brand.chat через Tailwind (bg-chat-*,
+// from-chat-accent-*): смена акцента с синего на фирменный зелёный —
+// правка одной строки в tailwind.config.ts, разметку трогать не нужно.
 // ============================================================
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 
 import { markChatRead, sendMessage } from '@/app/my/actions';
 import Alert from './ui/Alert';
-import Button from './ui/Button';
-import { fieldClass } from './ui/Field';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import { getBrowserClient } from '@/lib/supabaseClient';
@@ -144,81 +148,135 @@ export default function ChatRoom({
     });
   }
 
+  const canSend = text.trim() !== '' && !pending;
+
   return (
     <>
       {/* Лента. flex-1 + overflow-y-auto: прокручивается она, а не вся
-          страница — поле ввода остаётся на месте, как в мессенджере. */}
+          страница — поле ввода остаётся на месте, как в мессенджере.
+          Ширина ограничена max-w-chat и центрирована: на широком
+          мониторе полоса реплик во всю панель разносит короткие
+          сообщения по дальним краям, и переписку приходится читать
+          зигзагом. */}
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        {messages.length === 0 ? (
-          <p className="py-8 text-center text-caption text-neutral-50">
-            {t('chat_no_messages')}
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {messages.map((message) => (
-              <Bubble
-                key={message.id}
-                message={message}
-                mine={message.sender_id === currentUserId}
-                locale={locale}
-              />
-            ))}
-          </div>
-        )}
+        <div className="mx-auto max-w-chat">
+          {messages.length === 0 ? (
+            <p className="py-8 text-center text-caption text-neutral-50">
+              {t('chat_no_messages')}
+            </p>
+          ) : (
+            <div className="space-y-1">
+              {messages.map((message, index) => (
+                <div key={message.id}>
+                  {/* Разделитель дня. Ставится перед первым сообщением
+                      и всякий раз, когда календарная дата сменилась:
+                      без него вчерашняя реплика и сегодняшняя стоят
+                      вплотную, а время под пузырём этого не объясняет. */}
+                  {startsNewDay(messages, index) && (
+                    <div className="flex justify-center py-3">
+                      <span className="rounded-pill bg-chat-input px-3 py-1 text-small font-medium text-neutral-60">
+                        {dayLabel(message.created_at, locale, t)}
+                      </span>
+                    </div>
+                  )}
+
+                  <Bubble
+                    message={message}
+                    mine={message.sender_id === currentUserId}
+                    locale={locale}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div ref={bottomRef} />
       </div>
 
       {/* Ввод или баннер блокировки. */}
-      <div className="border-t border-neutral-10 p-3">
-        {peerBlocked ? (
-          <p className="rounded-control bg-surface-muted px-3 py-2.5 text-center text-caption text-neutral-60">
-            {t('chat_blocked')}
-          </p>
-        ) : (
-          <>
-            {/* НА МОБИЛЬНОМ — В ДВЕ СТРОКИ: поле сверху, кнопка под ним
-                по центру. В один ряд «Отправить» съедала треть ширины
-                узкого экрана, и на поле оставалось меньше места, чем
-                занимает сама подпись кнопки.
-                С 640px возвращается обычный ряд: там ширины хватает
-                обоим, а лишняя строка только отодвигала бы ленту. */}
-            <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-stretch">
-              <input
-                type="text"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                // Enter отправляет: в переписке это ожидаемое поведение,
-                // а тянуться к кнопке после каждой реплики утомительно.
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    submit();
-                  }
-                }}
-                placeholder={t('chat_placeholder')}
-                // w-full нужен для мобильной колонки: flex-1 управляет
-                // размером вдоль главной оси, а она там вертикальная,
-                // и поле сжалось бы по содержимому.
-                className={`${fieldClass} w-full sm:flex-1`}
-                aria-label={t('chat_placeholder')}
-              />
-              <Button
-                onClick={submit}
-                disabled={pending || text.trim() === ''}
-                variant="info"
-              >
-                {pending ? t('chat_sending') : t('chat_send')}
-              </Button>
-            </div>
+      <div className="shrink-0 border-t border-neutral-10 bg-white px-3 py-2.5">
+        <div className="mx-auto max-w-chat">
+          {peerBlocked ? (
+            <p className="rounded-control bg-surface-muted px-3 py-2.5 text-center text-caption text-neutral-60">
+              {t('chat_blocked')}
+            </p>
+          ) : (
+            <>
+              {/* ОДИН РЯД НА ВСЕХ ШИРИНАХ. Прежняя мобильная раскладка в
+                  две строки существовала из-за подписи «Отправить»:
+                  словом кнопка съедала треть узкого экрана. Круглая
+                  кнопка со стрелкой занимает 40px, и ломать строку
+                  больше незачем — поле остаётся во всю ширину. */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  // Enter отправляет: в переписке это ожидаемое
+                  // поведение, а тянуться к кнопке после каждой реплики
+                  // утомительно.
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      submit();
+                    }
+                  }}
+                  placeholder={t('chat_placeholder')}
+                  // Pill-поле без рамки: граница здесь лишняя, форму
+                  // задаёт заливка. Фокус помечается кольцом, а не
+                  // сменой границы, — иначе поле подпрыгивало бы.
+                  className="h-10 min-w-0 flex-1 rounded-pill bg-chat-input px-4 text-caption outline-none transition-shadow duration-fast ease-out placeholder:text-neutral-50 focus:ring-2 focus:ring-chat-accent-to"
+                  aria-label={t('chat_placeholder')}
+                />
 
-            {error && (
-              <Alert tone="error" className="mt-2">
-                {error}
-              </Alert>
-            )}
-          </>
-        )}
+                {/* Кнопка отправки. Своя разметка, а не ui/Button:
+                    тому нужна подпись и прямоугольная форма контрола,
+                    здесь же круг 40px с иконкой. disabled на пустом
+                    поле сохранён — как было. */}
+                <button
+                  type="button"
+                  onClick={submit}
+                  disabled={!canSend}
+                  aria-label={pending ? t('chat_sending') : t('chat_send')}
+                  className={[
+                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-pill text-white transition-opacity duration-fast ease-out',
+                    'bg-gradient-to-br from-chat-accent-from to-chat-accent-to',
+                    canSend
+                      ? 'shadow-bubble hover:opacity-90'
+                      : // Неактивная кнопка гасится прозрачностью, а не
+                        // серой заливкой: форма и место остаются теми
+                        // же, и появление текста не «перекрашивает»
+                        // угол экрана.
+                        'cursor-not-allowed opacity-40',
+                  ].join(' ')}
+                >
+                  {/* Бумажный самолётик. Инлайновый SVG: одна иконка на
+                      экран не стоит ни шрифта, ни зависимости. */}
+                  <svg
+                    aria-hidden
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M22 2 11 13" />
+                    <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+                  </svg>
+                </button>
+              </div>
+
+              {error && (
+                <Alert tone="error" className="mt-2">
+                  {error}
+                </Alert>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </>
   );
@@ -227,11 +285,18 @@ export default function ChatRoom({
 // ------------------------------------------------------------
 // Пузырь сообщения.
 // ------------------------------------------------------------
-// Раскладка повторяет чат приложения (chat_messages_list.dart): свои
-// справа с тёмной заливкой, чужие слева на приглушённой подложке,
-// радиус контейнера, галочки прочтения только на своих.
+// Свои справа градиентом акцента и белым текстом, чужие слева на
+// светло-сером — сторона и цвет вместе отвечают на вопрос «кто сказал»
+// раньше, чем человек дочитает реплику. Ту же логику показывает чат
+// приложения (chat_messages_list.dart), но оформление здесь своё:
+// сайт открывают и с монитора, где мелкий контрастный пузырь Flutter
+// смотрелся бы плотнее нужного.
 //
-// max-w-[75%] нужен, чтобы длинная реплика не растягивалась во всю
+// ВРЕМЯ ВЫНЕСЕНО ПОД ПУЗЫРЬ, а не оставлено внутри: внутри оно тянуло
+// короткую реплику в ширину («Да» превращалось в плашку под время) и
+// заставляло держать вторую шкалу цвета для тёмной заливки.
+//
+// max-w-[78%] нужен, чтобы длинная реплика не растягивалась во всю
 // ширину: без ограничения теряется сама разница «своё/чужое», которую
 // показывает сторона пузыря.
 function Bubble({
@@ -244,11 +309,15 @@ function Bubble({
   locale: Locale;
 }) {
   return (
-    <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+    <div
+      className={`flex flex-col ${mine ? 'items-end' : 'items-start'} py-0.5`}
+    >
       <div
         className={[
-          'max-w-[75%] rounded-card px-3 py-2 lg:max-w-[65%]',
-          mine ? 'bg-brand-dark text-white' : 'bg-surface-muted',
+          'max-w-[78%] rounded-bubble px-3.5 py-2 lg:max-w-[70%]',
+          mine
+            ? 'bg-gradient-to-br from-chat-accent-from to-chat-accent-to text-white shadow-bubble'
+            : 'bg-chat-bubble-peer text-neutral-100',
         ].join(' ')}
       >
         {/* whitespace-pre-wrap сохраняет переносы строк, break-words
@@ -257,20 +326,55 @@ function Bubble({
         <p className="whitespace-pre-wrap break-words text-caption">
           {message.text}
         </p>
+      </div>
 
-        <div
-          className={`mt-0.5 flex items-center justify-end gap-1 text-small ${
-            mine ? 'text-on-dark-70' : 'text-neutral-50'
-          }`}
-        >
-          <span>{time(message.created_at, locale)}</span>
-          {/* Галочки — только на своих: чужое прочтение отправителю
-              не показывают ни здесь, ни в приложении. */}
-          {mine && <span>{message.is_read ? '✓✓' : '✓'}</span>}
-        </div>
+      <div className="mt-1 flex items-center gap-1 px-1 text-small text-neutral-50">
+        <span>{time(message.created_at, locale)}</span>
+        {/* Галочки — только на своих: чужое прочтение отправителю
+            не показывают ни здесь, ни в приложении. */}
+        {mine && <span>{message.is_read ? '✓✓' : '✓'}</span>}
       </div>
     </div>
   );
+}
+
+// ------------------------------------------------------------
+// Смена дня между соседними сообщениями.
+// ------------------------------------------------------------
+// Первое сообщение ленты всегда получает разделитель: без него неясно,
+// с какого дня начинается видимый кусок переписки.
+function startsNewDay(messages: ChatMessage[], index: number): boolean {
+  if (index === 0) return true;
+
+  const prev = new Date(messages[index - 1].created_at);
+  const current = new Date(messages[index].created_at);
+  return prev.toDateString() !== current.toDateString();
+}
+
+// Подпись разделителя: «Сегодня», «Вчера» или дата. Год добавляется
+// только для прошлых лет — в свежей переписке он лишний шум.
+function dayLabel(
+  value: string,
+  locale: Locale,
+  t: (key: 'chat_today' | 'chat_yesterday') => string,
+): string {
+  const date = new Date(value);
+  const now = new Date();
+  const intl = locale === 'ru' ? 'ru-RU' : 'sr-Latn-RS';
+
+  if (date.toDateString() === now.toDateString()) return t('chat_today');
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (date.toDateString() === yesterday.toDateString()) {
+    return t('chat_yesterday');
+  }
+
+  return new Intl.DateTimeFormat(intl, {
+    day: 'numeric',
+    month: 'long',
+    ...(date.getFullYear() === now.getFullYear() ? {} : { year: 'numeric' }),
+  }).format(date);
 }
 
 function time(value: string, locale: Locale): string {
