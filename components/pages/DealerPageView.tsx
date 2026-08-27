@@ -40,6 +40,7 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import StateCard from '@/components/ui/StateCard';
 import CarCard from '@/components/CarCard';
+import DealerOwnerBar from '@/components/DealerOwnerBar';
 import PagerLinks, { PagerHeadLinks } from '@/components/PagerLinks';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
@@ -153,6 +154,13 @@ export default async function DealerPageView({
       <SiteHeader locale={locale} pathname={basePath} />
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+        {/* Полоса «Моя витрина» с крестиком — ТОЛЬКО У ВЛАДЕЛЬЦА.
+            Клиентский компонент: страница кэшируется (revalidate =
+            300), и серверная проверка сессии либо запекла бы личную
+            надпись в общий кэш, либо лишила бы витрину кэширования
+            вовсе. Подробности — в шапке DealerOwnerBar. */}
+        <DealerOwnerBar locale={locale} dealerId={id} />
+
         {/* Шапка витрины: логотип/аватар, имя и счётчики. */}
         <Card className="flex flex-col gap-4 sm:flex-row sm:items-center">
           {/* Логотип салона. Когда его нет — инициал в круге: пустой

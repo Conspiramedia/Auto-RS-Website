@@ -25,6 +25,14 @@
 // показывает адрес в строке состояния и работает до загрузки скрипта.
 // Отсюда же Server Component — обработчик клика не нужен.
 //
+// КУДА ВЕДЁТ — НАСТРАИВАЕТСЯ, но по умолчанию на главную. В кабинете
+// крестик закрывает кабинет, и это его основной смысл. На витрине
+// салона (/dealer/{id}, полоса владельца) тем же знаком закрывается
+// ПРОСМОТР ВИТРИНЫ, и вести он обязан обратно в профиль: продавец
+// пришёл туда кнопкой «Моя витрина» из кабинета, и увод на главную
+// выбросил бы его из кабинета целиком. Знак и размер общие — разное
+// только назначение, поэтому это проп, а не второй компонент.
+//
 // ТАЧ-ЦЕЛЬ 44px, а не 40px как у общего CloseButton. Тот размер
 // задан для крестиков ВНУТРИ слоёв (шторка фильтров, галерея), где
 // палец уже наведён на панель. Здесь крестик стоит в углу экрана, у
@@ -35,24 +43,39 @@
 
 import Link from 'next/link';
 
-import type { Locale } from '@/lib/i18n';
+import type { DictKey, Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 
 type Props = {
   locale: Locale;
   className?: string;
+  // Куда уводит крестик. Путь БЕЗ префикса локали — его добавит
+  // localeHref, как и для любого внутреннего перехода на сайте.
+  href?: string;
+  // Подпись для скринридера и всплывающей подсказки. Ключ словаря, а
+  // не готовая строка: сайт двуязычный, и текст обязан приходить
+  // через getT. По умолчанию — «закрыть кабинет».
+  labelKey?: DictKey;
 };
 
-export default function MyCloseButton({ locale, className = '' }: Props) {
+export default function MyCloseButton({
+  locale,
+  className = '',
+  href = '/',
+  labelKey = 'my_close',
+}: Props) {
   const t = getT(locale);
 
   return (
     <Link
-      href={localeHref(locale, '/')}
+      href={localeHref(locale, href)}
       // Подпись своя, не common_close: крестик уводит со страницы, и
-      // тот, кто слушает её скринридером, должен знать куда.
-      aria-label={t('my_close')}
-      title={t('my_close')}
+      // тот, кто слушает её скринридером, должен знать куда. Раз
+      // назначение настраивается, вместе с ним обязана меняться и
+      // подпись — иначе крестик на витрине обещал бы закрыть кабинет,
+      // а вёл бы в профиль.
+      aria-label={t(labelKey)}
+      title={t(labelKey)}
       className={[
         'inline-flex size-11 shrink-0 items-center justify-center rounded-control',
         'text-neutral-60 transition-colors duration-fast',
