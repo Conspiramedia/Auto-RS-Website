@@ -693,7 +693,7 @@ export const dict = {
       'Dve rečenice o salonu. Na kartici se prikazuju prva tri reda.',
     showcase_city: 'Grad salona',
     showcase_city_hint:
-      'Grad menja administrator platforme — javite nam ako se adresa promenila.',
+      'Grad se prikazuje na kartici salona u pretrazi.',
     showcase_city_empty: 'Nije naveden',
     showcase_phone: 'Telefon salona',
     showcase_phone_hint:
@@ -1471,7 +1471,7 @@ export const dict = {
       'Две фразы о салоне. На карточке показываются первые три строки.',
     showcase_city: 'Город салона',
     showcase_city_hint:
-      'Город меняет администратор площадки — напишите нам, если адрес изменился.',
+      'Город показывается на карточке салона в выдаче.',
     showcase_city_empty: 'Не указан',
     showcase_phone: 'Телефон салона',
     showcase_phone_hint:

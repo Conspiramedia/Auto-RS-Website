@@ -274,6 +274,9 @@ export async function saveProfile(input: {
   dealerPhone: string;
   website: string;
   openingHours: string;
+  // Город салона. С миграции 0097 его пишет сам владелец — раньше
+  // поле принадлежало только админке (0085).
+  companyCity: string;
 }): Promise<ActionResult> {
   const supabase = await getServerClient();
 
@@ -305,6 +308,7 @@ export async function saveProfile(input: {
     p_dealer_phone: input.dealerPhone.trim() || null,
     p_website: input.website.trim() || null,
     p_opening_hours: input.openingHours.trim() || null,
+    p_company_city: input.companyCity.trim() || null,
   });
 
   if (rpcError) return { ok: false, error: rpcError.message };

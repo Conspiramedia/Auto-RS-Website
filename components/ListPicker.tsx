@@ -186,14 +186,31 @@ export default function ListPicker({
           // <input> (components/ui/Field). Раньше здесь стояло py-2 +
           // text-caption, а у input — py-2.5 + text-body, и на шаге 1 подачи
           // «Год выпуска» и «Город» оказывались разной высоты.
-          `flex w-full items-center justify-between gap-2 rounded-control border border-neutral-15 bg-white px-3 text-left ${
+          // ФОКУС И ОТКРЫТОЕ СОСТОЯНИЕ ВИДНЫ. Прежде у кнопки был
+          // только hover — то есть на телефоне она не отзывалась
+          // вообще: палец не наводят, им нажимают. Человек не понимал,
+          // какое поле он открыл.
+          //
+          // Кольцо focus-visible то же, что у <input> (см.
+          // components/ui/Field), — контролы формы обязаны отзываться
+          // одинаково. focus-visible, а не focus: после выбора значения
+          // фокус возвращается на кнопку, и обычный focus оставлял бы
+          // кольцо висеть на уже закрытом пикере, будто поле всё ещё
+          // активно.
+          //
+          // Открытая панель дополнительно красит рамку в брендовый
+          // цвет: пока список раскрыт, поле обязано выглядеть
+          // активным, иначе на десктопе непонятно, к какому из
+          // соседних полей относится выпавший список.
+          `flex w-full items-center justify-between gap-2 rounded-control border bg-white px-3 text-left ${
             size === 'compact'
               ? `${FIELD_HEIGHT_COMPACT} text-caption`
               : `${FIELD_HEIGHT} text-body`
           } ` +
           (disabled
-            ? 'cursor-not-allowed bg-surface-hover text-neutral-30'
-            : 'transition-colors duration-fast ease-out hover:border-neutral-30')
+            ? 'cursor-not-allowed border-neutral-15 bg-surface-hover text-neutral-30'
+            : 'transition-[color,background-color,border-color,box-shadow] duration-fast ease-out hover:border-neutral-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/25 ' +
+              (open ? 'border-brand-primary' : 'border-neutral-15'))
         }
       >
         <span className={selected ? 'truncate' : 'truncate text-neutral-40'}>

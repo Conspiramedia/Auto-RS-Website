@@ -59,6 +59,7 @@ import {
   PhotoPrepareError,
   preparePhoto,
 } from '@/lib/imagePrepare';
+import ListPicker, { type PickerOption } from './ListPicker';
 import Alert from './ui/Alert';
 import Button from './ui/Button';
 import Card from './ui/Card';
@@ -66,6 +67,7 @@ import { fieldClass, fieldClassTextarea } from './ui/Field';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { supabaseErrorText } from '@/lib/otp';
+import { CITIES } from '@/lib/referenceData';
 import { getBrowserClient } from '@/lib/supabaseClient';
 import type { MyProfile } from '@/lib/types';
 
@@ -105,6 +107,12 @@ export default function ProfileForm({ locale, profile }: Props) {
   const [dealerPhone, setDealerPhone] = useState(profile.dealer_phone ?? '');
   const [website, setWebsite] = useState(profile.website ?? '');
   const [openingHours, setOpeningHours] = useState(profile.opening_hours ?? '');
+  // Город салона. РЕДАКТИРУЕТСЯ ВЛАДЕЛЬЦЕМ с миграции 0097: раньше его
+  // проставлял только администратор при заключении договора (0085), и
+  // поле стояло в форме серым. Пока город был внутренним, это годилось,
+  // но теперь он показывается покупателю — в плитке салона и в шапке
+  // публичной страницы, — и салон должен уметь заполнить его сам.
+  const [companyCity, setCompanyCity] = useState(profile.company_city ?? '');
 
   const [pending, startTransition] = useTransition();
   const [uploading, setUploading] = useState(false);
@@ -226,6 +234,7 @@ export default function ProfileForm({ locale, profile }: Props) {
         dealerPhone,
         website,
         openingHours,
+        companyCity,
       });
 
       if (!result.ok) {
@@ -530,23 +539,43 @@ export default function ProfileForm({ locale, profile }: Props) {
                     </div>
                   </div>
 
-                  {/* ГОРОД — ТОЛЬКО ЧТЕНИЕ. Его проставляет
-                      администратор при заключении договора (миграция
-                      0085), и update_seller_profile его не трогает
-                      вовсе. Показываем всё равно: город виден в
-                      карточке салона, и без этой строки непонятно,
-                      откуда он там взялся и к кому идти, если адрес
-                      сменился. */}
+                  {/* ГОРОД — ВЫБОР ИЗ СПИСКА, тот же ListPicker и тот
+                      же справочник CITIES, что в форме подачи
+                      объявления. Единый способ выбрать город на всём
+                      сайте: продавец, уже подавший объявление, знает
+                      этот пикер и не разбирается заново.
+
+                      Раньше поле стояло disabled-инпутом: город
+                      проставлял только администратор (0085). Пока
+                      город был внутренним полем админки, это годилось,
+                      но теперь его видит покупатель — в плитке салона
+                      и в шапке витрины, — и салон, глядя на пустое
+                      место в своей карточке, не мог его заполнить.
+                      Миграция 0097 научила update_seller_profile
+                      писать это поле.
+
+                      allowCustom — как в подаче: справочник из 18
+                      крупных городов подсказка, а не ограничение, и
+                      салон из посёлка обязан вписать своё название.
+
+                      Своей подписи <label> здесь нет: ListPicker
+                      рендерит её сам, и вторая читалась бы как
+                      дубль. */}
                   <div>
-                    <label className="mb-1 block text-caption text-neutral-60">
-                      {t('showcase_city')}
-                    </label>
-                    <input
-                      type="text"
-                      value={profile.company_city ?? t('showcase_city_empty')}
-                      readOnly
-                      disabled
-                      className={`${fieldClass} bg-surface-muted text-neutral-60`}
+                    <ListPicker
+                      locale={locale}
+                      name="company_city"
+                      label={t('showcase_city')}
+                      options={CITIES.map(
+                        (c): PickerOption => ({ value: c, label: c }),
+                      )}
+                      value={companyCity}
+                      placeholder={t('showcase_city_empty')}
+                      allowCustom
+                      onChange={(v) => {
+                        setCompanyCity(v);
+                        setSaved(false);
+                      }}
                     />
                     <p className="mt-1 text-small text-neutral-50">
                       {t('showcase_city_hint')}
