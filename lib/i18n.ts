@@ -618,6 +618,10 @@ export const dict = {
     profile_logo: 'Logo autosalona',
     profile_logo_hint: 'Prikazuje se na stranici salona i uz vaše oglase.',
     profile_logo_change: 'Učitaj logo',
+    // Замена уже загруженного. Отдельная строка, а не та же «Učitaj
+    // logo»: при заполненном логотипе «загрузить» обещает добавить
+    // второй, тогда как файл в бакете один и новый перезапишет старый.
+    profile_logo_replace: 'Zameni logo',
     profile_logo_remove: 'Ukloni',
     profile_showcase: 'Moja stranica',
     profile_save: 'Sačuvaj',
@@ -1366,6 +1370,8 @@ export const dict = {
     profile_logo: 'Логотип салона',
     profile_logo_hint: 'Показывается на витрине салона и рядом с объявлениями.',
     profile_logo_change: 'Загрузить логотип',
+    // См. комментарий у sr-версии ключа.
+    profile_logo_replace: 'Заменить логотип',
     profile_logo_remove: 'Убрать',
     profile_showcase: 'Моя витрина',
     profile_save: 'Сохранить',
