@@ -58,29 +58,40 @@ const GRID = 'grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4';
 export default async function AdminHomePage() {
   const supabase = await getServerClient();
 
-  const [statsResult, queueResult, dealersResult] = await Promise.all([
-    supabase.rpc('admin_dashboard_stats'),
+  const [statsResult, queueResult, dealersResult, leadsResult] =
+    await Promise.all([
+      supabase.rpc('admin_dashboard_stats'),
 
-    // Очередь читается обычным select под админской политикой
-    // cars_select_admin_moderation (0015) — она отдаёт админу
-    // объявления в статусах moderation и rejected. Отдельная RPC ради
-    // пяти строк не нужна: фильтр и сортировка тут не бизнес-правило.
-    //
-    // Сортировка по возрастанию даты: «последние 5 в очереди» — это те,
-    // что ждут ДОЛЬШЕ ВСЕХ, а не поданные только что. Разбирать нужно с
-    // головы очереди, иначе первое объявление продавца зависает, пока
-    // сверху сыплются новые.
-    supabase
-      .from('cars')
-      .select('id, brand, model, year, city, created_at, user_id')
-      .eq('status', 'moderation')
-      .order('created_at', { ascending: true })
-      .limit(5),
+      // Очередь читается обычным select под админской политикой
+      // cars_select_admin_moderation (0015) — она отдаёт админу
+      // объявления в статусах moderation и rejected. Отдельная RPC ради
+      // пяти строк не нужна: фильтр и сортировка тут не бизнес-правило.
+      //
+      // Сортировка по возрастанию даты: «последние 5 в очереди» — это те,
+      // что ждут ДОЛЬШЕ ВСЕХ, а не поданные только что. Разбирать нужно с
+      // головы очереди, иначе первое объявление продавца зависает, пока
+      // сверху сыплются новые.
+      supabase
+        .from('cars')
+        .select('id, brand, model, year, city, created_at, user_id')
+        .eq('status', 'moderation')
+        .order('created_at', { ascending: true })
+        .limit(5),
 
-    // Карточки салонов одним вызовом: счётчики считаются агрегатом
-    // внутри RPC, отдельного запроса на каждый салон нет (0085).
-    supabase.rpc('admin_dealer_cards'),
-  ]);
+      // Карточки салонов одним вызовом: счётчики считаются агрегатом
+      // внутри RPC, отдельного запроса на каждый салон нет (0085).
+      supabase.rpc('admin_dealer_cards'),
+
+      // Необработанные заявки салонов — только ЧИСЛО, строки не нужны:
+      // head: true отдаёт count без единой строки данных, а сами
+      // заявки разбираются в своём разделе. Считаем 'new', а не все:
+      // карточка отвечает на вопрос «есть ли работа», и общее число
+      // заявок за всё время на него не отвечает.
+      supabase
+        .from('dealer_leads')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'new'),
+    ]);
 
   // Сводка возвращается таблицей из одной строки.
   const stats = (
@@ -94,6 +105,10 @@ export default async function AdminHomePage() {
   const dealers = (dealersResult.error
     ? []
     : (dealersResult.data ?? [])) as AdminDealerCard[];
+
+  // Ошибка счётчика заявок не должна ронять экран: раздел открывается
+  // и без числа на карточке.
+  const newLeads = leadsResult.error ? 0 : (leadsResult.count ?? 0);
 
   return (
     <>
@@ -229,6 +244,21 @@ export default async function AdminHomePage() {
           href="/admin/users"
           label="Пользователи"
           hint="Профили и права"
+        />
+        {/* Заявки салонов. Со счётчиком и тоном accent, как у очереди
+            модерации: это тоже неразобранная работа, только приходит
+            она с формы «Автосалонам», а не из подачи объявлений.
+            До этой карточки таблица dealer_leads (0053) заполнялась
+            формой на /dealers и не читалась никем: открыть её было
+            неоткуда — ни ссылки, ни страницы в админке не было.
+            Ноль новых заявок счётчик показывает честно: карточка тогда
+            просто не требует внимания, но раздел остаётся доступным. */}
+        <AdminTile
+          href="/admin/leads"
+          label="Заявки салонов"
+          value={newLeads}
+          tone="accent"
+          hint="Новые, ждут звонка"
         />
         <AdminTile
           href="/admin/log"

@@ -12,6 +12,25 @@
 //
 // JSON-LD AutoDealer отдаётся ТОЛЬКО для салонов: у частного лица
 // разметка организации была бы неверной — он не компания.
+//
+// ------------------------------------------------------------
+// ПАГИНАЦИЯ ВИТРИНЫ
+// ------------------------------------------------------------
+// Раньше здесь стоял жёсткий лимит 24 без всякой навигации, и
+// двадцать пятая машина салона не показывалась НИГДЕ: ни на витрине,
+// ни ссылкой из неё. При этом sitemap (get_site_dealers, 0072)
+// специально сортирует салоны по числу активных объявлений — то есть
+// система рассчитана на крупные автопарки и сама же их обрезала.
+//
+// Общее число страниц берётся из profile.active_cars, а НЕ из второго
+// запроса с count: get_dealer_profile (0043) уже считает активные
+// объявления подзапросом, и страница его уже получила. Просить у базы
+// то же число второй раз значило бы платить за него дважды.
+//
+// «Недавно продано» остаётся без пагинации с лимитом 8 намеренно: это
+// социальное доказательство («у этого салона покупают»), а не витрина.
+// Восьми карточек для него достаточно, а вторая навигация на странице
+// спорила бы с первой за смысл слова «страница».
 // ============================================================
 
 import { notFound } from 'next/navigation';
@@ -21,6 +40,7 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import StateCard from '@/components/ui/StateCard';
 import CarCard from '@/components/CarCard';
+import PagerLinks, { PagerHeadLinks } from '@/components/PagerLinks';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
 import { formatDate } from '@/lib/format';
@@ -30,12 +50,21 @@ import { fetchDealerProfile, fetchSellerListings } from '@/lib/queries';
 import { buildBreadcrumbJsonLd } from '@/lib/seo';
 import { siteBaseUrl } from '@/lib/supabase';
 
+// Объявлений на страницу витрины. 24 — прежний жёсткий лимит: он
+// кратен всем трём сеткам (2/3/4 колонки), поэтому последний ряд
+// заполнен на любом брейкпоинте.
+const PER_PAGE = 24;
+
 export default async function DealerPageView({
   locale,
   id,
+  page = 1,
 }: {
   locale: Locale;
   id: string;
+  // Номер страницы витрины. Разбирается в роуте: мусор в адресе
+  // (?page=abc) уже превращён в 1.
+  page?: number;
 }) {
   const t = getT(locale);
 
@@ -44,36 +73,52 @@ export default async function DealerPageView({
   // страница: несуществующая витрина не должна попадать в индекс.
   if (!profile) notFound();
 
+  const totalPages = Math.max(1, Math.ceil(profile.active_cars / PER_PAGE));
+  // Запрошенную страницу прижимаем к существующим. Страница за
+  // пределами набора отдала бы пустую витрину у салона, у которого
+  // машины есть, — и такой адрес мог бы уйти в индекс.
+  const safePage = Math.min(Math.max(page, 1), totalPages);
+
   // Активные объявления и недавно проданные грузятся параллельно.
   const [active, sold] = await Promise.all([
-    fetchSellerListings(id, 'active', 24),
+    fetchSellerListings(id, 'active', PER_PAGE, (safePage - 1) * PER_PAGE),
     fetchSellerListings(id, 'sold', 8),
   ]);
 
   const isDealer = profile.seller_kind === 'dealer';
-  const pageUrl = `${siteBaseUrl}${localeHref(locale, `/dealer/${id}`)}`;
+  const basePath = `/dealer/${id}`;
+  // Адрес САМОГО САЛОНА — всегда первая страница витрины, без ?page.
+  // Организация одна на все страницы, и подставлять сюда адрес второй
+  // означало бы объявить поисковику, что на /dealer/x?page=2 живёт
+  // отдельная компания.
+  const pageUrl = `${siteBaseUrl}${localeHref(locale, basePath)}`;
 
   // Разметка организации — только для салона (см. шапку файла).
-  const dealerJsonLd = isDealer
-    ? {
-        '@context': 'https://schema.org',
-        '@type': 'AutoDealer',
-        name: profile.display_name,
-        url: pageUrl,
-        ...(profile.logo_url ? { logo: profile.logo_url } : {}),
-        // Страна обслуживания: площадка работает по Сербии.
-        areaServed: 'RS',
-        // Число активных объявлений — честный признак масштаба салона.
-        makesOffer: active.slice(0, 10).map((car) => ({
-          '@type': 'Offer',
-          itemOffered: {
-            '@type': 'Car',
-            name: `${car.brand} ${car.model}, ${car.year}`,
-          },
-          url: car.site_url,
-        })),
-      }
-    : null;
+  // Отдаётся ТОЛЬКО НА ПЕРВОЙ СТРАНИЦЕ: на второй тот же самый блок с
+  // тем же url описывал бы организацию повторно, а makesOffer при
+  // этом перечислял бы уже другие машины. Один салон — одна карточка
+  // организации в разметке.
+  const dealerJsonLd =
+    isDealer && safePage === 1
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'AutoDealer',
+          name: profile.display_name,
+          url: pageUrl,
+          ...(profile.logo_url ? { logo: profile.logo_url } : {}),
+          // Страна обслуживания: площадка работает по Сербии.
+          areaServed: 'RS',
+          // Число активных объявлений — честный признак масштаба салона.
+          makesOffer: active.slice(0, 10).map((car) => ({
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'Car',
+              name: `${car.brand} ${car.model}, ${car.year}`,
+            },
+            url: car.site_url,
+          })),
+        }
+      : null;
 
   const breadcrumbJsonLd = buildBreadcrumbJsonLd([
     // Корень цепочки — главная (см. пояснение в BrandPageView).
@@ -96,7 +141,16 @@ export default async function DealerPageView({
         }}
       />
 
-      <SiteHeader locale={locale} pathname={`/dealer/${id}`} />
+      {/* rel=prev/next для страниц витрины. См. PagerLinks. */}
+      <PagerHeadLinks
+        locale={locale}
+        basePath={basePath}
+        page={safePage}
+        totalPages={totalPages}
+        baseUrl={siteBaseUrl}
+      />
+
+      <SiteHeader locale={locale} pathname={basePath} />
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
         {/* Шапка витрины: логотип/аватар, имя и счётчики. */}
@@ -179,12 +233,22 @@ export default async function DealerPageView({
                 />
               ))}
             </div>
+
+            <PagerLinks
+              locale={locale}
+              basePath={basePath}
+              page={safePage}
+              totalPages={totalPages}
+            />
           </section>
         )}
 
         {/* Недавно проданное. Социальное доказательство: салон, у
             которого покупают, вызывает больше доверия, чем просто
-            список объявлений. */}
+            список объявлений. Показывается на КАЖДОЙ странице витрины,
+            а не только на первой: это не продолжение списка активных,
+            а отдельный довод в пользу салона, и на второй странице он
+            нужен ровно так же. */}
         {sold.length > 0 && (
           <section className="mt-10">
             <h2 className="text-h3 font-semibold">

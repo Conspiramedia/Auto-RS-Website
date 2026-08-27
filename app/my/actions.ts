@@ -254,29 +254,33 @@ export async function saveProfile(input: {
   sellerKind: string;
   companyName: string;
   avatarUrl: string | null;
+  // Логотип салона. Приходит из формы (поле появилось вместе с этой
+  // правкой). null означает «убрать логотип» — это осознанное
+  // действие пользователя, а не «значение неизвестно».
+  logoUrl: string | null;
 }): Promise<ActionResult> {
   const supabase = await getServerClient();
 
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return { ok: false };
 
-  // Логотип витрины на сайте пока не редактируется, но передать его
-  // ОБЯЗАНЫ: update_seller_profile пишет logo_url безусловно
-  // (logo_url = case when dealer then nullif(trim(p_logo_url), '') end),
-  // и вызов с null стёр бы у дилера уже загруженный логотип.
-  // Поэтому читаем текущее значение и возвращаем его же.
-  const { data: current } = await supabase
-    .from('profiles')
-    .select('logo_url')
-    .eq('id', auth.user.id)
-    .maybeSingle();
-
+  // ЛОГОТИП ИДЁТ ИЗ ФОРМЫ. Раньше здесь стоял обходной приём: поля
+  // логотипа на сайте не было, а update_seller_profile пишет logo_url
+  // безусловно (logo_url = case when dealer then nullif(trim(
+  // p_logo_url), '') end), поэтому вызов с null стирал бы уже
+  // загруженный логотип — и приходилось читать текущее значение из
+  // базы, чтобы вернуть его же. Лишний запрос на каждое сохранение
+  // профиля и невозможность логотип поменять.
+  //
+  // Теперь форма присылает актуальное значение, и обходной SELECT
+  // больше не нужен: пустая строка приравнивается к NULL самой RPC.
+  //
   // Сначала роль продавца: если сервер отклонит её (дилер без названия),
   // остальное сохранять незачем — профиль остался бы изменённым наполовину.
   const { error: rpcError } = await supabase.rpc('update_seller_profile', {
     p_seller_kind: input.sellerKind,
     p_company_name: input.companyName.trim() || null,
-    p_logo_url: (current?.logo_url as string | null) ?? null,
+    p_logo_url: input.logoUrl,
   });
 
   if (rpcError) return { ok: false, error: rpcError.message };
@@ -293,6 +297,13 @@ export async function saveProfile(input: {
 
   revalidatePath('/my/profile');
   revalidatePath('/ru/my/profile');
+  // Витрина продавца тоже устарела: на ней показываются и название
+  // салона, и логотип. Без сброса она держалась бы прежней до пяти
+  // минут (revalidate = 300 в app/dealer/[id]/page.tsx), и продавец,
+  // перейдя по ссылке «Моя витрина» сразу после сохранения, увидел бы
+  // прежнюю картинку и решил, что загрузка не сработала.
+  revalidatePath(`/dealer/${auth.user.id}`);
+  revalidatePath(`/ru/dealer/${auth.user.id}`);
   return { ok: true };
 }
 

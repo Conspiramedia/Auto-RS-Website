@@ -2,6 +2,7 @@
 // RS AUTO — Содержимое карточки объявления, общее для sr и ru.
 // ============================================================
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -355,21 +356,66 @@ export default async function CarPageView({
 
               <div className="mt-4 border-t border-neutral-10 pt-4">
                 <div className="text-caption text-neutral-50">{t('car_seller')}</div>
-                {/* Имя продавца ведёт на его витрину: у салона там весь
-                    автопарк, и это заметно увеличивает глубину просмотра.
-                    Ссылка нужна и краулеру — иначе страницы /dealer/{id}
-                    не имели бы ни одной входящей ссылки с сайта. */}
+
+                {/* ЛОГОТИП САЛОНА РЯДОМ С ИМЕНЕМ. Поле
+                    seller_logo_url приходит из get_car_details (0048)
+                    с самого начала и до сих пор не показывалось нигде:
+                    блок продавца состоял из двух строк текста, и салон
+                    в нём выглядел ровно так же, как частное лицо.
+                    Логотип — первое, по чему покупатель узнаёт салон,
+                    и стоит он там, где на него смотрят: слева от
+                    названия, как в шапке самой витрины.
+
+                    Картинка внутри ссылки вместе с именем: у салона
+                    логотип и есть кликабельная точка входа на витрину,
+                    и отдельная ссылка-картинка рядом со ссылкой-текстом
+                    дала бы краулеру две ссылки на один адрес. */}
                 <Link
                   href={localeHref(locale, `/dealer/${car.user_id}`)}
-                  className="font-semibold hover:text-brand-primary hover:underline"
+                  className="group mt-1 flex items-center gap-2.5"
                 >
-                  {car.seller_name}
+                  {/* Показывается ТОЛЬКО салону: у частника аватар в
+                      этом месте создавал бы ложное ощущение проверенного
+                      профиля, а у большинства частников его и нет —
+                      получился бы ряд серых кружков с инициалами.
+                      Квадрат со скруглением, как и в форме профиля:
+                      логотипы делают в прямоугольнике. */}
+                  {car.seller_kind === 'dealer' && (
+                    <span className="relative size-10 shrink-0 overflow-hidden rounded-control border border-neutral-10 bg-surface-muted">
+                      {car.seller_logo_url ? (
+                        <Image
+                          src={car.seller_logo_url}
+                          alt=""
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        // Инициал вместо пустого квадрата — та же
+                        // заглушка, что в шапке витрины и в админке.
+                        <span className="flex h-full w-full items-center justify-center font-bold text-neutral-30">
+                          {(car.seller_name?.trim()[0] ?? 'A').toUpperCase()}
+                        </span>
+                      )}
+                    </span>
+                  )}
+
+                  <span className="min-w-0">
+                    {/* Имя продавца ведёт на его витрину: у салона там
+                        весь автопарк, и это заметно увеличивает глубину
+                        просмотра. Ссылка нужна и краулеру — иначе
+                        страницы /dealer/{id} не имели бы ни одной
+                        входящей ссылки с сайта. */}
+                    <span className="block truncate font-semibold group-hover:text-brand-primary group-hover:underline">
+                      {car.seller_name}
+                    </span>
+                    <span className="block text-caption text-neutral-50">
+                      {car.seller_kind === 'dealer'
+                        ? t('car_seller_dealer')
+                        : t('car_seller_private')}
+                    </span>
+                  </span>
                 </Link>
-                <div className="text-caption text-neutral-50">
-                  {car.seller_kind === 'dealer'
-                    ? t('car_seller_dealer')
-                    : t('car_seller_private')}
-                </div>
               </div>
 
               {/* Связь с продавцом. Переписка работает на сайте целиком.

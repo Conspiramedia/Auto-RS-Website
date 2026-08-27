@@ -256,6 +256,65 @@ export async function setDealerTrusted(
   return { ok: true, trusted: data === true };
 }
 
+// ============================================================
+// ЗАЯВКИ АВТОСАЛОНОВ (0053)
+// ============================================================
+// Стадия обработки заявки: new → in_progress → done | rejected.
+//
+// ПОЧЕМУ ПРЯМОЙ UPDATE, А НЕ RPC — единственное место в этом файле,
+// где бизнес-логики в базе нет и заводить её незачем. Смена стадии не
+// имеет ни правил перехода, ни побочных действий: это пометка «я взял
+// заявку в работу», а не решение модерации. RPC вокруг такого UPDATE
+// была бы функцией, которая ничего не проверяет, — ровно тот случай,
+// который в app/my/actions.ts описан как повод обойтись без неё.
+//
+// ЗАЩИТА — RLS, А НЕ ЭТОТ КОД. Политика dealer_leads_update_admin
+// (0053) пропускает запись только при is_admin(); набор значений
+// держит constraint chk_dealer_lead_status. Не-админ не изменит
+// строку, даже вызвав действие напрямую: клиент здесь работает под
+// сессией пользователя, а не под service-role.
+export type LeadResult = { ok: boolean; error?: string };
+
+const LEAD_STATUSES = ['new', 'in_progress', 'done', 'rejected'] as const;
+
+export async function setLeadStatus(
+  leadId: string,
+  status: string,
+): Promise<LeadResult> {
+  // Значение проверяем ДО обращения к базе: иначе ошибка вернулась бы
+  // текстом constraint'а из Postgres, а он ничего не объясняет.
+  if (!(LEAD_STATUSES as readonly string[]).includes(status)) {
+    return { ok: false, error: 'Недопустимая стадия заявки.' };
+  }
+
+  const supabase = await getServerClient();
+
+  // select() после update обязателен, и не ради данных: UPDATE, не
+  // задевший ни одной строки, ошибки НЕ возвращает. Без него отказ
+  // RLS (флаг is_admin сняли, пока экран был открыт) и удалённая
+  // заявка выглядели бы как успешное сохранение, а интерфейс
+  // показал бы новую стадию, которой в базе нет.
+  const { data, error } = await supabase
+    .from('dealer_leads')
+    .update({ status })
+    .eq('id', leadId)
+    .select('id');
+
+  if (error) {
+    return { ok: false, error: 'Не удалось изменить стадию. Попробуйте ещё раз.' };
+  }
+
+  if (!data || data.length === 0) {
+    return {
+      ok: false,
+      error: 'Заявка не найдена или нет прав. Обновите страницу.',
+    };
+  }
+
+  revalidatePath('/admin/leads');
+  return { ok: true };
+}
+
 // ------------------------------------------------------------
 // Блокировка салона.
 // ------------------------------------------------------------

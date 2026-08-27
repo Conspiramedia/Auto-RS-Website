@@ -317,6 +317,10 @@ export const dict = {
     filter_type_all: 'Sve',
     catalog_mixed_title: 'Automobili u Srbiji',
     badge_rent: 'Izdavanje',
+    // Метка продавца-салона на плитке каталога. Обещана на /about
+    // («Oznaka „Autosalon" na svakom oglasu») — с этой строкой
+    // обещание становится правдой.
+    badge_dealer: 'Autosalon',
 
     // Пикер (выбор из списка)
     picker_search: 'Pretraga…',
@@ -608,6 +612,13 @@ export const dict = {
     profile_dealer: 'Autosalon',
     profile_company: 'Naziv autosalona',
     profile_company_required: 'Unesite naziv autosalona',
+    // Логотип салона. Отдельно от profile_avatar: у салона это две
+    // разные картинки — логотип компании на витрине и фотография
+    // человека в аккаунте.
+    profile_logo: 'Logo autosalona',
+    profile_logo_hint: 'Prikazuje se na stranici salona i uz vaše oglase.',
+    profile_logo_change: 'Učitaj logo',
+    profile_logo_remove: 'Ukloni',
     profile_showcase: 'Moja stranica',
     profile_save: 'Sačuvaj',
     profile_saving: 'Čuvamo…',
@@ -1052,6 +1063,8 @@ export const dict = {
     filter_type_all: 'Всё',
     catalog_mixed_title: 'Автомобили в Сербии',
     badge_rent: 'Аренда',
+    // См. комментарий у sr-версии ключа.
+    badge_dealer: 'Автосалон',
 
     // Пикер (выбор из списка)
     picker_search: 'Поиск…',
@@ -1349,6 +1362,11 @@ export const dict = {
     profile_dealer: 'Автосалон',
     profile_company: 'Название автосалона',
     profile_company_required: 'Укажите название автосалона',
+    // См. комментарий у sr-версии ключей.
+    profile_logo: 'Логотип салона',
+    profile_logo_hint: 'Показывается на витрине салона и рядом с объявлениями.',
+    profile_logo_change: 'Загрузить логотип',
+    profile_logo_remove: 'Убрать',
     profile_showcase: 'Моя витрина',
     profile_save: 'Сохранить',
     profile_saving: 'Сохраняем…',

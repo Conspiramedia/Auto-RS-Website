@@ -521,6 +521,29 @@ export type AdminDealerProfile = {
   rejected_count: number;
 };
 
+// ------------------------------------------------------------
+// Заявка автосалона с /dealers (миграция 0053).
+// ------------------------------------------------------------
+// Таблица dealer_leads заполняется анонимно через RPC
+// submit_dealer_lead и читается ТОЛЬКО админом (политика
+// dealer_leads_select_admin). Отдельной RPC для чтения нет и не
+// нужно: фильтр и сортировка здесь не бизнес-правило, а обычный
+// select под уже существующей политикой — ровно как очередь
+// модерации на дашборде.
+export type DealerLead = {
+  id: string;
+  company_name: string;
+  contact_name: string;
+  phone: string;
+  email: string | null;
+  city: string | null;
+  comment: string | null;
+  // new | in_progress | done | rejected — набор задан
+  // chk_dealer_lead_status в 0053.
+  status: string;
+  created_at: string;
+};
+
 // Строка очереди модерации для дашборда и списка проверки.
 // Собирается обычным select по cars под админской RLS-политикой
 // cars_select_admin_moderation (0015) — отдельная RPC не нужна.

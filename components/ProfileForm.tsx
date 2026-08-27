@@ -28,6 +28,26 @@
 // не заводится намеренно: один конвейер на оба сценария проще, чем два
 // почти одинаковых, а разницу в вес добирает next/image — он всё равно
 // отдаёт кружок по sizes="96px".
+//
+// ------------------------------------------------------------
+// ЛОГОТИП САЛОНА — ВТОРАЯ КАРТИНКА, А НЕ ЗАМЕНА АВАТАРУ
+// ------------------------------------------------------------
+// До этой правки logo_url заполнить с сайта было НЕЛЬЗЯ вовсе: поля
+// не существовало, а saveProfile читал текущее значение из базы и
+// возвращал его же в RPC, лишь бы не затереть (см. app/my/actions.ts).
+// В проде это давало logo_url = NULL у единственного салона, из-за
+// чего пустовал и логотип на витрине, и поле logo в JSON-LD AutoDealer.
+//
+// Загрузка идёт тем же путём, что аватар: прямо в бакет 'avatars', в
+// папку uid (политика avatars_insert_own, 0038 — писать можно только
+// к себе). Имя файла ПОСТОЯННОЕ и ОТЛИЧАЕТСЯ от аватарного —
+// logo.jpg против avatar.jpg: клади мы их под одним именем, загрузка
+// логотипа затирала бы фотографию человека, и наоборот.
+//
+// Поле показывается ТОЛЬКО дилеру. Причина не косметическая:
+// update_seller_profile (0043) при seller_kind = 'private' затирает
+// logo_url безусловно, поэтому у частника поле обещало бы сохранение,
+// которого не произойдёт.
 // ============================================================
 
 import Image from 'next/image';
@@ -58,6 +78,7 @@ type Props = {
 export default function ProfileForm({ locale, profile }: Props) {
   const t = getT(locale);
   const fileRef = useRef<HTMLInputElement>(null);
+  const logoRef = useRef<HTMLInputElement>(null);
 
   const [fullName, setFullName] = useState(profile.full_name ?? '');
   // Почта уведомлений. Вход на площадку идёт по SMS, поэтому у
@@ -68,13 +89,24 @@ export default function ProfileForm({ locale, profile }: Props) {
   const [sellerKind, setSellerKind] = useState(profile.seller_kind);
   const [companyName, setCompanyName] = useState(profile.company_name ?? '');
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url);
+  const [logoUrl, setLogoUrl] = useState(profile.logo_url);
 
   const [pending, startTransition] = useTransition();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  async function uploadAvatar(picked: File) {
+  // Загрузка картинки профиля в бакет 'avatars'. Одна функция на
+  // аватар и логотип: различаются они только именем файла и тем, куда
+  // положить результат, — а весь остальной путь (пережатие, разбор
+  // причины отказа, сессия, upsert, метка времени против кэша) у них
+  // общий. Вторая копия этого кода разошлась бы с первой при первой
+  // же правке конвейера подготовки.
+  async function uploadImage(
+    picked: File,
+    fileName: 'avatar.jpg' | 'logo.jpg',
+    apply: (url: string) => void,
+  ) {
     setError(null);
     setUploading(true);
 
@@ -107,7 +139,7 @@ export default function ProfileForm({ locale, profile }: Props) {
       // в JPEG. Прежний вариант брал его из имени исходного файла,
       // и после смены png → jpg в бакете оставался осиротевший
       // avatar.png, который никто уже не показывал.
-      const path = `${auth.user.id}/avatar.jpg`;
+      const path = `${auth.user.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
@@ -118,9 +150,9 @@ export default function ProfileForm({ locale, profile }: Props) {
         .from('avatars')
         .getPublicUrl(path);
 
-      // Метка времени обходит кэш браузера: путь при замене аватара
-      // не меняется, и без неё показывалась бы прежняя картинка.
-      setAvatarUrl(`${pub.publicUrl}?v=${Date.now()}`);
+      // Метка времени обходит кэш браузера: путь при замене картинки
+      // не меняется, и без неё показывалась бы прежняя.
+      apply(`${pub.publicUrl}?v=${Date.now()}`);
       setSaved(false);
     } catch {
       setError(t('profile_avatar_error'));
@@ -147,6 +179,7 @@ export default function ProfileForm({ locale, profile }: Props) {
         sellerKind,
         companyName,
         avatarUrl,
+        logoUrl,
       });
 
       if (!result.ok) {
@@ -311,11 +344,97 @@ export default function ProfileForm({ locale, profile }: Props) {
                 className={fieldClass}
               />
 
+              {/* ЛОГОТИП САЛОНА. Стоит здесь, а не в правой колонке
+                  рядом с аватаром, намеренно: это поле витрины
+                  компании, и оно принадлежит блоку салона вместе с
+                  названием. В колонке аккаунта логотип читался бы как
+                  вторая аватарка того же человека.
+                  Квадратный, а не круглый: логотипы делают в прямо-
+                  угольнике, и круглая маска срезала бы им углы. */}
+              <div className="mt-3">
+                <label className="mb-1 block text-caption text-neutral-60">
+                  {t('profile_logo')}
+                </label>
+
+                <div className="flex items-center gap-3">
+                  <span className="relative size-16 shrink-0 overflow-hidden rounded-card border border-neutral-10 bg-surface-muted">
+                    {logoUrl ? (
+                      <Image
+                        src={logoUrl}
+                        alt=""
+                        fill
+                        sizes="64px"
+                        className="object-cover"
+                        // unoptimized по той же причине, что у аватара:
+                        // к адресу добавляется метка времени, и
+                        // оптимизатор кэшировал бы каждую версию.
+                        unoptimized
+                      />
+                    ) : (
+                      // Заглушка — первая буква названия, как в
+                      // DealerTile админки и в шапке витрины: пустой
+                      // серый квадрат читается как незагрузившаяся
+                      // картинка, а не как «логотипа пока нет».
+                      <span className="flex h-full w-full items-center justify-center text-h3 font-bold text-neutral-30">
+                        {(companyName.trim()[0] ?? 'A').toUpperCase()}
+                      </span>
+                    )}
+                  </span>
+
+                  <input
+                    ref={logoRef}
+                    type="file"
+                    accept={ACCEPT_ATTR}
+                    className="sr-only"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) void uploadImage(file, 'logo.jpg', setLogoUrl);
+                      e.target.value = '';
+                    }}
+                  />
+
+                  <div className="flex min-w-0 flex-wrap gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={uploading}
+                      onClick={() => logoRef.current?.click()}
+                    >
+                      {uploading ? t('profile_saving') : t('profile_logo_change')}
+                    </Button>
+
+                    {/* Убрать логотип. Кнопка только при загруженном:
+                        нечего убирать — нечего и предлагать.
+                        Сам файл в бакете при этом остаётся: удалять
+                        его отсюда значило бы дать клиенту право
+                        стирать из хранилища, а ссылки в базе уже нет,
+                        и картинка нигде не показывается. */}
+                    {logoUrl && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        disabled={uploading}
+                        onClick={() => {
+                          setLogoUrl(null);
+                          setSaved(false);
+                        }}
+                      >
+                        {t('profile_logo_remove')}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <p className="mt-2 text-small text-neutral-50">
+                  {t('profile_logo_hint')}
+                </p>
+              </div>
+
               {/* Ссылка на публичную витрину: дилеру важно видеть, как
                   его страницу видят покупатели. */}
               <Link
                 href={localeHref(locale, `/dealer/${profile.id}`)}
-                className="mt-2 inline-block text-caption font-semibold text-brand-blue hover:underline"
+                className="mt-3 inline-block text-caption font-semibold text-brand-blue hover:underline"
               >
                 {t('profile_showcase')} →
               </Link>
@@ -373,7 +492,7 @@ export default function ProfileForm({ locale, profile }: Props) {
               className="sr-only"
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) void uploadAvatar(file);
+                if (file) void uploadImage(file, 'avatar.jpg', setAvatarUrl);
                 // Сброс значения: повторный выбор того же файла иначе
                 // не вызовет onChange.
                 e.target.value = '';
