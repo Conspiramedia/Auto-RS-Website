@@ -381,68 +381,6 @@ export async function markAllNotificationsRead(): Promise<ActionResult> {
 // исключения с внятными формулировками, но показывать пользователю
 // серверный текст нельзя — интерфейс двуязычный, а сообщения RPC
 // написаны по-русски. Возвращаем код, а строку подбирает клиент.
-// ============================================================
-// ВИТРИНА САЛОНА (/my/showcase)
-// ============================================================
-// Отдельное действие, а не расширение saveProfile, хотя обе пишут в
-// одну RPC. Причина в том, ЧТО они сохраняют: saveProfile отвечает за
-// аккаунт (имя, аватар, роль продавца), а это — за ПУБЛИЧНУЮ СТРАНИЦУ
-// компании. Слив их вместе, мы получили бы форму, которая при
-// сохранении витрины переписывает full_name и avatar_url значениями,
-// которых на экране витрины нет вовсе, — то есть затирала бы поля
-// аккаунта пустотой.
-//
-// Роль передаётся в RPC жёстко 'dealer': экран витрины доступен
-// только салону (страница отдаёт 404 частнику), а update_seller_profile
-// при 'private' затирает все поля витрины разом. Подставь мы сюда
-// значение из формы — опечатка в клиенте стёрла бы салону страницу.
-//
-// company_city не передаётся НАМЕРЕННО: его ставит администратор при
-// заключении договора (0085), и RPC его вовсе не трогает. Поле
-// показано в форме только для чтения.
-export async function saveShowcase(input: {
-  companyName: string;
-  logoUrl: string | null;
-  description: string;
-  dealerPhone: string;
-  website: string;
-  openingHours: string;
-}): Promise<ActionResult> {
-  const supabase = await getServerClient();
-
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) return { ok: false };
-
-  // Пустая строка приравнивается к null самой RPC (nullif(trim(...))),
-  // поэтому обрезкой на клиенте не занимаемся — иначе правило «что
-  // считать пустым» жило бы в двух местах.
-  const { error } = await supabase.rpc('update_seller_profile', {
-    p_seller_kind: 'dealer',
-    p_company_name: input.companyName.trim() || null,
-    p_logo_url: input.logoUrl,
-    p_description: input.description.trim() || null,
-    p_dealer_phone: input.dealerPhone.trim() || null,
-    p_website: input.website.trim() || null,
-    p_opening_hours: input.openingHours.trim() || null,
-  });
-
-  if (error) return { ok: false, error: error.message };
-
-  revalidatePath('/my/showcase');
-  revalidatePath('/ru/my/showcase');
-  // Профиль показывает те же название и логотип.
-  revalidatePath('/my/profile');
-  revalidatePath('/ru/my/profile');
-  // Публичная витрина и главная: на обеих видны данные салона, и без
-  // сброса кэша продавец, перейдя по ссылке сразу после сохранения,
-  // увидел бы прежний текст и решил, что кнопка не сработала.
-  revalidatePath(`/dealer/${auth.user.id}`);
-  revalidatePath(`/ru/dealer/${auth.user.id}`);
-  revalidatePath('/');
-  revalidatePath('/ru');
-  return { ok: true };
-}
-
 export async function saveContactEmail(input: {
   email: string;
   locale: Locale;
