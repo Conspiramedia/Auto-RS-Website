@@ -447,6 +447,20 @@ export type MyProfile = {
   seller_kind: string;
   company_name: string | null;
   logo_url: string | null;
+  // Поля витрины салона (миграция 0095). Наполняют плитку салона в
+  // каталоге и шапку его публичной страницы. Читаются прямым SELECT
+  // из profiles под политикой profiles_select_own — это собственный
+  // профиль владельца, и RPC ради него не нужна.
+  description: string | null;
+  dealer_phone: string | null;
+  website: string | null;
+  opening_hours: string | null;
+  // Город салона. РЕДАКТИРОВАНИЮ НЕ ПОДЛЕЖИТ: его проставляет
+  // администратор при заключении договора (0085), и
+  // update_seller_profile его не трогает. В форме показывается
+  // только для чтения — иначе непонятно, откуда город взялся в
+  // карточке салона.
+  company_city: string | null;
 };
 
 // ------------------------------------------------------------

@@ -680,6 +680,32 @@ export const dict = {
     // Переход на витрину салона в нижней строке плитки. Не кнопка и
     // не ссылка — вся плитка уже ссылка (см. DealerShowcaseCard).
     showcase_all_listings: 'Svi oglasi',
+    // ------------------------------------------------------------
+    // ПОЛЯ ВИТРИНЫ САЛОНА в форме профиля (миграция 0095).
+    // ------------------------------------------------------------
+    // Наполняют карточку салона в каталоге: описание и контакты — её
+    // левый блок, название и логотип — нижнюю строку.
+    showcase_section: 'Izložba salona',
+    showcase_section_hint:
+      'Ovo kupci vide na kartici vašeg salona u pretrazi.',
+    showcase_description: 'Opis salona',
+    showcase_description_hint:
+      'Dve rečenice o salonu. Na kartici se prikazuju prva tri reda.',
+    showcase_city: 'Grad salona',
+    showcase_city_hint:
+      'Grad menja administrator platforme — javite nam ako se adresa promenila.',
+    showcase_city_empty: 'Nije naveden',
+    showcase_phone: 'Telefon salona',
+    showcase_phone_hint:
+      'Javni broj kompanije. Ne menja broj kojim se prijavljujete.',
+    showcase_website: 'Sajt salona',
+    showcase_hours: 'Radno vreme',
+    showcase_hours_ph: 'Pon-Pet 09-18, Sub 09-14',
+    // Ошибки длины — те же границы, что в базе (миграция 0095).
+    showcase_err_description: 'Opis je predugačak (najviše 1000 znakova)',
+    showcase_err_phone: 'Telefon je predugačak',
+    showcase_err_website: 'Adresa sajta je predugačka',
+    showcase_err_hours: 'Radno vreme je predugačko',
     showcase_ph_name: 'Naziv autosalona',
     showcase_ph_desc: 'Opis salona — čime se bavite i zašto vam se obratiti',
     showcase_ph_city: 'Grad',
@@ -1436,6 +1462,27 @@ export const dict = {
     // См. комментарий у sr-версии ключей.
     // См. комментарий у sr-версии ключа.
     showcase_all_listings: 'Все объявления',
+    // См. комментарий у sr-версии этой группы.
+    showcase_section: 'Витрина салона',
+    showcase_section_hint:
+      'Это покупатели видят на карточке вашего салона в выдаче.',
+    showcase_description: 'Описание салона',
+    showcase_description_hint:
+      'Две фразы о салоне. На карточке показываются первые три строки.',
+    showcase_city: 'Город салона',
+    showcase_city_hint:
+      'Город меняет администратор площадки — напишите нам, если адрес изменился.',
+    showcase_city_empty: 'Не указан',
+    showcase_phone: 'Телефон салона',
+    showcase_phone_hint:
+      'Публичный номер компании. Номер входа в аккаунт он не меняет.',
+    showcase_website: 'Сайт салона',
+    showcase_hours: 'Часы работы',
+    showcase_hours_ph: 'Пн-Пт 09-18, Сб 09-14',
+    showcase_err_description: 'Описание слишком длинное (не больше 1000 символов)',
+    showcase_err_phone: 'Телефон слишком длинный',
+    showcase_err_website: 'Адрес сайта слишком длинный',
+    showcase_err_hours: 'Часы работы слишком длинные',
     showcase_ph_name: 'Название автосалона',
     showcase_ph_desc: 'Описание салона — чем занимаетесь и почему стоит обратиться',
     showcase_ph_city: 'Город',

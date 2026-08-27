@@ -258,6 +258,22 @@ export async function saveProfile(input: {
   // правкой). null означает «убрать логотип» — это осознанное
   // действие пользователя, а не «значение неизвестно».
   logoUrl: string | null;
+  // ------------------------------------------------------------
+  // ПОЛЯ ВИТРИНЫ САЛОНА (миграция 0095).
+  // ------------------------------------------------------------
+  // Наполняют плитку салона в каталоге и шапку его публичной
+  // страницы. Приходят ВСЕГДА, даже пустыми строками, и это
+  // принципиально: update_seller_profile перезаписывает профиль
+  // целиком, поэтому непереданное поле она затрёт в NULL. Сделай мы
+  // их необязательными — сохранение имени в профиле стирало бы салону
+  // описание и часы работы.
+  //
+  // У частника поля не показываются и приходят пустыми: RPC при
+  // seller_kind = 'private' всё равно затирает их сама.
+  description: string;
+  dealerPhone: string;
+  website: string;
+  openingHours: string;
 }): Promise<ActionResult> {
   const supabase = await getServerClient();
 
@@ -277,10 +293,18 @@ export async function saveProfile(input: {
   //
   // Сначала роль продавца: если сервер отклонит её (дилер без названия),
   // остальное сохранять незачем — профиль остался бы изменённым наполовину.
+  //
+  // Пустая строка приравнивается к NULL самой RPC (nullif(trim(...))),
+  // поэтому обрезкой на клиенте не занимаемся: правило «что считать
+  // пустым» должно жить в одном месте, а не в двух.
   const { error: rpcError } = await supabase.rpc('update_seller_profile', {
     p_seller_kind: input.sellerKind,
     p_company_name: input.companyName.trim() || null,
     p_logo_url: input.logoUrl,
+    p_description: input.description.trim() || null,
+    p_dealer_phone: input.dealerPhone.trim() || null,
+    p_website: input.website.trim() || null,
+    p_opening_hours: input.openingHours.trim() || null,
   });
 
   if (rpcError) return { ok: false, error: rpcError.message };
@@ -304,6 +328,14 @@ export async function saveProfile(input: {
   // прежнюю картинку и решил, что загрузка не сработала.
   revalidatePath(`/dealer/${auth.user.id}`);
   revalidatePath(`/ru/dealer/${auth.user.id}`);
+  // Каталог тоже: плитка салона показывает описание, город, часы и
+  // телефон, а страницы выдачи кэшируются (revalidate = 120). Без
+  // сброса салон правил бы витрину и не видел изменений там, ради
+  // чего их и вносил.
+  revalidatePath('/cars');
+  revalidatePath('/ru/cars');
+  revalidatePath('/all');
+  revalidatePath('/ru/all');
   return { ok: true };
 }
 

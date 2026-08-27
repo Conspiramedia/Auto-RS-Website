@@ -62,12 +62,21 @@ import {
 import Alert from './ui/Alert';
 import Button from './ui/Button';
 import Card from './ui/Card';
-import { fieldClass } from './ui/Field';
+import { fieldClass, fieldClassTextarea } from './ui/Field';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { supabaseErrorText } from '@/lib/otp';
 import { getBrowserClient } from '@/lib/supabaseClient';
 import type { MyProfile } from '@/lib/types';
+
+// Границы длины полей витрины. Совпадают с CHECK на таблице profiles
+// и проверками внутри update_seller_profile (миграция 0095): нарушение
+// сервер отклонит в любом случае, а эти числа нужны, чтобы сказать об
+// этом сразу — атрибутом maxLength и счётчиком под полем описания.
+const MAX_DESCRIPTION = 1000;
+const MAX_PHONE = 40;
+const MAX_WEBSITE = 200;
+const MAX_HOURS = 200;
 
 type Props = {
   locale: Locale;
@@ -89,6 +98,13 @@ export default function ProfileForm({ locale, profile }: Props) {
   const [companyName, setCompanyName] = useState(profile.company_name ?? '');
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url);
   const [logoUrl, setLogoUrl] = useState(profile.logo_url);
+  // Поля витрины салона (миграция 0095). Наполняют плитку салона в
+  // каталоге: описание и контакты стоят в её левом блоке, остальное —
+  // в нижней строке. Показываются только дилеру.
+  const [description, setDescription] = useState(profile.description ?? '');
+  const [dealerPhone, setDealerPhone] = useState(profile.dealer_phone ?? '');
+  const [website, setWebsite] = useState(profile.website ?? '');
+  const [openingHours, setOpeningHours] = useState(profile.opening_hours ?? '');
 
   const [pending, startTransition] = useTransition();
   const [uploading, setUploading] = useState(false);
@@ -169,6 +185,30 @@ export default function ProfileForm({ locale, profile }: Props) {
       return;
     }
 
+    // Границы длины — ТЕ ЖЕ, что в базе (CHECK на profiles и проверки
+    // внутри update_seller_profile, миграция 0095). Дублирование
+    // осознанное: сервер остаётся источником истины и отклонит текст
+    // в любом случае, а клиент говорит о проблеме сразу, не гоняя
+    // запрос впустую.
+    if (sellerKind === 'dealer') {
+      if (description.length > MAX_DESCRIPTION) {
+        setError(t('showcase_err_description'));
+        return;
+      }
+      if (dealerPhone.length > MAX_PHONE) {
+        setError(t('showcase_err_phone'));
+        return;
+      }
+      if (website.length > MAX_WEBSITE) {
+        setError(t('showcase_err_website'));
+        return;
+      }
+      if (openingHours.length > MAX_HOURS) {
+        setError(t('showcase_err_hours'));
+        return;
+      }
+    }
+
     setError(null);
     setSaved(false);
 
@@ -179,6 +219,13 @@ export default function ProfileForm({ locale, profile }: Props) {
         companyName,
         avatarUrl,
         logoUrl,
+        // Передаются ВСЕГДА, даже пустыми: update_seller_profile
+        // перезаписывает профиль целиком, и непереданное поле она
+        // затрёт в NULL (см. комментарий в saveProfile).
+        description,
+        dealerPhone,
+        website,
+        openingHours,
       });
 
       if (!result.ok) {
@@ -426,6 +473,151 @@ export default function ProfileForm({ locale, profile }: Props) {
                 <p className="mt-2 text-small text-neutral-50">
                   {t('profile_logo_hint')}
                 </p>
+              </div>
+
+              {/* ------------------------------------------------------------
+                  ВИТРИНА САЛОНА: чем наполняется его карточка.
+                  ------------------------------------------------------------
+                  Поля стоят здесь, внутри блока дилера, сразу после
+                  логотипа: всё это — сведения о КОМПАНИИ, и мешать их
+                  с полями аккаунта (имя человека, почта, аватар) было
+                  бы неверно. У частника блок не показывается вовсе —
+                  update_seller_profile при seller_kind = 'private'
+                  затирает эти поля, и форма обещала бы сохранение,
+                  которого не произойдёт.
+
+                  Подпись-разделитель нужна: без неё поля читались бы
+                  продолжением настроек аккаунта, и салон не понимал
+                  бы, что именно этот текст увидят покупатели. */}
+              <div className="mt-4 border-t border-neutral-10 pt-4">
+                <h3 className="font-semibold">{t('showcase_section')}</h3>
+                <p className="mt-1 text-small text-neutral-50">
+                  {t('showcase_section_hint')}
+                </p>
+
+                <div className="mt-3 space-y-3">
+                  {/* ОПИСАНИЕ — textarea, а не input: это две-три
+                      фразы, и в однострочном поле их пришлось бы
+                      прокручивать, чтобы перечитать написанное. */}
+                  <div>
+                    <label className="mb-1 block text-caption text-neutral-60">
+                      {t('showcase_description')}
+                    </label>
+                    <textarea
+                      value={description}
+                      onChange={(e) => {
+                        setDescription(e.target.value);
+                        setSaved(false);
+                      }}
+                      rows={3}
+                      maxLength={MAX_DESCRIPTION}
+                      placeholder={t('showcase_ph_desc')}
+                      className={fieldClassTextarea}
+                    />
+                    <div className="mt-1 flex flex-wrap items-baseline justify-between gap-2">
+                      <p className="text-small text-neutral-50">
+                        {t('showcase_description_hint')}
+                      </p>
+                      {/* Счётчик появляется только на подходе к
+                          границе. Постоянный «0 / 1000» под полем —
+                          шум, который читается как требование
+                          заполнить поле целиком. */}
+                      {description.length > MAX_DESCRIPTION - 100 && (
+                        <span className="text-small text-neutral-50">
+                          {description.length} / {MAX_DESCRIPTION}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* ГОРОД — ТОЛЬКО ЧТЕНИЕ. Его проставляет
+                      администратор при заключении договора (миграция
+                      0085), и update_seller_profile его не трогает
+                      вовсе. Показываем всё равно: город виден в
+                      карточке салона, и без этой строки непонятно,
+                      откуда он там взялся и к кому идти, если адрес
+                      сменился. */}
+                  <div>
+                    <label className="mb-1 block text-caption text-neutral-60">
+                      {t('showcase_city')}
+                    </label>
+                    <input
+                      type="text"
+                      value={profile.company_city ?? t('showcase_city_empty')}
+                      readOnly
+                      disabled
+                      className={`${fieldClass} bg-surface-muted text-neutral-60`}
+                    />
+                    <p className="mt-1 text-small text-neutral-50">
+                      {t('showcase_city_hint')}
+                    </p>
+                  </div>
+
+                  {/* ТЕЛЕФОН САЛОНА. Не путать с номером выше: тот
+                      служит логином и не меняется. Здесь — публичный
+                      номер компании, который увидит покупатель. */}
+                  <div>
+                    <label className="mb-1 block text-caption text-neutral-60">
+                      {t('showcase_phone')}
+                    </label>
+                    <input
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      value={dealerPhone}
+                      onChange={(e) => {
+                        setDealerPhone(e.target.value);
+                        setSaved(false);
+                      }}
+                      maxLength={MAX_PHONE}
+                      placeholder="+381 11 123 456"
+                      className={fieldClass}
+                    />
+                    <p className="mt-1 text-small text-neutral-50">
+                      {t('showcase_phone_hint')}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-caption text-neutral-60">
+                      {t('showcase_hours')}
+                    </label>
+                    <input
+                      type="text"
+                      value={openingHours}
+                      onChange={(e) => {
+                        setOpeningHours(e.target.value);
+                        setSaved(false);
+                      }}
+                      maxLength={MAX_HOURS}
+                      placeholder={t('showcase_hours_ph')}
+                      className={fieldClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-caption text-neutral-60">
+                      {t('showcase_website')}
+                    </label>
+                    <input
+                      // type="url" даёт мобильной клавиатуре раскладку
+                      // со слэшем, но проверку формата на браузер не
+                      // перекладываем: он валидирует поле только
+                      // внутри <form> с submit, а отправка здесь идёт
+                      // по кнопке.
+                      type="url"
+                      inputMode="url"
+                      value={website}
+                      onChange={(e) => {
+                        setWebsite(e.target.value);
+                        setSaved(false);
+                      }}
+                      maxLength={MAX_WEBSITE}
+                      placeholder="https://"
+                      className={fieldClass}
+                    />
+                  </div>
+                </div>
               </div>
 
             </div>
