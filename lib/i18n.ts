@@ -622,7 +622,6 @@ export const dict = {
     // logo»: при заполненном логотипе «загрузить» обещает добавить
     // второй, тогда как файл в бакете один и новый перезапишет старый.
     profile_logo_replace: 'Zameni logo',
-    profile_logo_remove: 'Ukloni',
     profile_showcase: 'Moja stranica',
     profile_save: 'Sačuvaj',
     profile_saving: 'Čuvamo…',
@@ -1372,7 +1371,6 @@ export const dict = {
     profile_logo_change: 'Загрузить логотип',
     // См. комментарий у sr-версии ключа.
     profile_logo_replace: 'Заменить логотип',
-    profile_logo_remove: 'Убрать',
     profile_showcase: 'Моя витрина',
     profile_save: 'Сохранить',
     profile_saving: 'Сохраняем…',
