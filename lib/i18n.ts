@@ -640,44 +640,6 @@ export const dict = {
     profile_avatar_error: 'Nije uspelo učitavanje fotografije',
     profile_avatar_preparing: 'Pripremamo…',
 
-    // ------------------------------------------------------------
-    // ВИТРИНА САЛОНА (/my/showcase) и широкая плитка в выдаче.
-    // ------------------------------------------------------------
-    // Отдельная группа, а не продолжение profile_*: это не настройки
-    // аккаунта, а публичная страница компании, и редактируется она на
-    // своём экране.
-    showcase_title: 'Moja izložba',
-    showcase_intro:
-      'Ovako vaš salon vide kupci u pretrazi. Promene se odmah vide u pregledu, ali se čuvaju tek klikom na «Sačuvaj».',
-    showcase_preview_label: 'Pregled',
-    // Плейсхолдеры превью. Показываются серым на месте незаполненного
-    // поля: витрина обязана показать, ЧТО именно останется пустым.
-    showcase_ph_name: 'Naziv autosalona',
-    showcase_ph_desc: 'Opis salona — čime se bavite i zašto vam se obratiti',
-    showcase_ph_city: 'Grad',
-    // Поля редактора.
-    showcase_description: 'Opis salona',
-    showcase_description_hint:
-      'Dve rečenice o salonu. U pretrazi se prikazuju prva dva reda.',
-    showcase_city: 'Grad salona',
-    showcase_city_hint:
-      'Grad menja administrator platforme — javite nam ako se adresa promenila.',
-    showcase_city_empty: 'Nije naveden',
-    showcase_phone: 'Telefon salona',
-    showcase_phone_hint:
-      'Javni broj kompanije. Ne menja broj kojim se prijavljujete.',
-    showcase_website: 'Sajt salona',
-    showcase_hours: 'Radno vreme',
-    showcase_hours_ph: 'Pon–Pet 09–18, Sub 09–14',
-    showcase_listings: 'Oglasi salona',
-    // Ошибки длины — те же границы, что в базе (миграция 0095).
-    showcase_err_description: 'Opis je predugačak (najviše 1000 znakova)',
-    showcase_err_phone: 'Telefon je predugačak',
-    showcase_err_website: 'Adresa sajta je predugačka',
-    showcase_err_hours: 'Radno vreme je predugačko',
-    // Блок салонов на главной.
-    home_dealers: 'Autosaloni na platformi',
-
     // Общее
     // ------------------------------------------------------------
     // Навигация по контентным страницам.
@@ -1436,34 +1398,6 @@ export const dict = {
     profile_error: 'Не удалось. Попробуйте ещё раз.',
     profile_avatar_error: 'Не удалось загрузить фотографию',
     profile_avatar_preparing: 'Готовим…',
-
-    // См. комментарий у sr-версии этой группы.
-    showcase_title: 'Моя витрина',
-    showcase_intro:
-      'Так ваш салон видят покупатели в поиске. Изменения сразу видны в превью, но сохраняются только по кнопке «Сохранить».',
-    showcase_preview_label: 'Превью',
-    showcase_ph_name: 'Название автосалона',
-    showcase_ph_desc: 'Описание салона — чем занимаетесь и почему стоит обратиться',
-    showcase_ph_city: 'Город',
-    showcase_description: 'Описание салона',
-    showcase_description_hint:
-      'Две фразы о салоне. В выдаче показываются первые две строки.',
-    showcase_city: 'Город салона',
-    showcase_city_hint:
-      'Город меняет администратор площадки — напишите нам, если адрес изменился.',
-    showcase_city_empty: 'Не указан',
-    showcase_phone: 'Телефон салона',
-    showcase_phone_hint:
-      'Публичный номер компании. Номер входа в аккаунт он не меняет.',
-    showcase_website: 'Сайт салона',
-    showcase_hours: 'Часы работы',
-    showcase_hours_ph: 'Пн–Пт 09–18, Сб 09–14',
-    showcase_listings: 'Объявления салона',
-    showcase_err_description: 'Описание слишком длинное (не больше 1000 символов)',
-    showcase_err_phone: 'Телефон слишком длинный',
-    showcase_err_website: 'Адрес сайта слишком длинный',
-    showcase_err_hours: 'Часы работы слишком длинные',
-    home_dealers: 'Автосалоны на площадке',
 
     // ------------------------------------------------------------
     // Навигация по контентным страницам.
