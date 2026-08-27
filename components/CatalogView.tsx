@@ -431,6 +431,8 @@ export default function CatalogView({
                       logoUrl: dealer.logo_url,
                       activeCars: dealer.active_cars,
                       previewPhotos: dealer.preview_photos,
+                      openingHours: dealer.opening_hours,
+                      dealerPhone: dealer.dealer_phone,
                     }}
                   />
                 )}

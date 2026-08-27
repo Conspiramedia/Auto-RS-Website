@@ -677,6 +677,9 @@ export const dict = {
     // Подсказки на месте незаполненных полей плитки салона.
     // Показываются ТОЛЬКО в предпросмотре редактора витрины: в самом
     // каталоге пустое поле не печатается вовсе (см. DealerShowcaseCard).
+    // Переход на витрину салона в нижней строке плитки. Не кнопка и
+    // не ссылка — вся плитка уже ссылка (см. DealerShowcaseCard).
+    showcase_all_listings: 'Svi oglasi',
     showcase_ph_name: 'Naziv autosalona',
     showcase_ph_desc: 'Opis salona — čime se bavite i zašto vam se obratiti',
     showcase_ph_city: 'Grad',
@@ -1431,6 +1434,8 @@ export const dict = {
     // См. комментарий у sr-версии ключа.
     showcase_close: 'Закрыть витрину и вернуться в кабинет',
     // См. комментарий у sr-версии ключей.
+    // См. комментарий у sr-версии ключа.
+    showcase_all_listings: 'Все объявления',
     showcase_ph_name: 'Название автосалона',
     showcase_ph_desc: 'Описание салона — чем занимаетесь и почему стоит обратиться',
     showcase_ph_city: 'Город',
