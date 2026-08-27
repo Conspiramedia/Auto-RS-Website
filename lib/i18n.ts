@@ -390,6 +390,16 @@ export const dict = {
     legal_consent_required:
       'Da biste dobili kod, potrebno je prihvatiti uslove i politiku privatnosti.',
 
+    // Баннер согласия на куки. Одна фраза и одна кнопка — по макету:
+    // ссылки «Detaljnije» нет намеренно, документы и так доступны из
+    // подвала на каждой странице.
+    cookie_banner_text:
+      'Koristimo kolačiće da bi vam bilo udobno',
+    cookie_banner_accept: 'U redu',
+    // Подпись для скринридера: сама плашка — региональный ориентир,
+    // и без имени он читается как безымянный «region».
+    cookie_banner_aria: 'Obaveštenje o kolačićima',
+
     // OTP: повторная отправка и ошибки — тексты из приложения
     // (login_screen.dart), в обеих локалях.
     otp_sent_to: 'Kod smo poslali na broj',
@@ -1137,6 +1147,16 @@ export const dict = {
     legal_consent_privacy: 'Политику конфиденциальности',
     legal_consent_required:
       'Чтобы получить код, примите условия и политику конфиденциальности.',
+
+    // Баннер согласия на куки. Одна фраза и одна кнопка — по макету:
+    // ссылки «Подробнее» нет намеренно, документы и так доступны из
+    // подвала на каждой странице.
+    cookie_banner_text:
+      'Мы используем куки, чтобы вам было удобно',
+    cookie_banner_accept: 'Хорошо',
+    // Подпись для скринридера: сама плашка — региональный ориентир,
+    // и без имени он читается как безымянный «регион».
+    cookie_banner_aria: 'Уведомление об использовании куки',
 
     // OTP: повторная отправка и ошибки — тексты из приложения
     // (login_screen.dart), в обеих локалях.

@@ -11,6 +11,7 @@ import type { Metadata, Viewport } from 'next';
 import { Montserrat } from 'next/font/google';
 
 import Analytics from '@/components/Analytics';
+import CookieBanner from '@/components/CookieBanner';
 import { brand } from '@/lib/brand';
 import { siteBaseUrl } from '@/lib/supabase';
 import './globals.css';
@@ -95,9 +96,22 @@ export default function RootLayout({
     <html lang="sr-Latn" className={montserrat.variable}>
       <body>
         {children}
+
+        {/* Баннер согласия на куки. В КОРНЕВОМ layout'е, а не в
+            страницах: он обязан появиться на любом адресе сайта, в
+            обоих языковых зеркалах, и дублировать его по страницам
+            значило бы забыть про новую при следующей правке. Язык он
+            определяет сам — из адреса (см. CookieBanner).
+
+            Плашку рисует клиентский компонент, но сам layout остаётся
+            серверным: 'use client' стоит внутри CookieBanner, и в
+            клиентский бандл уезжает только он. */}
+        <CookieBanner />
+
         {/* Аналитика подключается последней и только при заданном
-            домене (см. lib/analytics). Cookie не ставит — баннер
-            согласия не требуется. */}
+            домене (см. lib/analytics). Plausible cookie не ставит,
+            согласия на аналитику не требуется — баннер выше говорит
+            о технических cookie (сессия, выбранный язык). */}
         <Analytics />
       </body>
     </html>
