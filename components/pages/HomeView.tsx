@@ -10,6 +10,7 @@
 import Link from 'next/link';
 
 import CarCard from '@/components/CarCard';
+import DealerShowcaseCard from '@/components/DealerShowcaseCard';
 import RecentlyViewed from '@/components/RecentlyViewed';
 import Button from '@/components/ui/Button';
 import SiteFooter from '@/components/SiteFooter';
@@ -17,7 +18,12 @@ import SiteHeader from '@/components/SiteHeader';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { nounFor } from '@/lib/plural';
-import { fetchCatalog, fetchSiteBrands, fetchSiteStats } from '@/lib/queries';
+import {
+  fetchCatalog,
+  fetchShowcaseDealers,
+  fetchSiteBrands,
+  fetchSiteStats,
+} from '@/lib/queries';
 import { OPERATOR, OPERATOR_VERIFIED } from '@/lib/legal';
 import { buildOrganizationJsonLd, buildWebSiteJsonLd } from '@/lib/seo';
 
@@ -47,7 +53,7 @@ export default async function HomeView({ locale }: { locale: Locale }) {
     seed: null,
   };
 
-  const [fresh, rent, brands, stats] = await Promise.all([
+  const [fresh, rent, brands, stats, dealers] = await Promise.all([
     // Дефолтная сортировка 'fresh' — новые объявления первыми.
     fetchCatalog({ perPage: 8 }).catch(() => emptyFeed),
     // Витрина аренды на главной: раздел новый, и без неё пользователь
@@ -55,6 +61,11 @@ export default async function HomeView({ locale }: { locale: Locale }) {
     fetchCatalog({ perPage: 4, listingType: 'rent' }).catch(() => emptyFeed),
     fetchSiteBrands(),
     fetchSiteStats(),
+    // Салоны для блока «Автосалоны на площадке». Два — потому что
+    // каждая плитка занимает две колонки сетки: две плитки ровно
+    // заполняют ряд на десктопе (4 колонки) и дают два ряда на
+    // мобильном, не превращая главную в каталог салонов.
+    fetchShowcaseDealers(2),
   ]);
 
   // Разметка организации и сайта. Реквизиты — из lib/legal, того же
@@ -233,7 +244,66 @@ export default async function HomeView({ locale }: { locale: Locale }) {
             не появляется вовсе. */}
         <RecentlyViewed locale={locale} />
 
-        {/* Оффер дилерам — вторая аудитория продавцов. */}
+        {/* ------------------------------------------------------------
+            АВТОСАЛОНЫ НА ПЛОЩАДКЕ
+            ------------------------------------------------------------
+            Заменил прежнюю приманку — блок с текстом оффера и кнопкой
+            «стать партнёром». Тот блок обращался к САЛОНАМ, но стоял
+            на странице, которую читают ПОКУПАТЕЛИ, и для них не
+            сообщал ничего: узнать, какие салоны на площадке уже есть,
+            было неоткуда.
+
+            Широкие плитки решают обе задачи сразу. Покупатель видит
+            живые витрины с машинами и заходит в них; салон, попавший
+            на главную, — лучший аргумент для тех, кто ещё думает
+            прийти, чем любое описание выгод. Ссылка на /dealers
+            осталась подписью справа от заголовка: предложение
+            партнёрам никуда не делось, оно просто перестало занимать
+            место разговора с покупателем.
+
+            Блока нет вовсе, пока нет ни одного салона с активными
+            объявлениями: пустой заголовок сообщал бы, что площадка
+            пуста. Ровно так же ведут себя витрины свежего и аренды
+            выше. */}
+        {dealers.length > 0 && (
+          <section className="mx-auto max-w-6xl px-4 pb-10">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-h3 font-semibold">{t('home_dealers')}</h2>
+              <Link
+                href={localeHref(locale, '/dealers')}
+                className="text-caption font-semibold text-brand-primary hover:underline"
+              >
+                {t('dealers_cta')} →
+              </Link>
+            </div>
+
+            {/* Та же сетка, что у витрин объявлений: плитка салона
+                занимает в ней две колонки и обязана стоять в общем
+                ряду без разрывов. */}
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+              {dealers.map((dealer, i) => (
+                <DealerShowcaseCard
+                  key={dealer.id}
+                  locale={locale}
+                  priority={i === 0}
+                  dealer={{
+                    id: dealer.id,
+                    name: dealer.display_name,
+                    city: dealer.company_city,
+                    description: dealer.description,
+                    logoUrl: dealer.logo_url,
+                    activeCars: dealer.active_cars,
+                    previewPhotos: dealer.preview_photos,
+                  }}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Оффер дилерам — вторая аудитория продавцов. Остаётся внизу
+            страницы: это обращение к салонам, и место ему после
+            всего, что адресовано покупателю. */}
         <section className="border-t border-neutral-10 bg-surface-subtle">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-10">
             <div>

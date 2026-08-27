@@ -236,6 +236,34 @@ export type DealerProfile = {
   member_since: string;
   active_cars: number;
   sold_cars: number;
+  // Поля витрины салона (миграция 0095). У частного продавца всегда
+  // null: RPC отдаёт их только при seller_kind = 'dealer' — публиковать
+  // «часы работы» частного лица неверно, это поля компании.
+  company_city: string | null;
+  description: string | null;
+  // Публичный телефон САЛОНА. Не путать с contact_phone объявления
+  // (он у каждой машины свой) и с profiles.phone (тот служит логином
+  // и наружу не отдаётся вовсе).
+  dealer_phone: string | null;
+  website: string | null;
+  opening_hours: string | null;
+};
+
+// Салон для широкой плитки-витрины. RPC get_showcase_dealers (0095).
+//
+// Отличается от DealerProfile тем, что несёт МИНИАТЮРЫ МАШИН: плитка
+// показывает не только данные салона, но и его товар. Собирать их
+// вторым запросом на каждый салон значило бы N+1 на блоке главной.
+export type ShowcaseDealer = {
+  id: string;
+  display_name: string;
+  logo_url: string | null;
+  company_city: string | null;
+  description: string | null;
+  active_cars: number;
+  // Адреса главных фотографий свежих объявлений салона. Пустой массив —
+  // штатное состояние: у машин может не быть ни одного снимка.
+  preview_photos: string[];
 };
 
 // Объявление в витрине продавца. RPC get_seller_listings (миграция 0050).
@@ -426,6 +454,19 @@ export type MyProfile = {
   seller_kind: string;
   company_name: string | null;
   logo_url: string | null;
+  // Поля витрины салона (миграция 0095). Читаются прямым SELECT из
+  // profiles под политикой profiles_select_own — это собственный
+  // профиль владельца, и RPC ради него не нужна.
+  description: string | null;
+  dealer_phone: string | null;
+  website: string | null;
+  opening_hours: string | null;
+  // Город салона. РЕДАКТИРОВАНИЮ НЕ ПОДЛЕЖИТ: его проставляет
+  // администратор при заключении договора (0085), и
+  // update_seller_profile его не трогает. В форме показывается
+  // только для чтения — витрина обязана объяснить, откуда в плитке
+  // взялся город.
+  company_city: string | null;
 };
 
 // ------------------------------------------------------------

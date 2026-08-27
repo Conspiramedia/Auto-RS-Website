@@ -106,6 +106,29 @@ export default async function DealerPageView({
           name: profile.display_name,
           url: pageUrl,
           ...(profile.logo_url ? { logo: profile.logo_url } : {}),
+          // Поля витрины (0095) идут и в разметку: description,
+          // telephone и openingHours — стандартные свойства
+          // LocalBusiness, и заполненные они дают карточке компании
+          // в выдаче больше, чем одно название.
+          ...(profile.description ? { description: profile.description } : {}),
+          ...(profile.dealer_phone ? { telephone: profile.dealer_phone } : {}),
+          ...(profile.opening_hours
+            ? { openingHours: profile.opening_hours }
+            : {}),
+          // sameAs, а не url: url уже занят адресом витрины НА
+          // ПЛОЩАДКЕ, и подменять его сайтом салона нельзя — тогда
+          // разметка описывала бы чужую страницу. sameAs ровно для
+          // этого и существует: «та же организация, другой адрес».
+          ...(profile.website ? { sameAs: [profile.website] } : {}),
+          ...(profile.company_city
+            ? {
+                address: {
+                  '@type': 'PostalAddress',
+                  addressLocality: profile.company_city,
+                  addressCountry: 'RS',
+                },
+              }
+            : {}),
           // Страна обслуживания: площадка работает по Сербии.
           areaServed: 'RS',
           // Число активных объявлений — честный признак масштаба салона.
@@ -181,6 +204,18 @@ export default async function DealerPageView({
               {t('dealer_page_since')} {formatDate(profile.member_since, locale)}
             </p>
 
+            {/* ОПИСАНИЕ САЛОНА (0095). Стоит выше счётчиков: это
+                ответ на вопрос «кто это», а цифры — уточнение
+                масштаба. Полный текст без обрезки — в отличие от
+                плитки в выдаче, где на него отведены две строки:
+                здесь у страницы нет соседей по ряду, и ограничивать
+                высоту незачем. */}
+            {profile.description && (
+              <p className="mt-2 max-w-2xl whitespace-pre-line text-neutral-80">
+                {profile.description}
+              </p>
+            )}
+
             <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-caption text-neutral-60">
               <span>
                 <strong className="text-brand-dark">
@@ -197,6 +232,50 @@ export default async function DealerPageView({
                 </span>
               )}
             </div>
+
+            {/* КОНТАКТЫ САЛОНА. Каждая строка печатается только
+                заполненной — незаполненное поле не показывается
+                заглушкой, как и в админской карточке салона (0085).
+
+                Телефон и сайт — настоящие ссылки: на телефоне tel:
+                открывает набор номера, и это главный способ связи с
+                салоном. Телефон здесь ОБЩИЙ ДЛЯ КОМПАНИИ и не
+                отменяет номер в конкретном объявлении — тот может
+                вести к менеджеру, который эту машину ведёт. */}
+            {(profile.company_city ||
+              profile.dealer_phone ||
+              profile.opening_hours ||
+              profile.website) && (
+              <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-caption text-neutral-60">
+                {profile.company_city && <span>{profile.company_city}</span>}
+
+                {profile.dealer_phone && (
+                  <a
+                    href={`tel:${profile.dealer_phone.replace(/[^\d+]/g, '')}`}
+                    className="font-semibold text-brand-primary hover:underline"
+                  >
+                    {profile.dealer_phone}
+                  </a>
+                )}
+
+                {profile.opening_hours && <span>{profile.opening_hours}</span>}
+
+                {profile.website && (
+                  <a
+                    href={profile.website}
+                    // Внешняя ссылка: rel обязателен. nofollow —
+                    // ссылочный вес площадки на сайт салона не
+                    // передаём, noopener/noreferrer закрывают доступ
+                    // к window.opener у открытой вкладки.
+                    target="_blank"
+                    rel="nofollow noopener noreferrer"
+                    className="font-semibold text-brand-primary hover:underline"
+                  >
+                    {profile.website.replace(/^https?:\/\//, '')}
+                  </a>
+                )}
+              </div>
+            )}
           </div>
         </Card>
 
