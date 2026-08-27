@@ -238,6 +238,23 @@ export type DealerProfile = {
   sold_cars: number;
 };
 
+// Салон для широкой плитки-витрины. RPC get_showcase_dealers (0095).
+//
+// Отличается от DealerProfile тем, что несёт МИНИАТЮРЫ МАШИН: плитка
+// показывает не только данные салона, но и его товар. Собирать их
+// вторым запросом на каждый салон значило бы N+1 на странице каталога.
+export type ShowcaseDealer = {
+  id: string;
+  display_name: string;
+  logo_url: string | null;
+  company_city: string | null;
+  description: string | null;
+  active_cars: number;
+  // Адреса главных фотографий свежих объявлений салона. Пустой массив —
+  // штатное состояние: у машин может не быть ни одного снимка.
+  preview_photos: string[];
+};
+
 // Объявление в витрине продавца. RPC get_seller_listings (миграция 0050).
 // Отличается от CatalogCar набором полей: здесь нет характеристик
 // (кузов, коробка, топливо) — витрине они не нужны.

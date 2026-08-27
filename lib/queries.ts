@@ -24,6 +24,7 @@ import type {
   SortKey,
   DealerProfile,
   SellerListing,
+  ShowcaseDealer,
 } from './types';
 
 // Набор фильтров каталога. Все поля необязательны: пустой объект —
@@ -382,6 +383,37 @@ export async function fetchSitemapDealers(limit = 1000): Promise<
     updated_at: string;
     listings: number;
   }[];
+}
+
+// ------------------------------------------------------------
+// Салоны для широкой плитки-витрины. RPC get_showcase_dealers (0095).
+// ------------------------------------------------------------
+// Плитка салона в ленте каталога. Отдаёт данные салона вместе с
+// адресами фотографий его машин — одним запросом, а не вызовом на
+// каждый салон.
+//
+// Ошибку глушим: плитка салона второстепенна рядом с самой выдачей, и
+// недоступная RPC не должна ронять каталог. Пустой массив означает
+// «плитки нет» — страница просто покажет объявления.
+export async function fetchShowcaseDealers(
+  limit = 2,
+): Promise<ShowcaseDealer[]> {
+  const { data, error } = await supabase.rpc('get_showcase_dealers', {
+    p_limit: limit,
+  });
+
+  if (error) {
+    console.warn(`[queries] Не удалось загрузить салоны: ${error.message}`);
+    return [];
+  }
+
+  return ((data ?? []) as ShowcaseDealer[]).map((dealer) => ({
+    ...dealer,
+    // Postgres отдаёт text[] массивом, но при пустом результате может
+    // прийти null — на клиенте это превратилось бы в падение при
+    // .map по превью. Нормализуем здесь, чтобы компонент не проверял.
+    preview_photos: dealer.preview_photos ?? [],
+  }));
 }
 
 // ------------------------------------------------------------

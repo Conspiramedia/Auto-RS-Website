@@ -7,9 +7,11 @@
 // означало бы чинить любую правку каталога трижды.
 // ============================================================
 
+import { Fragment } from 'react';
+
 import CarCard from './CarCard';
+import DealerShowcaseCard from './DealerShowcaseCard';
 import SearchSuggestInput from './SearchSuggestInput';
-import InfiniteCarFeed from './InfiniteCarFeed';
 import EmptyState from './EmptyState';
 import FilterChips from './FilterChips';
 import FilterPanel from './FilterPanel';
@@ -23,7 +25,28 @@ import type { CatalogFilters, CatalogResult } from '@/lib/queries';
 import { buildItemListJsonLd } from '@/lib/seo';
 import { buildQuery, hasActiveFilters } from '@/lib/searchParams';
 import { siteBaseUrl } from '@/lib/supabase';
-import type { ListingType, SiteBrand, SiteCity } from '@/lib/types';
+import type {
+  ListingType,
+  ShowcaseDealer,
+  SiteBrand,
+  SiteCity,
+} from '@/lib/types';
+
+// ------------------------------------------------------------
+// Место плитки салона в сетке: после 12-й карточки.
+// ------------------------------------------------------------
+// Число выбрано арифметикой сетки, а не на глаз. Плитка занимает две
+// колонки, и ряд перед ней обязан быть ЗАКОНЧЕН на каждом из трёх
+// брейкпоинтов — иначе Grid перенесёт её на следующую строку и оставит
+// дыру. Значит позиция обязана делиться на 2 (мобильный), 3 (планшет)
+// и 4 (десктоп) одновременно; наименьшее такое число — 12.
+//
+// Соседние «красивые» позиции не подходят: 6 не делится на 4, 8 — на 3.
+//
+// Побочная выгода: 12 — ровно середина страницы из 24 объявлений.
+// Плитка не перехватывает внимание на первом экране и попадается
+// тому, кто уже листает выдачу.
+const DEALER_SLOT = 12;
 
 type Props = {
   locale: Locale;
@@ -46,11 +69,10 @@ type Props = {
   // Тип объявления зафиксирован адресом (SEO-лендинг /rent): сегмент
   // выбора типа в фильтрах скрывается.
   lockedType?: boolean;
-  // Бесконечная подгрузка при скролле. Включена ТОЛЬКО в основных
-  // витринах (/cars, /rent) и только в дефолтной сортировке.
-  // SEO-страницы марок и моделей остаются на обычной пагинации:
-  // их задача — стабильная индексируемая выдача, а не «живая лента».
-  infinite?: boolean;
+  // Салон для широкой плитки в середине выдачи. null — плитки нет
+  // (салонов на площадке пока не появилось, либо страница её не
+  // показывает: SEO-выдача марок обходится без неё).
+  dealer?: ShowcaseDealer | null;
 };
 
 export default function CatalogView({
@@ -65,7 +87,7 @@ export default function CatalogView({
   basePath,
   mode = 'sale',
   lockedType = false,
-  infinite = false,
+  dealer = null,
 }: Props) {
   const t = getT(locale);
 
@@ -358,32 +380,63 @@ export default function CatalogView({
         </div>
       ) : (
         <>
-          {infinite ? (
-            // Бесконечная лента: первая порция уже отрисована сервером
-            // (важно для SEO), клиент продолжает её при скролле.
-            // Паттерн перенесён из App Baza — см. шапку InfiniteCarFeed.
-            <InfiniteCarFeed
-              locale={locale}
-              initialCars={result.cars}
-              filters={filters}
-              mode={mode}
-              initialSeed={result.seed}
-              total={result.total}
-            />
-          ) : (
-            <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
-              {result.cars.map((car, i) => (
+          {/* ------------------------------------------------------------
+              ВЫДАЧА. Одна сетка на все случаи — бесконечной ленты больше
+              нет, каталог везде листается страницами.
+
+              ПЛИТКА САЛОНА ВСТАВЛЕНА В СЕРЕДИНУ, ПОСЛЕ 12-й КАРТОЧКИ.
+              Позиция не произвольная: плитка занимает две колонки, и
+              встань она там, где ряд не закончен, CSS Grid перенёс бы
+              её целиком на следующую строку, оставив дыру. Ряд обязан
+              быть целым на ВСЕХ трёх брейкпоинтах, то есть позиция
+              обязана делиться и на 2, и на 3, и на 4 — наименьшее
+              такое число и есть 12. Позиции 6 и 8, напрашивающиеся
+              визуально, дают дыру: 6 не делится на 4 (десктоп), 8 не
+              делится на 3 (планшет).
+
+              12 — ровно середина страницы из 24 объявлений: плитка не
+              перехватывает внимание на первом экране и попадается
+              тому, кто уже листает.
+
+              Вставляется НА СЕРВЕРЕ, вместе со всей страницей. Клиентская
+              дорисовка сдвигала бы карточки после гидратации (CLS), а
+              резервировать место пришлось бы под элемент, которого может
+              и не быть. Страница кэшируется целиком (revalidate = 120),
+              и салон в плитке меняется раз в две минуты — для витрины
+              это нормально. */}
+          <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+            {result.cars.map((car, i) => (
+              <Fragment key={car.id}>
                 <CarCard
-                  key={car.id}
                   locale={locale}
                   car={car}
                   mode={mode}
                   // Первые четыре карточки — над сгибом, грузим приоритетно.
                   priority={i < 4}
                 />
-              ))}
-            </div>
-          )}
+
+                {/* Плитка идёт ПОСЛЕ 12-й карточки, то есть при i === 11.
+                    Условие на длину списка обязательно: на неполной
+                    странице (в выдаче меньше 13 объявлений) плитка
+                    оказалась бы последней и висела бы хвостом под
+                    коротким рядом, вместо того чтобы стоять в середине. */}
+                {dealer && i === DEALER_SLOT - 1 && result.cars.length > DEALER_SLOT && (
+                  <DealerShowcaseCard
+                    locale={locale}
+                    dealer={{
+                      id: dealer.id,
+                      name: dealer.display_name,
+                      city: dealer.company_city,
+                      description: dealer.description,
+                      logoUrl: dealer.logo_url,
+                      activeCars: dealer.active_cars,
+                      previewPhotos: dealer.preview_photos,
+                    }}
+                  />
+                )}
+              </Fragment>
+            ))}
+          </div>
 
           {/* Пагинация-ссылки остаются ВСЕГДА, даже при включённой
               бесконечной ленте. Причина сугубо поисковая: краулер не
