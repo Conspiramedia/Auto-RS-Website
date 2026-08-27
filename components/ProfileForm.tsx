@@ -51,7 +51,6 @@
 // ============================================================
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRef, useState, useTransition } from 'react';
 
 import { saveContactEmail, saveProfile } from '@/app/my/actions';
@@ -429,15 +428,40 @@ export default function ProfileForm({ locale, profile }: Props) {
                 </p>
               </div>
 
-              {/* Ссылка на публичную витрину: дилеру важно видеть, как
-                  его страницу видят покупатели. */}
-              <Link
-                href={localeHref(locale, `/dealer/${profile.id}`)}
-                className="mt-3 inline-block text-caption font-semibold text-brand-blue hover:underline"
-              >
-                {t('profile_showcase')} →
-              </Link>
             </div>
+          )}
+
+          {/* ПЕРЕХОД НА ВИТРИНУ — КНОПКА, А НЕ ССЫЛКА, И СТОИТ ЗДЕСЬ.
+              Раньше это была текстовая ссылка внутри блока полей
+              салона — то есть в середине формы, между логотипом и
+              кнопкой сохранения. Дилер, посмотревший «как меня видят
+              покупатели», уходил со страницы, не нажав «Сохранить», и
+              терял правки: ссылка была расположена так, будто она
+              часть заполнения профиля.
+
+              Теперь это пара кнопок в конце формы: сначала переход на
+              витрину, под ним — сохранение. Оба действия одинаковой
+              ширины и вида, так что читаются как завершение работы с
+              экраном, а не как поле в её середине.
+
+              Вариант info (синий), а не primary: зелёный на сайте
+              занят главным действием, и здесь главное — «Сохранить».
+              Синий отдан связи и вспомогательным переходам («Написать»,
+              «Отправить код») — переход на витрину ровно из этого
+              разряда. Правило бренда: один акцент на экране.
+
+              Button с href рендерится настоящей ссылкой <Link>, а не
+              кнопкой с onClick: витрину нужно уметь открыть в новой
+              вкладке — именно так дилер и сравнивает её с формой, не
+              теряя несохранённое. */}
+          {sellerKind === 'dealer' && (
+            <Button
+              href={localeHref(locale, `/dealer/${profile.id}`)}
+              variant="info"
+              fullWidth
+            >
+              {t('profile_showcase')} →
+            </Button>
           )}
 
           <Button onClick={submit} disabled={pending || uploading} fullWidth>
