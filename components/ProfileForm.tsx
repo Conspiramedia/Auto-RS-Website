@@ -340,7 +340,14 @@ export default function ProfileForm({ locale, profile }: Props) {
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_320px] lg:items-start">
+    // Вторая колонка появляется только у частного лица: у салона
+    // карточки аватара нет (разбор ниже), и жёсткие 320px оставили бы
+    // справа пустоту во всю высоту формы.
+    <div
+      className={`grid gap-4 lg:items-start ${
+        sellerKind === 'dealer' ? '' : 'lg:grid-cols-[1fr_320px]'
+      }`}
+    >
       {/* Левая колонка — редактируемые поля. */}
       <Card>
         <div className="space-y-3">
@@ -974,58 +981,79 @@ export default function ProfileForm({ locale, profile }: Props) {
         </div>
       </Card>
 
-      {/* Правая колонка — аватар. На десктопе стоит сбоку: это не
-          редактируемое поле формы, а сведения об аккаунте, и мешать
-          его с полями ввода незачем. На мобильном уходит вниз. */}
-      <div className="space-y-4">
-        <Card>
-          <div className="flex flex-col items-center text-center">
-            <span className="relative h-24 w-24 overflow-hidden rounded-pill bg-surface-muted">
-              {avatarUrl ? (
-                <Image
-                  src={avatarUrl}
-                  alt=""
-                  fill
-                  sizes="96px"
-                  className="object-cover"
-                  // unoptimized: к адресу добавляется метка времени,
-                  // и оптимизатор Next кэшировал бы каждую версию
-                  // отдельно, раздувая кэш ради одной картинки.
-                  unoptimized
-                />
-              ) : (
-                <span className="flex h-full w-full items-center justify-center text-h2 font-semibold text-neutral-50">
-                  {(fullName.trim()[0] ?? '?').toUpperCase()}
-                </span>
-              )}
-            </span>
+      {/* ------------------------------------------------------------
+          ПРАВАЯ КОЛОНКА — АВАТАР. ТОЛЬКО У ЧАСТНОГО ЛИЦА.
+          ------------------------------------------------------------
+          На десктопе стоит сбоку: это не редактируемое поле формы, а
+          сведения об аккаунте, и мешать его с полями ввода незачем.
+          На мобильном уходит вниз.
 
-            <input
-              ref={fileRef}
-              type="file"
-              accept={ACCEPT_ATTR}
-              className="sr-only"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) void uploadImage(file, 'avatar.jpg', setAvatarUrl);
-                // Сброс значения: повторный выбор того же файла иначе
-                // не вызовет onChange.
-                e.target.value = '';
-              }}
-            />
+          У САЛОНА АВАТАРА НЕТ. Его роль — «лицо продавца» — у компании
+          закрывают логотип и обложка витрины, и оба уже стоят выше, в
+          блоке витрины. Третья картинка рядом с ними ставила бы
+          владельца перед вопросом, чем она отличается от логотипа, а
+          ответа нет: нигде на сайте аватар салона не показывается.
+          Единственное место, где он мог бы всплыть, — шапка витрины,
+          и там он стоит запасным вариантом ПОСЛЕ логотипа
+          (DealerShowcaseHero), то есть у салона с логотипом не
+          используется вовсе.
 
-            <Button
-              variant="secondary"
-              size="sm"
-              className="mt-3"
-              disabled={uploading}
-              onClick={() => fileRef.current?.click()}
-            >
-              {uploading ? t('profile_saving') : t('profile_avatar_change')}
-            </Button>
-          </div>
-        </Card>
-      </div>
+          ЗНАЧЕНИЕ ПРИ ЭТОМ ПРОДОЛЖАЕТ СОХРАНЯТЬСЯ: avatarUrl уходит в
+          saveProfile независимо от того, показана карточка или нет.
+          Человек, который был частником и загружал аватар, не потеряет
+          его при переключении в салон — и увидит снова, если
+          переключится обратно. */}
+      {sellerKind !== 'dealer' && (
+        <div className="space-y-4">
+          <Card>
+            <div className="flex flex-col items-center text-center">
+              <span className="relative h-24 w-24 overflow-hidden rounded-pill bg-surface-muted">
+                {avatarUrl ? (
+                  <Image
+                    src={avatarUrl}
+                    alt=""
+                    fill
+                    sizes="96px"
+                    className="object-cover"
+                    // unoptimized: к адресу добавляется метка времени,
+                    // и оптимизатор Next кэшировал бы каждую версию
+                    // отдельно, раздувая кэш ради одной картинки.
+                    unoptimized
+                  />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center text-h2 font-semibold text-neutral-50">
+                    {(fullName.trim()[0] ?? '?').toUpperCase()}
+                  </span>
+                )}
+              </span>
+
+              <input
+                ref={fileRef}
+                type="file"
+                accept={ACCEPT_ATTR}
+                className="sr-only"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void uploadImage(file, 'avatar.jpg', setAvatarUrl);
+                  // Сброс значения: повторный выбор того же файла иначе
+                  // не вызовет onChange.
+                  e.target.value = '';
+                }}
+              />
+
+              <Button
+                variant="secondary"
+                size="sm"
+                className="mt-3"
+                disabled={uploading}
+                onClick={() => fileRef.current?.click()}
+              >
+                {uploading ? t('profile_saving') : t('profile_avatar_change')}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
