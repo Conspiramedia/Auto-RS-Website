@@ -621,13 +621,9 @@ export const dict = {
     // Логотип салона. Отдельно от profile_avatar: у салона это две
     // разные картинки — логотип компании на витрине и фотография
     // человека в аккаунте.
-    profile_logo: 'Logo autosalona',
-    profile_logo_hint: 'Prikazuje se na stranici salona i uz vaše oglase.',
-    profile_logo_change: 'Učitaj logo',
     // Замена уже загруженного. Отдельная строка, а не та же «Učitaj
     // logo»: при заполненном логотипе «загрузить» обещает добавить
     // второй, тогда как файл в бакете один и новый перезапишет старый.
-    profile_logo_replace: 'Zameni logo',
     // Обложка витрины (0098). Подсказка называет рекомендуемый размер
     // и прямо говорит о кадрировании: салон должен понимать, почему
     // его вертикальный снимок стал широкой полосой.
@@ -700,9 +696,6 @@ export const dict = {
     showcase_phone: 'Telefon salona',
     showcase_phone_hint:
       'Javni broj kompanije. Ne menja broj kojim se prijavljujete.',
-    showcase_website: 'Sajt salona',
-    showcase_website_hint:
-      'Prikazuje se na kartici salona u katalogu. Bez adrese red se ne štampa.',
     showcase_hours: 'Radno vreme',
     // Slova oko vremena. Ne unosi ih salon — sastavljaju se sami, da bi
     // svaka kartica u katalogu glasila isto (v. buildOpeningHours).
@@ -714,7 +707,6 @@ export const dict = {
     // Ошибки длины — те же границы, что в базе (миграция 0095).
     showcase_err_tagline: 'Slogan je predugačak (najviše 90 znakova)',
     showcase_err_phone: 'Telefon je predugačak',
-    showcase_err_website: 'Adresa sajta je predugačka',
     showcase_err_hours: 'Radno vreme je predugačko',
     // Подсказки на месте незаполненных полей плитки салона.
     // Показываются ТОЛЬКО в предпросмотре редактора витрины: в самом
@@ -1434,11 +1426,7 @@ export const dict = {
     profile_company: 'Название автосалона',
     profile_company_required: 'Укажите название автосалона',
     // См. комментарий у sr-версии ключей.
-    profile_logo: 'Логотип салона',
-    profile_logo_hint: 'Показывается на витрине салона и рядом с объявлениями.',
-    profile_logo_change: 'Загрузить логотип',
     // См. комментарий у sr-версии ключа.
-    profile_logo_replace: 'Заменить логотип',
     // См. комментарий у sr-версии ключей.
     profile_cover: 'Обложка салона',
     profile_cover_hint:
@@ -1491,9 +1479,6 @@ export const dict = {
     showcase_phone: 'Телефон салона',
     showcase_phone_hint:
       'Публичный номер компании. Номер входа в аккаунт он не меняет.',
-    showcase_website: 'Сайт салона',
-    showcase_website_hint:
-      'Показывается на карточке салона в каталоге. Без адреса строка не печатается.',
     showcase_hours: 'Часы работы',
     // См. комментарий у sr-версии ключей.
     showcase_hours_from: 'Работаем с',
@@ -1503,7 +1488,6 @@ export const dict = {
     showcase_err_hours_time: 'Время впишите как 9:00 или 19:30',
     showcase_err_tagline: 'Слоган слишком длинный (не больше 90 символов)',
     showcase_err_phone: 'Телефон слишком длинный',
-    showcase_err_website: 'Адрес сайта слишком длинный',
     showcase_err_hours: 'Часы работы слишком длинные',
     // См. комментарий у sr-версии ключей.
     showcase_ph_name: 'Название автосалона',

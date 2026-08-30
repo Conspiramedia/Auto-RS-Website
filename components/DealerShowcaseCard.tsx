@@ -99,7 +99,6 @@ export type DealerShowcaseData = {
   id: string;
   name: string | null;
   city: string | null;
-  logoUrl: string | null;
   // Часы работы и публичный телефон салона (миграция 0095). Показаны
   // в нижнем блоке, под названием. Необязательные: у салона, который
   // их не заполнил, строки просто не печатаются — блок не оставляет
@@ -115,11 +114,6 @@ export type DealerShowcaseData = {
   // описания намеренно — он обязан влезать в две строки нижней
   // половины даже на 360px.
   tagline?: string | null;
-  // Сайт салона (миграция 0099). Показывается в строке контактов
-  // без схемы: «rs-auto.rs» вместо «https://rs-auto.rs/» — адрес в
-  // строке из трёх пунктов должен читаться, а не занимать место
-  // служебными символами.
-  website?: string | null;
 };
 
 type Props = {
@@ -156,30 +150,14 @@ export default function DealerShowcaseCard({
   const openingHours = dealer.openingHours?.trim() || null;
   const dealerPhone = dealer.dealerPhone?.trim() || null;
 
-  // САЙТ ПОКАЗЫВАЕМ БЕЗ СХЕМЫ И БЕЗ ХВОСТОВОГО СЛЭША. В базе он лежит
-  // как ввёл салон — «https://rs-auto.rs/», — но в строке контактов
-  // рядом с городом и телефоном такой вид отнимает половину места на
-  // служебные символы, которые ничего не сообщают. Показываем
-  // «rs-auto.rs».
-  //
-  // Обрезаем СТРОКОЙ, а не через new URL(): конструктор бросает
-  // исключение на адресе без схемы («rs-auto.rs»), а салон вправе
-  // ввести именно так — поле свободное.
-  const website =
-    dealer.website
-      ?.trim()
-      .replace(/^https?:\/\//i, '')
-      .replace(/\/+$/, '') || null;
-
   // Контакты собираются в массив, а печатаются одной строкой через
   // разделитель. Незаполненные отсеиваются ЗДЕСЬ, а не в разметке:
   // иначе у салона без часов работы строка получила бы висячую точку
   // между городом и телефоном.
   // Порядок не случаен: город отвечает на «где вы», часы — «когда
-  // приехать», телефон — «как позвонить», сайт — «где посмотреть
-  // больше». Строка обрезается с конца (truncate), поэтому первым
-  // стоит самое важное, а сайт уходит первым при нехватке места.
-  const contacts = [city, openingHours, dealerPhone, website].filter(
+  // приехать», телефон — «как позвонить». Строка обрезается с конца
+  // (truncate), поэтому первым стоит самое важное.
+  const contacts = [city, openingHours, dealerPhone].filter(
     (v): v is string => Boolean(v),
   );
 
@@ -268,32 +246,7 @@ export default function DealerShowcaseCard({
           салона без слогана она ниже, у салона с длинным — выше, и в
           обоих случаях прижата к низу. Задавать ей жёсткую высоту
           незачем — общую высоту плитки держит спейсер выше. */}
-      <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 bg-black/45 px-3 py-2.5 backdrop-blur-md">
-        {/* ЛОГОТИП. Белая подложка под ним обязательна: логотипы
-            рисуют для светлого фона, и тёмный кадр съел бы тёмный
-            знак целиком.
-            object-contain, а НЕ cover: логотип не фотография, и
-            обрезка срезала бы часть названия компании. */}
-        <span className="relative size-10 shrink-0 overflow-hidden rounded-control bg-white/95">
-          {dealer.logoUrl ? (
-            <Image
-              src={dealer.logoUrl}
-              alt=""
-              fill
-              sizes="40px"
-              className="object-contain p-1"
-              unoptimized
-            />
-          ) : (
-            // Заглушка — первая буква названия, как в шапке витрины и
-            // в админской плитке салона: пустой квадрат читается как
-            // незагрузившаяся картинка, а не как «логотипа нет».
-            <span className="flex h-full w-full items-center justify-center font-bold text-neutral-60">
-              {(name?.[0] ?? 'A').toUpperCase()}
-            </span>
-          )}
-        </span>
-
+      <div className="absolute inset-x-0 bottom-0 bg-black/45 px-3 py-2.5 backdrop-blur-md">
         {/* НАЗВАНИЕ, СЛОГАН И КОНТАКТЫ — колонка.
             min-w-0 обязателен: без него flex-элемент отказывается
             сжиматься, и длинное название вылезло бы за край.

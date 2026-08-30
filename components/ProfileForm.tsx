@@ -90,7 +90,6 @@ import type { MyProfile } from '@/lib/types';
 // Совпадает с chk_profiles_tagline_len.
 const MAX_TAGLINE = 90;
 const MAX_PHONE = 40;
-const MAX_WEBSITE = 200;
 const MAX_HOURS = 200;
 
 type Props = {
@@ -113,7 +112,6 @@ export default function ProfileForm({ locale, profile }: Props) {
   const [sellerKind, setSellerKind] = useState(profile.seller_kind);
   const [companyName, setCompanyName] = useState(profile.company_name ?? '');
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url);
-  const [logoUrl, setLogoUrl] = useState(profile.logo_url);
   // Поля витрины салона (миграция 0095). Наполняют плитку салона в
   // каталоге: описание и контакты стоят в её левом блоке, остальное —
   // в нижней строке. Показываются только дилеру.
@@ -139,7 +137,6 @@ export default function ProfileForm({ locale, profile }: Props) {
   const [dealerPhone, setDealerPhone] = useState(
     profile.dealer_phone ? formatSerbianPhone(profile.dealer_phone) : '',
   );
-  const [website, setWebsite] = useState(profile.website ?? '');
   // ЧАСЫ РАБОТЫ ВВОДЯТСЯ ДВУМЯ ПОЛЯМИ, а в базу уходят одной строкой
   // «Работаем с 9:00 до 19:00». Слова подставляются сами: пока это
   // была свободная строка, салоны писали «пн-пт 9-18», «09:00-20:00
@@ -155,6 +152,18 @@ export default function ProfileForm({ locale, profile }: Props) {
   );
   // Обложка и слоган витрины (миграция 0098). Обложка занимает верхнюю
   // половину плитки каталога, слоган стоит под названием салона.
+  // ЛОГОТИП И САЙТ БОЛЬШЕ НЕ РЕДАКТИРУЮТСЯ. Оба поля убраны с сайта
+  // целиком: логотип — из плитки каталога, шапки витрины и блока
+  // продавца на карточке объявления, сайт — из плитки и витрины.
+  // Показывать их негде, значит и просить салон заполнять незачем.
+  //
+  // Но ЗНАЧЕНИЯ ПРОДОЛЖАЮТ ПЕРЕДАВАТЬСЯ при сохранении, и это
+  // обязательно: update_seller_profile перезаписывает профиль целиком
+  // и затирает в NULL всё, что не пришло. Убери мы их из вызова —
+  // первое же сохранение имени стёрло бы салонам логотипы и адреса,
+  // загруженные при прежней вёрстке. Данные лежат нетронутыми.
+  const logoUrl = profile.logo_url;
+  const website = profile.website ?? '';
   const [coverUrl, setCoverUrl] = useState(profile.cover_url);
   const [tagline, setTagline] = useState(profile.tagline ?? '');
   // Город салона. РЕДАКТИРУЕТСЯ ВЛАДЕЛЬЦЕМ с миграции 0097: раньше его
@@ -263,10 +272,6 @@ export default function ProfileForm({ locale, profile }: Props) {
         setError(t('showcase_err_phone'));
         return;
       }
-      if (website.length > MAX_WEBSITE) {
-        setError(t('showcase_err_website'));
-        return;
-      }
       if (!isValidTime(hoursFrom) || !isValidTime(hoursTo)) {
         setError(t('showcase_err_hours_time'));
         return;
@@ -290,12 +295,12 @@ export default function ProfileForm({ locale, profile }: Props) {
         companyName,
         avatarUrl,
         logoUrl,
+        website,
         // Передаются ВСЕГДА, даже пустыми: update_seller_profile
         // перезаписывает профиль целиком, и непереданное поле она
         // затрёт в NULL (см. комментарий в saveProfile).
         description,
         dealerPhone,
-        website,
         openingHours,
         companyCity,
         coverUrl,
@@ -488,91 +493,6 @@ export default function ProfileForm({ locale, profile }: Props) {
                 }}
                 className={fieldClass}
               />
-
-              {/* ЛОГОТИП САЛОНА. Стоит здесь, а не в правой колонке
-                  рядом с аватаром, намеренно: это поле витрины
-                  компании, и оно принадлежит блоку салона вместе с
-                  названием. В колонке аккаунта логотип читался бы как
-                  вторая аватарка того же человека.
-                  Квадратный, а не круглый: логотипы делают в прямо-
-                  угольнике, и круглая маска срезала бы им углы. */}
-              <div className="mt-3">
-                <label className="mb-1 block text-caption text-neutral-60">
-                  {t('profile_logo')}
-                </label>
-
-                <div className="flex items-center gap-3">
-                  <span className="relative size-16 shrink-0 overflow-hidden rounded-card border border-neutral-10 bg-surface-muted">
-                    {logoUrl ? (
-                      <Image
-                        src={logoUrl}
-                        alt=""
-                        fill
-                        sizes="64px"
-                        className="object-cover"
-                        // unoptimized по той же причине, что у аватара:
-                        // к адресу добавляется метка времени, и
-                        // оптимизатор кэшировал бы каждую версию.
-                        unoptimized
-                      />
-                    ) : (
-                      // Заглушка — первая буква названия, как в
-                      // DealerTile админки и в шапке витрины: пустой
-                      // серый квадрат читается как незагрузившаяся
-                      // картинка, а не как «логотипа пока нет».
-                      <span className="flex h-full w-full items-center justify-center text-h3 font-bold text-neutral-30">
-                        {(companyName.trim()[0] ?? 'A').toUpperCase()}
-                      </span>
-                    )}
-                  </span>
-
-                  <input
-                    ref={logoRef}
-                    type="file"
-                    accept={ACCEPT_ATTR}
-                    className="sr-only"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) void uploadImage(file, 'logo.jpg', setLogoUrl);
-                      e.target.value = '';
-                    }}
-                  />
-
-                  {/* ОДНА КНОПКА, ДВЕ ПОДПИСИ. Логотипа нет —
-                      «Загрузить логотип», логотип есть — «Заменить
-                      логотип». Действие одно и то же: открыть файловый
-                      диалог и перезаписать logo.jpg, которого в бакете
-                      всегда ровно один.
-
-                      КНОПКИ «УБРАТЬ» ЗДЕСЬ НЕТ НАМЕРЕННО. Логотип
-                      салона — не украшение, а то, по чему покупатель
-                      узнаёт салон в каталоге и на витрине; сценария
-                      «хочу остаться совсем без логотипа» у салона
-                      нет, а нужную картинку меняет замена. Если
-                      логотип всё же понадобится снять, это делает
-                      переключение типа продавца на «Частное лицо»:
-                      update_seller_profile (0043) затирает logo_url
-                      сама. */}
-                  <div className="flex min-w-0 flex-wrap gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      disabled={uploading}
-                      onClick={() => logoRef.current?.click()}
-                    >
-                      {uploading
-                        ? t('profile_saving')
-                        : logoUrl
-                          ? t('profile_logo_replace')
-                          : t('profile_logo_change')}
-                    </Button>
-                  </div>
-                </div>
-
-                <p className="mt-2 text-small text-neutral-50">
-                  {t('profile_logo_hint')}
-                </p>
-              </div>
 
               {/* ------------------------------------------------------------
                   ОБЛОЖКА ВИТРИНЫ (миграция 0098).
@@ -848,22 +768,15 @@ export default function ProfileForm({ locale, profile }: Props) {
                       видит будущую формулировку целиком и понимает,
                       что от него нужны две цифры, а не расписание.
 
-                      ЧАСЫ И САЙТ СТОЯТ ПАРОЙ. Часы узкие по своей
-                      природе — два поля по 72px с подписями, — и
-                      отдельная строка под них оставляла бы справа
-                      полосу пустоты во всю ширину формы. Сайту
-                      половины хватает: адреса салонов короткие
-                      («rs-auto.rs»), а если длинный, поле
-                      прокручивается.
 
-                      items-start: у обоих полей подсказки разной
-                      длины, и без выравнивания по верху сами поля
-                      разъехались бы по вертикали. */}
-                  <div className="grid items-start gap-4 sm:grid-cols-2">
-                    <div>
-                      <label className="mb-1 block text-caption text-neutral-60">
-                        {t('showcase_hours')}
-                      </label>
+                      Поле сайта, стоявшее здесь в паре с часами,
+                      убрано вместе с адресом салона по всему сайту.
+                      Часы остались одни, и сетка из двух колонок им
+                      больше не нужна. */}
+                  <div>
+                    <label className="mb-1 block text-caption text-neutral-60">
+                      {t('showcase_hours')}
+                    </label>
 
                       {/* ОДНА СТРОКА: «Работаем с [9:00] до [19:00]».
 
@@ -925,36 +838,9 @@ export default function ProfileForm({ locale, profile }: Props) {
                         />
                       </div>
 
-                      <p className="mt-1 text-small text-neutral-50">
-                        {t('showcase_hours_hint')}
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="mb-1 block text-caption text-neutral-60">
-                        {t('showcase_website')}
-                      </label>
-                      <input
-                        // type="url" даёт мобильной клавиатуре раскладку
-                        // со слэшем, но проверку формата на браузер не
-                        // перекладываем: он валидирует поле только
-                        // внутри <form> с submit, а отправка здесь идёт
-                        // по кнопке.
-                        type="url"
-                        inputMode="url"
-                        value={website}
-                        onChange={(e) => {
-                          setWebsite(e.target.value);
-                          setSaved(false);
-                        }}
-                        maxLength={MAX_WEBSITE}
-                        placeholder="https://"
-                        className={fieldClass}
-                      />
-                      <p className="mt-1 text-small text-neutral-50">
-                        {t('showcase_website_hint')}
-                      </p>
-                    </div>
+                    <p className="mt-1 text-small text-neutral-50">
+                      {t('showcase_hours_hint')}
+                    </p>
                   </div>
                 </div>
               </div>
