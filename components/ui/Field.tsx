@@ -29,28 +29,8 @@ import type { ReactNode } from 'react';
 //
 // py-* при заданной высоте не нужен: содержимое центрируется самим
 // контролом (input) или flex-выравниванием (кнопка пикера).
-//
-// ФОКУС ВИДЕН НЕ ТОЛЬКО ЦВЕТОМ РАМКИ. Раньше здесь стояло
-// outline-none + focus:border-brand-primary, то есть при клике
-// менялся цвет единственного пикселя границы — на десктопе это едва
-// заметно, а на телефоне, где палец закрывает пол-экрана, не заметно
-// вовсе: человек не понимал, в какое поле он попал.
-//
-// Добавлено кольцо focus:ring-2 того же брендового цвета с
-// прозрачностью: оно утолщает контур на 2px и читается сразу. Именно
-// ring, а не outline: outline рисуется по внешнему краю и на полях,
-// стоящих вплотную в сетке, налезал бы на соседа, тогда как ring
-// повторяет радиус контрола.
-//
-// ring-offset НЕ ставим: поля лежат на белом и на surface-muted, и
-// смещение кольца оставляло бы вокруг него светлый ободок, который на
-// сером фоне выглядит браком.
-//
-// transition расширен на box-shadow (ring реализован тенью), иначе
-// кольцо возникало бы рывком, тогда как цвет рамки плавно —
-// рассогласование заметно.
 const FIELD_BASE =
-  'w-full rounded-control border border-neutral-15 bg-white px-3 outline-none transition-[color,background-color,border-color,box-shadow] duration-fast ease-out focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/25';
+  'w-full rounded-control border border-neutral-15 bg-white px-3 outline-none transition-colors duration-fast ease-out focus:border-brand-primary';
 
 // Высота контрола формы. Единая ступень — менять только здесь.
 export const FIELD_HEIGHT = 'h-11';
