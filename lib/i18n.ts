@@ -693,12 +693,6 @@ export const dict = {
     showcase_tagline: 'Slogan salona',
     showcase_tagline_hint:
       'Jedna rečenica ispod naziva salona na kartici u katalogu.',
-    showcase_description: 'Opis salona',
-    // Подсказка описания переписана (0098): описание больше не всегда
-    // видно в каталоге — там его место занимает обложка, если она
-    // загружена. Обещать «первые три строки на карточке» стало неверно.
-    showcase_description_hint:
-      'Nekoliko rečenica o salonu. Prikazuje se na stranici salona, a na kartici u katalogu samo ako nema naslovne slike.',
     showcase_city: 'Grad salona',
     showcase_city_hint:
       'Grad se prikazuje na kartici salona u pretrazi.',
@@ -710,7 +704,6 @@ export const dict = {
     showcase_hours: 'Radno vreme',
     showcase_hours_ph: 'Pon-Pet 09-18, Sub 09-14',
     // Ошибки длины — те же границы, что в базе (миграция 0095).
-    showcase_err_description: 'Opis je predugačak (najviše 1000 znakova)',
     showcase_err_tagline: 'Slogan je predugačak (najviše 90 znakova)',
     showcase_err_phone: 'Telefon je predugačak',
     showcase_err_website: 'Adresa sajta je predugačka',
@@ -720,7 +713,6 @@ export const dict = {
     // каталоге пустое поле не печатается вовсе (см. DealerShowcaseCard).
     showcase_ph_name: 'Naziv autosalona',
     showcase_ph_tagline: 'Kratak slogan salona',
-    showcase_ph_desc: 'Opis salona — čime se bavite i zašto vam se obratiti',
     showcase_ph_city: 'Grad',
     // Возврат с карточки объявления назад к выдаче.
     common_back: 'Nazad',
@@ -1486,9 +1478,6 @@ export const dict = {
     showcase_tagline: 'Слоган салона',
     showcase_tagline_hint:
       'Одна фраза под названием салона на карточке в каталоге.',
-    showcase_description: 'Описание салона',
-    showcase_description_hint:
-      'Несколько фраз о салоне. Показывается на странице салона, а на карточке в каталоге — только если не загружена обложка.',
     showcase_city: 'Город салона',
     showcase_city_hint:
       'Город показывается на карточке салона в выдаче.',
@@ -1499,7 +1488,6 @@ export const dict = {
     showcase_website: 'Сайт салона',
     showcase_hours: 'Часы работы',
     showcase_hours_ph: 'Пн-Пт 09-18, Сб 09-14',
-    showcase_err_description: 'Описание слишком длинное (не больше 1000 символов)',
     showcase_err_tagline: 'Слоган слишком длинный (не больше 90 символов)',
     showcase_err_phone: 'Телефон слишком длинный',
     showcase_err_website: 'Адрес сайта слишком длинный',
@@ -1507,7 +1495,6 @@ export const dict = {
     // См. комментарий у sr-версии ключей.
     showcase_ph_name: 'Название автосалона',
     showcase_ph_tagline: 'Короткий слоган салона',
-    showcase_ph_desc: 'Описание салона — чем занимаетесь и почему стоит обратиться',
     showcase_ph_city: 'Город',
     common_back: 'Назад',
 

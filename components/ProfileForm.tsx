@@ -64,7 +64,7 @@ import ListPicker, { type PickerOption } from './ListPicker';
 import Alert from './ui/Alert';
 import Button from './ui/Button';
 import Card from './ui/Card';
-import { fieldClass, fieldClassTextarea } from './ui/Field';
+import { fieldClass } from './ui/Field';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { supabaseErrorText } from '@/lib/otp';
@@ -76,7 +76,6 @@ import type { MyProfile } from '@/lib/types';
 // и проверками внутри update_seller_profile (миграция 0095): нарушение
 // сервер отклонит в любом случае, а эти числа нужны, чтобы сказать об
 // этом сразу — атрибутом maxLength и счётчиком под полем описания.
-const MAX_DESCRIPTION = 1000;
 // Слоган (0098). 90 символов — не круглое число «на глаз», а
 // вместимость строки под названием салона в плитке каталога: на самом
 // узком экране (360px) туда помещаются две строки по ~44 символа.
@@ -110,7 +109,18 @@ export default function ProfileForm({ locale, profile }: Props) {
   // Поля витрины салона (миграция 0095). Наполняют плитку салона в
   // каталоге: описание и контакты стоят в её левом блоке, остальное —
   // в нижней строке. Показываются только дилеру.
-  const [description, setDescription] = useState(profile.description ?? '');
+  // ОПИСАНИЕ БОЛЬШЕ НЕ РЕДАКТИРУЕТСЯ. Поле убрано из формы: в плитке
+  // каталога его место заняла обложка со слоганом, а на публичной
+  // странице салона описание никогда и не выводилось — салон писал бы
+  // текст, которого никто не увидит.
+  //
+  // Но ЗНАЧЕНИЕ ПРОДОЛЖАЕТ ПЕРЕДАВАТЬСЯ при сохранении, и это
+  // обязательно: update_seller_profile перезаписывает профиль целиком
+  // и затирает в NULL всё, что не пришло. Убери мы его из вызова —
+  // первое же сохранение имени стёрло бы салонам описания, которые они
+  // писали при прежней вёрстке. Данные лежат нетронутыми и ждут
+  // решения, что с ними делать дальше.
+  const description = profile.description ?? '';
   const [dealerPhone, setDealerPhone] = useState(profile.dealer_phone ?? '');
   const [website, setWebsite] = useState(profile.website ?? '');
   const [openingHours, setOpeningHours] = useState(profile.opening_hours ?? '');
@@ -216,10 +226,6 @@ export default function ProfileForm({ locale, profile }: Props) {
     // в любом случае, а клиент говорит о проблеме сразу, не гоняя
     // запрос впустую.
     if (sellerKind === 'dealer') {
-      if (description.length > MAX_DESCRIPTION) {
-        setError(t('showcase_err_description'));
-        return;
-      }
       if (tagline.length > MAX_TAGLINE) {
         setError(t('showcase_err_tagline'));
         return;
@@ -658,40 +664,6 @@ export default function ProfileForm({ locale, profile }: Props) {
                       {tagline.length > MAX_TAGLINE - 20 && (
                         <span className="text-small text-neutral-50">
                           {tagline.length} / {MAX_TAGLINE}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* ОПИСАНИЕ — textarea, а не input: это две-три
-                      фразы, и в однострочном поле их пришлось бы
-                      прокручивать, чтобы перечитать написанное. */}
-                  <div>
-                    <label className="mb-1 block text-caption text-neutral-60">
-                      {t('showcase_description')}
-                    </label>
-                    <textarea
-                      value={description}
-                      onChange={(e) => {
-                        setDescription(e.target.value);
-                        setSaved(false);
-                      }}
-                      rows={3}
-                      maxLength={MAX_DESCRIPTION}
-                      placeholder={t('showcase_ph_desc')}
-                      className={fieldClassTextarea}
-                    />
-                    <div className="mt-1 flex flex-wrap items-baseline justify-between gap-2">
-                      <p className="text-small text-neutral-50">
-                        {t('showcase_description_hint')}
-                      </p>
-                      {/* Счётчик появляется только на подходе к
-                          границе. Постоянный «0 / 1000» под полем —
-                          шум, который читается как требование
-                          заполнить поле целиком. */}
-                      {description.length > MAX_DESCRIPTION - 100 && (
-                        <span className="text-small text-neutral-50">
-                          {description.length} / {MAX_DESCRIPTION}
                         </span>
                       )}
                     </div>
