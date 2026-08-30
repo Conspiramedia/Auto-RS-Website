@@ -674,17 +674,11 @@ export const dict = {
     // профиль, и подпись обязана называть настоящее назначение —
     // человек со скринридером иначе не поймёт, куда попадёт.
     showcase_close: 'Zatvori izložbu i vrati se u nalog',
-    // Подсказки на месте незаполненных полей плитки салона.
-    // Показываются ТОЛЬКО в предпросмотре редактора витрины: в самом
-    // каталоге пустое поле не печатается вовсе (см. DealerShowcaseCard).
-    // Переход на витрину салона в нижней строке плитки. Не кнопка и
-    // не ссылка — вся плитка уже ссылка (см. DealerShowcaseCard).
-    showcase_all_listings: 'Svi oglasi',
     // ------------------------------------------------------------
     // ПОЛЯ ВИТРИНЫ САЛОНА в форме профиля (миграция 0095).
     // ------------------------------------------------------------
-    // Наполняют карточку салона в каталоге: описание и контакты — её
-    // левый блок, название и логотип — нижнюю строку.
+    // Наполняют карточку салона в каталоге: описание — её верхнюю
+    // половину, название с логотипом и контактами — нижнюю.
     showcase_section: 'Izložba salona',
     showcase_section_hint:
       'Ovo kupci vide na kartici vašeg salona u pretrazi.',
@@ -706,6 +700,9 @@ export const dict = {
     showcase_err_phone: 'Telefon je predugačak',
     showcase_err_website: 'Adresa sajta je predugačka',
     showcase_err_hours: 'Radno vreme je predugačko',
+    // Подсказки на месте незаполненных полей плитки салона.
+    // Показываются ТОЛЬКО в предпросмотре редактора витрины: в самом
+    // каталоге пустое поле не печатается вовсе (см. DealerShowcaseCard).
     showcase_ph_name: 'Naziv autosalona',
     showcase_ph_desc: 'Opis salona — čime se bavite i zašto vam se obratiti',
     showcase_ph_city: 'Grad',
@@ -1459,9 +1456,6 @@ export const dict = {
     my_close: 'Закрыть кабинет и перейти на главную',
     // См. комментарий у sr-версии ключа.
     showcase_close: 'Закрыть витрину и вернуться в кабинет',
-    // См. комментарий у sr-версии ключей.
-    // См. комментарий у sr-версии ключа.
-    showcase_all_listings: 'Все объявления',
     // См. комментарий у sr-версии этой группы.
     showcase_section: 'Витрина салона',
     showcase_section_hint:
@@ -1483,6 +1477,7 @@ export const dict = {
     showcase_err_phone: 'Телефон слишком длинный',
     showcase_err_website: 'Адрес сайта слишком длинный',
     showcase_err_hours: 'Часы работы слишком длинные',
+    // См. комментарий у sr-версии ключей.
     showcase_ph_name: 'Название автосалона',
     showcase_ph_desc: 'Описание салона — чем занимаетесь и почему стоит обратиться',
     showcase_ph_city: 'Город',
