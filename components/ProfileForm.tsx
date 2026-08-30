@@ -340,52 +340,70 @@ export default function ProfileForm({ locale, profile }: Props) {
   }
 
   return (
-    // Вторая колонка появляется только у частного лица: у салона
-    // карточки аватара нет (разбор ниже), и жёсткие 320px оставили бы
-    // справа пустоту во всю высоту формы.
+    // ------------------------------------------------------------
+    // ШИРИНА ФОРМЫ ЗАВИСИТ ОТ ТИПА ПРОДАВЦА.
+    // ------------------------------------------------------------
+    // У частного лица справа стоит карточка аватара, и две колонки
+    // разбирают ширину контейнера между собой.
+    //
+    // У салона аватара нет, и без ограничения форма растягивалась на
+    // все 1120px: поля ввода превращались в полосы через весь экран,
+    // где короткое «RS Auto» терялось в пустоте. max-w-3xl (768px) —
+    // ширина, на которой поле ещё читается как поле, а не как линейка.
     <div
       className={`grid gap-4 lg:items-start ${
-        sellerKind === 'dealer' ? '' : 'lg:grid-cols-[1fr_320px]'
+        sellerKind === 'dealer' ? 'max-w-3xl' : 'lg:grid-cols-[1fr_320px]'
       }`}
     >
       {/* Левая колонка — редактируемые поля. */}
       <Card>
         <div className="space-y-3">
-          <div>
-            <label className="mb-1 block text-caption text-neutral-60">
-              {t('profile_name')}
-            </label>
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => {
-                setFullName(e.target.value);
-                setSaved(false);
-              }}
-              placeholder={t('profile_name_ph')}
-              className={fieldClass}
-            />
-          </div>
+          {/* ИМЯ И ТЕЛЕФОН — ОДНА СТРОКА С ПЛАНШЕТА. Оба поля
+              короткие: имя это одно-два слова, телефон фиксированной
+              длины. По отдельной строке на каждое растягивало форму
+              вниз пустотой.
 
-          {/* Телефон и почта — только чтение. Телефон служит логином,
-              его смена означала бы смену способа входа; почта приходит
-              из auth.users и на сайте не редактируется. */}
-          <div>
-            <label className="mb-1 block text-caption text-neutral-60">
-              {t('profile_phone')}
-            </label>
-            <input
-              type="text"
-              value={profile.phone ?? '—'}
-              readOnly
-              disabled
-              className={`${fieldClass} bg-surface-muted text-neutral-60`}
-            />
-            <p className="mt-1 text-small text-neutral-50">
-              {/* У аккаунта без номера (вход по почте) подсказка про
-                  «номер для входа» была бы неверной: входят не им. */}
-              {t(profile.phone ? 'profile_phone_hint' : 'profile_phone_none')}
-            </p>
+              items-start: у телефона под полем есть подсказка, у
+              имени нет, и без выравнивания по верху сами поля
+              разъехались бы по вертикали. */}
+          <div className="grid items-start gap-3 sm:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-caption text-neutral-60">
+                {t('profile_name')}
+              </label>
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => {
+                  setFullName(e.target.value);
+                  setSaved(false);
+                }}
+                placeholder={t('profile_name_ph')}
+                className={fieldClass}
+              />
+            </div>
+
+            {/* Телефон и почта — только чтение. Телефон служит
+                логином, его смена означала бы смену способа входа;
+                почта приходит из auth.users и на сайте не
+                редактируется. */}
+            <div>
+              <label className="mb-1 block text-caption text-neutral-60">
+                {t('profile_phone')}
+              </label>
+              <input
+                type="text"
+                value={profile.phone ?? '—'}
+                readOnly
+                disabled
+                className={`${fieldClass} bg-surface-muted text-neutral-60`}
+              />
+              <p className="mt-1 text-small text-neutral-50">
+                {/* У аккаунта без номера (вход по почте) подсказка про
+                    «номер для входа» была бы неверной: входят не им. */}
+                {t(profile.phone ? 'profile_phone_hint' : 'profile_phone_none')}
+              </p>
+            </div>
           </div>
 
           {/* Почта — РЕДАКТИРУЕМОЕ поле, в отличие от телефона выше.
@@ -828,101 +846,115 @@ export default function ProfileForm({ locale, profile }: Props) {
 
                       Подпись показана ДО ввода, а не после: человек
                       видит будущую формулировку целиком и понимает,
-                      что от него нужны две цифры, а не расписание. */}
-                  <div>
-                    <label className="mb-1 block text-caption text-neutral-60">
-                      {t('showcase_hours')}
-                    </label>
+                      что от него нужны две цифры, а не расписание.
 
-                    {/* ОДНА СТРОКА: «Работаем с [9:00] до [19:00]».
+                      ЧАСЫ И САЙТ СТОЯТ ПАРОЙ. Часы узкие по своей
+                      природе — два поля по 72px с подписями, — и
+                      отдельная строка под них оставляла бы справа
+                      полосу пустоты во всю ширину формы. Сайту
+                      половины хватает: адреса салонов короткие
+                      («rs-auto.rs»), а если длинный, поле
+                      прокручивается.
 
-                        Ширину полей приходится задавать двумя классами
-                        сразу — !w-24 и shrink-0. Причина в fieldClass:
-                        в нём есть w-full, и при равной специфичности
-                        побеждает тот класс, что стоит позже в
-                        сгенерированном CSS, а не в атрибуте. Обычный
-                        w-24 проигрывал, поля растягивались на всю
-                        ширину строки и разъезжались на две. `!`
-                        поднимает приоритет до !important и снимает
-                        спор однозначно.
+                      items-start: у обоих полей подсказки разной
+                      длины, и без выравнивания по верху сами поля
+                      разъехались бы по вертикали. */}
+                  <div className="grid items-start gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1 block text-caption text-neutral-60">
+                        {t('showcase_hours')}
+                      </label>
 
-                        shrink-0 держит ширину при нехватке места:
-                        иначе flex сжал бы поля, и «19:00» обрезалось
-                        бы посреди цифр.
+                      {/* ОДНА СТРОКА: «Работаем с [9:00] до [19:00]».
 
-                        ШИРИНА 72px ПОСЧИТАНА ПОД САМЫЙ УЗКИЙ ЭКРАН.
-                        На 360px после полей страницы (32px) и
-                        карточки (32px) остаётся 296px. Подписи
-                        «Работаем с» и «до» занимают ~108px, три
-                        зазора — 24px, значит на два поля есть 164px.
-                        72px каждому оставляют запас в 20px, тогда как
-                        w-24 (96px) переполняли строку на 28px — с них
-                        поля и уезжали на второй ряд. Самому полю
-                        хватает: «19:00» по центру занимает ~35px. */}
-                    <div className="flex flex-nowrap items-center gap-2">
-                      <span className="shrink-0 text-caption text-neutral-60">
-                        {t('showcase_hours_from')}
-                      </span>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        value={hoursFrom}
-                        onChange={(e) => {
-                          setHoursFrom(formatTime(e.target.value));
-                          setSaved(false);
-                        }}
-                        maxLength={5}
-                        placeholder="9:00"
-                        aria-label={t('showcase_hours_from')}
-                        className={`${fieldClass} !w-[72px] shrink-0 text-center`}
-                      />
-                      <span className="shrink-0 text-caption text-neutral-60">
-                        {t('showcase_hours_to')}
-                      </span>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        value={hoursTo}
-                        onChange={(e) => {
-                          setHoursTo(formatTime(e.target.value));
-                          setSaved(false);
-                        }}
-                        maxLength={5}
-                        placeholder="19:00"
-                        aria-label={t('showcase_hours_to')}
-                        className={`${fieldClass} !w-[72px] shrink-0 text-center`}
-                      />
+                          Ширину полей приходится задавать двумя классами
+                          сразу — !w-24 и shrink-0. Причина в fieldClass:
+                          в нём есть w-full, и при равной специфичности
+                          побеждает тот класс, что стоит позже в
+                          сгенерированном CSS, а не в атрибуте. Обычный
+                          w-24 проигрывал, поля растягивались на всю
+                          ширину строки и разъезжались на две. `!`
+                          поднимает приоритет до !important и снимает
+                          спор однозначно.
+
+                          shrink-0 держит ширину при нехватке места:
+                          иначе flex сжал бы поля, и «19:00» обрезалось
+                          бы посреди цифр.
+
+                          ШИРИНА 72px ПОСЧИТАНА ПОД САМЫЙ УЗКИЙ ЭКРАН.
+                          На 360px после полей страницы (32px) и
+                          карточки (32px) остаётся 296px. Подписи
+                          «Работаем с» и «до» занимают ~108px, три
+                          зазора — 24px, значит на два поля есть 164px.
+                          72px каждому оставляют запас в 20px, тогда как
+                          w-24 (96px) переполняли строку на 28px — с них
+                          поля и уезжали на второй ряд. Самому полю
+                          хватает: «19:00» по центру занимает ~35px. */}
+                      <div className="flex flex-nowrap items-center gap-2">
+                        <span className="shrink-0 text-caption text-neutral-60">
+                          {t('showcase_hours_from')}
+                        </span>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={hoursFrom}
+                          onChange={(e) => {
+                            setHoursFrom(formatTime(e.target.value));
+                            setSaved(false);
+                          }}
+                          maxLength={5}
+                          placeholder="9:00"
+                          aria-label={t('showcase_hours_from')}
+                          className={`${fieldClass} !w-[72px] shrink-0 text-center`}
+                        />
+                        <span className="shrink-0 text-caption text-neutral-60">
+                          {t('showcase_hours_to')}
+                        </span>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={hoursTo}
+                          onChange={(e) => {
+                            setHoursTo(formatTime(e.target.value));
+                            setSaved(false);
+                          }}
+                          maxLength={5}
+                          placeholder="19:00"
+                          aria-label={t('showcase_hours_to')}
+                          className={`${fieldClass} !w-[72px] shrink-0 text-center`}
+                        />
+                      </div>
+
+                      <p className="mt-1 text-small text-neutral-50">
+                        {t('showcase_hours_hint')}
+                      </p>
                     </div>
 
-                    <p className="mt-1 text-small text-neutral-50">
-                      {t('showcase_hours_hint')}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-caption text-neutral-60">
-                      {t('showcase_website')}
-                    </label>
-                    <input
-                      // type="url" даёт мобильной клавиатуре раскладку
-                      // со слэшем, но проверку формата на браузер не
-                      // перекладываем: он валидирует поле только
-                      // внутри <form> с submit, а отправка здесь идёт
-                      // по кнопке.
-                      type="url"
-                      inputMode="url"
-                      value={website}
-                      onChange={(e) => {
-                        setWebsite(e.target.value);
-                        setSaved(false);
-                      }}
-                      maxLength={MAX_WEBSITE}
-                      placeholder="https://"
-                      className={fieldClass}
-                    />
-                    <p className="mt-1 text-small text-neutral-50">
-                      {t('showcase_website_hint')}
-                    </p>
+                    <div>
+                      <label className="mb-1 block text-caption text-neutral-60">
+                        {t('showcase_website')}
+                      </label>
+                      <input
+                        // type="url" даёт мобильной клавиатуре раскладку
+                        // со слэшем, но проверку формата на браузер не
+                        // перекладываем: он валидирует поле только
+                        // внутри <form> с submit, а отправка здесь идёт
+                        // по кнопке.
+                        type="url"
+                        inputMode="url"
+                        value={website}
+                        onChange={(e) => {
+                          setWebsite(e.target.value);
+                          setSaved(false);
+                        }}
+                        maxLength={MAX_WEBSITE}
+                        placeholder="https://"
+                        className={fieldClass}
+                      />
+                      <p className="mt-1 text-small text-neutral-50">
+                        {t('showcase_website_hint')}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
