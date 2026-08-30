@@ -173,7 +173,7 @@ export default async function DealerPageView({
             бы как страница салона без витрины. Для частника остаётся
             прежняя компактная карточка. */}
         {isDealer ? (
-          <DealerShowcaseHero locale={locale} profile={profile} />
+          <DealerShowcaseHero profile={profile} />
         ) : (
           <Card className="flex flex-col gap-4 sm:flex-row sm:items-center">
             {/* Аватар продавца. Когда его нет — инициал: пустой
@@ -204,23 +204,6 @@ export default async function DealerPageView({
                 {t('dealer_page_since')}{' '}
                 {formatDate(profile.member_since, locale)}
               </p>
-
-              <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-caption text-neutral-60">
-                <span>
-                  <strong className="text-brand-dark">
-                    {profile.active_cars}
-                  </strong>{' '}
-                  {t('dealer_page_active')}
-                </span>
-                {profile.sold_cars > 0 && (
-                  <span>
-                    <strong className="text-brand-dark">
-                      {profile.sold_cars}
-                    </strong>{' '}
-                    {t('dealer_page_sold')}
-                  </span>
-                )}
-              </div>
             </div>
           </Card>
         )}

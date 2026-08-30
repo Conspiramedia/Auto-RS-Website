@@ -794,8 +794,6 @@ export const dict = {
     // Страница продавца / автосалона.
     // ------------------------------------------------------------
     dealer_page_since: 'Na platformi od',
-    dealer_page_active: 'Aktivnih oglasa',
-    dealer_page_sold: 'Prodato',
     dealer_page_listings: 'Oglasi',
     dealer_page_sold_title: 'Nedavno prodato',
     dealer_page_empty_title: 'Nema aktivnih oglasa',
@@ -1581,8 +1579,6 @@ export const dict = {
     // Страница продавца / автосалона.
     // ------------------------------------------------------------
     dealer_page_since: 'На площадке с',
-    dealer_page_active: 'Активных объявлений',
-    dealer_page_sold: 'Продано',
     dealer_page_listings: 'Объявления',
     dealer_page_sold_title: 'Недавно продано',
     dealer_page_empty_title: 'Нет активных объявлений',
