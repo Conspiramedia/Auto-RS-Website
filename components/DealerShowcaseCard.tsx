@@ -67,7 +67,6 @@ import Image from 'next/image';
 
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
-import Badge from './ui/Badge';
 import Card from './ui/Card';
 
 // ------------------------------------------------------------
@@ -258,22 +257,11 @@ export default function DealerShowcaseCard({
               отказывается сжиматься, и длинное название вытолкнуло бы
               счётчик с переходом за край. */}
           <div className="flex min-w-0 flex-col gap-1">
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="truncate font-semibold">
-                {name ?? (
-                  <span className="text-neutral-30">{t('showcase_ph_name')}</span>
-                )}
-              </span>
-
-              {/* Метка переехала сюда с фотографии. Поверх снимка она
-                  спорила с бейджами карточек объявлений («Аренда»,
-                  «Просмотрено»), стоявшими на той же линии, — а здесь
-                  читается как подпись к названию, чем она и является.
-                  Тон dark: это указание, кто продаёт, а не акцент. */}
-              <Badge tone="dark" size="xs" className="shrink-0">
-                {t('badge_dealer')}
-              </Badge>
-            </div>
+            <span className="truncate font-semibold">
+              {name ?? (
+                <span className="text-neutral-30">{t('showcase_ph_name')}</span>
+              )}
+            </span>
 
             {/* КОНТАКТЫ салона: город, часы работы, телефон.
                 neutral-60 — 5.55:1 на белой подложке карточки, выше

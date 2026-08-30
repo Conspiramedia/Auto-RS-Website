@@ -317,10 +317,6 @@ export const dict = {
     filter_type_all: 'Sve',
     catalog_mixed_title: 'Automobili u Srbiji',
     badge_rent: 'Izdavanje',
-    // Метка продавца-салона на плитке каталога. Обещана на /about
-    // («Oznaka „Autosalon" na svakom oglasu») — с этой строкой
-    // обещание становится правдой.
-    badge_dealer: 'Autosalon',
 
     // Пикер (выбор из списка)
     picker_search: 'Pretraga…',
@@ -856,7 +852,7 @@ export const dict = {
     about_dealer_title: 'Za autosalone',
     about_dealer_1: 'Posebna stranica salona sa celim voznim parkom.',
     about_dealer_2: 'Objavljivanje bez čekanja za partnerske salone.',
-    about_dealer_3: 'Oznaka „Autosalon“ na svakom oglasu.',
+    about_dealer_3: 'Svaki oglas vodi na stranicu vašeg salona.',
     about_dealer_4: 'Kupci iz cele Srbije, sa svih uređaja.',
 
     about_cta_title: 'Imate automobil za prodaju?',
@@ -899,7 +895,7 @@ export const dict = {
       'Popunite kratak obrazac na stranici za autosalone: naziv salona, kontakt osoba i telefon. Javljamo se i dogovaramo detalje.',
     how_dealer_2_title: 'Dobijate stranicu salona',
     how_dealer_2_text:
-      'Sva vaša vozila na jednom mestu, sa nazivom i logotipom salona. Svaki oglas nosi oznaku „Autosalon“ — kupci vide da imaju posla sa firmom.',
+      'Sva vaša vozila na jednom mestu, sa nazivom i logotipom salona. Kupci odmah vide da imaju posla sa firmom, a ne sa privatnim licem.',
     how_dealer_3_title: 'Objavljujete ceo vozni park',
     how_dealer_3_text:
       'Oglasi partnerskih salona idu na sajt odmah, bez čekanja na moderaciju. Vide ih kupci iz cele Srbije.',
@@ -1112,8 +1108,6 @@ export const dict = {
     filter_type_all: 'Всё',
     catalog_mixed_title: 'Автомобили в Сербии',
     badge_rent: 'Аренда',
-    // См. комментарий у sr-версии ключа.
-    badge_dealer: 'Автосалон',
 
     // Пикер (выбор из списка)
     picker_search: 'Поиск…',
@@ -1629,7 +1623,7 @@ export const dict = {
     about_dealer_title: 'Автосалонам',
     about_dealer_1: 'Отдельная страница салона со всем автопарком.',
     about_dealer_2: 'Публикация без ожидания для салонов-партнёров.',
-    about_dealer_3: 'Пометка «Автосалон» на каждом объявлении.',
+    about_dealer_3: 'Каждое объявление ведёт на страницу вашего салона.',
     about_dealer_4: 'Покупатели со всей Сербии, с любых устройств.',
 
     about_cta_title: 'Есть автомобиль на продажу?',
@@ -1672,7 +1666,7 @@ export const dict = {
       'Заполните короткую форму на странице для автосалонов: название салона, контактное лицо и телефон. Мы свяжемся и обсудим детали.',
     how_dealer_2_title: 'Получаете страницу салона',
     how_dealer_2_text:
-      'Все ваши машины в одном месте, с названием и логотипом салона. На каждом объявлении — пометка «Автосалон»: покупатели видят, что имеют дело с компанией.',
+      'Все ваши машины в одном месте, с названием и логотипом салона. Покупатели сразу видят, что имеют дело с компанией, а не с частным лицом.',
     how_dealer_3_title: 'Размещаете весь автопарк',
     how_dealer_3_text:
       'Объявления салонов-партнёров попадают на сайт сразу, без ожидания модерации. Их видят покупатели по всей Сербии.',

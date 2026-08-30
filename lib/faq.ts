@@ -98,7 +98,7 @@ const FAQ_SR: FaqItem[] = [
     group: 'dealer',
     question: 'Po čemu se nalog salona razlikuje od privatnog?',
     answer:
-      'Salon dobija posebnu stranicu sa celim voznim parkom na jednom mestu, sa nazivom i logotipom. Svaki oglas nosi oznaku „Autosalon“, pa kupci odmah vide da imaju posla sa firmom, a ne sa privatnim licem.',
+      'Salon dobija posebnu stranicu sa celim voznim parkom na jednom mestu, sa nazivom i logotipom. Svaki oglas vodi na tu stranicu, pa kupci odmah vide da imaju posla sa firmom, a ne sa privatnim licem.',
   },
 ];
 
@@ -174,7 +174,7 @@ const FAQ_RU: FaqItem[] = [
     group: 'dealer',
     question: 'Чем аккаунт салона отличается от частного?',
     answer:
-      'Салон получает отдельную страницу со всем автопарком в одном месте, с названием и логотипом. На каждом объявлении стоит пометка «Автосалон», поэтому покупатели сразу видят, что имеют дело с компанией, а не с частным лицом.',
+      'Салон получает отдельную страницу со всем автопарком в одном месте, с названием и логотипом. Каждое объявление ведёт на эту страницу, поэтому покупатели сразу видят, что имеют дело с компанией, а не с частным лицом.',
   },
 ];
 
