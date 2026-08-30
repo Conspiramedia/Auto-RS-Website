@@ -809,8 +809,33 @@ export default function ProfileForm({ locale, profile }: Props) {
                       {t('showcase_hours')}
                     </label>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-caption text-neutral-60">
+                    {/* ОДНА СТРОКА: «Работаем с [9:00] до [19:00]».
+
+                        Ширину полей приходится задавать двумя классами
+                        сразу — !w-24 и shrink-0. Причина в fieldClass:
+                        в нём есть w-full, и при равной специфичности
+                        побеждает тот класс, что стоит позже в
+                        сгенерированном CSS, а не в атрибуте. Обычный
+                        w-24 проигрывал, поля растягивались на всю
+                        ширину строки и разъезжались на две. `!`
+                        поднимает приоритет до !important и снимает
+                        спор однозначно.
+
+                        shrink-0 держит ширину при нехватке места:
+                        иначе flex сжал бы поля, и «19:00» обрезалось
+                        бы посреди цифр.
+
+                        ШИРИНА 72px ПОСЧИТАНА ПОД САМЫЙ УЗКИЙ ЭКРАН.
+                        На 360px после полей страницы (32px) и
+                        карточки (32px) остаётся 296px. Подписи
+                        «Работаем с» и «до» занимают ~108px, три
+                        зазора — 24px, значит на два поля есть 164px.
+                        72px каждому оставляют запас в 20px, тогда как
+                        w-24 (96px) переполняли строку на 28px — с них
+                        поля и уезжали на второй ряд. Самому полю
+                        хватает: «19:00» по центру занимает ~35px. */}
+                    <div className="flex flex-nowrap items-center gap-2">
+                      <span className="shrink-0 text-caption text-neutral-60">
                         {t('showcase_hours_from')}
                       </span>
                       <input
@@ -824,9 +849,9 @@ export default function ProfileForm({ locale, profile }: Props) {
                         maxLength={5}
                         placeholder="9:00"
                         aria-label={t('showcase_hours_from')}
-                        className={`${fieldClass} w-24 text-center`}
+                        className={`${fieldClass} !w-[72px] shrink-0 text-center`}
                       />
-                      <span className="text-caption text-neutral-60">
+                      <span className="shrink-0 text-caption text-neutral-60">
                         {t('showcase_hours_to')}
                       </span>
                       <input
@@ -840,7 +865,7 @@ export default function ProfileForm({ locale, profile }: Props) {
                         maxLength={5}
                         placeholder="19:00"
                         aria-label={t('showcase_hours_to')}
-                        className={`${fieldClass} w-24 text-center`}
+                        className={`${fieldClass} !w-[72px] shrink-0 text-center`}
                       />
                     </div>
 
