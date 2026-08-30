@@ -727,71 +727,89 @@ export default function ProfileForm({ locale, profile }: Props) {
                       Своей подписи <label> здесь нет: ListPicker
                       рендерит её сам, и вторая читалась бы как
                       дубль. */}
-                  <div>
-                    <ListPicker
-                      locale={locale}
-                      name="company_city"
-                      label={t('showcase_city')}
-                      options={CITIES.map(
-                        (c): PickerOption => ({ value: c, label: c }),
-                      )}
-                      value={companyCity}
-                      placeholder={t('showcase_city_empty')}
-                      allowCustom
-                      onChange={(v) => {
-                        setCompanyCity(v);
-                        setSaved(false);
-                      }}
-                    />
-                    <p className="mt-1 text-small text-neutral-50">
-                      {t('showcase_city_hint')}
-                    </p>
-                  </div>
+                  {/* ГОРОД И ТЕЛЕФОН — ОДНА СТРОКА С ПЛАНШЕТА.
+                      Оба поля короткие: город это одно слово, телефон
+                      — фиксированные пятнадцать знаков. По отдельной
+                      строке на каждое растягивало форму вниз пустотой.
 
-                  {/* ТЕЛЕФОН САЛОНА. Не путать с номером выше: тот
-                      служит логином и не меняется. Здесь — публичный
-                      номер компании, который увидит покупатель. */}
-                  <div>
-                    <label className="mb-1 block text-caption text-neutral-60">
-                      {t('showcase_phone')}
-                    </label>
-                    <input
-                      type="tel"
-                      inputMode="tel"
-                      autoComplete="tel"
-                      value={dealerPhone}
-                      onChange={(e) => {
-                        // Маска та же, что в подаче объявления и на
-                        // входе: номер приводится к «+381 11 123 456»
-                        // прямо во время набора, а не проверяется
-                        // после. Так салон физически не сохранит номер
-                        // в чужом формате.
-                        setDealerPhone(formatSerbianPhone(e.target.value));
-                        setSaved(false);
-                      }}
-                      onFocus={() => {
-                        // Код страны появляется при первом касании
-                        // пустого поля: держать его там всегда значило
-                        // бы, что «незаполненный телефон» выглядит
-                        // как заполненный наполовину.
-                        if (dealerPhone === '') {
-                          setDealerPhone(SERBIAN_PHONE_PREFIX);
-                        }
-                      }}
-                      onBlur={() => {
-                        // Ушли, не набрав ни цифры — очищаем поле,
-                        // чтобы в базу не попал один код страны.
-                        if (dealerPhone.trim() === SERBIAN_PHONE_PREFIX.trim()) {
-                          setDealerPhone('');
-                        }
-                      }}
-                      maxLength={MAX_PHONE}
-                      placeholder="+381 11 123 456"
-                      className={fieldClass}
-                    />
-                    <p className="mt-1 text-small text-neutral-50">
-                      {t('showcase_phone_hint')}
-                    </p>
+                      НА МОБИЛЬНОМ ОСТАЮТСЯ В СТОЛБИК, и это не
+                      упрощение. На 360px форме достаётся 296px, при
+                      делении пополам колонка выходит 140px, а
+                      «+381 11 123 456» с полями требует ~159px — номер
+                      обрезался бы прямо в поле ввода. С sm (640px)
+                      колонка уже 280px и вмещает всё с запасом.
+
+                      items-start: у полей подсказки разной длины
+                      («Город показывается…» в одну строку, «Публичный
+                      номер компании…» в две), и без выравнивания по
+                      верху сами поля разъехались бы по вертикали. */}
+                  <div className="grid items-start gap-4 sm:grid-cols-2">
+                    <div>
+                      <ListPicker
+                        locale={locale}
+                        name="company_city"
+                        label={t('showcase_city')}
+                        options={CITIES.map(
+                          (c): PickerOption => ({ value: c, label: c }),
+                        )}
+                        value={companyCity}
+                        placeholder={t('showcase_city_empty')}
+                        allowCustom
+                        onChange={(v) => {
+                          setCompanyCity(v);
+                          setSaved(false);
+                        }}
+                      />
+                      <p className="mt-1 text-small text-neutral-50">
+                        {t('showcase_city_hint')}
+                      </p>
+                    </div>
+
+                    {/* ТЕЛЕФОН САЛОНА. Не путать с номером выше: тот
+                        служит логином и не меняется. Здесь — публичный
+                        номер компании, который увидит покупатель. */}
+                    <div>
+                      <label className="mb-1 block text-caption text-neutral-60">
+                        {t('showcase_phone')}
+                      </label>
+                      <input
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        value={dealerPhone}
+                        onChange={(e) => {
+                          // Маска та же, что в подаче объявления и на
+                          // входе: номер приводится к «+381 11 123 456»
+                          // прямо во время набора, а не проверяется
+                          // после. Так салон физически не сохранит номер
+                          // в чужом формате.
+                          setDealerPhone(formatSerbianPhone(e.target.value));
+                          setSaved(false);
+                        }}
+                        onFocus={() => {
+                          // Код страны появляется при первом касании
+                          // пустого поля: держать его там всегда значило
+                          // бы, что «незаполненный телефон» выглядит
+                          // как заполненный наполовину.
+                          if (dealerPhone === '') {
+                            setDealerPhone(SERBIAN_PHONE_PREFIX);
+                          }
+                        }}
+                        onBlur={() => {
+                          // Ушли, не набрав ни цифры — очищаем поле,
+                          // чтобы в базу не попал один код страны.
+                          if (dealerPhone.trim() === SERBIAN_PHONE_PREFIX.trim()) {
+                            setDealerPhone('');
+                          }
+                        }}
+                        maxLength={MAX_PHONE}
+                        placeholder="+381 11 123 456"
+                        className={fieldClass}
+                      />
+                      <p className="mt-1 text-small text-neutral-50">
+                        {t('showcase_phone_hint')}
+                      </p>
+                    </div>
                   </div>
 
                   {/* ЧАСЫ РАБОТЫ — ДВА ПОЛЯ ВРЕМЕНИ, а не свободная
