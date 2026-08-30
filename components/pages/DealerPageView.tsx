@@ -41,6 +41,7 @@ import Card from '@/components/ui/Card';
 import StateCard from '@/components/ui/StateCard';
 import CarCard from '@/components/CarCard';
 import DealerOwnerBar from '@/components/DealerOwnerBar';
+import DealerShowcaseHero from '@/components/DealerShowcaseHero';
 import PagerLinks, { PagerHeadLinks } from '@/components/PagerLinks';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
@@ -161,52 +162,68 @@ export default async function DealerPageView({
             вовсе. Подробности — в шапке DealerOwnerBar. */}
         <DealerOwnerBar locale={locale} dealerId={id} />
 
-        {/* Шапка витрины: логотип/аватар, имя и счётчики. */}
-        <Card className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          {/* Логотип салона. Когда его нет — инициал в круге: пустой
-              квадрат выглядел бы как незагрузившаяся картинка. */}
-          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-card bg-surface-muted">
-            {profile.logo_url || profile.avatar_url ? (
-              <Image
-                src={(profile.logo_url || profile.avatar_url) as string}
-                alt={profile.display_name}
-                fill
-                sizes="80px"
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-h2 font-bold text-neutral-30">
-                {profile.display_name.charAt(0).toUpperCase()}
-              </div>
-            )}
-          </div>
+        {/* ШАПКА ВИТРИНЫ — баннер с обложкой, как плитка в каталоге.
+            Покупатель попадает сюда кликом по этой самой плитке, и
+            общая раскладка продолжает переход, а не заменяет его
+            другим экраном. Разбор — в шапке DealerShowcaseHero.
 
-          <div className="min-w-0 flex-1">
-            <h1 className="text-h2 font-bold sm:text-h1">{profile.display_name}</h1>
-            <p className="mt-1 text-caption text-neutral-50">
-              {isDealer ? t('car_seller_dealer') : t('car_seller_private')}
-              {' · '}
-              {t('dealer_page_since')} {formatDate(profile.member_since, locale)}
-            </p>
-
-            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-caption text-neutral-60">
-              <span>
-                <strong className="text-brand-dark">
-                  {profile.active_cars}
-                </strong>{' '}
-                {t('dealer_page_active')}
-              </span>
-              {profile.sold_cars > 0 && (
-                <span>
-                  <strong className="text-brand-dark">
-                    {profile.sold_cars}
-                  </strong>{' '}
-                  {t('dealer_page_sold')}
-                </span>
+            ЧАСТНОМУ ПРОДАВЦУ БАННЕР НЕ ПОКАЗЫВАЕМ. Обложка, слоган и
+            часы работы — поля компании; у человека их нет и быть не
+            должно, а пустой фирменный градиент с одним именем выглядел
+            бы как страница салона без витрины. Для частника остаётся
+            прежняя компактная карточка. */}
+        {isDealer ? (
+          <DealerShowcaseHero locale={locale} profile={profile} />
+        ) : (
+          <Card className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            {/* Аватар продавца. Когда его нет — инициал: пустой
+                квадрат выглядел бы как незагрузившаяся картинка. */}
+            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-card bg-surface-muted">
+              {profile.avatar_url ? (
+                <Image
+                  src={profile.avatar_url}
+                  alt={profile.display_name}
+                  fill
+                  sizes="80px"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-h2 font-bold text-neutral-30">
+                  {profile.display_name.charAt(0).toUpperCase()}
+                </div>
               )}
             </div>
-          </div>
-        </Card>
+
+            <div className="min-w-0 flex-1">
+              <h1 className="text-h2 font-bold sm:text-h1">
+                {profile.display_name}
+              </h1>
+              <p className="mt-1 text-caption text-neutral-50">
+                {t('car_seller_private')}
+                {' · '}
+                {t('dealer_page_since')}{' '}
+                {formatDate(profile.member_since, locale)}
+              </p>
+
+              <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-caption text-neutral-60">
+                <span>
+                  <strong className="text-brand-dark">
+                    {profile.active_cars}
+                  </strong>{' '}
+                  {t('dealer_page_active')}
+                </span>
+                {profile.sold_cars > 0 && (
+                  <span>
+                    <strong className="text-brand-dark">
+                      {profile.sold_cars}
+                    </strong>{' '}
+                    {t('dealer_page_sold')}
+                  </span>
+                )}
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Витрина. Пустая — не тупик: даём выход в общий каталог. */}
         {active.length === 0 ? (
