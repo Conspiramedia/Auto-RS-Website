@@ -551,7 +551,19 @@ export default function ProfileForm({ locale, profile }: Props) {
                   }}
                 />
 
-                <div className="mt-2 flex flex-wrap gap-2">
+                {/* ОДНА КНОПКА, ДВЕ ПОДПИСИ: обложки нет —
+                    «Загрузить обложку», обложка есть — «Заменить
+                    обложку». Действие одно и то же: открыть файловый
+                    диалог и перезаписать cover.jpg, которого в бакете
+                    всегда ровно один.
+
+                    КНОПКИ «УБРАТЬ» НЕТ. Салон без обложки получает не
+                    пустоту, а фирменный градиент — и в плитке
+                    каталога, и в шапке витрины. То есть «убрать»
+                    означало бы не «освободить место», а «поменять свою
+                    фотографию на общий фон», чего никто не хочет
+                    осознанно. Нужную картинку меняет замена. */}
+                <div className="mt-2">
                   <Button
                     variant="secondary"
                     size="sm"
@@ -564,26 +576,6 @@ export default function ProfileForm({ locale, profile }: Props) {
                         ? t('profile_cover_replace')
                         : t('profile_cover_change')}
                   </Button>
-
-                  {/* КНОПКА «УБРАТЬ» ЗДЕСЬ ЕСТЬ, в отличие от
-                      логотипа. Разница не в прихоти: без логотипа
-                      плитка теряет узнаваемость салона, а без обложки
-                      она полностью работоспособна — верхнюю половину
-                      займёт описание. Значит «остаться без обложки» —
-                      законный выбор, и отбирать его нельзя. */}
-                  {coverUrl && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      disabled={uploading}
-                      onClick={() => {
-                        setCoverUrl(null);
-                        setSaved(false);
-                      }}
-                    >
-                      {t('profile_cover_remove')}
-                    </Button>
-                  )}
                 </div>
 
                 <p className="mt-2 text-small text-neutral-50">

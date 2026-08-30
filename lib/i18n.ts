@@ -629,11 +629,10 @@ export const dict = {
     // его вертикальный снимок стал широкой полосой.
     profile_cover: 'Naslovna slika salona',
     profile_cover_hint:
-      'Preporučeno 1500×1000 (odnos 3:2), najmanje 900×600. Slika zauzima celu karticu salona u katalogu, a podaci stoje na traci preko dna — držite glavno u gornjem delu kadra.',
+      'Preporučeno 1500×1000 (odnos 3:2), najmanje 900×600. Slika zauzima celu karticu salona u katalogu i vrh vaše stranice, a podaci stoje na traci preko dna — držite glavno u gornjem delu kadra. Bez slike prikazujemo firmenu pozadinu.',
     profile_cover_empty: 'Naslovna slika još nije učitana',
     profile_cover_change: 'Učitaj naslovnu sliku',
     profile_cover_replace: 'Zameni naslovnu sliku',
-    profile_cover_remove: 'Ukloni',
     profile_showcase: 'Moja stranica',
     profile_save: 'Sačuvaj',
     profile_saving: 'Čuvamo…',
@@ -725,7 +724,7 @@ export const dict = {
       'Oglasi partnerskih salona idu na sajt odmah, bez moderacije.',
     dealers_benefit_2_title: 'Stranica autosalona',
     dealers_benefit_2_text:
-      'Svi vaši automobili na jednom mestu, sa logotipom i nazivom salona.',
+      'Svi vaši automobili na jednom mestu, pod nazivom salona i vašom naslovnom slikom.',
     dealers_benefit_3_title: 'Kupci iz cele Srbije',
     dealers_benefit_3_text:
       'Oglase vide kupci iz cele Srbije, sa svih uređaja.',
@@ -905,7 +904,7 @@ export const dict = {
       'Popunite kratak obrazac na stranici za autosalone: naziv salona, kontakt osoba i telefon. Javljamo se i dogovaramo detalje.',
     how_dealer_2_title: 'Dobijate stranicu salona',
     how_dealer_2_text:
-      'Sva vaša vozila na jednom mestu, sa nazivom i logotipom salona. Kupci odmah vide da imaju posla sa firmom, a ne sa privatnim licem.',
+      'Sva vaša vozila na jednom mestu, sa nazivom salona i naslovnom slikom. Kupci odmah vide da imaju posla sa firmom, a ne sa privatnim licem.',
     how_dealer_3_title: 'Objavljujete ceo vozni park',
     how_dealer_3_text:
       'Oglasi partnerskih salona idu na sajt odmah, bez čekanja na moderaciju. Vide ih kupci iz cele Srbije.',
@@ -1430,11 +1429,10 @@ export const dict = {
     // См. комментарий у sr-версии ключей.
     profile_cover: 'Обложка салона',
     profile_cover_hint:
-      'Рекомендуем 1500×1000 (пропорция 3:2), минимум 900×600. Картинка занимает всю карточку салона в каталоге, а данные стоят полосой поверх низа — держите главное в верхней части кадра.',
+      'Рекомендуем 1500×1000 (пропорция 3:2), минимум 900×600. Картинка занимает всю карточку салона в каталоге и верх вашей страницы, а данные стоят полосой поверх низа — держите главное в верхней части кадра. Без картинки показываем фирменный фон.',
     profile_cover_empty: 'Обложка ещё не загружена',
     profile_cover_change: 'Загрузить обложку',
     profile_cover_replace: 'Заменить обложку',
-    profile_cover_remove: 'Убрать',
     profile_showcase: 'Моя витрина',
     profile_save: 'Сохранить',
     profile_saving: 'Сохраняем…',
@@ -1503,7 +1501,7 @@ export const dict = {
       'Объявления салонов-партнёров попадают на сайт сразу, без модерации.',
     dealers_benefit_2_title: 'Страница автосалона',
     dealers_benefit_2_text:
-      'Все ваши автомобили в одном месте, с логотипом и названием салона.',
+      'Все ваши автомобили в одном месте, под названием салона и вашей обложкой.',
     dealers_benefit_3_title: 'Покупатели со всей Сербии',
     dealers_benefit_3_text:
       'Объявления видят покупатели по всей Сербии, с любых устройств.',
@@ -1682,7 +1680,7 @@ export const dict = {
       'Заполните короткую форму на странице для автосалонов: название салона, контактное лицо и телефон. Мы свяжемся и обсудим детали.',
     how_dealer_2_title: 'Получаете страницу салона',
     how_dealer_2_text:
-      'Все ваши машины в одном месте, с названием и логотипом салона. Покупатели сразу видят, что имеют дело с компанией, а не с частным лицом.',
+      'Все ваши машины в одном месте, с названием салона и обложкой. Покупатели сразу видят, что имеют дело с компанией, а не с частным лицом.',
     how_dealer_3_title: 'Размещаете весь автопарк',
     how_dealer_3_text:
       'Объявления салонов-партнёров попадают на сайт сразу, без ожидания модерации. Их видят покупатели по всей Сербии.',
