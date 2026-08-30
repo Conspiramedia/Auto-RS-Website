@@ -633,7 +633,7 @@ export const dict = {
     // его вертикальный снимок стал широкой полосой.
     profile_cover: 'Naslovna slika salona',
     profile_cover_hint:
-      'Preporučeno 1600×711 (odnos 9:4), najmanje 900×400. Slika se automatski seče po sredini na taj odnos. Zauzima gotovo celu karticu salona u katalogu.',
+      'Kvadratna slika, preporučeno 1200×1200, najmanje 600×600. Automatski se seče na kvadrat po sredini. Držite glavno u centru kadra: na telefonu se vide leva i desna ivica, na računaru gornja i donja.',
     profile_cover_empty: 'Naslovna slika još nije učitana',
     profile_cover_change: 'Učitaj naslovnu sliku',
     profile_cover_replace: 'Zameni naslovnu sliku',
@@ -1444,7 +1444,7 @@ export const dict = {
     // См. комментарий у sr-версии ключей.
     profile_cover: 'Обложка салона',
     profile_cover_hint:
-      'Рекомендуем 1600×711 (пропорция 9:4), минимум 900×400. Картинка автоматически обрезается по центру до этой пропорции. Занимает почти всю карточку салона в каталоге.',
+      'Квадратная картинка, рекомендуем 1200×1200, минимум 600×600. Обрезается по центру до квадрата. Держите главное в центре кадра: на телефоне видны левый и правый край, на компьютере — верхний и нижний.',
     profile_cover_empty: 'Обложка ещё не загружена',
     profile_cover_change: 'Загрузить обложку',
     profile_cover_replace: 'Заменить обложку',
