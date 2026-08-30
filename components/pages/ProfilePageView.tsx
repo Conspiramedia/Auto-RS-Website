@@ -32,7 +32,7 @@ export default async function ProfilePageView({ locale }: Props) {
   const profileResult = await supabase
     .from('profiles')
     .select(
-      'id, email, full_name, phone, avatar_url, seller_kind, company_name, logo_url, description, dealer_phone, website, opening_hours, company_city',
+      'id, email, full_name, phone, avatar_url, seller_kind, company_name, logo_url, description, dealer_phone, website, opening_hours, company_city, cover_url, tagline',
     )
     .eq('id', user.id)
     .maybeSingle();

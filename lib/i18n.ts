@@ -628,6 +628,16 @@ export const dict = {
     // logo»: при заполненном логотипе «загрузить» обещает добавить
     // второй, тогда как файл в бакете один и новый перезапишет старый.
     profile_logo_replace: 'Zameni logo',
+    // Обложка витрины (0098). Подсказка называет рекомендуемый размер
+    // и прямо говорит о кадрировании: салон должен понимать, почему
+    // его вертикальный снимок стал широкой полосой.
+    profile_cover: 'Naslovna slika salona',
+    profile_cover_hint:
+      'Preporučeno 1600×600 (odnos 8:3), najmanje 800×300. Slika se automatski seče po sredini na taj odnos. Prikazuje se u gornjoj polovini kartice salona u katalogu.',
+    profile_cover_empty: 'Naslovna slika još nije učitana',
+    profile_cover_change: 'Učitaj naslovnu sliku',
+    profile_cover_replace: 'Zameni naslovnu sliku',
+    profile_cover_remove: 'Ukloni',
     profile_showcase: 'Moja stranica',
     profile_save: 'Sačuvaj',
     profile_saving: 'Čuvamo…',
@@ -678,9 +688,17 @@ export const dict = {
     showcase_section: 'Izložba salona',
     showcase_section_hint:
       'Ovo kupci vide na kartici vašeg salona u pretrazi.',
+    // Слоган (0098). Подсказка объясняет, ГДЕ он виден, — иначе поле
+    // неотличимо от описания и салон впишет туда то же самое.
+    showcase_tagline: 'Slogan salona',
+    showcase_tagline_hint:
+      'Jedna rečenica ispod naziva salona na kartici u katalogu.',
     showcase_description: 'Opis salona',
+    // Подсказка описания переписана (0098): описание больше не всегда
+    // видно в каталоге — там его место занимает обложка, если она
+    // загружена. Обещать «первые три строки на карточке» стало неверно.
     showcase_description_hint:
-      'Dve rečenice o salonu. Na kartici se prikazuju prva tri reda.',
+      'Nekoliko rečenica o salonu. Prikazuje se na stranici salona, a na kartici u katalogu samo ako nema naslovne slike.',
     showcase_city: 'Grad salona',
     showcase_city_hint:
       'Grad se prikazuje na kartici salona u pretrazi.',
@@ -693,6 +711,7 @@ export const dict = {
     showcase_hours_ph: 'Pon-Pet 09-18, Sub 09-14',
     // Ошибки длины — те же границы, что в базе (миграция 0095).
     showcase_err_description: 'Opis je predugačak (najviše 1000 znakova)',
+    showcase_err_tagline: 'Slogan je predugačak (najviše 90 znakova)',
     showcase_err_phone: 'Telefon je predugačak',
     showcase_err_website: 'Adresa sajta je predugačka',
     showcase_err_hours: 'Radno vreme je predugačko',
@@ -700,6 +719,7 @@ export const dict = {
     // Показываются ТОЛЬКО в предпросмотре редактора витрины: в самом
     // каталоге пустое поле не печатается вовсе (см. DealerShowcaseCard).
     showcase_ph_name: 'Naziv autosalona',
+    showcase_ph_tagline: 'Kratak slogan salona',
     showcase_ph_desc: 'Opis salona — čime se bavite i zašto vam se obratiti',
     showcase_ph_city: 'Grad',
     // Возврат с карточки объявления назад к выдаче.
@@ -1421,6 +1441,14 @@ export const dict = {
     profile_logo_change: 'Загрузить логотип',
     // См. комментарий у sr-версии ключа.
     profile_logo_replace: 'Заменить логотип',
+    // См. комментарий у sr-версии ключей.
+    profile_cover: 'Обложка салона',
+    profile_cover_hint:
+      'Рекомендуем 1600×600 (пропорция 8:3), минимум 800×300. Картинка автоматически обрезается по центру до этой пропорции. Показывается в верхней половине карточки салона в каталоге.',
+    profile_cover_empty: 'Обложка ещё не загружена',
+    profile_cover_change: 'Загрузить обложку',
+    profile_cover_replace: 'Заменить обложку',
+    profile_cover_remove: 'Убрать',
     profile_showcase: 'Моя витрина',
     profile_save: 'Сохранить',
     profile_saving: 'Сохраняем…',
@@ -1454,9 +1482,13 @@ export const dict = {
     showcase_section: 'Витрина салона',
     showcase_section_hint:
       'Это покупатели видят на карточке вашего салона в выдаче.',
+    // См. комментарий у sr-версии ключей.
+    showcase_tagline: 'Слоган салона',
+    showcase_tagline_hint:
+      'Одна фраза под названием салона на карточке в каталоге.',
     showcase_description: 'Описание салона',
     showcase_description_hint:
-      'Две фразы о салоне. На карточке показываются первые три строки.',
+      'Несколько фраз о салоне. Показывается на странице салона, а на карточке в каталоге — только если не загружена обложка.',
     showcase_city: 'Город салона',
     showcase_city_hint:
       'Город показывается на карточке салона в выдаче.',
@@ -1468,11 +1500,13 @@ export const dict = {
     showcase_hours: 'Часы работы',
     showcase_hours_ph: 'Пн-Пт 09-18, Сб 09-14',
     showcase_err_description: 'Описание слишком длинное (не больше 1000 символов)',
+    showcase_err_tagline: 'Слоган слишком длинный (не больше 90 символов)',
     showcase_err_phone: 'Телефон слишком длинный',
     showcase_err_website: 'Адрес сайта слишком длинный',
     showcase_err_hours: 'Часы работы слишком длинные',
     // См. комментарий у sr-версии ключей.
     showcase_ph_name: 'Название автосалона',
+    showcase_ph_tagline: 'Короткий слоган салона',
     showcase_ph_desc: 'Описание салона — чем занимаетесь и почему стоит обратиться',
     showcase_ph_city: 'Город',
     common_back: 'Назад',

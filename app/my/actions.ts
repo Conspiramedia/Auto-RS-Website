@@ -277,6 +277,11 @@ export async function saveProfile(input: {
   // Город салона. С миграции 0097 его пишет сам владелец — раньше
   // поле принадлежало только админке (0085).
   companyCity: string;
+  // Обложка витрины (0098). null означает «убрать обложку» — то же
+  // осознанное действие, что и у логотипа выше.
+  coverUrl: string | null;
+  // Слоган салона (0098). Как и прочие поля витрины, приходит всегда.
+  tagline: string;
 }): Promise<ActionResult> {
   const supabase = await getServerClient();
 
@@ -309,6 +314,8 @@ export async function saveProfile(input: {
     p_website: input.website.trim() || null,
     p_opening_hours: input.openingHours.trim() || null,
     p_company_city: input.companyCity.trim() || null,
+    p_cover_url: input.coverUrl,
+    p_tagline: input.tagline.trim() || null,
   });
 
   if (rpcError) return { ok: false, error: rpcError.message };

@@ -236,6 +236,15 @@ export type DealerProfile = {
   member_since: string;
   active_cars: number;
   sold_cars: number;
+  // Поля витрины (0095/0098). Заполнены только у салона: у частного
+  // продавца RPC отдаёт по ним null.
+  company_city?: string | null;
+  description?: string | null;
+  dealer_phone?: string | null;
+  website?: string | null;
+  opening_hours?: string | null;
+  cover_url?: string | null;
+  tagline?: string | null;
 };
 
 // Салон для широкой плитки-витрины. RPC get_showcase_dealers (0095).
@@ -257,6 +266,12 @@ export type ShowcaseDealer = {
   // салон их не заполнил; плитка такие строки просто не печатает.
   opening_hours: string | null;
   dealer_phone: string | null;
+  // Обложка витрины и слоган (миграция 0098). Обложка — кадр 8:3,
+  // занимающий верхнюю половину плитки; null означает, что салон её
+  // не загрузил, и половину займёт description. Слоган — одна фраза
+  // под названием, до 90 символов.
+  cover_url: string | null;
+  tagline: string | null;
 };
 
 // Объявление в витрине продавца. RPC get_seller_listings (миграция 0050).
@@ -461,6 +476,9 @@ export type MyProfile = {
   // только для чтения — иначе непонятно, откуда город взялся в
   // карточке салона.
   company_city: string | null;
+  // Обложка витрины и слоган (миграция 0098).
+  cover_url: string | null;
+  tagline: string | null;
 };
 
 // ------------------------------------------------------------

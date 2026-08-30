@@ -448,6 +448,8 @@ export default function CatalogView({
                       logoUrl: dealer.logo_url,
                       openingHours: dealer.opening_hours,
                       dealerPhone: dealer.dealer_phone,
+                      coverUrl: dealer.cover_url,
+                      tagline: dealer.tagline,
                     }}
                   />
                 )}

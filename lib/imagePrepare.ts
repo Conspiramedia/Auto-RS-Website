@@ -130,6 +130,36 @@ function looksLikeImage(file: File): boolean {
 }
 
 // ------------------------------------------------------------
+// ПРОПОРЦИЯ ОБЛОЖКИ ВИТРИНЫ САЛОНА.
+// ------------------------------------------------------------
+// 8:3 — не произвольное число, а форма окна, в которое обложка
+// ложится: верхняя половина плитки каталога имеет ровно эту
+// пропорцию (ширина плитки × 3/8, см. DealerShowcaseCard).
+//
+// Кадрируем ПРИ ЗАГРУЗКЕ, а не только через object-cover в разметке.
+// Причина в том, что салон грузит что попало — чаще всего снимок
+// шоурума с телефона, вертикальный. При обрезке только на показе
+// владелец сохранял бы фотографию, видел её целиком в форме и лишь
+// потом обнаруживал в каталоге узкую полосу из середины кадра.
+// Обрезав сразу, мы показываем ему в превью ровно то, что увидит
+// покупатель: сюрприза в выдаче не будет.
+export const COVER_ASPECT = 8 / 3;
+
+// Кадр внутри исходника: берём максимальный прямоугольник нужной
+// пропорции и центрируем его. Что именно окажется лишним, зависит от
+// того, чем исходник «длиннее» нужной формы.
+function coverCrop(width: number, height: number, aspect: number) {
+  if (width / height > aspect) {
+    // Исходник шире рамки — режем по бокам, высота целиком.
+    const w = Math.round(height * aspect);
+    return { sx: Math.round((width - w) / 2), sy: 0, sw: w, sh: height };
+  }
+  // Исходник выше рамки — режем сверху и снизу, ширина целиком.
+  const h = Math.round(width / aspect);
+  return { sx: 0, sy: Math.round((height - h) / 2), sw: width, sh: h };
+}
+
+// ------------------------------------------------------------
 // Новые размеры: длинная сторона к MAX_DIMENSION, пропорции целы.
 // ------------------------------------------------------------
 // Снимок МЕНЬШЕ предела не растягиваем — апскейл добавил бы вес, не
@@ -193,14 +223,34 @@ function encode(canvas: HTMLCanvasElement): Promise<Blob> {
 // ------------------------------------------------------------
 // Бросает PhotoPrepareError с полем reason — вызывающий код переводит
 // его в текст на языке интерфейса.
-export async function preparePhoto(file: File): Promise<File> {
+//
+// aspect — необязательное кадрирование под заданную пропорцию
+// (COVER_ASPECT для обложки витрины). Без него поведение прежнее:
+// пропорции исходника сохраняются, меняется только масштаб. Параметр
+// добавлен последним и со значением по умолчанию, поэтому все
+// существующие вызовы — аватар, логотип, фотографии объявления —
+// продолжают работать без правок.
+export async function preparePhoto(
+  file: File,
+  aspect?: number,
+): Promise<File> {
   if (!looksLikeImage(file)) throw new PhotoPrepareError('type');
   if (file.size > MAX_INPUT_BYTES) throw new PhotoPrepareError('size');
 
   const bitmap = await decode(file);
 
   try {
-    const { width, height } = targetSize(bitmap.width, bitmap.height);
+    // Область исходника, которая попадёт в кадр. Без aspect — весь
+    // снимок целиком, и дальше всё идёт как раньше.
+    const crop = aspect
+      ? coverCrop(bitmap.width, bitmap.height, aspect)
+      : { sx: 0, sy: 0, sw: bitmap.width, sh: bitmap.height };
+
+    // Размер считаем ОТ КАДРА, а не от исходника: у вертикального
+    // снимка 3000×4000 длинная сторона принадлежит той части, которую
+    // мы отрезаем, и масштабирование по ней дало бы обложку шириной
+    // всего 1200px вместо 1600.
+    const { width, height } = targetSize(crop.sw, crop.sh);
 
     const canvas = document.createElement('canvas');
     canvas.width = width;
@@ -218,7 +268,17 @@ export async function preparePhoto(file: File): Promise<File> {
     // даёт заметный алиасинг на решётке радиатора и на номерах.
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(bitmap, 0, 0, width, height);
+    ctx.drawImage(
+      bitmap,
+      crop.sx,
+      crop.sy,
+      crop.sw,
+      crop.sh,
+      0,
+      0,
+      width,
+      height,
+    );
 
     const blob = await encode(canvas);
 

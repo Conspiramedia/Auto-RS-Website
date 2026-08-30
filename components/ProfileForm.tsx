@@ -56,6 +56,7 @@ import { useRef, useState, useTransition } from 'react';
 import { saveContactEmail, saveProfile } from '@/app/my/actions';
 import {
   ACCEPT_ATTR,
+  COVER_ASPECT,
   PhotoPrepareError,
   preparePhoto,
 } from '@/lib/imagePrepare';
@@ -76,6 +77,11 @@ import type { MyProfile } from '@/lib/types';
 // сервер отклонит в любом случае, а эти числа нужны, чтобы сказать об
 // этом сразу — атрибутом maxLength и счётчиком под полем описания.
 const MAX_DESCRIPTION = 1000;
+// Слоган (0098). 90 символов — не круглое число «на глаз», а
+// вместимость строки под названием салона в плитке каталога: на самом
+// узком экране (360px) туда помещаются две строки по ~44 символа.
+// Совпадает с chk_profiles_tagline_len.
+const MAX_TAGLINE = 90;
 const MAX_PHONE = 40;
 const MAX_WEBSITE = 200;
 const MAX_HOURS = 200;
@@ -89,6 +95,7 @@ export default function ProfileForm({ locale, profile }: Props) {
   const t = getT(locale);
   const fileRef = useRef<HTMLInputElement>(null);
   const logoRef = useRef<HTMLInputElement>(null);
+  const coverRef = useRef<HTMLInputElement>(null);
 
   const [fullName, setFullName] = useState(profile.full_name ?? '');
   // Почта уведомлений. Вход на площадку идёт по SMS, поэтому у
@@ -107,6 +114,10 @@ export default function ProfileForm({ locale, profile }: Props) {
   const [dealerPhone, setDealerPhone] = useState(profile.dealer_phone ?? '');
   const [website, setWebsite] = useState(profile.website ?? '');
   const [openingHours, setOpeningHours] = useState(profile.opening_hours ?? '');
+  // Обложка и слоган витрины (миграция 0098). Обложка занимает верхнюю
+  // половину плитки каталога, слоган стоит под названием салона.
+  const [coverUrl, setCoverUrl] = useState(profile.cover_url);
+  const [tagline, setTagline] = useState(profile.tagline ?? '');
   // Город салона. РЕДАКТИРУЕТСЯ ВЛАДЕЛЬЦЕМ с миграции 0097: раньше его
   // проставлял только администратор при заключении договора (0085), и
   // поле стояло в форме серым. Пока город был внутренним, это годилось,
@@ -125,10 +136,16 @@ export default function ProfileForm({ locale, profile }: Props) {
   // причины отказа, сессия, upsert, метка времени против кэша) у них
   // общий. Вторая копия этого кода разошлась бы с первой при первой
   // же правке конвейера подготовки.
+  // aspect — пропорция кадрирования. Передаётся только для обложки
+  // (COVER_ASPECT): аватар и логотип сохраняют пропорции исходника,
+  // их обрезает уже разметка — круглый аватар и object-contain у
+  // логотипа. Обложке же обрезка нужна ДО сохранения, иначе салон
+  // увидел бы в каталоге не тот кадр, который загружал.
   async function uploadImage(
     picked: File,
-    fileName: 'avatar.jpg' | 'logo.jpg',
+    fileName: 'avatar.jpg' | 'logo.jpg' | 'cover.jpg',
     apply: (url: string) => void,
+    aspect?: number,
   ) {
     setError(null);
     setUploading(true);
@@ -138,7 +155,7 @@ export default function ProfileForm({ locale, profile }: Props) {
       // занимать канал, если файл всё равно будет отклонён.
       let file: File;
       try {
-        file = await preparePhoto(picked);
+        file = await preparePhoto(picked, aspect);
       } catch (e) {
         // Причина отказа важна: «включите Наиболее совместимый» —
         // это инструкция, а «не удалось загрузить» — тупик.
@@ -203,6 +220,10 @@ export default function ProfileForm({ locale, profile }: Props) {
         setError(t('showcase_err_description'));
         return;
       }
+      if (tagline.length > MAX_TAGLINE) {
+        setError(t('showcase_err_tagline'));
+        return;
+      }
       if (dealerPhone.length > MAX_PHONE) {
         setError(t('showcase_err_phone'));
         return;
@@ -235,6 +256,8 @@ export default function ProfileForm({ locale, profile }: Props) {
         website,
         openingHours,
         companyCity,
+        coverUrl,
+        tagline,
       });
 
       if (!result.ok) {
@@ -485,6 +508,104 @@ export default function ProfileForm({ locale, profile }: Props) {
               </div>
 
               {/* ------------------------------------------------------------
+                  ОБЛОЖКА ВИТРИНЫ (миграция 0098).
+                  ------------------------------------------------------------
+                  Занимает верхнюю половину плитки салона в каталоге.
+                  Превью показано В ТОЙ ЖЕ ПРОПОРЦИИ 8:3, что и в
+                  выдаче: владелец обязан видеть именно тот кадр,
+                  который увидит покупатель, а не приблизительный.
+
+                  Кадрирование делается ПРИ ЗАГРУЗКЕ, а не на показе —
+                  COVER_ASPECT передаётся в uploadImage. Иначе салон
+                  сохранял бы вертикальный снимок с телефона, видел его
+                  здесь целиком и лишь потом обнаруживал в каталоге
+                  узкую полосу из середины. */}
+              <div className="mt-3">
+                <label className="mb-1 block text-caption text-neutral-60">
+                  {t('profile_cover')}
+                </label>
+
+                <span className="relative block aspect-[8/3] w-full overflow-hidden rounded-card border border-neutral-10 bg-surface-muted">
+                  {coverUrl ? (
+                    <Image
+                      src={coverUrl}
+                      alt=""
+                      fill
+                      sizes="(max-width: 767px) 100vw, 480px"
+                      className="object-cover"
+                      // unoptimized по той же причине, что у логотипа.
+                      unoptimized
+                    />
+                  ) : (
+                    // Пустая рамка с подписью, а не серая плита:
+                    // владелец должен понимать, что место под обложку
+                    // есть и оно пока не занято.
+                    <span className="flex h-full w-full items-center justify-center px-4 text-center text-caption text-neutral-30">
+                      {t('profile_cover_empty')}
+                    </span>
+                  )}
+                </span>
+
+                <input
+                  ref={coverRef}
+                  type="file"
+                  accept={ACCEPT_ATTR}
+                  className="sr-only"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      void uploadImage(
+                        file,
+                        'cover.jpg',
+                        setCoverUrl,
+                        COVER_ASPECT,
+                      );
+                    }
+                    e.target.value = '';
+                  }}
+                />
+
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={uploading}
+                    onClick={() => coverRef.current?.click()}
+                  >
+                    {uploading
+                      ? t('profile_saving')
+                      : coverUrl
+                        ? t('profile_cover_replace')
+                        : t('profile_cover_change')}
+                  </Button>
+
+                  {/* КНОПКА «УБРАТЬ» ЗДЕСЬ ЕСТЬ, в отличие от
+                      логотипа. Разница не в прихоти: без логотипа
+                      плитка теряет узнаваемость салона, а без обложки
+                      она полностью работоспособна — верхнюю половину
+                      займёт описание. Значит «остаться без обложки» —
+                      законный выбор, и отбирать его нельзя. */}
+                  {coverUrl && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={uploading}
+                      onClick={() => {
+                        setCoverUrl(null);
+                        setSaved(false);
+                      }}
+                    >
+                      {t('profile_cover_remove')}
+                    </Button>
+                  )}
+                </div>
+
+                <p className="mt-2 text-small text-neutral-50">
+                  {t('profile_cover_hint')}
+                </p>
+              </div>
+
+              {/* ------------------------------------------------------------
                   ВИТРИНА САЛОНА: чем наполняется его карточка.
                   ------------------------------------------------------------
                   Поля стоят здесь, внутри блока дилера, сразу после
@@ -505,6 +626,44 @@ export default function ProfileForm({ locale, profile }: Props) {
                 </p>
 
                 <div className="mt-3 space-y-3">
+                  {/* СЛОГАН — одна строка, поэтому input, а не
+                      textarea: 90 символов помещаются в поле целиком,
+                      и прокручивать нечего.
+
+                      Стоит ПЕРЕД описанием: в плитке каталога виден
+                      именно он, тогда как описание там показывается
+                      только у салона без обложки. Порядок полей в
+                      форме повторяет порядок значимости в карточке. */}
+                  <div>
+                    <label className="mb-1 block text-caption text-neutral-60">
+                      {t('showcase_tagline')}
+                    </label>
+                    <input
+                      value={tagline}
+                      onChange={(e) => {
+                        setTagline(e.target.value);
+                        setSaved(false);
+                      }}
+                      maxLength={MAX_TAGLINE}
+                      placeholder={t('showcase_ph_tagline')}
+                      className={fieldClass}
+                    />
+                    <div className="mt-1 flex flex-wrap items-baseline justify-between gap-2">
+                      <p className="text-small text-neutral-50">
+                        {t('showcase_tagline_hint')}
+                      </p>
+                      {/* Порог — 20 символов до конца, около трети
+                          строки. От лимита 90 это заметная доля, но
+                          поле короткое: подсказать о границе нужно
+                          раньше, чем у описания на 1000 знаков. */}
+                      {tagline.length > MAX_TAGLINE - 20 && (
+                        <span className="text-small text-neutral-50">
+                          {tagline.length} / {MAX_TAGLINE}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
                   {/* ОПИСАНИЕ — textarea, а не input: это две-три
                       фразы, и в однострочном поле их пришлось бы
                       прокручивать, чтобы перечитать написанное. */}
