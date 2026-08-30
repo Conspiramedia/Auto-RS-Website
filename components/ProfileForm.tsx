@@ -511,7 +511,7 @@ export default function ProfileForm({ locale, profile }: Props) {
                   ОБЛОЖКА ВИТРИНЫ (миграция 0098).
                   ------------------------------------------------------------
                   Занимает верхнюю половину плитки салона в каталоге.
-                  Превью показано В ТОЙ ЖЕ ПРОПОРЦИИ 8:3, что и в
+                  Превью показано В ТОЙ ЖЕ ПРОПОРЦИИ 9:4, что и в
                   выдаче: владелец обязан видеть именно тот кадр,
                   который увидит покупатель, а не приблизительный.
 
@@ -525,7 +525,7 @@ export default function ProfileForm({ locale, profile }: Props) {
                   {t('profile_cover')}
                 </label>
 
-                <span className="relative block aspect-[8/3] w-full overflow-hidden rounded-card border border-neutral-10 bg-surface-muted">
+                <span className="relative block aspect-[9/4] w-full overflow-hidden rounded-card border border-neutral-10 bg-surface-muted">
                   {coverUrl ? (
                     <Image
                       src={coverUrl}
