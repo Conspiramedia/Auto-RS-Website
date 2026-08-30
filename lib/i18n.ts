@@ -701,8 +701,16 @@ export const dict = {
     showcase_phone_hint:
       'Javni broj kompanije. Ne menja broj kojim se prijavljujete.',
     showcase_website: 'Sajt salona',
+    showcase_website_hint:
+      'Prikazuje se na kartici salona u katalogu. Bez adrese red se ne štampa.',
     showcase_hours: 'Radno vreme',
-    showcase_hours_ph: 'Pon-Pet 09-18, Sub 09-14',
+    // Slova oko vremena. Ne unosi ih salon — sastavljaju se sami, da bi
+    // svaka kartica u katalogu glasila isto (v. buildOpeningHours).
+    showcase_hours_from: 'Radimo od',
+    showcase_hours_to: 'do',
+    showcase_hours_hint:
+      'Unesite samo sate. Na kartici salona ispada: „Radimo od 9:00 do 19:00“.',
+    showcase_err_hours_time: 'Vreme unesite kao 9:00 ili 19:30',
     // Ошибки длины — те же границы, что в базе (миграция 0095).
     showcase_err_tagline: 'Slogan je predugačak (najviše 90 znakova)',
     showcase_err_phone: 'Telefon je predugačak',
@@ -1486,8 +1494,15 @@ export const dict = {
     showcase_phone_hint:
       'Публичный номер компании. Номер входа в аккаунт он не меняет.',
     showcase_website: 'Сайт салона',
+    showcase_website_hint:
+      'Показывается на карточке салона в каталоге. Без адреса строка не печатается.',
     showcase_hours: 'Часы работы',
-    showcase_hours_ph: 'Пн-Пт 09-18, Сб 09-14',
+    // См. комментарий у sr-версии ключей.
+    showcase_hours_from: 'Работаем с',
+    showcase_hours_to: 'до',
+    showcase_hours_hint:
+      'Впишите только время. На карточке салона получится: «Работаем с 9:00 до 19:00».',
+    showcase_err_hours_time: 'Время впишите как 9:00 или 19:30',
     showcase_err_tagline: 'Слоган слишком длинный (не больше 90 символов)',
     showcase_err_phone: 'Телефон слишком длинный',
     showcase_err_website: 'Адрес сайта слишком длинный',

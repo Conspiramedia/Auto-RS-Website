@@ -272,6 +272,9 @@ export type ShowcaseDealer = {
   // под названием, до 90 символов.
   cover_url: string | null;
   tagline: string | null;
+  // Сайт салона (миграция 0099). Поле существовало с 0095, но в
+  // плитку не доходило — RPC его не отдавала.
+  website: string | null;
 };
 
 // Объявление в витрине продавца. RPC get_seller_listings (миграция 0050).

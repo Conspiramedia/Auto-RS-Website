@@ -65,6 +65,14 @@ import Alert from './ui/Alert';
 import Button from './ui/Button';
 import Card from './ui/Card';
 import { fieldClass } from './ui/Field';
+import {
+  SERBIAN_PHONE_PREFIX,
+  buildOpeningHours,
+  formatSerbianPhone,
+  formatTime,
+  isValidTime,
+  parseOpeningHours,
+} from '@/lib/inputFormat';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { supabaseErrorText } from '@/lib/otp';
@@ -121,9 +129,30 @@ export default function ProfileForm({ locale, profile }: Props) {
   // писали при прежней вёрстке. Данные лежат нетронутыми и ждут
   // решения, что с ними делать дальше.
   const description = profile.description ?? '';
-  const [dealerPhone, setDealerPhone] = useState(profile.dealer_phone ?? '');
+  // ТЕЛЕФОН САЛОНА В ТОЙ ЖЕ МАСКЕ, ЧТО В ПОДАЧЕ ОБЪЯВЛЕНИЯ.
+  // Прежде это было свободное поле, и салоны писали «011/123-456»,
+  // «+381111234567», «011 123 456» — в плитках каталога такие номера
+  // стоят рядом, и разнобой читался как небрежность площадки.
+  // formatSerbianPhone держит единый вид «+381 11 123 456»,
+  // SERBIAN_PHONE_PREFIX подставляет код страны сразу, чтобы его не
+  // набирали вручную девять раз из десяти.
+  const [dealerPhone, setDealerPhone] = useState(
+    profile.dealer_phone ? formatSerbianPhone(profile.dealer_phone) : '',
+  );
   const [website, setWebsite] = useState(profile.website ?? '');
-  const [openingHours, setOpeningHours] = useState(profile.opening_hours ?? '');
+  // ЧАСЫ РАБОТЫ ВВОДЯТСЯ ДВУМЯ ПОЛЯМИ, а в базу уходят одной строкой
+  // «Работаем с 9:00 до 19:00». Слова подставляются сами: пока это
+  // была свободная строка, салоны писали «пн-пт 9-18», «09:00-20:00
+  // без выходных», «звоните с утра» — и каталог выглядел лоскутным.
+  //
+  // Сохранённое значение разбирается обратно в пару полей: салон,
+  // открывший форму, обязан видеть свои часы, а не пустоту.
+  const [hoursFrom, setHoursFrom] = useState(
+    () => parseOpeningHours(profile.opening_hours).from,
+  );
+  const [hoursTo, setHoursTo] = useState(
+    () => parseOpeningHours(profile.opening_hours).to,
+  );
   // Обложка и слоган витрины (миграция 0098). Обложка занимает верхнюю
   // половину плитки каталога, слоган стоит под названием салона.
   const [coverUrl, setCoverUrl] = useState(profile.cover_url);
@@ -238,14 +267,21 @@ export default function ProfileForm({ locale, profile }: Props) {
         setError(t('showcase_err_website'));
         return;
       }
-      if (openingHours.length > MAX_HOURS) {
-        setError(t('showcase_err_hours'));
+      if (!isValidTime(hoursFrom) || !isValidTime(hoursTo)) {
+        setError(t('showcase_err_hours_time'));
         return;
       }
     }
 
     setError(null);
     setSaved(false);
+
+    // Строка для базы собирается ЗДЕСЬ, а не в состоянии: она зависит
+    // от локали, а та может смениться без перезагрузки формы.
+    const openingHours = buildOpeningHours(hoursFrom, hoursTo, {
+      from: t('showcase_hours_from'),
+      to: t('showcase_hours_to'),
+    });
 
     startTransition(async () => {
       const result = await saveProfile({
@@ -725,8 +761,29 @@ export default function ProfileForm({ locale, profile }: Props) {
                       autoComplete="tel"
                       value={dealerPhone}
                       onChange={(e) => {
-                        setDealerPhone(e.target.value);
+                        // Маска та же, что в подаче объявления и на
+                        // входе: номер приводится к «+381 11 123 456»
+                        // прямо во время набора, а не проверяется
+                        // после. Так салон физически не сохранит номер
+                        // в чужом формате.
+                        setDealerPhone(formatSerbianPhone(e.target.value));
                         setSaved(false);
+                      }}
+                      onFocus={() => {
+                        // Код страны появляется при первом касании
+                        // пустого поля: держать его там всегда значило
+                        // бы, что «незаполненный телефон» выглядит
+                        // как заполненный наполовину.
+                        if (dealerPhone === '') {
+                          setDealerPhone(SERBIAN_PHONE_PREFIX);
+                        }
+                      }}
+                      onBlur={() => {
+                        // Ушли, не набрав ни цифры — очищаем поле,
+                        // чтобы в базу не попал один код страны.
+                        if (dealerPhone.trim() === SERBIAN_PHONE_PREFIX.trim()) {
+                          setDealerPhone('');
+                        }
                       }}
                       maxLength={MAX_PHONE}
                       placeholder="+381 11 123 456"
@@ -737,21 +794,59 @@ export default function ProfileForm({ locale, profile }: Props) {
                     </p>
                   </div>
 
+                  {/* ЧАСЫ РАБОТЫ — ДВА ПОЛЯ ВРЕМЕНИ, а не свободная
+                      строка. Слова «Работаем с» и «до» стоят в
+                      разметке подписями и в поля не вводятся: салон
+                      вписывает только время, а строка для каталога
+                      собирается сама. Так все карточки в выдаче
+                      выглядят одинаково, что бы ни набрал владелец.
+
+                      Подпись показана ДО ввода, а не после: человек
+                      видит будущую формулировку целиком и понимает,
+                      что от него нужны две цифры, а не расписание. */}
                   <div>
                     <label className="mb-1 block text-caption text-neutral-60">
                       {t('showcase_hours')}
                     </label>
-                    <input
-                      type="text"
-                      value={openingHours}
-                      onChange={(e) => {
-                        setOpeningHours(e.target.value);
-                        setSaved(false);
-                      }}
-                      maxLength={MAX_HOURS}
-                      placeholder={t('showcase_hours_ph')}
-                      className={fieldClass}
-                    />
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-caption text-neutral-60">
+                        {t('showcase_hours_from')}
+                      </span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={hoursFrom}
+                        onChange={(e) => {
+                          setHoursFrom(formatTime(e.target.value));
+                          setSaved(false);
+                        }}
+                        maxLength={5}
+                        placeholder="9:00"
+                        aria-label={t('showcase_hours_from')}
+                        className={`${fieldClass} w-24 text-center`}
+                      />
+                      <span className="text-caption text-neutral-60">
+                        {t('showcase_hours_to')}
+                      </span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={hoursTo}
+                        onChange={(e) => {
+                          setHoursTo(formatTime(e.target.value));
+                          setSaved(false);
+                        }}
+                        maxLength={5}
+                        placeholder="19:00"
+                        aria-label={t('showcase_hours_to')}
+                        className={`${fieldClass} w-24 text-center`}
+                      />
+                    </div>
+
+                    <p className="mt-1 text-small text-neutral-50">
+                      {t('showcase_hours_hint')}
+                    </p>
                   </div>
 
                   <div>
@@ -775,6 +870,9 @@ export default function ProfileForm({ locale, profile }: Props) {
                       placeholder="https://"
                       className={fieldClass}
                     />
+                    <p className="mt-1 text-small text-neutral-50">
+                      {t('showcase_website_hint')}
+                    </p>
                   </div>
                 </div>
               </div>

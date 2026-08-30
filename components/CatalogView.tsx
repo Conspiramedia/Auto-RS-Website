@@ -449,6 +449,7 @@ export default function CatalogView({
                       dealerPhone: dealer.dealer_phone,
                       coverUrl: dealer.cover_url,
                       tagline: dealer.tagline,
+                      website: dealer.website,
                     }}
                   />
                 )}
