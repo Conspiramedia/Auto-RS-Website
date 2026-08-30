@@ -511,26 +511,20 @@ export default function ProfileForm({ locale, profile }: Props) {
                   ОБЛОЖКА ВИТРИНЫ (миграция 0098).
                   ------------------------------------------------------------
                   Занимает верхнюю половину плитки салона в каталоге.
-                  Превью КВАДРАТНОЕ — в той форме, в которой кадр
-                  хранится. Показать его «как в выдаче» невозможно:
-                  окон два и они противоположны (широкое на мобильном,
-                  вертикальное на десктопе, разбор в imagePrepare.ts).
-                  Поэтому владельцу показывается сам кадр, а подсказка
-                  предупреждает, что края срежутся.
+                  Превью в пропорции 3:2 — той же, в которой кадр
+                  хранится и в которой он лежит в плитке каталога.
+                  Владелец видит ровно то, что увидит покупатель.
 
                   Кадрирование делается ПРИ ЗАГРУЗКЕ, а не на показе —
                   COVER_ASPECT передаётся в uploadImage. Иначе салон
                   сохранял бы снимок целиком, видел его здесь и лишь
-                  потом обнаруживал в каталоге обрезок.
-
-                  max-w-[240px]: квадрат во всю ширину формы был бы
-                  огромной плитой посреди полей ввода. */}
+                  потом обнаруживал в каталоге обрезок. */}
               <div className="mt-3">
                 <label className="mb-1 block text-caption text-neutral-60">
                   {t('profile_cover')}
                 </label>
 
-                <span className="relative mx-auto block aspect-square w-full max-w-[240px] overflow-hidden rounded-card border border-neutral-10 bg-surface-muted">
+                <span className="relative block aspect-[3/2] w-full overflow-hidden rounded-card border border-neutral-10 bg-surface-muted">
                   {coverUrl ? (
                     <Image
                       src={coverUrl}

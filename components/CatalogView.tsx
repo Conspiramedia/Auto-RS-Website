@@ -444,7 +444,6 @@ export default function CatalogView({
                       id: dealer.id,
                       name: dealer.display_name,
                       city: dealer.company_city,
-                      description: dealer.description,
                       logoUrl: dealer.logo_url,
                       openingHours: dealer.opening_hours,
                       dealerPhone: dealer.dealer_phone,
