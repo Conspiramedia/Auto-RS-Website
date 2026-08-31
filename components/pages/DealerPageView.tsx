@@ -40,7 +40,7 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import StateCard from '@/components/ui/StateCard';
 import CarCard from '@/components/CarCard';
-import DealerOwnerBar from '@/components/DealerOwnerBar';
+import DealerShowcaseTitleBar from '@/components/DealerShowcaseTitleBar';
 import DealerShowcaseHero from '@/components/DealerShowcaseHero';
 import PagerLinks, { PagerHeadLinks } from '@/components/PagerLinks';
 import SiteFooter from '@/components/SiteFooter';
@@ -155,12 +155,20 @@ export default async function DealerPageView({
       <SiteHeader locale={locale} pathname={basePath} />
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
-        {/* Полоса «Моя витрина» с крестиком — ТОЛЬКО У ВЛАДЕЛЬЦА.
-            Клиентский компонент: страница кэшируется (revalidate =
-            300), и серверная проверка сессии либо запекла бы личную
-            надпись в общий кэш, либо лишила бы витрину кэширования
-            вовсе. Подробности — в шапке DealerOwnerBar. */}
-        <DealerOwnerBar locale={locale} dealerId={id} />
+        {/* Строка «Автосалон N» с крестиком. Видна ВСЕМ: текст
+            нейтрален, личного в нём ничего нет, поэтому компонент
+            серверный и спокойно кэшируется вместе со страницей.
+            Разбор — в шапке DealerShowcaseTitleBar.
+
+            Частному продавцу не показывается: «Автосалон Иван» было
+            бы неправдой, а называть человека продавцом в шапке его же
+            страницы незачем — имя стоит на карточке ниже. */}
+        {isDealer && (
+          <DealerShowcaseTitleBar
+            locale={locale}
+            name={profile.display_name}
+          />
+        )}
 
         {/* ШАПКА ВИТРИНЫ — баннер с обложкой, как плитка в каталоге.
             Покупатель попадает сюда кликом по этой самой плитке, и
