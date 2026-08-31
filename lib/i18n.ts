@@ -662,7 +662,7 @@ export const dict = {
     // просят PIB, прежде чем начнёт его искать.
     dealer_app_intro:
       'Autosalon dobija svoju stranicu u katalogu i oznaku «Autosalon» na oglasima. Zato status potvrđuje administrator — pošaljite podatke firme i javićemo se.',
-    dealer_app_open: 'Pošalji zahtev',
+    dealer_app_open: 'Ostavite zahtev',
     dealer_app_cancel: 'Odustani',
     dealer_app_submit: 'Pošalji zahtev',
     dealer_app_sending: 'Šaljemo…',
