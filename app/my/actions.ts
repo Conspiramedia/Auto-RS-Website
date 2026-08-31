@@ -480,6 +480,12 @@ export type DealerApplicationCode =
   | 'tax_id'           // PIB не из 9 цифр
   | 'reg_num'          // матични број не из 8 цифр
   | 'company'          // название пустое или слишком длинное
+  // Контактные поля стали обязательными в 0103: до неё заявка
+  // принималась без города и телефона, и связаться по ней было не с кем.
+  | 'city'             // город не указан
+  | 'person'           // контактное лицо не указано
+  | 'phone'            // телефон не указан
+  | 'email'            // почта не указана или не похожа на адрес
   | 'too_long'         // прочие поля превысили длину
   | 'auth'             // сессия потерялась
   | 'unknown';
@@ -491,6 +497,7 @@ export async function submitDealerApplication(input: {
   companyCity: string;
   contactPerson: string;
   phone: string;
+  email: string;
   website: string;
   comment: string;
 }): Promise<{ ok: boolean; code?: DealerApplicationCode }> {
@@ -499,9 +506,10 @@ export async function submitDealerApplication(input: {
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return { ok: false, code: 'auth' };
 
-  // Пустые строки превращаем в null: необязательные поля формы
-  // приходят пустыми, и записывать в базу '' вместо «не указано»
-  // значило бы отличать одно от другого при каждом чтении.
+  // Пустые строки превращаем в null: необязательным остаётся сайт, а
+  // у обязательных полей null — это то, на что RPC и ругается. Писать
+  // в базу '' вместо «не указано» значило бы отличать одно от другого
+  // при каждом чтении.
   const orNull = (value: string) => value.trim() || null;
 
   const { error } = await supabase.rpc('submit_dealer_application', {
@@ -517,6 +525,7 @@ export async function submitDealerApplication(input: {
     p_phone: orNull(input.phone),
     p_website: orNull(input.website),
     p_comment: orNull(input.comment),
+    p_email: orNull(input.email),
   });
 
   if (error) {
@@ -536,6 +545,22 @@ export async function submitDealerApplication(input: {
     }
     if (message.includes('название автосалона')) {
       return { ok: false, code: 'company' };
+    }
+    // Обязательные контакты (0103). Проверяются ДО «слишком длин»:
+    // сообщения о длине содержат название того же поля («Телефон
+    // слишком длинный»), и общая ветка перехватывала бы их первой,
+    // называя причиной длину вместо пустоты.
+    if (message.includes('укажите город')) {
+      return { ok: false, code: 'city' };
+    }
+    if (message.includes('укажите контактное лицо')) {
+      return { ok: false, code: 'person' };
+    }
+    if (message.includes('укажите телефон')) {
+      return { ok: false, code: 'phone' };
+    }
+    if (message.includes('укажите email') || message.includes('проверьте email')) {
+      return { ok: false, code: 'email' };
     }
     if (message.includes('слишком длин')) {
       return { ok: false, code: 'too_long' };

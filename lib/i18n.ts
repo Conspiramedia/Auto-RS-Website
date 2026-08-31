@@ -681,6 +681,7 @@ export const dict = {
     dealer_app_city: 'Grad',
     dealer_app_person: 'Kontakt osoba',
     dealer_app_phone: 'Telefon za kontakt',
+    dealer_app_email: 'Email',
     dealer_app_website: 'Sajt',
     dealer_app_comment: 'Komentar',
     dealer_app_comment_ph: 'Šta je još korisno da znamo',
@@ -718,6 +719,12 @@ export const dict = {
     dealer_app_err_tax_id: 'PIB se sastoji od 9 cifara',
     dealer_app_err_reg_num: 'Matični broj se sastoji od 8 cifara',
     dealer_app_err_company: 'Unesite naziv autosalona',
+    // Обязательные контакты (0103). Раньше эти поля принимались
+    // пустыми, и по заявке не с кем было связаться.
+    dealer_app_err_city: 'Unesite grad',
+    dealer_app_err_person: 'Unesite kontakt osobu',
+    dealer_app_err_phone: 'Unesite broj telefona',
+    dealer_app_err_email: 'Proverite email adresu',
     dealer_app_err_long: 'Neko polje je predugačko — skratite tekst',
     dealer_app_err_auth: 'Sesija je istekla. Prijavite se ponovo.',
     dealer_app_err_unknown: 'Nije uspelo. Pokušajte ponovo.',
@@ -821,11 +828,13 @@ export const dict = {
     // говорит о формате, а не требует заполнить: пустое поле сервер
     // пропускает, придирается он только к набранному неверно.
     dealers_err_tax_id: 'PIB se sastoji od 9 cifara.',
+    dealers_err_email: 'Proverite email adresu.',
+    dealers_err_city: 'Izaberite grad.',
     dealers_err_reg_num: 'Matični broj se sastoji od 8 cifara.',
-    // Подпись под группой реквизитов: объясняет, зачем их спрашивают
-    // до первого разговора, и что без них заявку тоже примут.
-    dealers_details_hint:
-      'Nije obavezno, ali ubrzava proveru: podatke upoređujemo sa APR-om.',
+    // Подпись под группой реквизитов: объясняет, ЗАЧЕМ их спрашивают
+    // до первого разговора. Про необязательность здесь больше нет ни
+    // слова — после 0103 они обязательны в обеих формах.
+    dealers_details_hint: 'Podatke upoređujemo sa APR-om.',
     dealers_err_rate:
       'Već ste poslali zahtev sa ovog broja. Pokušajte ponovo sutra.',
     dealers_err_unknown: 'Došlo je do greške. Pokušajte ponovo.',
@@ -1559,6 +1568,7 @@ export const dict = {
     dealer_app_city: 'Город',
     dealer_app_person: 'Контактное лицо',
     dealer_app_phone: 'Телефон для связи',
+    dealer_app_email: 'Email',
     dealer_app_website: 'Сайт',
     dealer_app_comment: 'Комментарий',
     dealer_app_comment_ph: 'Что ещё нам полезно знать',
@@ -1585,6 +1595,11 @@ export const dict = {
     dealer_app_err_tax_id: 'PIB состоит из 9 цифр',
     dealer_app_err_reg_num: 'Матични број состоит из 8 цифр',
     dealer_app_err_company: 'Укажите название автосалона',
+    // См. комментарий в сербском словаре.
+    dealer_app_err_city: 'Укажите город',
+    dealer_app_err_person: 'Укажите контактное лицо',
+    dealer_app_err_phone: 'Укажите телефон',
+    dealer_app_err_email: 'Проверьте email',
     dealer_app_err_long: 'Одно из полей слишком длинное — сократите текст',
     dealer_app_err_auth: 'Сессия истекла. Войдите заново.',
     dealer_app_err_unknown: 'Не удалось. Попробуйте ещё раз.',
@@ -1664,9 +1679,10 @@ export const dict = {
     dealers_err_too_long: 'Одно из полей слишком длинное.',
     // См. комментарий в сербском словаре.
     dealers_err_tax_id: 'PIB состоит из 9 цифр.',
+    dealers_err_email: 'Проверьте email.',
+    dealers_err_city: 'Выберите город.',
     dealers_err_reg_num: 'Матични број состоит из 8 цифр.',
-    dealers_details_hint:
-      'Необязательно, но ускорит проверку: данные сверяем с APR.',
+    dealers_details_hint: 'Данные сверяем с APR.',
     dealers_err_rate: 'С этого номера заявка уже отправлена. Попробуйте завтра.',
     dealers_err_unknown: 'Произошла ошибка. Попробуйте ещё раз.',
 

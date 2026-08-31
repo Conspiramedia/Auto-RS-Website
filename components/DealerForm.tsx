@@ -41,6 +41,8 @@ const ERROR_KEY: Record<string, DictKey> = {
   invalid_phone: 'dealers_err_phone',
   invalid_tax_id: 'dealers_err_tax_id',
   invalid_reg_num: 'dealers_err_reg_num',
+  invalid_email: 'dealers_err_email',
+  invalid_city: 'dealers_err_city',
   too_long: 'dealers_err_too_long',
   rate_limited: 'dealers_err_rate',
 };
@@ -51,6 +53,11 @@ const ERROR_KEY: Record<string, DictKey> = {
 // цифр, — придираться к пробелу незачем.
 const TAX_ID_DIGITS = 9;
 const REG_NUM_DIGITS = 8;
+
+// Грубая проверка почты — ровно та же, что в submit_dealer_lead
+// (0103): строгую по RFC не строим, она отвергает валидные адреса
+// чаще, чем ловит невалидные.
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 // Только цифры из введённого — для проверки длины на клиенте.
 function digits(value: string): string {
@@ -100,16 +107,24 @@ export default function DealerForm({ locale }: Props) {
       return;
     }
 
-    // Проверки реквизитов повторяют серверные (0102) намеренно:
-    // источник истины остаётся в базе, а клиент избавляет от заведомо
-    // напрасного запроса. Пустое поле пропускаем — оно необязательное,
-    // придираемся только к набранному неверно.
-    if (taxId.trim() !== '' && digits(taxId).length !== TAX_ID_DIGITS) {
+    // Проверки повторяют серверные (0103) намеренно: источник истины
+    // остаётся в базе, а клиент избавляет от заведомо напрасного
+    // запроса. Порядок — тот же, в каком поля стоят в форме: человек
+    // читает ошибку и идёт к первому незаполненному сверху.
+    if (digits(taxId).length !== TAX_ID_DIGITS) {
       setError(t('dealers_err_tax_id'));
       return;
     }
-    if (regNum.trim() !== '' && digits(regNum).length !== REG_NUM_DIGITS) {
+    if (digits(regNum).length !== REG_NUM_DIGITS) {
       setError(t('dealers_err_reg_num'));
+      return;
+    }
+    if (city.trim() === '') {
+      setError(t('dealers_err_city'));
+      return;
+    }
+    if (!EMAIL_RE.test(email.trim())) {
+      setError(t('dealers_err_email'));
       return;
     }
 
@@ -190,9 +205,19 @@ export default function DealerForm({ locale }: Props) {
         }}
       />
 
+      {/* ПОРЯДОК ПОЛЕЙ — ЭТАЛОННЫЙ, взят из формы профиля
+          (DealerApplicationBlock): название → PIB → матични број →
+          город → контактное лицо → телефон → email → сайт →
+          комментарий. Человек, увидевший обе формы, не должен
+          разбираться, чем они отличаются, поэтому и подписи берутся
+          из тех же ключей dealer_app_*, а не из своих.
+
+          Обязательно всё, кроме сайта: он есть не у каждого салона.
+          Требование проверяет сервер (0103), атрибут required и
+          звёздочка здесь только называют его заранее. */}
       <div>
         <label className="mb-1 block text-caption text-neutral-60">
-          {t('dealers_company')}
+          {t('dealers_company')} *
         </label>
         <input
           type="text"
@@ -204,10 +229,66 @@ export default function DealerForm({ locale }: Props) {
         />
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      {/* items-start: под реквизитами стоит подсказка про APR, и без
+          выравнивания по верху сами поля разъехались бы по вертикали. */}
+      <div className="grid items-start gap-3 sm:grid-cols-2">
         <div>
           <label className="mb-1 block text-caption text-neutral-60">
-            {t('dealers_contact')}
+            {t('dealer_app_tax_id')} *
+          </label>
+          {/* inputMode numeric, но type остаётся text: type=number на
+              идентификаторе даёт стрелки прибавления и теряет ведущий
+              ноль, а номер — не величина. Та же причина, что в форме
+              профиля. */}
+          <input
+            type="text"
+            inputMode="numeric"
+            value={taxId}
+            onChange={(e) => setTaxId(e.target.value)}
+            required
+            maxLength={20}
+            placeholder="123456789"
+            className={field}
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-caption text-neutral-60">
+            {t('dealer_app_reg_num')} *
+          </label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={regNum}
+            onChange={(e) => setRegNum(e.target.value)}
+            required
+            maxLength={20}
+            placeholder="12345678"
+            className={field}
+          />
+        </div>
+      </div>
+
+      <p className="text-small text-neutral-50">{t('dealers_details_hint')}</p>
+
+      <div className="grid items-start gap-3 sm:grid-cols-2">
+        {/* Город — выбор из списка, как в остальных формах сайта.
+            Свободный ввод давал разнописания одного города
+            («Beograd», «beograd», «Белград»), и заявки салонов из
+            одного места переставали группироваться при разборе. */}
+        <ListPicker
+          locale={locale}
+          name="dealer_city"
+          label={`${t('dealer_app_city')} *`}
+          options={CITIES.map((c): PickerOption => ({ value: c, label: c }))}
+          value={city}
+          allowCustom
+          onChange={setCity}
+        />
+
+        <div>
+          <label className="mb-1 block text-caption text-neutral-60">
+            {t('dealer_app_person')} *
           </label>
           <input
             type="text"
@@ -218,10 +299,12 @@ export default function DealerForm({ locale }: Props) {
             className={field}
           />
         </div>
+      </div>
 
+      <div className="grid items-start gap-3 sm:grid-cols-2">
         <div>
           <label className="mb-1 block text-caption text-neutral-60">
-            {t('sell_phone')}
+            {t('dealer_app_phone')} *
           </label>
           {/* Та же маска, что в форме подачи и в приложении: заявка
               салона уходит в submit_dealer_lead, где номер проверяется
@@ -236,79 +319,25 @@ export default function DealerForm({ locale }: Props) {
             className={field}
           />
         </div>
-      </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-caption text-neutral-60">Email</label>
+          <label className="mb-1 block text-caption text-neutral-60">
+            {t('dealer_app_email')} *
+          </label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
             maxLength={200}
             className={field}
           />
         </div>
-
-        {/* Город — выбор из списка, как в остальных формах сайта и в
-            приложении. Свободный ввод давал разнописания одного города
-            («Beograd», «beograd», «Белград»), и заявки салонов из одного
-            места переставали группироваться при разборе. */}
-        <ListPicker
-          locale={locale}
-          name="dealer_city"
-          label={t('filter_city')}
-          options={CITIES.map((c): PickerOption => ({ value: c, label: c }))}
-          value={city}
-          allowCustom
-          onChange={setCity}
-        />
       </div>
 
-      {/* Реквизиты компании — тот же набор и тот же порядок, что в
-          форме профиля (DealerApplicationBlock): человек, увидевший
-          обе, не должен разбираться, чем они отличаются.
-          Обязательными они здесь НЕ становятся — см. комментарий у
-          состояния выше. Подпись под группой объясняет, зачем их
-          спрашивают и что без них заявку тоже примут.
-          items-start: у полей снизу подсказки разной высоты, и без
-          выравнивания по верху сами поля разъехались бы. */}
-      <div className="grid items-start gap-3 sm:grid-cols-2">
-        <div>
-          <label className="mb-1 block text-caption text-neutral-60">
-            {t('dealer_app_tax_id')}
-          </label>
-          {/* inputMode numeric, но type остаётся text: type=number на
-              идентификаторе даёт стрелки прибавления и теряет ведущий
-              ноль, а номер — не величина. Та же причина, что в форме
-              профиля. */}
-          <input
-            type="text"
-            inputMode="numeric"
-            value={taxId}
-            onChange={(e) => setTaxId(e.target.value)}
-            maxLength={20}
-            placeholder="123456789"
-            className={field}
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-caption text-neutral-60">
-            {t('dealer_app_reg_num')}
-          </label>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={regNum}
-            onChange={(e) => setRegNum(e.target.value)}
-            maxLength={20}
-            placeholder="12345678"
-            className={field}
-          />
-        </div>
-      </div>
-
+      {/* Сайт — единственное необязательное поле, поэтому стоит один в
+          строке: в паре с обязательным звёздочка у соседа читалась бы
+          как относящаяся к обоим. */}
       <div>
         <label className="mb-1 block text-caption text-neutral-60">
           {t('dealer_app_website')}
@@ -321,9 +350,6 @@ export default function DealerForm({ locale }: Props) {
           maxLength={200}
           className={field}
         />
-        <p className="mt-1 text-small text-neutral-60">
-          {t('dealers_details_hint')}
-        </p>
       </div>
 
       <div>

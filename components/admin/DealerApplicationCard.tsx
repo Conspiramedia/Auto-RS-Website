@@ -182,6 +182,10 @@ export default function DealerApplicationCard({ application }: Props) {
         {row('Город', application.company_city)}
         {row('Контактное лицо', application.contact_person)}
         {row('Телефон заявки', application.phone)}
+        {/* Почта ИЗ ЗАЯВКИ (0103), не почта аккаунта — та стоит ниже,
+            в контактах аккаунта. Рабочая почта салона может от неё
+            отличаться, поэтому показываем обе. */}
+        {row('Email заявки', application.email)}
         {row('Сайт', application.website)}
       </div>
 

@@ -54,6 +54,10 @@ const ERROR_KEYS: Record<DealerApplicationCode, DictKey> = {
   tax_id: 'dealer_app_err_tax_id',
   reg_num: 'dealer_app_err_reg_num',
   company: 'dealer_app_err_company',
+  city: 'dealer_app_err_city',
+  person: 'dealer_app_err_person',
+  phone: 'dealer_app_err_phone',
+  email: 'dealer_app_err_email',
   too_long: 'dealer_app_err_long',
   auth: 'dealer_app_err_auth',
   unknown: 'dealer_app_err_unknown',
@@ -72,6 +76,12 @@ const TAX_ID_DIGITS = 9;
 const REG_NUM_DIGITS = 8;
 const MAX_COMPANY = 120;
 const MAX_COMMENT = 1000;
+
+// Грубая проверка почты — ровно та же, что в submit_dealer_application
+// (0103): «что-то, собака, что-то, точка, что-то». Строгую по RFC не
+// строим намеренно — она отвергает валидные адреса чаще, чем ловит
+// невалидные, а опечатку в домене всё равно поймает только письмо.
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 // Только цифры из введённого — для проверки длины на клиенте.
 function digits(value: string): string {
@@ -114,6 +124,7 @@ export default function DealerApplicationBlock({
   const [city, setCity] = useState('');
   const [person, setPerson] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [website, setWebsite] = useState('');
   const [comment, setComment] = useState('');
 
@@ -210,6 +221,28 @@ export default function DealerApplicationBlock({
       setError(t('dealer_app_err_reg_num'));
       return;
     }
+    // Контакты обязательны с 0103. Проверяем в том же порядке, в
+    // каком поля стоят в форме: человек читает ошибку и идёт к
+    // первому незаполненному сверху, а не ищет его по всей форме.
+    if (city.trim() === '') {
+      setError(t('dealer_app_err_city'));
+      return;
+    }
+    if (person.trim() === '') {
+      setError(t('dealer_app_err_person'));
+      return;
+    }
+    if (phone.trim() === '') {
+      setError(t('dealer_app_err_phone'));
+      return;
+    }
+    // Формат почты — тем же грубым правилом, что в RPC: строгая
+    // проверка по RFC отвергает валидные адреса чаще, чем ловит
+    // невалидные.
+    if (!EMAIL_RE.test(email.trim())) {
+      setError(t('dealer_app_err_email'));
+      return;
+    }
 
     setError(null);
 
@@ -221,6 +254,7 @@ export default function DealerApplicationBlock({
         companyCity: city,
         contactPerson: person,
         phone,
+        email,
         website,
         comment,
       });
@@ -249,7 +283,7 @@ export default function DealerApplicationBlock({
       required?: boolean;
       hint?: string;
       maxLength?: number;
-      inputMode?: 'numeric' | 'tel' | 'url';
+      inputMode?: 'numeric' | 'tel' | 'url' | 'email';
       placeholder?: string;
     },
   ) {
@@ -368,23 +402,43 @@ export default function DealerApplicationBlock({
               })}
             </div>
 
+            {/* Порядок полей ниже — эталонный: ровно в нём же стоит
+                форма на /dealers (DealerForm). Человек, увидевший обе,
+                не должен разбираться, чем они отличаются.
+                Обязательно всё, кроме сайта: он есть не у каждого
+                салона. Требование проверяет сервер (0103), звёздочка
+                здесь только называет его заранее. */}
             <div className="grid items-start gap-3 sm:grid-cols-2">
-              {field(t('dealer_app_city'), city, setCity, { maxLength: 100 })}
+              {field(t('dealer_app_city'), city, setCity, {
+                required: true,
+                maxLength: 100,
+              })}
               {field(t('dealer_app_person'), person, setPerson, {
+                required: true,
                 maxLength: 120,
               })}
             </div>
 
             <div className="grid items-start gap-3 sm:grid-cols-2">
               {field(t('dealer_app_phone'), phone, setPhone, {
+                required: true,
                 inputMode: 'tel',
                 maxLength: 40,
               })}
-              {field(t('dealer_app_website'), website, setWebsite, {
-                inputMode: 'url',
+              {field(t('dealer_app_email'), email, setEmail, {
+                required: true,
+                inputMode: 'email',
                 maxLength: 200,
               })}
             </div>
+
+            {/* Сайт — единственное необязательное поле, поэтому стоит
+                один в строке: в паре с обязательным звёздочка у
+                соседа читалась бы как относящаяся к обоим. */}
+            {field(t('dealer_app_website'), website, setWebsite, {
+              inputMode: 'url',
+              maxLength: 200,
+            })}
 
             <div>
               <label className="mb-1 block text-caption text-neutral-60">

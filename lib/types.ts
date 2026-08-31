@@ -606,6 +606,12 @@ export type DealerApplication = {
   company_city: string | null;
   contact_person: string | null;
   phone: string | null;
+  // Контактная почта САЛОНА из заявки (0103). Отдельно от
+  // account_email ниже: заявитель входил по SMS, и рабочая почта
+  // салона может отличаться от почты аккаунта — та же причина, по
+  // которой phone стоит отдельно от account_phone.
+  // Nullable: заявки, поданные до 0103, почты не содержат.
+  email: string | null;
   website: string | null;
   comment: string | null;
   // Заполнена только у отклонённых: обязательна при status =
