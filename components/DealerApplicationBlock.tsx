@@ -317,7 +317,20 @@ export default function DealerApplicationBlock({
         )}
 
         {!open ? (
-          <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
+          /* На мобильном кнопка занимает всю ширину карточки: это
+             единственное действие блока, и в узкой колонке короткая
+             кнопка у левого края читается как случайная. С планшета
+             ширина возвращается к содержимому — там она стоит в ряду
+             с остальным и растягивать её незачем. Текст внутри и так
+             по центру: justify-center лежит в базовых классах Button.
+             Кнопки формы ниже ведут себя так же — во flex-col они
+             растягиваются по ширине сами. */
+          <Button
+            variant="secondary"
+            size="sm"
+            className="w-full sm:w-auto"
+            onClick={() => setOpen(true)}
+          >
             {status === 'rejected'
               ? t('dealer_app_retry')
               : t('dealer_app_open')}
