@@ -578,6 +578,61 @@ export type AdminDealerProfile = {
 };
 
 // ------------------------------------------------------------
+// ЗАЯВКА НА СТАТУС АВТОСАЛОНА (миграция 0100).
+// ------------------------------------------------------------
+// НЕ ПУТАТЬ С DealerLead НИЖЕ. Это две разные сущности, и различие
+// принципиальное:
+//
+//   dealer_leads (0053)        — маркетинговый лид с формы
+//     «Автосалонам». Оставляет кто угодно, не входя на сайт; ведёт к
+//     звонку менеджера. Прав не даёт никаких.
+//   dealer_applications (0100) — заявка на статус от ВОШЕДШЕГО
+//     пользователя с реквизитами компании. Её одобрение выдаёт
+//     статус автосалона: витрину в каталоге и подпись «Автосалон» на
+//     объявлениях.
+//
+// Слить их в одну таблицу нельзя: у лида нет пользователя, а заявка
+// без пользователя бессмысленна — некому выдавать статус.
+export type DealerApplication = {
+  id: string;
+  // pending | approved | rejected — набор задан chk_dealer_app_status.
+  status: string;
+  company_name: string;
+  // PIB (9 цифр) и матични број (8 цифр). Хранятся строками, а не
+  // числами: это идентификаторы, а не величины — ведущий ноль в них
+  // значащий, и арифметики над ними не бывает.
+  tax_id: string;
+  registration_number: string;
+  company_city: string | null;
+  contact_person: string | null;
+  phone: string | null;
+  website: string | null;
+  comment: string | null;
+  // Заполнена только у отклонённых: обязательна при status =
+  // 'rejected' (chk_dealer_app_reason_required).
+  reject_reason: string | null;
+  created_at: string;
+  reviewed_at: string | null;
+};
+
+// Строка очереди заявок в админке: та же заявка плюс контакты
+// заявителя из profiles и общее число строк под фильтром.
+export type AdminDealerApplication = DealerApplication & {
+  user_id: string;
+  // Контакты АККАУНТА, а не заявки: заявитель входил по SMS, и
+  // связаться с ним можно по номеру входа, даже если контактный
+  // телефон в заявке он не указал.
+  account_phone: string | null;
+  account_email: string | null;
+  account_name: string | null;
+  // count(*) over () из admin_dealer_applications — приходит
+  // одинаковым во всех строках страницы. Число, а не bigint-строка:
+  // supabase-js отдаёт bigint строкой, поэтому на границе его
+  // приводит Number() (см. app/admin/dealer-applications/page.tsx).
+  total_count: number;
+};
+
+// ------------------------------------------------------------
 // Заявка автосалона с /dealers (миграция 0053).
 // ------------------------------------------------------------
 // Таблица dealer_leads заполняется анонимно через RPC

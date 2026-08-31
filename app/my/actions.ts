@@ -454,3 +454,106 @@ export async function saveContactEmail(input: {
   revalidatePath('/ru/my/profile');
   return { ok: true };
 }
+
+// ============================================================
+// ЗАЯВКА НА СТАТУС АВТОСАЛОНА (миграция 0100)
+// ============================================================
+// ЗАЧЕМ ВООБЩЕ ЗАЯВКА. До 0100 тип продавца был обычным полем формы:
+// любой вошедший ставил себе «Автосалон», писал название и получал
+// витрину в каталоге салонов, страницу /dealer/{id} и подпись
+// «Автосалон» на объявлениях. Витрина салона — это обещание
+// покупателю, что за объявлением стоит зарегистрированная компания,
+// и выдаваться по нажатию кнопки она не может.
+//
+// ТЕКСТЫ ОШИБОК ПОДБИРАЕТ КЛИЕНТ, как и в saveContactEmail выше.
+// Причина та же: RPC бросает исключения по-русски (их читает и
+// администратор в логах), а интерфейс двуязычный — сербскому
+// заявителю русская формулировка бесполезна. Поэтому наружу отдаём
+// КОД, а строку под него берёт форма из своего словаря.
+//
+// Разбор по тексту сообщения, а не только по SQLSTATE: почти все
+// проверки внутри RPC бросают check_violation (23514), и по одному
+// коду не отличить «PIB не из девяти цифр» от «заявка уже подана».
+export type DealerApplicationCode =
+  | 'pending_exists'   // заявка уже ждёт рассмотрения
+  | 'already_dealer'   // статус салона уже есть
+  | 'tax_id'           // PIB не из 9 цифр
+  | 'reg_num'          // матични број не из 8 цифр
+  | 'company'          // название пустое или слишком длинное
+  | 'too_long'         // прочие поля превысили длину
+  | 'auth'             // сессия потерялась
+  | 'unknown';
+
+export async function submitDealerApplication(input: {
+  companyName: string;
+  taxId: string;
+  registrationNumber: string;
+  companyCity: string;
+  contactPerson: string;
+  phone: string;
+  website: string;
+  comment: string;
+}): Promise<{ ok: boolean; code?: DealerApplicationCode }> {
+  const supabase = await getServerClient();
+
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) return { ok: false, code: 'auth' };
+
+  // Пустые строки превращаем в null: необязательные поля формы
+  // приходят пустыми, и записывать в базу '' вместо «не указано»
+  // значило бы отличать одно от другого при каждом чтении.
+  const orNull = (value: string) => value.trim() || null;
+
+  const { error } = await supabase.rpc('submit_dealer_application', {
+    p_company_name: input.companyName.trim(),
+    // PIB и матични број уходят КАК НАБРАНЫ: чистку от пробелов и
+    // дефисов делает сама RPC (regexp_replace). Повторять её здесь
+    // значило бы завести второе место, где решают, что считать
+    // цифрой реквизита.
+    p_tax_id: input.taxId,
+    p_registration_number: input.registrationNumber,
+    p_company_city: orNull(input.companyCity),
+    p_contact_person: orNull(input.contactPerson),
+    p_phone: orNull(input.phone),
+    p_website: orNull(input.website),
+    p_comment: orNull(input.comment),
+  });
+
+  if (error) {
+    const message = error.message.toLowerCase();
+
+    if (message.includes('уже отправлена')) {
+      return { ok: false, code: 'pending_exists' };
+    }
+    if (message.includes('уже есть статус')) {
+      return { ok: false, code: 'already_dealer' };
+    }
+    if (message.includes('pib')) {
+      return { ok: false, code: 'tax_id' };
+    }
+    if (message.includes('матични')) {
+      return { ok: false, code: 'reg_num' };
+    }
+    if (message.includes('название автосалона')) {
+      return { ok: false, code: 'company' };
+    }
+    if (message.includes('слишком длин')) {
+      return { ok: false, code: 'too_long' };
+    }
+    if (error.code === '42501') {
+      return { ok: false, code: 'auth' };
+    }
+    return { ok: false, code: 'unknown' };
+  }
+
+  // Профиль перерисовывается в обеих локалях: на нём стоит блок
+  // заявки, и после отправки он обязан показать «на рассмотрении», а
+  // не прежнюю форму с введёнными реквизитами.
+  revalidatePath('/my/profile');
+  revalidatePath('/ru/my/profile');
+  // Дашборд админки: на нём счётчик ждущих заявок.
+  revalidatePath('/admin');
+  revalidatePath('/admin/dealer-applications');
+
+  return { ok: true };
+}

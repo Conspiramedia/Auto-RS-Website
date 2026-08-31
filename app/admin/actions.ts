@@ -365,3 +365,84 @@ export async function blockDealer(
 
   return { ok: true, hidden: Number(data ?? 0) };
 }
+
+// ------------------------------------------------------------
+// Решение по заявке на статус автосалона (миграция 0100).
+// ------------------------------------------------------------
+// ОДНО ДЕЙСТВИЕ НА ОБА РЕШЕНИЯ, как и RPC под ним: разделение дало бы
+// две функции, отличающиеся одним булевым аргументом.
+//
+// Одобрение — не пометка в таблице, а ВЫДАЧА ПРАВ: после него
+// заявитель становится автосалоном, получает витрину в каталоге,
+// страницу /dealer/{id} и подпись «Автосалон» на объявлениях. Всё это
+// делает сама admin_review_dealer_application одной транзакцией, здесь
+// повторных UPDATE нет.
+//
+// Отказ требует причины (10–1000 символов) — её проверяет база, и
+// заявитель увидит текст в своём кабинете.
+export async function reviewDealerApplication(
+  applicationId: string,
+  approve: boolean,
+  reason?: string,
+): Promise<ModerationResult> {
+  const supabase = await getServerClient();
+
+  const { data, error } = await supabase.rpc('admin_review_dealer_application', {
+    p_id: applicationId,
+    p_approve: approve,
+    p_reason: reason?.trim() ?? null,
+  });
+
+  if (error) {
+    // Заявку уже разобрал другой администратор, пока экран был
+    // открыт. Тот же случай, что гонка модераторов в очереди
+    // объявлений: сообщаем прямо и помечаем alreadyHandled, чтобы
+    // интерфейс обновил список, а не оставил кнопки, которые теперь
+    // ни на что не действуют.
+    if (error.code === '23514' && error.message.includes('уже рассмотрена')) {
+      return {
+        ok: false,
+        error: 'Заявку уже рассмотрел другой администратор.',
+        alreadyHandled: true,
+      };
+    }
+    // Короткая причина. Диалог не даёт её отправить, так что сюда она
+    // попадает в обход интерфейса — честный текст сервера уместнее
+    // выдуманного.
+    if (error.code === '23514') {
+      return { ok: false, error: error.message };
+    }
+    if (error.code === '42501') {
+      return {
+        ok: false,
+        error: 'Нет прав. Обновите страницу и войдите заново.',
+      };
+    }
+    if (error.code === 'P0002') {
+      return { ok: false, error: 'Заявка не найдена.' };
+    }
+    return { ok: false, error: 'Не удалось сохранить решение. Попробуйте ещё раз.' };
+  }
+
+  // Пустой ответ означает, что RPC не вернула строку, — до сюда
+  // такое доходить не должно (ошибку она бросает исключением), но
+  // молча показывать успех на пустом результате нельзя.
+  if (!data) {
+    return { ok: false, error: 'Решение не сохранилось. Обновите страницу.' };
+  }
+
+  revalidatePath('/admin');
+  revalidatePath('/admin/dealer-applications');
+
+  // Одобрение завело нового салона: списки салонов и каталог витрин
+  // устарели. Профиль заявителя тоже — в нём сменился тип продавца.
+  if (approve) {
+    revalidatePath('/admin/users');
+    revalidatePath('/dealers');
+    revalidatePath('/ru/dealers');
+    revalidatePath('/my/profile');
+    revalidatePath('/ru/my/profile');
+  }
+
+  return { ok: true };
+}

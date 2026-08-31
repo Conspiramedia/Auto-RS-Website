@@ -58,8 +58,13 @@ const GRID = 'grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4';
 export default async function AdminHomePage() {
   const supabase = await getServerClient();
 
-  const [statsResult, queueResult, dealersResult, leadsResult] =
-    await Promise.all([
+  const [
+    statsResult,
+    queueResult,
+    dealersResult,
+    leadsResult,
+    applicationsResult,
+  ] = await Promise.all([
       supabase.rpc('admin_dashboard_stats'),
 
       // Очередь читается обычным select под админской политикой
@@ -91,6 +96,18 @@ export default async function AdminHomePage() {
         .from('dealer_leads')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'new'),
+
+      // Заявки на СТАТУС салона, ждущие решения (0100). Не путать с
+      // лидами выше: те ведут к звонку менеджера, а эти — к выдаче
+      // прав. Читаются через RPC, потому что заявка показывается с
+      // контактами заявителя из profiles, закрытых RLS; здесь нужен
+      // только счётчик, поэтому берём одну страницу и смотрим на
+      // total_count из окна.
+      supabase.rpc('admin_dealer_applications', {
+        p_status: 'pending',
+        p_limit: 1,
+        p_offset: 0,
+      }),
     ]);
 
   // Сводка возвращается таблицей из одной строки.
@@ -109,6 +126,18 @@ export default async function AdminHomePage() {
   // Ошибка счётчика заявок не должна ронять экран: раздел открывается
   // и без числа на карточке.
   const newLeads = leadsResult.error ? 0 : (leadsResult.count ?? 0);
+
+  // Число ждущих заявок на статус салона. Приходит окном count(*)
+  // over () в единственной запрошенной строке; пустой ответ означает
+  // пустую очередь. Number() обязателен: bigint supabase-js отдаёт
+  // строкой, и без приведения карточка вывела бы «"3"».
+  const pendingApplications = (() => {
+    if (applicationsResult.error) return 0;
+    const first = (applicationsResult.data ?? [])[0] as
+      | { total_count: number | string }
+      | undefined;
+    return first ? Number(first.total_count) : 0;
+  })();
 
   return (
     <>
@@ -259,6 +288,21 @@ export default async function AdminHomePage() {
           value={newLeads}
           tone="accent"
           hint="Новые, ждут звонка"
+        />
+        {/* ЗАЯВКИ НА СТАТУС — ОТДЕЛЬНАЯ КАРТОЧКА, а не пункт внутри
+            «Заявок салонов» выше. Разница в последствиях: там лид,
+            который ведёт к звонку и ничего не выдаёт, здесь —
+            решение, выдающее аккаунту витрину в каталоге и отметку
+            «Автосалон» на объявлениях. Сложи мы их в один счётчик,
+            число «7» перестало бы отвечать на вопрос, что именно
+            ждёт разбора. Тон accent — это неразобранная работа, как
+            очередь модерации. */}
+        <AdminTile
+          href="/admin/dealer-applications"
+          label="Статус салона"
+          value={pendingApplications}
+          tone="accent"
+          hint="Заявки, ждут решения"
         />
         <AdminTile
           href="/admin/log"

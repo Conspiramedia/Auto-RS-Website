@@ -641,6 +641,76 @@ export const dict = {
     profile_avatar_error: 'Nije uspelo učitavanje fotografije',
     profile_avatar_preparing: 'Pripremamo…',
 
+    // ------------------------------------------------------------
+    // ZAHTEV ZA STATUS AUTOSALONA (migracija 0100).
+    // ------------------------------------------------------------
+    // Раньше тип продавца переключался кнопкой, и статус салона
+    // доставался любому. Теперь его подтверждает администратор по
+    // заявке с реквизитами компании, и эта группа строк обслуживает
+    // все четыре состояния блока: заявки нет (форма), заявка ждёт,
+    // заявка отклонена, статус подтверждён.
+    dealer_app_title: 'Prodajete kao autosalon?',
+    // Объяснение ДО формы: человек должен понимать, почему у него
+    // просят PIB, прежде чем начнёт его искать.
+    dealer_app_intro:
+      'Autosalon dobija svoju stranicu u katalogu i oznaku «Autosalon» na oglasima. Zato status potvrđuje administrator — pošaljite podatke firme i javićemo se.',
+    dealer_app_open: 'Pošalji zahtev',
+    dealer_app_cancel: 'Odustani',
+    dealer_app_submit: 'Pošalji zahtev',
+    dealer_app_sending: 'Šaljemo…',
+
+    // Поля формы. Названия реквизитов НЕ ПЕРЕВОДИМ: PIB и «matični
+    // broj» — официальные термины сербского реестра, и владелец
+    // салона ищет в своей выписке именно эти слова.
+    dealer_app_company: 'Naziv autosalona',
+    dealer_app_tax_id: 'PIB',
+    dealer_app_tax_id_hint: '9 cifara iz APR izvoda',
+    dealer_app_reg_num: 'Matični broj',
+    dealer_app_reg_num_hint: '8 cifara iz APR izvoda',
+    dealer_app_city: 'Grad',
+    dealer_app_person: 'Kontakt osoba',
+    dealer_app_phone: 'Telefon za kontakt',
+    dealer_app_website: 'Sajt',
+    dealer_app_comment: 'Komentar',
+    dealer_app_comment_ph: 'Šta je još korisno da znamo',
+    dealer_app_required: 'Obavezna polja',
+
+    // Состояние «ждёт рассмотрения». Срока намеренно не обещаем:
+    // заявки разбирает человек, и «за 24 sata» стало бы обещанием,
+    // которое площадка не контролирует.
+    dealer_app_pending_title: 'Zahtev je poslat',
+    dealer_app_pending_text:
+      'Proveravamo podatke firme. Javićemo vam se na kontakt iz zahteva.',
+    dealer_app_pending_since: 'Poslato',
+
+    // Отказ. Причина показывается дословно, как её написал
+    // администратор: без неё повторная подача — стрельба вслепую.
+    dealer_app_rejected_title: 'Zahtev nije odobren',
+    dealer_app_rejected_reason: 'Razlog',
+    dealer_app_retry: 'Pošalji novi zahtev',
+
+    // Подтверждённый статус. Строка стоит там, где раньше был
+    // переключатель «Privatno lice | Autosalon».
+    dealer_app_approved_title: 'Status autosalona je potvrđen',
+    dealer_app_approved_text:
+      'Podaci salona ispod se prikazuju kupcima na vašoj stranici i u katalogu.',
+    // Отказ от статуса. Возврат в «частное лицо» разрешён без
+    // разрешения администратора — это право владельца.
+    dealer_app_leave: 'Prebaci nalog na privatno lice',
+    dealer_app_leave_confirm:
+      'Kartica salona i podaci vitrine biće uklonjeni iz kataloga. Oglasi ostaju. Nastaviti?',
+
+    // Ошибки подачи. Коды приходят из submitDealerApplication —
+    // текст сервера русский, а строки подбираются здесь.
+    dealer_app_err_pending: 'Zahtev je već poslat i čeka odluku',
+    dealer_app_err_already: 'Već imate status autosalona',
+    dealer_app_err_tax_id: 'PIB se sastoji od 9 cifara',
+    dealer_app_err_reg_num: 'Matični broj se sastoji od 8 cifara',
+    dealer_app_err_company: 'Unesite naziv autosalona',
+    dealer_app_err_long: 'Neko polje je predugačko — skratite tekst',
+    dealer_app_err_auth: 'Sesija je istekla. Prijavite se ponovo.',
+    dealer_app_err_unknown: 'Nije uspelo. Pokušajte ponovo.',
+
     // Общее
     // ------------------------------------------------------------
     // Навигация по контентным страницам.
@@ -1437,6 +1507,60 @@ export const dict = {
     profile_error: 'Не удалось. Попробуйте ещё раз.',
     profile_avatar_error: 'Не удалось загрузить фотографию',
     profile_avatar_preparing: 'Готовим…',
+
+    // ------------------------------------------------------------
+    // ЗАЯВКА НА СТАТУС АВТОСАЛОНА (миграция 0100).
+    // ------------------------------------------------------------
+    // См. пояснение у sr-версии этой группы.
+    dealer_app_title: 'Продаёте как автосалон?',
+    dealer_app_intro:
+      'У автосалона есть своя страница в каталоге и отметка «Автосалон» на объявлениях. Поэтому статус подтверждает администратор — отправьте данные компании, и мы свяжемся с вами.',
+    dealer_app_open: 'Подать заявку',
+    dealer_app_cancel: 'Отмена',
+    dealer_app_submit: 'Отправить заявку',
+    dealer_app_sending: 'Отправляем…',
+
+    // Названия реквизитов оставлены сербскими и в русской версии:
+    // PIB и «матични број» человек ищет в своей выписке из APR
+    // именно под этими словами, и перевод «регистрационный номер»
+    // заставил бы его гадать, та ли это строка.
+    dealer_app_company: 'Название автосалона',
+    dealer_app_tax_id: 'PIB (налоговый номер)',
+    dealer_app_tax_id_hint: '9 цифр из выписки APR',
+    dealer_app_reg_num: 'Матични број',
+    dealer_app_reg_num_hint: '8 цифр из выписки APR',
+    dealer_app_city: 'Город',
+    dealer_app_person: 'Контактное лицо',
+    dealer_app_phone: 'Телефон для связи',
+    dealer_app_website: 'Сайт',
+    dealer_app_comment: 'Комментарий',
+    dealer_app_comment_ph: 'Что ещё нам полезно знать',
+    dealer_app_required: 'Обязательные поля',
+
+    dealer_app_pending_title: 'Заявка отправлена',
+    dealer_app_pending_text:
+      'Проверяем данные компании. Свяжемся с вами по контактам из заявки.',
+    dealer_app_pending_since: 'Отправлена',
+
+    dealer_app_rejected_title: 'Заявка отклонена',
+    dealer_app_rejected_reason: 'Причина',
+    dealer_app_retry: 'Подать новую заявку',
+
+    dealer_app_approved_title: 'Статус автосалона подтверждён',
+    dealer_app_approved_text:
+      'Данные салона ниже видят покупатели на вашей странице и в каталоге.',
+    dealer_app_leave: 'Перевести аккаунт на частное лицо',
+    dealer_app_leave_confirm:
+      'Карточка салона и данные витрины пропадут из каталога. Объявления останутся. Продолжить?',
+
+    dealer_app_err_pending: 'Заявка уже отправлена и ждёт решения',
+    dealer_app_err_already: 'У вас уже есть статус автосалона',
+    dealer_app_err_tax_id: 'PIB состоит из 9 цифр',
+    dealer_app_err_reg_num: 'Матични број состоит из 8 цифр',
+    dealer_app_err_company: 'Укажите название автосалона',
+    dealer_app_err_long: 'Одно из полей слишком длинное — сократите текст',
+    dealer_app_err_auth: 'Сессия истекла. Войдите заново.',
+    dealer_app_err_unknown: 'Не удалось. Попробуйте ещё раз.',
 
     // ------------------------------------------------------------
     // Навигация по контентным страницам.

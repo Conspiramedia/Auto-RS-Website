@@ -1,0 +1,426 @@
+'use client';
+
+// ============================================================
+// RS AUTO — Заявка на статус автосалона. Client Component.
+// ============================================================
+// ЧТО ЭТОТ БЛОК ЗАМЕНИЛ. На его месте стоял переключатель «Частное
+// лицо | Автосалон»: две кнопки, любая нажимается кем угодно. Нажав
+// вторую и вписав название, человек получал витрину в каталоге
+// салонов, страницу /dealer/{id} и отметку «Автосалон» на своих
+// объявлениях — то есть площадка от своего имени сообщала покупателю,
+// что за объявлением стоит зарегистрированная компания, не проверив
+// этого ни разу.
+//
+// Теперь статус выдаёт администратор по заявке с реквизитами
+// (миграция 0100), а блок показывает одно из ЧЕТЫРЁХ состояний:
+//
+//   нет заявки  → приглашение и форма с реквизитами;
+//   pending     → «отправлена, проверяем» (форма скрыта);
+//   rejected    → причина отказа и кнопка «подать снова»;
+//   approved    → подтверждение и, ниже, поля витрины.
+//
+// СОСТОЯНИЕ ОПРЕДЕЛЯЕТСЯ ПО ПОСЛЕДНЕЙ ЗАЯВКЕ, а не по seller_kind
+// профиля: у отклонённого заявителя seller_kind так и остался
+// 'private', и без заявки блок показал бы ему приглашение подать
+// заново, умолчав, что предыдущую только что отклонили и объяснили
+// почему.
+//
+// ПОЧЕМУ ЧАСТНИКУ ЗДЕСЬ НЕ НУЖНА КНОПКА «Я ЧАСТНОЕ ЛИЦО». Частное
+// лицо — состояние по умолчанию: профиль заводится с seller_kind =
+// 'private', и выбирать его не из чего. Кнопка обратного перехода
+// нужна только салону, и она стоит в состоянии approved.
+// ============================================================
+
+import { useState, useTransition } from 'react';
+
+import {
+  submitDealerApplication,
+  type DealerApplicationCode,
+} from '@/app/my/actions';
+import Alert from './ui/Alert';
+import Button from './ui/Button';
+import Card from './ui/Card';
+import { fieldClass } from './ui/Field';
+import type { DictKey, Locale } from '@/lib/i18n';
+import { getT } from '@/lib/i18n';
+import type { DealerApplication } from '@/lib/types';
+
+// Соответствие кода ошибки ключу словаря. Таблицей, а не цепочкой
+// if: добавление новой причины отказа — одна строка здесь, а не
+// ещё одна ветка в разметке.
+const ERROR_KEYS: Record<DealerApplicationCode, DictKey> = {
+  pending_exists: 'dealer_app_err_pending',
+  already_dealer: 'dealer_app_err_already',
+  tax_id: 'dealer_app_err_tax_id',
+  reg_num: 'dealer_app_err_reg_num',
+  company: 'dealer_app_err_company',
+  too_long: 'dealer_app_err_long',
+  auth: 'dealer_app_err_auth',
+  unknown: 'dealer_app_err_unknown',
+};
+
+// Границы реквизитов. Те же, что в CHECK на dealer_applications и в
+// проверках submit_dealer_application (0100): сервер отклонит
+// неверное в любом случае, а эти числа нужны, чтобы сказать об этом
+// сразу — атрибутом maxLength и неактивной кнопкой.
+//
+// Длина считается ПО ЦИФРАМ, а не по символам строки: человек
+// набирает PIB как «123 456 789» или «123-456-789», и RPC сама
+// вычищает из него всё, кроме цифр. Требовать девять символов подряд
+// значило бы придираться к пробелу, который сервер и так выбросит.
+const TAX_ID_DIGITS = 9;
+const REG_NUM_DIGITS = 8;
+const MAX_COMPANY = 120;
+const MAX_COMMENT = 1000;
+
+// Только цифры из введённого — для проверки длины на клиенте.
+function digits(value: string): string {
+  return value.replace(/\D/g, '');
+}
+
+type Props = {
+  locale: Locale;
+  // Последняя заявка пользователя или null, если он не подавал ни
+  // одной. Читается на сервере (get_my_dealer_application) и
+  // приходит готовой: блок не должен начинать жизнь с «загружаем».
+  application: DealerApplication | null;
+  // Текущий тип продавца из профиля. Нужен, чтобы отличить
+  // действующего салона от заявителя с одобренной, но ещё не
+  // применённой заявкой — второго не бывает (одобрение сразу ставит
+  // seller_kind), но полагаться на это в разметке не стоит.
+  sellerKind: string;
+  // Возврат в «частное лицо». Обрабатывает родительская форма: это
+  // обычное сохранение профиля с seller_kind = 'private', и второй
+  // путь сохранения ради одной кнопки заводить незачем.
+  onLeaveDealer: () => void;
+};
+
+export default function DealerApplicationBlock({
+  locale,
+  application,
+  sellerKind,
+  onLeaveDealer,
+}: Props) {
+  const t = getT(locale);
+
+  // Форма раскрыта. Свёрнутая по умолчанию: большинство продавцов —
+  // частники, и восемь полей реквизитов, развёрнутых в профиле у
+  // каждого, оттесняли бы вниз то, за чем в профиль заходят.
+  const [open, setOpen] = useState(false);
+
+  const [companyName, setCompanyName] = useState('');
+  const [taxId, setTaxId] = useState('');
+  const [regNum, setRegNum] = useState('');
+  const [city, setCity] = useState('');
+  const [person, setPerson] = useState('');
+  const [phone, setPhone] = useState('');
+  const [website, setWebsite] = useState('');
+  const [comment, setComment] = useState('');
+
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  const status = application?.status ?? null;
+
+  // ------------------------------------------------------------
+  // СОСТОЯНИЕ 4: статус подтверждён.
+  // ------------------------------------------------------------
+  // Показывается действующему салону. Поля витрины стоят ниже, в
+  // самой форме профиля, — этот блок только подтверждает право и
+  // даёт от него отказаться.
+  if (sellerKind === 'dealer') {
+    return (
+      <Card>
+        <div className="space-y-3">
+          <div>
+            <p className="font-semibold text-success">
+              {t('dealer_app_approved_title')}
+            </p>
+            <p className="mt-1 text-caption text-neutral-60">
+              {t('dealer_app_approved_text')}
+            </p>
+          </div>
+
+          {/* Отказ от статуса — вторичной кнопкой и с подтверждением.
+              Цена ошибки высока: салон пропадёт из каталога витрин, а
+              поля витрины (обложка, слоган, часы, телефон) сервер
+              затрёт при сохранении с seller_kind = 'private'. Вернуть
+              статус можно без новой заявки — одобренная продолжает
+              действовать, — но заполнять витрину придётся заново. */}
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              if (window.confirm(t('dealer_app_leave_confirm'))) {
+                onLeaveDealer();
+              }
+            }}
+          >
+            {t('dealer_app_leave')}
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  // ------------------------------------------------------------
+  // СОСТОЯНИЕ 2: заявка ждёт рассмотрения.
+  // ------------------------------------------------------------
+  // Формы здесь нет намеренно: вторую заявку база всё равно не
+  // примет (уникальный индекс по pending), и показывать поля, чтобы
+  // потом отказать, — обман.
+  if (status === 'pending') {
+    return (
+      <Card>
+        <div className="space-y-2">
+          <p className="font-semibold">{t('dealer_app_pending_title')}</p>
+          <p className="text-caption text-neutral-60">
+            {t('dealer_app_pending_text')}
+          </p>
+          <p className="text-small text-neutral-50">
+            {t('dealer_app_pending_since')}:{' '}
+            {new Date(application!.created_at).toLocaleDateString(
+              locale === 'ru' ? 'ru-RU' : 'sr-Latn-RS',
+              { day: 'numeric', month: 'long', year: 'numeric' },
+            )}
+            {' · '}
+            {application!.company_name}
+          </p>
+        </div>
+      </Card>
+    );
+  }
+
+  // ------------------------------------------------------------
+  // ОТПРАВКА.
+  // ------------------------------------------------------------
+  function submit() {
+    // Проверки повторяют серверные (0100) намеренно: источник истины
+    // остаётся в базе, а клиент избавляет от заведомо напрасного
+    // запроса и называет проблему у нужного поля.
+    if (companyName.trim().length < 2) {
+      setError(t('dealer_app_err_company'));
+      return;
+    }
+    if (digits(taxId).length !== TAX_ID_DIGITS) {
+      setError(t('dealer_app_err_tax_id'));
+      return;
+    }
+    if (digits(regNum).length !== REG_NUM_DIGITS) {
+      setError(t('dealer_app_err_reg_num'));
+      return;
+    }
+
+    setError(null);
+
+    startTransition(async () => {
+      const result = await submitDealerApplication({
+        companyName,
+        taxId,
+        registrationNumber: regNum,
+        companyCity: city,
+        contactPerson: person,
+        phone,
+        website,
+        comment,
+      });
+
+      if (!result.ok) {
+        setError(t(ERROR_KEYS[result.code ?? 'unknown']));
+        return;
+      }
+
+      // Успех не показываем строкой: revalidatePath в действии уже
+      // перерисовал страницу, и блок вернётся сюда в состоянии
+      // pending — оно и есть сообщение об успехе, причём стойкое, а
+      // не исчезающее с перезагрузкой.
+      setOpen(false);
+    });
+  }
+
+  // Общая разметка поля: подпись сверху, необязательное — без
+  // звёздочки. Локальная функция, а не отдельный компонент: она
+  // нужна только здесь и ничем не отличается от полей выше по форме.
+  function field(
+    label: string,
+    value: string,
+    onChange: (v: string) => void,
+    options?: {
+      required?: boolean;
+      hint?: string;
+      maxLength?: number;
+      inputMode?: 'numeric' | 'tel' | 'url';
+      placeholder?: string;
+    },
+  ) {
+    return (
+      <div>
+        <label className="mb-1 block text-caption text-neutral-60">
+          {label}
+          {options?.required ? ' *' : ''}
+        </label>
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => {
+            onChange(e.target.value);
+            setError(null);
+          }}
+          maxLength={options?.maxLength}
+          inputMode={options?.inputMode}
+          placeholder={options?.placeholder}
+          className={fieldClass}
+        />
+        {options?.hint && (
+          <p className="mt-1 text-small text-neutral-50">{options.hint}</p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <Card>
+      <div className="space-y-3">
+        {/* ------------------------------------------------------------
+            СОСТОЯНИЕ 3: заявка отклонена.
+            ------------------------------------------------------------
+            Причина показывается ДОСЛОВНО, как её написал
+            администратор. Тон error — это то, что нужно исправить,
+            ровно как причина отклонения объявления у продавца.
+            Без причины повторная подача превращается в угадывание. */}
+        {status === 'rejected' && (
+          <div>
+            <p className="font-semibold text-brand-red">
+              {t('dealer_app_rejected_title')}
+            </p>
+            {application?.reject_reason && (
+              <Alert tone="error" className="mt-2">
+                <span className="font-medium">
+                  {t('dealer_app_rejected_reason')}:
+                </span>{' '}
+                {application.reject_reason}
+              </Alert>
+            )}
+          </div>
+        )}
+
+        {/* Приглашение. У отклонённого заголовок не повторяем — он уже
+            стоит выше и говорит о состоянии заявки, а не о
+            возможности её подать. */}
+        {status !== 'rejected' && (
+          <div>
+            <p className="font-semibold">{t('dealer_app_title')}</p>
+            <p className="mt-1 text-caption text-neutral-60">
+              {t('dealer_app_intro')}
+            </p>
+          </div>
+        )}
+
+        {!open ? (
+          <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
+            {status === 'rejected'
+              ? t('dealer_app_retry')
+              : t('dealer_app_open')}
+          </Button>
+        ) : (
+          <div className="space-y-3 border-t border-neutral-10 pt-3">
+            {field(t('dealer_app_company'), companyName, setCompanyName, {
+              required: true,
+              maxLength: MAX_COMPANY,
+            })}
+
+            {/* Реквизиты — в одну строку с планшета: оба поля
+                короткие и заполняются из одной выписки APR подряд,
+                поэтому стоять им следует рядом.
+                items-start: под обоими есть подсказка, но у длинного
+                названия поля она переносится, и без выравнивания по
+                верху сами поля разъехались бы по вертикали. */}
+            <div className="grid items-start gap-3 sm:grid-cols-2">
+              {field(t('dealer_app_tax_id'), taxId, setTaxId, {
+                required: true,
+                hint: t('dealer_app_tax_id_hint'),
+                // inputMode numeric, но type остаётся text: type=number
+                // на идентификаторе даёт стрелки прибавления и теряет
+                // ведущий ноль, а номер — не величина.
+                inputMode: 'numeric',
+                maxLength: 20,
+                placeholder: '123456789',
+              })}
+              {field(t('dealer_app_reg_num'), regNum, setRegNum, {
+                required: true,
+                hint: t('dealer_app_reg_num_hint'),
+                inputMode: 'numeric',
+                maxLength: 20,
+                placeholder: '12345678',
+              })}
+            </div>
+
+            <div className="grid items-start gap-3 sm:grid-cols-2">
+              {field(t('dealer_app_city'), city, setCity, { maxLength: 100 })}
+              {field(t('dealer_app_person'), person, setPerson, {
+                maxLength: 120,
+              })}
+            </div>
+
+            <div className="grid items-start gap-3 sm:grid-cols-2">
+              {field(t('dealer_app_phone'), phone, setPhone, {
+                inputMode: 'tel',
+                maxLength: 40,
+              })}
+              {field(t('dealer_app_website'), website, setWebsite, {
+                inputMode: 'url',
+                maxLength: 200,
+              })}
+            </div>
+
+            <div>
+              <label className="mb-1 block text-caption text-neutral-60">
+                {t('dealer_app_comment')}
+              </label>
+              <textarea
+                value={comment}
+                onChange={(e) => {
+                  setComment(e.target.value);
+                  setError(null);
+                }}
+                maxLength={MAX_COMMENT}
+                rows={3}
+                placeholder={t('dealer_app_comment_ph')}
+                className="
+                  w-full rounded-control border border-neutral-15 px-3 py-2
+                  text-caption outline-none focus:border-neutral-30
+                "
+              />
+            </div>
+
+            <p className="text-small text-neutral-50">
+              * {t('dealer_app_required')}
+            </p>
+
+            {error && <Alert tone="error">{error}</Alert>}
+
+            {/* Кнопки в обратном порядке на мобильном
+                (flex-col-reverse): главное действие оказывается ближе
+                к большому пальцу, а «Отмена» — выше. Тот же приём, что
+                в диалогах админки. */}
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setOpen(false);
+                  setError(null);
+                }}
+                disabled={pending}
+              >
+                {t('dealer_app_cancel')}
+              </Button>
+              <Button onClick={submit} disabled={pending}>
+                {pending ? t('dealer_app_sending') : t('dealer_app_submit')}
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}

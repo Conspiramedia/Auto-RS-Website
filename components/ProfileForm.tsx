@@ -60,6 +60,7 @@ import {
   PhotoPrepareError,
   preparePhoto,
 } from '@/lib/imagePrepare';
+import DealerApplicationBlock from './DealerApplicationBlock';
 import ListPicker, { type PickerOption } from './ListPicker';
 import Alert from './ui/Alert';
 import Button from './ui/Button';
@@ -78,7 +79,7 @@ import { getT, localeHref } from '@/lib/i18n';
 import { supabaseErrorText } from '@/lib/otp';
 import { CITIES } from '@/lib/referenceData';
 import { getBrowserClient } from '@/lib/supabaseClient';
-import type { MyProfile } from '@/lib/types';
+import type { DealerApplication, MyProfile } from '@/lib/types';
 
 // Границы длины полей витрины. Совпадают с CHECK на таблице profiles
 // и проверками внутри update_seller_profile (миграция 0095): нарушение
@@ -95,9 +96,14 @@ const MAX_HOURS = 200;
 type Props = {
   locale: Locale;
   profile: MyProfile;
+  // Последняя заявка на статус автосалона или null (миграция 0100).
+  // Читается на сервере вместе с профилем и передаётся готовой: блок
+  // заявки не должен начинать жизнь с «загружаем», а потом менять
+  // состояние под руками у того, кто уже начал заполнять форму.
+  application: DealerApplication | null;
 };
 
-export default function ProfileForm({ locale, profile }: Props) {
+export default function ProfileForm({ locale, profile, application }: Props) {
   const t = getT(locale);
   const fileRef = useRef<HTMLInputElement>(null);
   const logoRef = useRef<HTMLInputElement>(null);
@@ -249,11 +255,22 @@ export default function ProfileForm({ locale, profile }: Props) {
     }
   }
 
-  function submit() {
+  // ------------------------------------------------------------
+  // СОХРАНЕНИЕ С ЯВНЫМ ТИПОМ ПРОДАВЦА.
+  // ------------------------------------------------------------
+  // Тип принимается ПАРАМЕТРОМ, а не читается из состояния, ради
+  // одного случая — отказа от статуса салона. Там setSellerKind
+  // и сохранение идут подряд, а состояние React обновляется только
+  // к следующему рендеру: прочитай функция sellerKind сама, она
+  // отправила бы на сервер прежнее 'dealer' и отказ не сработал бы.
+  //
+  // Кнопка «Сохранить» зовёт submit() без аргумента — тогда берётся
+  // текущее состояние, как и раньше.
+  function submitWith(kind: string = sellerKind) {
     // Дилер без названия салона: сервер такую запись отклонит
     // (update_seller_profile), но сказать об этом сразу честнее, чем
     // после обращения к базе.
-    if (sellerKind === 'dealer' && companyName.trim() === '') {
+    if (kind === 'dealer' && companyName.trim() === '') {
       setError(t('profile_company_required'));
       return;
     }
@@ -263,7 +280,7 @@ export default function ProfileForm({ locale, profile }: Props) {
     // осознанное: сервер остаётся источником истины и отклонит текст
     // в любом случае, а клиент говорит о проблеме сразу, не гоняя
     // запрос впустую.
-    if (sellerKind === 'dealer') {
+    if (kind === 'dealer') {
       if (tagline.length > MAX_TAGLINE) {
         setError(t('showcase_err_tagline'));
         return;
@@ -291,7 +308,7 @@ export default function ProfileForm({ locale, profile }: Props) {
     startTransition(async () => {
       const result = await saveProfile({
         fullName,
-        sellerKind,
+        sellerKind: kind,
         companyName,
         avatarUrl,
         logoUrl,
@@ -443,38 +460,46 @@ export default function ProfileForm({ locale, profile }: Props) {
             </p>
           </div>
 
-          {/* Тип продавца — сегмент из двух кнопок, тот же паттерн, что
-              «Продажа | Аренда» в форме подачи. */}
-          <div>
-            <label className="mb-1 block text-caption text-neutral-60">
-              {t('profile_seller_kind')}
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {(
-                [
-                  ['private', t('profile_private')],
-                  ['dealer', t('profile_dealer')],
-                ] as const
-              ).map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => {
-                    setSellerKind(value);
-                    setSaved(false);
-                  }}
-                  className={[
-                    'h-11 rounded-control border text-caption font-semibold transition-colors duration-fast ease-out',
-                    sellerKind === value
-                      ? 'border-brand-dark bg-brand-dark text-white'
-                      : 'border-neutral-15 bg-white hover:bg-surface-hover',
-                  ].join(' ')}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* ------------------------------------------------------------
+              ТИП ПРОДАВЦА — БОЛЬШЕ НЕ ПЕРЕКЛЮЧАТЕЛЬ (миграция 0100).
+              ------------------------------------------------------------
+              Здесь стоял сегмент из двух кнопок «Частное лицо |
+              Автосалон», и нажатие второй выдавало витрину в каталоге
+              салонов, страницу /dealer/{id} и отметку «Автосалон» на
+              объявлениях — кому угодно, без единой проверки. Площадка
+              подтверждала покупателю существование компании, ничего о
+              ней не зная.
+              Теперь статус выдаёт администратор по заявке с
+              реквизитами, а блок ниже показывает, на какой стадии
+              находится заявитель. Кнопки «я частное лицо» в нём нет:
+              частник — состояние по умолчанию, выбирать его не из чего.
+
+              ЗНАЧЕНИЕ sellerKind ПРОДОЛЖАЕТ УЧАСТВОВАТЬ В
+              СОХРАНЕНИИ — оно приходит из профиля и уходит обратно в
+              saveProfile без изменений. Меняет его ровно одно
+              действие в интерфейсе: отказ от статуса салона
+              (onLeaveDealer ниже). Обратный переход интерфейсом не
+              предусмотрен вовсе — его делает одобрение заявки на
+              стороне базы. */}
+          <DealerApplicationBlock
+            locale={locale}
+            application={application}
+            sellerKind={sellerKind}
+            // Отказ от статуса: переводим форму в состояние частного
+            // лица и сохраняем сразу, не дожидаясь кнопки «Сохранить».
+            // Иначе человек, подтвердивший отказ в диалоге, увидел бы
+            // блок салона на прежнем месте и решил, что отказ не
+            // сработал.
+            //
+            // Поля витрины при этом обнулит сервер
+            // (update_seller_profile затирает их при seller_kind =
+            // 'private'), и повторять это на клиенте незачем.
+            onLeaveDealer={() => {
+              setSellerKind('private');
+              setSaved(false);
+              submitWith('private');
+            }}
+          />
 
           {/* Название салона — только у дилера. У частника поле не
               показывается вовсе: сервер всё равно затрёт его при
@@ -873,7 +898,11 @@ export default function ProfileForm({ locale, profile }: Props) {
             </Button>
           )}
 
-          <Button onClick={submit} disabled={pending || uploading} fullWidth>
+          <Button
+            onClick={() => submitWith()}
+            disabled={pending || uploading}
+            fullWidth
+          >
             {pending ? t('profile_saving') : t('profile_save')}
           </Button>
 
