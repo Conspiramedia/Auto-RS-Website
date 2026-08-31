@@ -873,6 +873,12 @@ ${[
   row('Телефон', str(payload, 'phone')),
   row('E-mail', email),
   row('Город', str(payload, 'city')),
+  // Реквизиты (0102). row отдаёт пустую строку на пустом значении, и
+  // .filter(Boolean) ниже убирает строку целиком — поля
+  // необязательные, поэтому в письме их может не быть.
+  row('PIB', str(payload, 'tax_id')),
+  row('Матични број', str(payload, 'reg_num')),
+  row('Сайт', str(payload, 'website')),
   row('ID заявки', str(payload, 'lead_id')),
 ]
   .filter(Boolean)
@@ -893,6 +899,9 @@ ${[
     `Телефон: ${str(payload, 'phone')}`,
     email ? `E-mail: ${email}` : '',
     str(payload, 'city') ? `Город: ${str(payload, 'city')}` : '',
+    str(payload, 'tax_id') ? `PIB: ${str(payload, 'tax_id')}` : '',
+    str(payload, 'reg_num') ? `Матични број: ${str(payload, 'reg_num')}` : '',
+    str(payload, 'website') ? `Сайт: ${str(payload, 'website')}` : '',
     '',
     str(payload, 'comment'),
   ]

@@ -68,6 +68,29 @@ const columns: Column<DealerLead>[] = [
         {row.city && (
           <p className="truncate text-micro text-neutral-50">{row.city}</p>
         )}
+        {/* Реквизиты (0102) — здесь же, а не отдельными колонками: по
+            ним админ проверяет компанию в APR, то есть читает их
+            вместе с названием. Поля необязательные, и в отдельных
+            колонках были бы прочерки в большинстве строк.
+            tabular-nums выравнивает цифры по разрядам — сверять номер
+            с выпиской так заметно легче. */}
+        {(row.tax_id || row.registration_number) && (
+          <p className="truncate text-micro tabular-nums text-neutral-50">
+            {row.tax_id && <>PIB {row.tax_id}</>}
+            {row.tax_id && row.registration_number && ' · '}
+            {row.registration_number && <>МБ {row.registration_number}</>}
+          </p>
+        )}
+        {row.website && (
+          <a
+            href={row.website}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="block truncate text-micro text-brand-blue hover:underline"
+          >
+            {row.website}
+          </a>
+        )}
       </div>
     ),
   },
@@ -166,7 +189,7 @@ export default async function AdminLeadsPage({
   let query = supabase
     .from('dealer_leads')
     .select(
-      'id, company_name, contact_name, phone, email, city, comment, status, created_at',
+      'id, company_name, contact_name, phone, email, city, comment, tax_id, registration_number, website, status, created_at',
       { count: 'exact' },
     )
     .order('created_at', { ascending: false })

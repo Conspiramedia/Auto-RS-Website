@@ -160,7 +160,10 @@ export const dict = {
     // «Izdavanje», и слово «automobili» повторялось бы трижды.
     nav_all_cars: 'Svi automobili',
     nav_sell: 'Prodaj auto',
-    nav_dealers: 'Autosaloni',
+    // Дательный падеж, не именительный: /dealers — предложение
+    // салонам с формой заявки, а НЕ каталог салонов. «Autosaloni»
+    // обещало список компаний, которого на странице нет.
+    nav_dealers: 'Autosalonima',
     nav_install: 'Brzi pristup',
     site_tagline: 'Prodaja i iznajmljivanje automobila u Srbiji',
 
@@ -814,6 +817,15 @@ export const dict = {
     dealers_err_contact: 'Unesite ime kontakt osobe.',
     dealers_err_phone: 'Proverite broj telefona.',
     dealers_err_too_long: 'Neko od polja je predugačko.',
+    // Реквизиты на этой форме НЕОБЯЗАТЕЛЬНЫ, поэтому текст ошибки
+    // говорит о формате, а не требует заполнить: пустое поле сервер
+    // пропускает, придирается он только к набранному неверно.
+    dealers_err_tax_id: 'PIB se sastoji od 9 cifara.',
+    dealers_err_reg_num: 'Matični broj se sastoji od 8 cifara.',
+    // Подпись под группой реквизитов: объясняет, зачем их спрашивают
+    // до первого разговора, и что без них заявку тоже примут.
+    dealers_details_hint:
+      'Nije obavezno, ali ubrzava proveru: podatke upoređujemo sa APR-om.',
     dealers_err_rate:
       'Već ste poslali zahtev sa ovog broja. Pokušajte ponovo sutra.',
     dealers_err_unknown: 'Došlo je do greške. Pokušajte ponovo.',
@@ -1047,7 +1059,9 @@ export const dict = {
     // См. комментарий в сербском словаре.
     nav_all_cars: 'Все авто',
     nav_sell: 'Продать авто',
-    nav_dealers: 'Автосалоны',
+    // См. комментарий в сербском словаре: падеж выбран по смыслу
+    // страницы.
+    nav_dealers: 'Автосалонам',
     nav_install: 'Быстрый доступ',
     site_tagline: 'Продажа и аренда автомобилей в Сербии',
 
@@ -1648,6 +1662,11 @@ export const dict = {
     dealers_err_contact: 'Укажите имя контактного лица.',
     dealers_err_phone: 'Проверьте номер телефона.',
     dealers_err_too_long: 'Одно из полей слишком длинное.',
+    // См. комментарий в сербском словаре.
+    dealers_err_tax_id: 'PIB состоит из 9 цифр.',
+    dealers_err_reg_num: 'Матични број состоит из 8 цифр.',
+    dealers_details_hint:
+      'Необязательно, но ускорит проверку: данные сверяем с APR.',
     dealers_err_rate: 'С этого номера заявка уже отправлена. Попробуйте завтра.',
     dealers_err_unknown: 'Произошла ошибка. Попробуйте ещё раз.',
 

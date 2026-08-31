@@ -649,6 +649,13 @@ export type DealerLead = {
   email: string | null;
   city: string | null;
   comment: string | null;
+  // Реквизиты компании (0102). Необязательны: форма на /dealers
+  // открыта анониму и остаётся лидом, а не заявкой на статус, —
+  // поэтому здесь они nullable, в отличие от dealer_applications,
+  // где PIB и матични број обязательны.
+  tax_id: string | null;
+  registration_number: string | null;
+  website: string | null;
   // new | in_progress | done | rejected — набор задан
   // chk_dealer_lead_status в 0053.
   status: string;
