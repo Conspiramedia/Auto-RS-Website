@@ -829,6 +829,13 @@ export const dict = {
     // пропускает, придирается он только к набранному неверно.
     dealers_err_tax_id: 'PIB se sastoji od 9 cifara.',
     dealers_err_email: 'Proverite email adresu.',
+    // Повторная подача (0104).
+    dealers_err_already_dealer:
+      'Vaš nalog već ima status autosalona — zahtev nije potreban.',
+    dealers_err_application_exists:
+      'Zahtev za ovu firmu je već poslat i čeka obradu.',
+    dealers_err_lead_exists:
+      'Zahtev za ovu firmu je već poslat. Javićemo se uskoro.',
     dealers_err_city: 'Izaberite grad.',
     dealers_err_reg_num: 'Matični broj se sastoji od 8 cifara.',
     // Подпись под группой реквизитов: объясняет, ЗАЧЕМ их спрашивают
@@ -1680,6 +1687,13 @@ export const dict = {
     // См. комментарий в сербском словаре.
     dealers_err_tax_id: 'PIB состоит из 9 цифр.',
     dealers_err_email: 'Проверьте email.',
+    // См. комментарий в сербском словаре.
+    dealers_err_already_dealer:
+      'У вашего аккаунта уже есть статус автосалона — заявка не нужна.',
+    dealers_err_application_exists:
+      'Заявка по этой компании уже отправлена и ждёт рассмотрения.',
+    dealers_err_lead_exists:
+      'Заявка по этой компании уже отправлена. Свяжемся с вами в ближайшее время.',
     dealers_err_city: 'Выберите город.',
     dealers_err_reg_num: 'Матични број состоит из 8 цифр.',
     dealers_details_hint: 'Данные сверяем с APR.',

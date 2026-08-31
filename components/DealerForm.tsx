@@ -43,6 +43,13 @@ const ERROR_KEY: Record<string, DictKey> = {
   invalid_reg_num: 'dealers_err_reg_num',
   invalid_email: 'dealers_err_email',
   invalid_city: 'dealers_err_city',
+  // Повторная подача (0104). Три разные причины, а не одна общая:
+  // человеку важно знать, статус у него уже есть, заявка на
+  // рассмотрении или лид ещё не разобран, — действия в этих случаях
+  // разные.
+  already_dealer: 'dealers_err_already_dealer',
+  application_exists: 'dealers_err_application_exists',
+  lead_exists: 'dealers_err_lead_exists',
   too_long: 'dealers_err_too_long',
   rate_limited: 'dealers_err_rate',
 };

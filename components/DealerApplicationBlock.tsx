@@ -41,6 +41,8 @@ import Alert from './ui/Alert';
 import Button from './ui/Button';
 import Card from './ui/Card';
 import { fieldClass } from './ui/Field';
+import ListPicker, { type PickerOption } from './ListPicker';
+import { CITIES } from '@/lib/referenceData';
 import type { DictKey, Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import type { DealerApplication } from '@/lib/types';
@@ -409,10 +411,27 @@ export default function DealerApplicationBlock({
                 салона. Требование проверяет сервер (0103), звёздочка
                 здесь только называет его заранее. */}
             <div className="grid items-start gap-3 sm:grid-cols-2">
-              {field(t('dealer_app_city'), city, setCity, {
-                required: true,
-                maxLength: 100,
-              })}
+              {/* Город — выбор из списка, как в форме на /dealers и в
+                  остальных формах сайта. Свободный ввод давал
+                  разнописания одного города («Beograd», «beograd»,
+                  «Белград»), и салоны из одного места переставали
+                  группироваться при разборе. allowCustom оставлен:
+                  справочник покрывает не каждое село. */}
+              <ListPicker
+                locale={locale}
+                name="dealer_app_city"
+                label={`${t('dealer_app_city')} *`}
+                options={CITIES.map((c): PickerOption => ({
+                  value: c,
+                  label: c,
+                }))}
+                value={city}
+                allowCustom
+                onChange={(v) => {
+                  setCity(v);
+                  setError(null);
+                }}
+              />
               {field(t('dealer_app_person'), person, setPerson, {
                 required: true,
                 maxLength: 120,
