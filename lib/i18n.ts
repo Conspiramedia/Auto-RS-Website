@@ -588,6 +588,14 @@ export const dict = {
     notif_marking: 'Čuvamo…',
     notif_open_listing: 'Otvori oglas',
     notif_open_chat: 'Otvori razgovor',
+    // Уведомления о решении по заявке на статус салона (0101).
+    // Подпись называет, КУДА ведёт переход: у одобренного это его
+    // новая витрина, у отклонённого — профиль, где стоит блок заявки
+    // и откуда подаётся новая.
+    notif_open_showcase: 'Otvori stranicu salona',
+    notif_open_profile: 'Otvori profil',
+    notif_tag_dealer_ok: 'Status potvrđen',
+    notif_tag_dealer_no: 'Zahtev odbijen',
     notif_unread: 'Novo',
     notif_today: 'Danas',
     notif_yesterday: 'Juče',
@@ -1463,6 +1471,11 @@ export const dict = {
     notif_marking: 'Сохраняем…',
     notif_open_listing: 'Открыть объявление',
     notif_open_chat: 'Открыть диалог',
+    // См. комментарий у sr-версии этой группы.
+    notif_open_showcase: 'Открыть витрину',
+    notif_open_profile: 'Открыть профиль',
+    notif_tag_dealer_ok: 'Статус подтверждён',
+    notif_tag_dealer_no: 'Заявка отклонена',
     notif_unread: 'Новое',
     notif_today: 'Сегодня',
     notif_yesterday: 'Вчера',

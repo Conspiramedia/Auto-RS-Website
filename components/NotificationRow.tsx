@@ -132,9 +132,7 @@ export default function NotificationRow({
 
           {href && (
             <span className="text-small font-semibold text-brand-blue">
-              {item.type === 'chat_message'
-                ? t('notif_open_chat')
-                : t('notif_open_listing')}
+              {ctaLabel(item.type, t)}
             </span>
           )}
         </div>
@@ -179,6 +177,30 @@ export default function NotificationRow({
 }
 
 // ------------------------------------------------------------
+// Подпись перехода под строкой.
+// ------------------------------------------------------------
+// Раньше здесь стояла тернарная развилка «диалог или объявление» —
+// на двух типах она читалась, на четырёх превратилась бы в лестницу.
+// Каждая подпись называет, КУДА человек попадёт: «открыть витрину» и
+// «открыть профиль» — разные места, и обещать вместо них «объявление»
+// значило бы врать в интерфейсе.
+function ctaLabel(
+  type: string,
+  t: ReturnType<typeof getT>,
+): string {
+  switch (type) {
+    case 'chat_message':
+      return t('notif_open_chat');
+    case 'dealer_app_approved':
+      return t('notif_open_showcase');
+    case 'dealer_app_rejected':
+      return t('notif_open_profile');
+    default:
+      return t('notif_open_listing');
+  }
+}
+
+// ------------------------------------------------------------
 // Куда ведёт уведомление.
 // ------------------------------------------------------------
 // Тип решает адрес перехода:
@@ -192,6 +214,14 @@ export default function NotificationRow({
 //                    страниц на сайте не имеют, и вести на пустоту
 //                    незачем.
 function targetHref(locale: Locale, item: SiteNotification): string | null {
+  // ОТКАЗ ПО ЗАЯВКЕ САЛОНА — ЕДИНСТВЕННЫЙ ТИП БЕЗ action_id, у
+  // которого всё же есть куда вести. Заявка не сущность со своей
+  // страницей: она показывается блоком внутри профиля, и адрес у неё
+  // постоянный. Поэтому проверка action_id ниже, а не первой строкой.
+  if (item.type === 'dealer_app_rejected') {
+    return localeHref(locale, '/my/profile');
+  }
+
   if (!item.action_id) return null;
 
   switch (item.type) {
@@ -201,6 +231,12 @@ function targetHref(locale: Locale, item: SiteNotification): string | null {
       return localeHref(locale, `/car/${item.action_id}`);
     case 'car_rejected':
       return localeHref(locale, `/my/listing/${item.action_id}/edit`);
+    // Статус салона выдан: ведём НА ВИТРИНУ, а не в профиль. Человек
+    // только что получил страницу салона и первым делом хочет её
+    // увидеть. action_id здесь хранит id владельца — адрес витрины
+    // /dealer/{user_id} (см. миграцию 0101).
+    case 'dealer_app_approved':
+      return localeHref(locale, `/dealer/${item.action_id}`);
     default:
       return null;
   }
@@ -223,6 +259,13 @@ function StatusTag({ locale, type }: { locale: Locale; type: string }) {
       return <Badge tone="error">{t('my_status_rejected')}</Badge>;
     case 'chat_message':
       return <Badge tone="rent">{t('my_tab_messages')}</Badge>;
+    // Решения по заявке на статус салона (0101). Цвета те же роли,
+    // что у объявлений: выдан — success, отказ — error. Человек
+    // узнаёт исход по цвету раньше, чем читает заголовок.
+    case 'dealer_app_approved':
+      return <Badge tone="success">{t('notif_tag_dealer_ok')}</Badge>;
+    case 'dealer_app_rejected':
+      return <Badge tone="error">{t('notif_tag_dealer_no')}</Badge>;
     default:
       // Незнакомый тип (событие, заведённое приложением) метки не
       // получает: выдумывать ей название на основании кода нельзя.

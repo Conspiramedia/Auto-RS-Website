@@ -174,6 +174,27 @@ const DICT = {
     topic_ad: 'Pitanje o oglasu',
     topic_abuse: 'Prijava zloupotrebe',
     topic_privacy: 'Lični podaci',
+
+    // Ответ по заявке на статус автосалона (0101). Не путать с
+    // dealer_lead_admin: то письмо администратору о лиде, эти —
+    // заявителю о его правах.
+    btn_open_showcase: 'Moja stranica salona',
+    btn_open_profile: 'Otvori profil',
+
+    dealer_app_ok_subject: 'Status autosalona je potvrđen',
+    dealer_app_ok_title: 'Status autosalona je potvrđen',
+    dealer_app_ok_lead:
+      'Proverili smo podatke vaše firme. Nalog sada ima status autosalona.',
+    dealer_app_ok_hint:
+      'Popunite vitrinu u profilu: naslovna slika, slogan, grad i radno vreme. Tako kupci vide sa kim imaju posla još pre nego što otvore oglas.',
+
+    dealer_app_no_subject: 'Zahtev za status autosalona nije odobren',
+    dealer_app_no_title: 'Zahtev nije odobren',
+    dealer_app_no_lead:
+      'Nažalost, ne možemo da potvrdimo status autosalona po ovom zahtevu.',
+    dealer_app_reason_label: 'Razlog',
+    dealer_app_no_hint:
+      'Ispravite podatke i pošaljite novi zahtev iz svog profila. Oglasi na nalogu ostaju nepromenjeni.',
   },
 
   ru: {
@@ -225,6 +246,25 @@ const DICT = {
     topic_ad: 'Вопрос по объявлению',
     topic_abuse: 'Жалоба на нарушение',
     topic_privacy: 'Персональные данные',
+
+    // См. комментарий у sr-версии этой группы.
+    btn_open_showcase: 'Моя витрина',
+    btn_open_profile: 'Открыть профиль',
+
+    dealer_app_ok_subject: 'Статус автосалона подтверждён',
+    dealer_app_ok_title: 'Статус автосалона подтверждён',
+    dealer_app_ok_lead:
+      'Мы проверили данные вашей компании. Аккаунт получил статус автосалона.',
+    dealer_app_ok_hint:
+      'Заполните витрину в профиле: обложка, слоган, город и часы работы. Так покупатели видят, с кем имеют дело, ещё до того, как откроют объявление.',
+
+    dealer_app_no_subject: 'Заявка на статус автосалона отклонена',
+    dealer_app_no_title: 'Заявка отклонена',
+    dealer_app_no_lead:
+      'К сожалению, по этой заявке мы не можем подтвердить статус автосалона.',
+    dealer_app_reason_label: 'Причина',
+    dealer_app_no_hint:
+      'Исправьте данные и отправьте новую заявку из своего профиля. Объявления на аккаунте остаются без изменений.',
   },
 } as const;
 
@@ -701,6 +741,122 @@ ${[
   };
 }
 
+// ---------- 6) Заявка на СТАТУС салона: статус выдан ----------
+// Не путать с dealerLeadAdmin ниже: то письмо АДМИНИСТРАТОРУ о
+// маркетинговом лиде с формы «Автосалонам», эти два — ЗАЯВИТЕЛЮ о
+// решении по его правам (миграция 0101).
+//
+// Кнопка ведёт НА ВИТРИНУ, а не в кабинет: человек только что получил
+// страницу салона и первым делом хочет увидеть её, а не список своих
+// объявлений. Адрес собирается из dealer_id: у салона идентификатор
+// страницы совпадает с идентификатором владельца.
+function dealerAppApproved(
+  locale: Locale,
+  payload: Payload,
+  siteUrl: string,
+): RenderedEmail {
+  const company = str(payload, 'company');
+  const dealerId = str(payload, 'dealer_id');
+  const subject = t(locale, 'dealer_app_ok_subject');
+
+  const prefix = locale === 'ru' ? '/ru' : '';
+  // Без dealer_id кнопки на витрину не будет вовсе: ссылка в никуда
+  // хуже её отсутствия — то же правило, что в ленте уведомлений.
+  const showcaseUrl = dealerId ? `${siteUrl}${prefix}/dealer/${dealerId}` : '';
+  const profileUrl = `${siteUrl}${prefix}/my/profile`;
+
+  const bodyHtml = [
+    h1(t(locale, 'dealer_app_ok_title')),
+    p(esc(t(locale, 'dealer_app_ok_lead'))),
+    company
+      ? panel(
+          `<strong style="font-size:16px;">${esc(company)}</strong>`,
+          COLOR.green,
+        )
+      : '',
+    p(esc(t(locale, 'dealer_app_ok_hint')), true),
+    showcaseUrl
+      ? button(t(locale, 'btn_open_showcase'), showcaseUrl, COLOR.green)
+      : button(t(locale, 'btn_open_profile'), profileUrl, COLOR.green),
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  const text = [
+    t(locale, 'dealer_app_ok_title'),
+    '',
+    t(locale, 'dealer_app_ok_lead'),
+    company,
+    '',
+    t(locale, 'dealer_app_ok_hint'),
+    showcaseUrl || profileUrl,
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  return {
+    subject,
+    html: layout({ locale, title: subject, bodyHtml, siteUrl, accent: COLOR.green }),
+    text,
+  };
+}
+
+// ---------- 7) Заявка на СТАТУС салона: отказ ----------
+// ПРИЧИНА — ГЛАВНОЕ СОДЕРЖИМОЕ ПИСЬМА. Ради неё оно и отправляется:
+// отказ без объяснения не даёт исправить заявку, и вторая попытка
+// вслепую закончится тем же отказом.
+// escMultiline: администратор может разбить причину на абзацы, и
+// слипшийся текст читался бы хуже написанного.
+//
+// Кнопка ведёт В ПРОФИЛЬ: именно там стоит блок заявки, из которого
+// подаётся новая. Витрины у отклонённого нет.
+function dealerAppRejected(
+  locale: Locale,
+  payload: Payload,
+  siteUrl: string,
+): RenderedEmail {
+  const company = str(payload, 'company');
+  const reason = str(payload, 'reason');
+  const subject = t(locale, 'dealer_app_no_subject');
+
+  const prefix = locale === 'ru' ? '/ru' : '';
+  const profileUrl = `${siteUrl}${prefix}/my/profile`;
+
+  const bodyHtml = [
+    h1(t(locale, 'dealer_app_no_title')),
+    p(esc(t(locale, 'dealer_app_no_lead'))),
+    panel(
+      [
+        company ? `<strong style="font-size:16px;">${esc(company)}</strong><br>` : '',
+        `<span style="color:${COLOR.textMuted};">${esc(t(locale, 'dealer_app_reason_label'))}:</span> `,
+        escMultiline(reason),
+      ].join(''),
+      COLOR.red,
+    ),
+    p(esc(t(locale, 'dealer_app_no_hint')), true),
+    button(t(locale, 'btn_open_profile'), profileUrl, COLOR.primary),
+  ].join('\n');
+
+  const text = [
+    t(locale, 'dealer_app_no_title'),
+    '',
+    t(locale, 'dealer_app_no_lead'),
+    company,
+    `${t(locale, 'dealer_app_reason_label')}: ${reason}`,
+    '',
+    t(locale, 'dealer_app_no_hint'),
+    profileUrl,
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  return {
+    subject,
+    html: layout({ locale, title: subject, bodyHtml, siteUrl, accent: COLOR.red }),
+    text,
+  };
+}
+
 // ---------- 5) Заявка автосалона — администратору ----------
 function dealerLeadAdmin(payload: Payload, siteUrl: string): RenderedEmail {
   const locale: Locale = 'ru';
@@ -783,6 +939,10 @@ export function renderEmail(
       return contactAdmin(payload, siteUrl);
     case 'dealer_lead_admin':
       return dealerLeadAdmin(payload, siteUrl);
+    case 'dealer_app_approved':
+      return dealerAppApproved(locale, payload, siteUrl);
+    case 'dealer_app_rejected':
+      return dealerAppRejected(locale, payload, siteUrl);
     default:
       return null;
   }
