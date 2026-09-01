@@ -722,12 +722,14 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                 })}
               </div>
 
-              {/* SEO-абзац под чипсами. Мелкий и приглушённый
-                  (text-small, neutral-50): он адресован в первую
-                  очередь поисковику, и перетягивать внимание с самих
-                  ссылок ему нельзя — человек пришёл нажать на марку, а
-                  не читать про рынок. */}
-              <p className="mt-4 text-small leading-relaxed text-neutral-50">
+              {/* SEO-абзац под чипсами. Ступень и цвет те же, что у
+                  текста о площадке выше (text-caption, neutral-70): оба
+                  блока — связный текст для поиска и для человека, и
+                  набирать их по-разному значило бы делать вид, что это
+                  разные по важности вещи. Прежние text-small и
+                  neutral-50 читались тяжело — 12px серым на белом
+                  проваливались в фон. */}
+              <p className="mt-4 text-caption leading-relaxed text-neutral-70">
                 {t('home_brands_text')}
               </p>
             </div>
@@ -758,7 +760,7 @@ export default async function HomeView({ locale }: { locale: Locale }) {
               {/* SEO-абзац под чипсами городов. Оформление то же, что у
                   текста марок выше: два соседних блока обязаны читаться
                   одинаково. */}
-              <p className="mt-4 text-small leading-relaxed text-neutral-50">
+              <p className="mt-4 text-caption leading-relaxed text-neutral-70">
                 {t('home_cities_text')}
               </p>
             </div>
