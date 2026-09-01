@@ -330,7 +330,7 @@ export const dict = {
     // рассчитывает, размещая автомобиль. Ту же осторожность держит
     // карточка home_why_growth_text.
     home_fresh_empty_text:
-      'Katalog se tek puni i prvi oglasi dobijaju svu pažnju kupaca. Pripremamo reklamne kampanje — oglasi postavljeni sada dočekaće prvi talas kupaca već na vrhu liste.',
+      'Katalog se tek puni i prvi oglasi dobijaju svu pažnju kupaca. Pripremamo reklamne kampanje — oglasi postavljeni sada dočekaće prvi talas kupaca već na vrhu liste.',
 
     // ------------------------------------------------------------
     // SEO-текст под витриной свежих объявлений.
@@ -1360,7 +1360,7 @@ export const dict = {
     // размещая автомобиль. Ту же осторожность держит карточка
     // home_why_growth_text.
     home_fresh_empty_text:
-      'Каталог только наполняется, и первым объявлениям достаётся всё внимание покупателей. Мы готовим рекламные кампании — размещённые сейчас объявления встретят первый поток покупателей уже наверху выдачи.',
+      'Каталог только наполняется, и первым объявлениям достаётся всё внимание покупателей. Мы готовим рекламные кампании — размещённые сейчас объявления встретят первый поток покупателей уже наверху выдачи.',
 
     // ------------------------------------------------------------
     // SEO-текст под витриной свежих объявлений.
