@@ -27,6 +27,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+import { trackEvent } from '@/lib/analytics';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import type { CatalogFilters } from '@/lib/queries';
@@ -319,6 +320,30 @@ export default function FilterPanel({
                   .forEach((input) => {
                     if (input.value.trim() === '') input.disabled = true;
                   });
+
+                // СОБЫТИЕ ИМЕННО ЗДЕСЬ, НА ОТПРАВКЕ ФОРМЫ.
+                // Человек выбирает марку, коробку, год и цену одним
+                // заходом; повесь мы событие на изменение поля — один
+                // поиск давал бы с десяток срабатываний, и «сколько
+                // раз искали» перестало бы что-либо значить.
+                //
+                // Считаем ЗАПОЛНЕННЫЕ поля, а не сами значения: марка
+                // и город — это то, что человек ищет, и складывать их
+                // в аналитику значило бы собирать профиль интересов
+                // конкретного посетителя. Число фильтров отвечает на
+                // нужный вопрос — пользуются ли фильтрами вообще и
+                // насколько сложно.
+                //
+                // Отключённые выше пустые поля в подсчёт не попадают:
+                // проверка идёт по тому же признаку, что и отключение.
+                const used = Array.from(
+                  form.querySelectorAll<HTMLInputElement>('input[name]'),
+                ).filter((input) => !input.disabled).length;
+
+                trackEvent('search_performed', {
+                  filters_used: used,
+                  listing_type: filters.listingType ?? 'both',
+                });
               }}
             >
               {/* Тип объявления — сегмент из трёх кнопок. Первым полем:

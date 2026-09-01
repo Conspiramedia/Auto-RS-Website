@@ -41,6 +41,7 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
+    "@next/third-parties": "^16.3.4",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.3",
     "next": "^16.3.1",

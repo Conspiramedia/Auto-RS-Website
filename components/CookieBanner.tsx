@@ -10,28 +10,40 @@
 // является условием доступа к каталогу. Человек может листать
 // объявления, не трогая баннер вовсе.
 //
-// ОДНА КНОПКА. «Подробнее» нет по требованию задачи: документы и так
-// висят ссылками в подвале каждой страницы, а вторая кнопка на плашке
-// в две строки на телефоне съедала бы всю её ширину.
+// ДВЕ КНОПКИ: «Принять» и «Отклонить». Раньше кнопка была одна —
+// плашка лишь уведомляла о технических куки, отказываться было не от
+// чего. С подключением GA4 она стала вопросом: аналитика с куки
+// грузится только после согласия, а значит отказ обязан быть так же
+// доступен, как согласие (требование GDPR). «Подробнее» по-прежнему
+// нет: документы висят ссылками в подвале каждой страницы.
 //
-// ПОЧЕМУ РЕНДЕР ОТЛОЖЕН ДО useEffect. Признак «согласие уже дано»
-// живёт в localStorage, а он недоступен на сервере. Отрисуй мы баннер
+// ПОЧЕМУ РЕНДЕР ОТЛОЖЕН ДО useEffect. Решение по куки живёт в
+// localStorage, а он недоступен на сервере. Отрисуй мы баннер
 // сразу — серверная разметка (баннер есть) разошлась бы с клиентской
-// (баннера нет у принявшего), и React выдал бы ошибку гидратации.
+// (баннера нет у ответившего), и React выдал бы ошибку гидратации.
 // Поэтому первый проход не рисует ничего, и лишь после монтирования
 // компонент решает, показывать ли плашку. Мигания это не даёт:
 // показываем не «сразу и потом прячем», а «только когда выяснили».
 //
-// ВЕРСИОННОСТЬ — в lib/consent: hasCookieConsent() сравнивает
-// сохранённую версию с текущей POLICY_VERSION, а не проверяет булев
-// флаг. Обновилась редакция документов — баннер вернулся ко всем,
-// включая принявших прежнюю.
+// ПЛАШКА СКРЫВАЕТСЯ ПО ЛЮБОМУ ОТВЕТУ, а не только по согласию:
+// hasCookieDecision() отличает «ещё не спрашивали» от «ответил нет».
+// Иначе отказавшийся видел бы вопрос при каждом заходе — давление до
+// нужного нам ответа, ровно то, что GDPR и запрещает.
+//
+// ВЕРСИОННОСТЬ — в lib/consent: сохранённая версия сравнивается с
+// текущей POLICY_VERSION. Обновилась редакция документов — баннер
+// вернулся ко всем, включая ответивших на прежнюю: новая редакция
+// это новый вопрос.
 // ============================================================
 
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { acceptCookieConsent, hasCookieConsent } from '@/lib/consent';
+import {
+  hasCookieDecision,
+  setCookieConsent,
+  type ConsentDecision,
+} from '@/lib/consent';
 import { getT, stripLocale } from '@/lib/i18n';
 import { POLICY_VERSION } from '@/lib/legal';
 import { getBrowserClient } from '@/lib/supabaseClient';
@@ -49,7 +61,7 @@ export default function CookieBanner() {
 
   useEffect(() => {
     // См. шапку: до монтирования состояние хранилища неизвестно.
-    if (!hasCookieConsent()) setVisible(true);
+    if (!hasCookieDecision()) setVisible(true);
   }, []);
 
   // Админка живёт вне пользовательского интерфейса сайта: модератор
@@ -60,16 +72,34 @@ export default function CookieBanner() {
 
   if (!visible) return null;
 
+  // Согласие: куки аналитики разрешены, GA4 подключается.
   function accept() {
-    // ПОРЯДОК ВАЖЕН: сначала прячем плашку и ставим локальный флаг,
+    decide('accepted');
+  }
+
+  // Отказ. Баннер закрывается так же, как при согласии, и больше не
+  // возвращается: решение сохранено, и переспрашивать его при каждом
+  // заходе значило бы давить на пользователя до нужного нам ответа.
+  // GA4 при этом не подключится, а Plausible продолжит считать —
+  // он куки не ставит и согласия не требует.
+  function reject() {
+    decide('rejected');
+  }
+
+  function decide(decision: ConsentDecision) {
+    // ПОРЯДОК ВАЖЕН: сначала прячем плашку и пишем локальное решение,
     // и только потом идём в сеть. Интерфейс не должен ждать базу —
-    // «Хорошо» обязано срабатывать мгновенно, в том числе на плохой
+    // кнопка обязана срабатывать мгновенно, в том числе на плохой
     // связи и при офлайне.
+    //
+    // setCookieConsent заодно рассылает событие, по которому слой GA4
+    // в этой же вкладке подключает скрипт, не дожидаясь перезагрузки
+    // (см. lib/consent → CONSENT_CHANGE_EVENT).
     setVisible(false);
-    acceptCookieConsent();
+    setCookieConsent(decision);
 
     // Запись доказательства. Ошибка НЕ возвращает баннер и никак не
-    // показывается пользователю: человек своё согласие выразил, и
+    // показывается пользователю: человек своё решение выразил, и
     // требовать его повторно из-за сбоя на нашей стороне неправильно.
     // Диагностика уходит в консоль — там её увидит разработчик, а не
     // посетитель.
@@ -79,10 +109,13 @@ export default function CookieBanner() {
     // Больше не пробуем — очередь ретраев в браузере, который человек
     // закроет через секунду, всё равно недостоверна, а задача
     // «не потерять ни одного согласия любой ценой» решается не здесь.
-    void sendConsent(1);
+    void sendConsent(1, decision);
   }
 
-  async function sendConsent(attemptsLeft: number): Promise<void> {
+  async function sendConsent(
+    attemptsLeft: number,
+    decision: ConsentDecision,
+  ): Promise<void> {
     try {
       const supabase = getBrowserClient();
 
@@ -90,9 +123,12 @@ export default function CookieBanner() {
       // Именно она попадёт в policy_version записи, а не текущее
       // значение на момент чтения журнала: доказывать нужно ту
       // редакцию, которую человеку показали.
+      // В журнал уходит РЕАЛЬНОЕ решение, а не всегда true: отказ —
+      // такой же факт, который нужно уметь доказать. Раньше здесь
+      // стоял литерал true, потому что отказаться было нельзя.
       const { data, error } = await supabase.rpc('record_cookie_consent', {
         p_policy_version: POLICY_VERSION,
-        p_consents: { cookies: true },
+        p_consents: { cookies: decision === 'accepted' },
       });
 
       // RPC отвечает {ok: true} либо {ok: false, error: '<код>'}.
@@ -104,14 +140,14 @@ export default function CookieBanner() {
       if (ok) return;
 
       if (attemptsLeft > 0) {
-        setTimeout(() => void sendConsent(attemptsLeft - 1), 3000);
+        setTimeout(() => void sendConsent(attemptsLeft - 1, decision), 3000);
         return;
       }
 
       console.warn('[cookie-consent] запись согласия не удалась', error ?? data);
     } catch (e) {
       if (attemptsLeft > 0) {
-        setTimeout(() => void sendConsent(attemptsLeft - 1), 3000);
+        setTimeout(() => void sendConsent(attemptsLeft - 1, decision), 3000);
         return;
       }
 
@@ -256,13 +292,35 @@ export default function CookieBanner() {
             ступень ниже прежних py-2.5 и text-caption: плашка
             уведомления не должна нести кнопку размером с
             «Опубликовать». */}
-        <button
-          type="button"
-          onClick={accept}
-          className="self-center rounded-control bg-brand-dark px-6 py-2 text-small font-semibold text-white transition-colors duration-fast ease-out hover:brightness-110"
-        >
-          {t('cookie_banner_accept')}
-        </button>
+        {/* ДВЕ КНОПКИ, РАВНОПРАВНЫЕ ПО ВЕСУ.
+            С подключением GA4 баннер перестал быть уведомлением и стал
+            вопросом: аналитика с куки грузится ТОЛЬКО после согласия.
+            А раз так, отказ обязан быть ровно так же доступен, как
+            согласие, — это прямое требование GDPR, и «Принять» яркой
+            кнопкой при отказе в виде мелкой ссылки его нарушает.
+
+            Поэтому обе кнопки одного размера и в одном ряду. Различает
+            их только заливка: «Принять» тёмная (тон dark — зелёный на
+            сайте занят главным действием страницы), «Отклонить» —
+            контурная. Это допустимая разница: она подсказывает
+            ожидаемый ответ, но не мешает нажать второй. */}
+        <div className="flex justify-center gap-2">
+          <button
+            type="button"
+            onClick={reject}
+            className="rounded-control border border-neutral-15 bg-white px-5 py-2 text-small font-semibold transition-colors duration-fast ease-out hover:bg-surface-hover"
+          >
+            {t('cookie_banner_reject')}
+          </button>
+
+          <button
+            type="button"
+            onClick={accept}
+            className="rounded-control bg-brand-dark px-5 py-2 text-small font-semibold text-white transition-colors duration-fast ease-out hover:brightness-110"
+          >
+            {t('cookie_banner_accept')}
+          </button>
+        </div>
       </div>
     </div>
   );

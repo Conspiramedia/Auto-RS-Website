@@ -85,22 +85,49 @@ const plausibleOrigin = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN
     ).origin
   : '';
 
+// ------------------------------------------------------------
+// Источники GA4. Добавляются в CSP только при заданном Measurement ID —
+// по тому же правилу, что и Plausible: нет ключа, нет и доступа.
+// ------------------------------------------------------------
+// Хостов ДВА, и они делают разное:
+//   * googletagmanager.com — отдаёт сам gtag.js. Нужен в script-src;
+//   * google-analytics.com — принимает события. Нужен в connect-src.
+// Пропусти любой из них — GA4 молча не заработает: браузер заблокирует
+// либо загрузку скрипта, либо отправку, и ошибка будет видна только
+// в консоли посетителя.
+//
+// Регион-специфичные сборщики GA4 (region1.google-analytics.com и
+// подобные) покрыты wildcard-записью: конкретный поддомен зависит от
+// страны посетителя, и перечислить их списком нельзя.
+const gaConfigured = Boolean(process.env.NEXT_PUBLIC_GA_ID);
+
+const gaScriptOrigin = gaConfigured
+  ? 'https://www.googletagmanager.com'
+  : '';
+
+const gaConnectOrigins = gaConfigured
+  ? 'https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com'
+  : '';
+
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-eval' 'unsafe-inline'${plausibleOrigin ? ` ${plausibleOrigin}` : ''}`,
+  `script-src 'self' 'unsafe-eval' 'unsafe-inline'${plausibleOrigin ? ` ${plausibleOrigin}` : ''}${gaScriptOrigin ? ` ${gaScriptOrigin}` : ''}`,
   "style-src 'self' 'unsafe-inline'",
   // Wildcard *.supabase.co оставлен вдобавок к конкретному origin:
   // фотографии старых объявлений могут отдаваться с других поддоменов
   // проекта (storage/CDN), и жёсткая привязка к одному хосту сломала бы
   // их показ. images.unsplash.com — источник демо-фотографий сида.
-  `img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com${supabaseOrigin ? ` ${supabaseOrigin}` : ''}`,
+  // GA4 в части случаев отправляет событие не fetch-запросом, а
+  // загрузкой пикселя (/collect?...). Без записи в img-src такие
+  // отправки молча теряются — заметно это только по расхождению цифр.
+  `img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com${supabaseOrigin ? ` ${supabaseOrigin}` : ''}${gaConnectOrigins ? ` ${gaConnectOrigins}` : ''}`,
   // connect-src нужен аналитике отдельно от script-src: события
   // отправляются fetch-запросом на /api/event того же origin.
   //
   // wss://*.supabase.co — Realtime-канал чата. Идёт рядом с https-записью,
   // а не вместо неё: по https работают RPC, авторизация и Storage, по
   // wss — только подписка на новые сообщения.
-  `connect-src 'self' https://*.supabase.co wss://*.supabase.co${supabaseOrigin ? ` ${supabaseOrigin}` : ''}${supabaseWsOrigin ? ` ${supabaseWsOrigin}` : ''}${plausibleOrigin ? ` ${plausibleOrigin}` : ''}`,
+  `connect-src 'self' https://*.supabase.co wss://*.supabase.co${supabaseOrigin ? ` ${supabaseOrigin}` : ''}${supabaseWsOrigin ? ` ${supabaseWsOrigin}` : ''}${plausibleOrigin ? ` ${plausibleOrigin}` : ''}${gaConnectOrigins ? ` ${gaConnectOrigins}` : ''}`,
   "font-src 'self' data:",
   "frame-ancestors 'none'",
   "object-src 'none'",

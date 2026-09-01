@@ -12,6 +12,7 @@ import { Montserrat } from 'next/font/google';
 
 import Analytics from '@/components/Analytics';
 import CookieBanner from '@/components/CookieBanner';
+import GoogleAnalyticsGate from '@/components/GoogleAnalytics';
 import { brand } from '@/lib/brand';
 import { siteBaseUrl } from '@/lib/supabase';
 import './globals.css';
@@ -108,11 +109,17 @@ export default function RootLayout({
             клиентский бандл уезжает только он. */}
         <CookieBanner />
 
-        {/* Аналитика подключается последней и только при заданном
-            домене (см. lib/analytics). Plausible cookie не ставит,
-            согласия на аналитику не требуется — баннер выше говорит
-            о технических cookie (сессия, выбранный язык). */}
+        {/* Аналитика подключается последней. Два слоя с разными
+            правилами — см. lib/analytics:
+
+            Plausible — при заданном домене и ВСЕГДА: куки не ставит,
+            согласия не требует, поэтому считает и тех, кто отказался.
+
+            GA4 — при заданном Measurement ID И данном согласии. Куки
+            ставит, поэтому ждёт ответа в баннере выше; до ответа и
+            при отказе скрипт не подключается вовсе. */}
         <Analytics />
+        <GoogleAnalyticsGate />
       </body>
     </html>
   );

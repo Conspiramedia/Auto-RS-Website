@@ -16,7 +16,7 @@
 // (SEO, OG-превью, скорость первой отрисовки).
 // ============================================================
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { rememberCar, type RecentCar } from './RecentlyViewed';
 import { trackEvent } from '@/lib/analytics';
@@ -32,7 +32,29 @@ type Props = {
 };
 
 export default function TrackCardView({ car, listingType }: Props) {
+  // Идентификатор объявления, по которому событие УЖЕ отправлено.
+  //
+  // ЗАЧЕМ. В режиме разработки React StrictMode монтирует компонент
+  // дважды и дважды выполняет эффект — без защиты каждый просмотр
+  // карточки давал бы два события card_view. В обычной сборке
+  // StrictMode не работает, но полагаться на это нельзя: цифры
+  // расходились бы между dev и prod, и заметить ошибку в разметке
+  // целей стало бы невозможно.
+  //
+  // Почему ref, а не state: значение не влияет на разметку, и
+  // перерисовка из-за него была бы лишней. Ref переживает повторный
+  // вызов эффекта, потому что сам компонент при этом не размонтируется
+  // (StrictMode переиспользует экземпляр).
+  //
+  // Сравнение по id, а не булев флаг: в каталоге переход между
+  // карточками может переиспользовать компонент с новым объявлением —
+  // тогда событие обязано уйти снова, но уже для другого id.
+  const trackedId = useRef<string | null>(null);
+
   useEffect(() => {
+    if (trackedId.current === car.id) return;
+    trackedId.current = car.id;
+
     trackEvent('card_view', {
       brand: car.brand,
       model: car.model,
