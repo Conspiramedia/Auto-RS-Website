@@ -660,11 +660,11 @@ export const dict = {
     // заявке с реквизитами компании, и эта группа строк обслуживает
     // все четыре состояния блока: заявки нет (форма), заявка ждёт,
     // заявка отклонена, статус подтверждён.
-    dealer_app_title: 'Prodajete kao autosalon?',
+    dealer_app_title: 'Prodajete kao auto-kuća?',
     // Объяснение ДО формы: человек должен понимать, почему у него
     // просят PIB, прежде чем начнёт его искать.
     dealer_app_intro:
-      'Autosalon dobija svoju stranicu u katalogu i oznaku «Autosalon» na oglasima. Zato status potvrđuje administrator — pošaljite podatke firme i javićemo se.',
+      'Auto-kuća ima svoju stranicu u katalogu. Zato status potvrđuje administrator — pošaljite podatke o kompaniji i javićemo vam se.',
     dealer_app_open: 'Ostavite zahtev',
     dealer_app_cancel: 'Odustani',
     dealer_app_submit: 'Pošalji zahtev',
@@ -1557,7 +1557,7 @@ export const dict = {
     // См. пояснение у sr-версии этой группы.
     dealer_app_title: 'Продаёте как автосалон?',
     dealer_app_intro:
-      'У автосалона есть своя страница в каталоге и отметка «Автосалон» на объявлениях. Поэтому статус подтверждает администратор — отправьте данные компании, и мы свяжемся с вами.',
+      'У автосалона есть своя страница в каталоге. Поэтому статус подтверждает администратор — отправьте данные компании, и мы свяжемся с вами.',
     dealer_app_open: 'Оставить заявку',
     dealer_app_cancel: 'Отмена',
     dealer_app_submit: 'Отправить заявку',
