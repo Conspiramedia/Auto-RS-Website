@@ -498,7 +498,7 @@ export const dict = {
     // između poseta.
     my_auth_title: 'Prijavite se',
     my_auth_lead:
-      'Unesite broj telefona — poslaćemo vam kod u SMS-u. Isti nalog radi na svakom uređaju i u svakom pregledaču.',
+      'Unesite e-mail adresu — poslaćemo vam kod. Isti nalog radi na svakom uređaju i u svakom pregledaču.',
     my_auth_phone: 'Broj telefona',
     my_auth_code: 'Kod iz SMS-a',
     my_auth_send: 'Pošalji kod',
@@ -515,7 +515,12 @@ export const dict = {
     // Нейтральный отказ: одинаков и для несуществующего адреса, и для
     // существующего пользователя без прав. Разные тексты превратили бы
     // форму входа в способ проверять, кто зарегистрирован.
-    auth_email_not_allowed: 'Za ovu adresu prijava e-mailom nije podešena.',
+    // Отказ гейта больше не означает «адреса нет»: регистрация по
+    // почте открыта (0107), и незнакомый адрес пропускается. Остались
+    // две причины — исчерпанная квота и неверная форма адреса, о них
+    // текст и говорит.
+    auth_email_not_allowed:
+      'Previše pokušaja ili adresa nije ispravna. Proverite adresu i pokušajte kasnije.',
     auth_email_invalid: 'Unesite ispravnu e-mail adresu.',
     my_auth_submit: 'Prijavi se',
     my_auth_checking: 'Proveravamo…',
@@ -1460,7 +1465,7 @@ export const dict = {
     // живёт между визитами, как и в приложении.
     my_auth_title: 'Вход',
     my_auth_lead:
-      'Введите номер телефона — пришлём код в SMS. Один аккаунт работает на любом устройстве и в любом браузере.',
+      'Введите адрес почты — пришлём код. Один аккаунт работает на любом устройстве и в любом браузере.',
     my_auth_phone: 'Номер телефона',
     my_auth_code: 'Код из SMS',
     my_auth_send: 'Получить код',
@@ -1472,7 +1477,12 @@ export const dict = {
     auth_email_code: 'Код из письма',
     auth_email_sent_to: 'Мы отправили код на адрес',
     auth_email_change: 'Изменить адрес',
-    auth_email_not_allowed: 'Для этого адреса вход по почте не настроен.',
+    // Отказ гейта больше не означает «адреса нет»: регистрация по
+    // почте открыта (0107), и незнакомый адрес пропускается. Остались
+    // две причины — исчерпанная квота и неверная форма адреса, о них
+    // текст и говорит.
+    auth_email_not_allowed:
+      'Слишком много попыток или адрес неверный. Проверьте адрес и попробуйте позже.',
     auth_email_invalid: 'Введите корректный адрес электронной почты.',
     my_auth_submit: 'Войти',
     my_auth_checking: 'Проверяем…',
