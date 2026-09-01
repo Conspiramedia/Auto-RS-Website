@@ -71,9 +71,9 @@ import {
   buildOpeningHours,
   formatSerbianPhone,
   formatTime,
-  isValidSerbianPhone,
   isValidTime,
   parseOpeningHours,
+  serbianPhoneToE164,
 } from '@/lib/inputFormat';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
@@ -308,9 +308,10 @@ export default function ProfileForm({ locale, profile, application }: Props) {
     }
 
     // ТЕЛЕФОН ПРОВЕРЯЕТСЯ ТАК ЖЕ, КАК В ПОДАЧЕ ОБЪЯВЛЕНИЯ.
-    // isValidSerbianPhone — та же функция, что стоит на кнопке
-    // публикации в SellForm: сербский мобильный, 8–9 цифр
-    // национальной части, первая цифра 6. Сервер формат не проверяет
+    // serbianPhoneToE164 — та же функция, что стоит за проверкой на
+    // кнопке публикации в SellForm: сербский мобильный, 8–9 цифр
+    // национальной части, первая цифра 6; null означает «не подходит».
+    // Она же сразу даёт вид для базы. Сервер формат не проверяет
     // намеренно (см. set_profile_phone, миграция 0106), поэтому без
     // этой проверки в профиль ушёл бы городской или обрезанный номер
     // — и тот же номер потом подставился бы в объявление, где
@@ -320,10 +321,20 @@ export default function ProfileForm({ locale, profile, application }: Props) {
     // Пустое поле допустимо: номер не обязателен, его спросят при
     // первой подаче. Пустым считается и поле с одним кодом страны —
     // человек открыл поле и передумал.
-    const phoneClean =
+    //
+    // В БАЗУ УХОДИТ E.164 БЕЗ ПРОБЕЛОВ («+381612345678»), а не то, что
+    // видно в поле. Маска ставит пробелы для чтения, но подача
+    // объявления пишет в ту же колонку результат serbianPhoneToE164
+    // (SellForm, contactPhone) — сохрани профиль отформатированную
+    // строку, у одного и того же продавца номер лежал бы в базе
+    // в двух разных видах — смотря где он его вводил в последний раз.
+    // Обратно в маску его превращает formatSerbianPhone при чтении.
+    const typed =
       phone.trim() === SERBIAN_PHONE_PREFIX.trim() ? '' : phone.trim();
 
-    if (phoneClean !== '' && !isValidSerbianPhone(phoneClean)) {
+    const phoneClean = typed === '' ? '' : (serbianPhoneToE164(typed) ?? '');
+
+    if (typed !== '' && phoneClean === '') {
       setError(t('profile_phone_invalid'));
       return;
     }
