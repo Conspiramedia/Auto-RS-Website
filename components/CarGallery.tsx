@@ -40,15 +40,25 @@
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
+import PhotoLightbox from './PhotoLightbox';
 import type { CarImage } from '@/lib/types';
+import type { Locale } from '@/lib/i18n';
+import { getT } from '@/lib/i18n';
 
 type Props = {
   images: CarImage[];
   alt: string;
+  // Нужна лайтбоксу: у стрелок и крестика нет текста, только
+  // aria-label, и он обязан быть на языке страницы.
+  locale: Locale;
 };
 
-export default function CarGallery({ images, alt }: Props) {
+export default function CarGallery({ images, alt, locale }: Props) {
+  const t = getT(locale);
   const [active, setActive] = useState(0);
+  // Открыт ли полноэкранный просмотр. Индекс кадра лайтбокс берёт из
+  // active — открывается ровно та фотография, по которой тапнули.
+  const [zoomed, setZoomed] = useState(false);
 
   // Лента миниатюр и сами кнопки в ней. При переключении кадра
   // активная миниатюра должна сама въехать в видимую часть: на
@@ -92,8 +102,18 @@ export default function CarGallery({ images, alt }: Props) {
     touchX.current = null;
 
     // Порог в 40px отсекает дрожание пальца при обычном тапе и
-    // вертикальной прокрутке страницы.
-    if (Math.abs(dx) < 40) return;
+    // вертикальной прокрутке страницы. Ниже порога это не свайп, а
+    // тап — открываем полноэкранный просмотр.
+    //
+    // Обе роли на одном элементе намеренно: палец лежит на
+    // фотографии, и требовать для увеличения отдельную кнопку значило
+    // бы придумывать жест там, где очевиден тап по самому снимку.
+    // onClick для этого не годится — после свайпа браузер шлёт и его
+    // тоже, и просмотр открывался бы при каждом листании.
+    if (Math.abs(dx) < 40) {
+      setZoomed(true);
+      return;
+    }
 
     // По краям листание упирается, а не заворачивается: круговой
     // переход с последнего кадра на первый читается как сбой.
@@ -112,10 +132,22 @@ export default function CarGallery({ images, alt }: Props) {
 
   return (
     <div>
-      <div
-        className="relative aspect-[3/2] overflow-hidden rounded-card bg-surface-muted sm:aspect-[4/3]"
+      {/* Кадр — кнопка, а не div: открытие просмотра обязано работать
+          мышью и с клавиатуры, а не только пальцем. type="button"
+          нужен всегда — внутри формы кнопка по умолчанию сабмитит.
+
+          onClick срабатывает и после свайпа (браузер шлёт его следом
+          за touchend), поэтому от лишнего открытия защищает та же
+          проверка смещения: onTouchEnd успевает выставить zoomed сам,
+          а здесь мы просто открываем — повторный setState на уже
+          открытом слое ничего не меняет. */}
+      <button
+        type="button"
+        aria-label={t('gallery_open')}
+        className="relative block w-full cursor-zoom-in overflow-hidden rounded-card bg-surface-muted aspect-[3/2] sm:aspect-[4/3]"
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
+        onClick={() => setZoomed(true)}
       >
         {images.map((img, i) => (
           // Каждый кадр — ДВА СЛОЯ ОДНОГО ФАЙЛА, как _GalleryItem в приложении.
@@ -182,7 +214,20 @@ export default function CarGallery({ images, alt }: Props) {
             {active + 1} / {images.length}
           </div>
         )}
-      </div>
+      </button>
+
+      {/* Полноэкранный просмотр. Монтируется только открытым: пока
+          слой не нужен, в дереве его нет — не тратим ни разметку, ни
+          обработчики клавиатуры. */}
+      {zoomed && (
+        <PhotoLightbox
+          images={images}
+          alt={alt}
+          locale={locale}
+          startIndex={active}
+          onClose={() => setZoomed(false)}
+        />
+      )}
 
       {images.length > 1 && (
         <div ref={stripRef} className="no-scrollbar mt-2 flex gap-2 overflow-x-auto">

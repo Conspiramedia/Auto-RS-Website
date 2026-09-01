@@ -211,7 +211,7 @@ export default async function CarPageView({
                 галерея прокручивает миниатюры и не должна отвечать
                 за слой поверх кадра. */}
             <div className="relative">
-              <CarGallery images={images} alt={title} />
+              <CarGallery images={images} alt={title} locale={locale} />
               <GalleryCloseButton locale={locale} fallbackPath={catalogPath} />
             </div>
 
