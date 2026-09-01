@@ -198,7 +198,7 @@ export const dict = {
     empty_reason: 'Nijedan automobil ne odgovara zadatim filterima.',
     empty_reset: 'Poništi filtere',
     empty_notify_hint:
-      'Sačuvajte link ove pretrage — filteri ostaju u adresi, pa novu ponudu proveravate u jednom kliku.',
+      'Sačuvajte link ove pretrage — filteri ostaju u adresi, pa novu ponudu proveravate u jednom kliku.',
 
     // Карточка
     car_price_negotiable: 'Cena na upit',
@@ -246,7 +246,7 @@ export const dict = {
 
     // Подача объявления
     sell_title: 'Prodajte automobil',
-    sell_subtitle: 'Objavite oglas besplatno — direktno sa sajta, za nekoliko minuta.',
+    sell_subtitle: 'Objavite oglas besplatno — direktno sa sajta, za nekoliko minuta.',
     sell_step: 'Korak',
     sell_next: 'Dalje',
     sell_back: 'Nazad',
@@ -270,7 +270,7 @@ export const dict = {
     // уйдёт в объявление: опечатку заметит только сам продавец.
     sell_phone_confirm_title: 'Proverite broj telefona',
     sell_phone_confirm_text:
-      'Kupci će zvati na ovaj broj. Proverite da li je tačan — kasnije ga menjate u oglasu.',
+      'Kupci će zvati na ovaj broj. Proverite da li je tačan — kasnije ga menjate u oglasu.',
     sell_phone_confirm_edit: 'Izmeni',
     sell_phone_confirm_ok: 'Tačno',
     // Подпись под полем почты в форме подачи. Объясняет разницу между
@@ -294,7 +294,7 @@ export const dict = {
     // словами: поисковику нужен связный текст, а не только ссылки,
     // и человеку он объясняет, что за списком стоит.
     home_brands_text:
-      'Najtraženije marke automobila na tržištu Srbije. Na RS Auto pronađite oglase za polovne i nove automobile privatnih prodavaca i salona: Volkswagen, BMW, Audi, Mercedes-Benz, Škoda, Opel, Renault i Fiat. Izaberite marku — katalog prikazuje aktuelne oglase sa cenom, fotografijama i kontaktom prodavca.',
+      'Najtraženije marke automobila na tržištu Srbije. Na RS Auto pronađite oglase za polovne i nove automobile privatnih prodavaca i salona: Volkswagen, BMW, Audi, Mercedes-Benz, Škoda, Opel, Renault i Fiat. Izaberite marku — katalog prikazuje aktuelne oglase sa cenom, fotografijama i kontaktom prodavca.',
     home_all_cars: 'Svi automobili',
     // Призыв под блоком «Zašto RS Auto». Отдельный ключ, а не
     // home_hero_cta: там короткое «Objavi auto» рядом со второй
@@ -313,13 +313,13 @@ export const dict = {
       'Objavljivanje i kontakt sa kupcima ne naplaćujemo. Bez provizije od prodaje.',
     home_why_audience_title: 'Dve publike odjednom',
     home_why_audience_text:
-      'Srpski i ruski u jednom oglasu — prevod interfejsa radi sajt, vi pišete na svom jeziku.',
+      'Srpski i ruski u jednom oglasu — prevod interfejsa radi sajt, vi pišete na svom jeziku.',
     home_why_direct_title: 'Direktan kontakt',
     home_why_direct_text:
       'Kupac piše ili zove vas lično. Bez posrednika i bez provizije od prodaje.',
     home_why_growth_title: 'Pripremamo oglašavanje',
     home_why_growth_text:
-      'Platforma se pokreće — radimo na dovođenju kupaca. Rani oglasi startuju bez konkurencije.',
+      'Platforma se pokreće — radimo na dovođenju kupaca. Rani oglasi startuju bez konkurencije.',
 
     // Пустая витрина свежих объявлений: платформа запускается, объявлений
     // ещё нет. Не «ništa nije pronađeno» (это про сбой поиска), а
@@ -339,7 +339,7 @@ export const dict = {
     // за площадка»: чем занимается, где работает, что делать дальше.
     // Стоит на главной ПОД первым экраном — там, где его прочтёт
     // заинтересовавшийся, а не тот, кто пришёл за конкретной машиной.
-    home_seo_title: 'RS Auto — prodaja i iznajmljivanje automobila u Srbiji',
+    home_seo_title: 'RS Auto — prodaja i iznajmljivanje automobila u Srbiji',
     home_seo_p1:
       'RS Auto je oglasnik za prodaju i iznajmljivanje automobila u Srbiji. Privatni prodavci i auto-saloni objavljuju oglase besplatno, a kupci pregledaju ponude na srpskom i ruskom jeziku.',
     // «vitrinu u katalogu», а НЕ «na glavnoj strani»: витрина салонов
@@ -354,7 +354,7 @@ export const dict = {
     // только объявить о продаже, и кнопка «найти автомобиль» под ней
     // противоречила только что прочитанному.
     home_seo_p3:
-      'Pronađite automobil po marki, gradu i ceni — ili objavite svoj za 10 minuta.',
+      'Pronađite automobil po marki, gradu i ceni — ili objavite svoj za 10 minuta.',
     // Кнопка под SEO-текстом: выход в каталог для того, кто пришёл
     // ПОКУПАТЬ. Весь блок выше объясняет площадку, и заканчиваться он
     // должен действием — иначе прочитавший упирается в следующий
@@ -366,7 +366,7 @@ export const dict = {
     // SEO-абзац под чипсами городов. Та же роль, что у текста марок:
     // связный текст для поиска и пояснение для человека.
     home_cities_text:
-      'Oglasi za prodaju automobila iz cele Srbije. Najčešće se traže gradovi: Beograd, Novi Sad, Niš, Kragujevac i Pančevo. Izaberite grad da pogledate automobile u blizini — sa mogućnošću pregleda i direktne veze sa prodavcem.',
+      'Oglasi za prodaju automobila iz cele Srbije. Najčešće se traže gradovi: Beograd, Novi Sad, Niš, Kragujevac i Pančevo. Izaberite grad da pogledate automobile u blizini — sa mogućnošću pregleda i direktne veze sa prodavcem.',
 
     // Дилеры
     dealers_title: 'Za autosalone',
@@ -383,9 +383,9 @@ export const dict = {
     // правка главной молча меняет посадочную страницу.
     home_dealers_title: 'Za auto-salone',
     home_dealers_lead:
-      'Sopstvena stranica u katalogu salona i kupci iz cele Srbije — srpska i ruskojezična publika.',
+      'Sopstvena stranica u katalogu salona i kupci iz cele Srbije — srpska i ruskojezična publika.',
     home_dealers_b1:
-      'Vitrina na glavnoj strani — vaš salon se ističe u katalogu',
+      'Vitrina na glavnoj strani — vaš salon se ističe u katalogu',
     home_dealers_b2: 'besplatno oglašavanje za salone-partnere',
     // Формулировка про ПРОВЕРКУ КОМПАНИИ, а не про метку «Auto-salon»
     // на объявлениях. Метки в проекте нет: её удалили, и 1 сентября
@@ -394,9 +394,9 @@ export const dict = {
     // одобрения не находил. Здесь обещаем ровно то, что происходит:
     // заявку проверяет администратор по PIB и матичном броју.
     home_dealers_b3:
-      'provera kompanije pri prijavi — kupci vide potvrđeni salon, a ne anonimnog prodavca',
+      'provera kompanije pri prijavi — kupci vide potvrđeni salon, a ne anonimnog prodavca',
     home_dealers_b4:
-      'uskoro pokrećemo reklamne kampanje — oglasi partnera ulaze u taj saobraćaj',
+      'uskoro pokrećemo reklamne kampanje — oglasi partnera ulaze u taj saobraćaj',
     home_dealers_cta: 'Ostavi zahtev',
     home_dealers_note: 'Javićemo vam se imejlom i pomoći oko prvih oglasa.',
 
@@ -455,14 +455,14 @@ export const dict = {
     // остаётся в логах, в интерфейс не попадает.
     err_title: 'Nešto je pošlo naopako',
     err_text:
-      'Stranica trenutno nije dostupna. Pokušajte da je osvežite — ako se greška ponovi, vratite se u katalog.',
+      'Stranica trenutno nije dostupna. Pokušajte da je osvežite — ako se greška ponovi, vratite se u katalog.',
     err_retry: 'Pokušaj ponovo',
 
     // Контакты
     nav_contact: 'Kontakt',
     contact_title: 'Kontakt',
     contact_subtitle:
-      'Pišite nam — odgovaramo radnim danima. Za autosalone postoji poseban obrazac.',
+      'Pišite nam — odgovaramo radnim danima. Za autosalone postoji poseban obrazac.',
     contact_details: 'Podaci o firmi',
     contact_email: 'E-pošta',
     contact_phone: 'Telefon podrške',
@@ -555,14 +555,14 @@ export const dict = {
     // bez toga odjava deluje opasnije nego što jeste.
     my_logout_confirm: 'Odjaviti se sa naloga?',
     my_logout_confirm_text:
-      'Vaši oglasi i prepiska ostaju sačuvani — nalog se ne briše. Za ponovni ulazak biće potreban SMS kod na isti broj telefona.',
+      'Vaši oglasi i prepiska ostaju sačuvani — nalog se ne briše. Za ponovni ulazak biće potreban SMS kod na isti broj telefona.',
     my_logout_confirm_yes: 'Odjavi se',
 
     // Ulaz u kabinet. Kod se traži samo kada sesije nema: sesija živi
     // između poseta.
     my_auth_title: 'Prijavite se',
     my_auth_lead:
-      'Unesite e-mail adresu — poslaćemo vam kod. Isti nalog radi na svakom uređaju i u svakom pregledaču.',
+      'Unesite e-mail adresu — poslaćemo vam kod. Isti nalog radi na svakom uređaju i u svakom pregledaču.',
     my_auth_phone: 'Broj telefona',
     my_auth_code: 'Kod iz SMS-a',
     my_auth_send: 'Pošalji kod',
@@ -609,7 +609,7 @@ export const dict = {
     // proveru. Dugmeta „Vrati“ nema — odluku administratora prodavac
     // ne poništava, ali primedbu može da otkloni sam.
     my_archived_fix_hint:
-      'Ispravite primedbu i sačuvajte — oglas ide na ponovnu proveru.',
+      'Ispravite primedbu i sačuvajte — oglas ide na ponovnu proveru.',
 
     // Metrike oglasa.
     my_metric_views: 'Pregledi',
@@ -632,7 +632,7 @@ export const dict = {
     // na ponovnu moderaciju (update_car_v3), pa privremeno nestaje iz
     // pretrage. Oglas koji je već na moderaciji ili odbijen ovo pitanje
     // ne dobija — tamo se nema šta izgubiti.
-    my_confirm_edit: 'Izmena šalje oglas na ponovnu moderaciju — privremeno nestaje iz pretrage. Nastaviti?',
+    my_confirm_edit: 'Izmena šalje oglas na ponovnu moderaciju — privremeno nestaje iz pretrage. Nastaviti?',
     my_confirm_yes: 'Da',
     my_confirm_no: 'Otkaži',
     my_action_busy: 'Čuvamo…',
@@ -649,7 +649,7 @@ export const dict = {
 
     // Prazno stanje.
     my_empty_title: 'Još nemate oglase',
-    my_empty_text: 'Postavite prvi oglas — prodaja počinje odavde.',
+    my_empty_text: 'Postavite prvi oglas — prodaja počinje odavde.',
     my_empty_cta: 'Postavi oglas',
 
     // Greška radnje.
@@ -736,7 +736,7 @@ export const dict = {
     profile_phone_hint: 'Broj se koristi za prijavu i ne može se promeniti',
     // Подсказка для аккаунта БЕЗ номера (вход по e-mail): текст про
     // «номер для входа» там был бы неверным — входят не им.
-    profile_phone_none: 'Broj nije vezan za nalog — prijavljujete se e-mailom',
+    profile_phone_none: 'Broj nije vezan za nalog — prijavljujete se e-mailom',
     profile_email: 'E-mail',
     // Podnaslov polja e-pošte. Prijava ide preko SMS-a, pa je adresa
     // prazna dok je vlasnik sam ne unese — a bez nje odluka moderacije
@@ -767,7 +767,7 @@ export const dict = {
     // его вертикальный снимок стал широкой полосой.
     profile_cover: 'Naslovna slika salona',
     profile_cover_hint:
-      'Preporučeno 1500×1000 (odnos 3:2), najmanje 900×600. Slika zauzima celu karticu salona u katalogu i vrh vaše stranice, a podaci stoje na traci preko dna — držite glavno u gornjem delu kadra. Bez slike prikazujemo firmenu pozadinu.',
+      'Preporučeno 1500×1000 (odnos 3:2), najmanje 900×600. Slika zauzima celu karticu salona u katalogu i vrh vaše stranice, a podaci stoje na traci preko dna — držite glavno u gornjem delu kadra. Bez slike prikazujemo firmenu pozadinu.',
     profile_cover_empty: 'Naslovna slika još nije učitana',
     profile_cover_change: 'Učitaj naslovnu sliku',
     profile_cover_replace: 'Zameni naslovnu sliku',
@@ -791,7 +791,7 @@ export const dict = {
     // Объяснение ДО формы: человек должен понимать, почему у него
     // просят PIB, прежде чем начнёт его искать.
     dealer_app_intro:
-      'Auto-kuća ima svoju stranicu u katalogu. Zato status potvrđuje administrator — pošaljite podatke o kompaniji i javićemo vam se.',
+      'Auto-kuća ima svoju stranicu u katalogu. Zato status potvrđuje administrator — pošaljite podatke o kompaniji i javićemo vam se.',
     dealer_app_open: 'Ostavite zahtev',
     dealer_app_cancel: 'Odustani',
     dealer_app_submit: 'Pošalji zahtev',
@@ -958,7 +958,7 @@ export const dict = {
     dealers_err_email: 'Proverite email adresu.',
     // Повторная подача (0104).
     dealers_err_already_dealer:
-      'Vaš nalog već ima status autosalona — zahtev nije potreban.',
+      'Vaš nalog već ima status autosalona — zahtev nije potreban.',
     dealers_err_application_exists:
       'Zahtev za ovu firmu je već poslat i čeka obradu.',
     dealers_err_lead_exists:
@@ -993,17 +993,17 @@ export const dict = {
     install_android_3:
       'Izaberite **«Instalirajte aplikaciju»** ili **«Dodaj na početni ekran»**.',
     install_android_4:
-      'Potvrdite **«Instaliraj»** — ikonica RS Auto pojaviće se na ekranu.',
+      'Potvrdite **«Instaliraj»** — ikonica RS Auto pojaviće se na ekranu.',
     install_ios_title: 'iPhone / iPad (Safari)',
     install_ios_1:
       'Otvorite RS Auto u pregledaču **Safari** (u drugim pregledačima na '
       + 'iOS-u instalacija nije dostupna).',
     install_ios_2:
-      'Dodirnite dugme **«Podeli»** — kvadrat sa strelicom nagore, na dnu ekrana.',
+      'Dodirnite dugme **«Podeli»** — kvadrat sa strelicom nagore, na dnu ekrana.',
     install_ios_3:
       'Na spisku izaberite **«Na početni ekran»** (On Home Screen).',
     install_ios_4:
-      'Dodirnite **«Dodaj»** — ikonica RS Auto pojaviće se na početnom ekranu.',
+      'Dodirnite **«Dodaj»** — ikonica RS Auto pojaviće se na početnom ekranu.',
     // Подпись номера шага для скринридера: кружок с цифрой от него
     // скрыт, и без неё шаги читались бы сплошным списком без номеров.
     install_step: 'Korak',
@@ -1056,9 +1056,9 @@ export const dict = {
     // ------------------------------------------------------------
     about_title: 'O nama',
     about_meta_desc:
-      'RS Auto — platforma za kupovinu, prodaju i iznajmljivanje automobila u Srbiji. Oglasi su besplatni, a sa prodavcem se dopisujete direktno na sajtu.',
+      'RS Auto — platforma za kupovinu, prodaju i iznajmljivanje automobila u Srbiji. Oglasi su besplatni, a sa prodavcem se dopisujete direktno na sajtu.',
     about_lead:
-      'RS Auto je tržište automobila u Srbiji. Povezujemo one koji prodaju ili iznajmljuju vozilo sa onima koji ga traže — bez posrednika i bez provizije na prodaju.',
+      'RS Auto je tržište automobila u Srbiji. Povezujemo one koji prodaju ili iznajmljuju vozilo sa onima koji ga traže — bez posrednika i bez provizije na prodaju.',
 
     about_mission_title: 'Naša misija',
     about_mission_text:
@@ -1067,13 +1067,13 @@ export const dict = {
     about_how_title: 'Kako je platforma uređena',
     about_how_1_title: 'Jedna baza oglasa',
     about_how_1_text:
-      'Svi oglasi su na jednom mestu — ista ponuda, bez obzira na to sa kog uređaja gledate. Ne postoje dve odvojene ponude.',
+      'Svi oglasi su na jednom mestu — ista ponuda, bez obzira na to sa kog uređaja gledate. Ne postoje dve odvojene ponude.',
     about_how_2_title: 'Provera pre objave',
     about_how_2_text:
       'Svaki oglas prolazi moderaciju. Vozila sa izmenjenim brojem šasije, lažnim cenama i prevarantski sadržaj se ne objavljuju.',
     about_how_3_title: 'Prepiska na sajtu',
     about_how_3_text:
-      'Prodavcu pišete direktno iz oglasa, u svom kabinetu na sajtu — vaš lični broj telefona ne završi u bazama za neželjene pozive.',
+      'Prodavcu pišete direktno iz oglasa, u svom kabinetu na sajtu — vaš lični broj telefona ne završi u bazama za neželjene pozive.',
 
     about_buyer_title: 'Za kupca',
     about_buyer_1: 'Pretraga po marki, modelu, godištu, ceni i gradu.',
@@ -1095,7 +1095,7 @@ export const dict = {
     about_dealer_4: 'Kupci iz cele Srbije, sa svih uređaja.',
 
     about_cta_title: 'Imate automobil za prodaju?',
-    about_cta_text: 'Objavite oglas za nekoliko minuta — besplatno.',
+    about_cta_text: 'Objavite oglas za nekoliko minuta — besplatno.',
 
     // ------------------------------------------------------------
     // /how-it-works — как это работает.
@@ -1104,15 +1104,15 @@ export const dict = {
     how_meta_desc:
       'Kako da kupite, prodate ili iznajmite automobil na RS Auto: korak po korak za kupce, prodavce i autosalone.',
     how_lead:
-      'Tri scenarija — kupovina, prodaja i rad autosalona. Izaberite svoj i pratite korake.',
+      'Tri scenarija — kupovina, prodaja i rad autosalona. Izaberite svoj i pratite korake.',
 
     how_buyer_title: 'Kupujem automobil',
     how_buyer_1_title: 'Pronađite vozilo',
     how_buyer_1_text:
-      'Otvorite katalog i suzite izbor filterima: marka, model, godište, cena, kilometraža i grad. Rezultat se može podeliti linkom — filteri ostaju sačuvani u adresi.',
+      'Otvorite katalog i suzite izbor filterima: marka, model, godište, cena, kilometraža i grad. Rezultat se može podeliti linkom — filteri ostaju sačuvani u adresi.',
     how_buyer_2_title: 'Sačuvajte pretragu',
     how_buyer_2_text:
-      'Ako trenutno nema odgovarajućeg vozila, sačuvajte link pretrage — filteri ostaju u adresi. Vratite se na njega i odmah vidite šta je novo.',
+      'Ako trenutno nema odgovarajućeg vozila, sačuvajte link pretrage — filteri ostaju u adresi. Vratite se na njega i odmah vidite šta je novo.',
     how_buyer_3_title: 'Pišite prodavcu',
     how_buyer_3_text:
       'Prodavcu pišete direktno iz oglasa. Vaš broj telefona ostaje skriven, a cela prepiska je u vašem kabinetu na jednom mestu.',
@@ -1120,13 +1120,13 @@ export const dict = {
     how_seller_title: 'Prodajem automobil',
     how_seller_1_title: 'Postavite oglas',
     how_seller_1_text:
-      'Popunite formu u četiri koraka: vozilo, detalji, fotografije i broj telefona. Broj se potvrđuje SMS kodom — to je istovremeno i vaša prijava, poseban nalog nije potreban.',
+      'Popunite formu u četiri koraka: vozilo, detalji, fotografije i broj telefona. Broj se potvrđuje SMS kodom — to je istovremeno i vaša prijava, poseban nalog nije potreban.',
     how_seller_2_title: 'Sačekajte proveru',
     how_seller_2_text:
       'Oglas ide na moderaciju. Obično je gotova u toku dana. Nakon odobrenja pojavljuje se u katalogu i vide ga kupci iz cele Srbije.',
     how_seller_3_title: 'Primajte poruke',
     how_seller_3_text:
-      'Zainteresovani kupci pišu vam direktno na sajtu — poruke i obaveštenja čekaju vas u kabinetu. Kada je vozilo prodato, označite oglas kao prodat.',
+      'Zainteresovani kupci pišu vam direktno na sajtu — poruke i obaveštenja čekaju vas u kabinetu. Kada je vozilo prodato, označite oglas kao prodat.',
 
     how_dealer_title: 'Imam autosalon',
     how_dealer_1_title: 'Pošaljite zahtev',
@@ -1158,7 +1158,7 @@ export const dict = {
     // ------------------------------------------------------------
     // Метаданные страниц (title/description для поиска).
     // ------------------------------------------------------------
-    meta_home_title: 'Automobili u Srbiji — kupovina, prodaja i izdavanje',
+    meta_home_title: 'Automobili u Srbiji — kupovina, prodaja i izdavanje',
     meta_home_desc:
       'Oglasi za automobile u Srbiji: prodaja i iznajmljivanje. Besplatno objavljivanje oglasa, pretraga po marki, modelu, gradu i ceni.',
     // meta_catalog_desc — витрина ПРОДАЖИ /cars; meta_all_desc —
@@ -1171,7 +1171,7 @@ export const dict = {
     meta_rent_desc:
       'Automobili za izdavanje u Srbiji: cena po danu, depozit i uslovi. Pretraga po marki, modelu i gradu.',
     meta_sell_desc:
-      'Objavite oglas za prodaju automobila besplatno — direktno sa sajta. Potvrda broja SMS kodom.',
+      'Objavite oglas za prodaju automobila besplatno — direktno sa sajta. Potvrda broja SMS kodom.',
     meta_dealers_desc:
       'Postavite oglase vašeg autosalona na RS Auto: sopstvena stranica salona sa celim voznim parkom i kupci iz cele Srbije.',
     // Телефон в описании НЕ упоминается: поддержка работает только по
@@ -1181,9 +1181,9 @@ export const dict = {
     meta_contact_desc:
       'Kontaktirajte RS Auto: e-pošta podrške i obrazac za poruku. Odgovaramo radnim danima.',
     meta_terms_desc:
-      'Uslovi korišćenja platforme RS Auto — oglasi za prodaju i izdavanje automobila u Srbiji.',
+      'Uslovi korišćenja platforme RS Auto — oglasi za prodaju i izdavanje automobila u Srbiji.',
     meta_privacy_desc:
-      'Politika privatnosti RS Auto — kako obrađujemo i štitimo lične podatke korisnika.',
+      'Politika privatnosti RS Auto — kako obrađujemo i štitimo lične podatke korisnika.',
 
     common_all: 'Sve',
     common_more: 'Prikaži još',
@@ -1236,7 +1236,7 @@ export const dict = {
     empty_reason: 'Ни один автомобиль не подходит под заданные фильтры.',
     empty_reset: 'Сбросить фильтры',
     empty_notify_hint:
-      'Сохраните ссылку на этот поиск — фильтры остаются в адресе, и новые предложения проверяются в один клик.',
+      'Сохраните ссылку на этот поиск — фильтры остаются в адресе, и новые предложения проверяются в один клик.',
 
     car_price_negotiable: 'Цена договорная',
     car_year: 'Год выпуска',
@@ -1277,7 +1277,7 @@ export const dict = {
 
 
     sell_title: 'Продайте автомобиль',
-    sell_subtitle: 'Разместите объявление бесплатно — прямо на сайте, за несколько минут.',
+    sell_subtitle: 'Разместите объявление бесплатно — прямо на сайте, за несколько минут.',
     sell_step: 'Шаг',
     sell_next: 'Далее',
     sell_back: 'Назад',
@@ -1301,7 +1301,7 @@ export const dict = {
     // уйдёт в объявление: опечатку заметит только сам продавец.
     sell_phone_confirm_title: 'Проверьте номер телефона',
     sell_phone_confirm_text:
-      'Покупатели будут звонить на этот номер. Убедитесь, что он верный — потом его можно изменить в объявлении.',
+      'Покупатели будут звонить на этот номер. Убедитесь, что он верный — потом его можно изменить в объявлении.',
     sell_phone_confirm_edit: 'Изменить',
     sell_phone_confirm_ok: 'Верно',
     // Подпись под полем почты в форме подачи. Объясняет разницу между
@@ -1324,7 +1324,7 @@ export const dict = {
     // словами: поисковику нужен связный текст, а не только ссылки,
     // и человеку он объясняет, что за списком стоит.
     home_brands_text:
-      'Самые востребованные марки автомобилей на рынке Сербии. На RS Auto вы найдёте объявления о продаже б/у и новых авто от частных продавцов и автосалонов: Volkswagen, BMW, Audi, Mercedes-Benz, Škoda, Opel, Renault и Fiat. Выберите марку — каталог покажет актуальные объявления с ценой, фотографиями и контактами продавца.',
+      'Самые востребованные марки автомобилей на рынке Сербии. На RS Auto вы найдёте объявления о продаже б/у и новых авто от частных продавцов и автосалонов: Volkswagen, BMW, Audi, Mercedes-Benz, Škoda, Opel, Renault и Fiat. Выберите марку — каталог покажет актуальные объявления с ценой, фотографиями и контактами продавца.',
     home_all_cars: 'Все автомобили',
     // Призыв под блоком «Почему RS Auto». Отдельный ключ, а не
     // home_hero_cta: там короткое «Разместить авто» рядом со второй
@@ -1343,13 +1343,13 @@ export const dict = {
       'Не берём плату за публикацию и связь с покупателями. Комиссии с продажи нет.',
     home_why_audience_title: 'Сразу две аудитории',
     home_why_audience_text:
-      'Сербский и русский в одном объявлении — интерфейс переводит сайт, вы пишете на своём языке.',
+      'Сербский и русский в одном объявлении — интерфейс переводит сайт, вы пишете на своём языке.',
     home_why_direct_title: 'Прямой контакт',
     home_why_direct_text:
       'Покупатель пишет или звонит лично вам. Без посредников и комиссии с продажи.',
     home_why_growth_title: 'Готовим запуск рекламы',
     home_why_growth_text:
-      'Площадка запускается — работаем над привлечением покупателей. Первые объявления стартуют без конкуренции.',
+      'Площадка запускается — работаем над привлечением покупателей. Первые объявления стартуют без конкуренции.',
 
     // Пустая витрина свежих объявлений: площадка запускается, объявлений
     // ещё нет. Не «ничего не найдено» (это про сбой поиска), а
@@ -1371,7 +1371,7 @@ export const dict = {
     // заинтересовавшийся, а не тот, кто пришёл за конкретной машиной.
     home_seo_title: 'RS Auto — продажа и аренда авто в Сербии',
     home_seo_p1:
-      'RS Auto — маркетплейс по продаже и аренде автомобилей в Сербии. Частные продавцы и автосалоны размещают объявления бесплатно, а покупатели смотрят предложения на сербском и русском языках.',
+      'RS Auto — маркетплейс по продаже и аренде автомобилей в Сербии. Частные продавцы и автосалоны размещают объявления бесплатно, а покупатели смотрят предложения на сербском и русском языках.',
     // «витрину в каталоге», а НЕ «на главной странице»: витрина салонов
     // живёт в каталоге (CatalogView), на главной её нет — там витрина
     // ОБЪЯВЛЕНИЙ. Обещать салону место, которого он после одобрения
@@ -1384,7 +1384,7 @@ export const dict = {
     // только разместить объявление, и кнопка «найти автомобиль» под
     // ней противоречила только что прочитанному.
     home_seo_p3:
-      'Найдите автомобиль по марке, городу и цене — или разместите свой за 10 минут.',
+      'Найдите автомобиль по марке, городу и цене — или разместите свой за 10 минут.',
     // Кнопка под SEO-текстом: выход в каталог для того, кто пришёл
     // ПОКУПАТЬ. Весь блок выше объясняет площадку, и заканчиваться он
     // должен действием — иначе прочитавший упирается в следующий
@@ -1396,7 +1396,7 @@ export const dict = {
     // SEO-абзац под чипсами городов. Та же роль, что у текста марок:
     // связный текст для поиска и пояснение для человека.
     home_cities_text:
-      'Объявления о продаже автомобилей со всей Сербии. Чаще всего ищут в городах: Белград, Нови-Сад, Ниш, Крагуевац, Панчево. Выберите город, чтобы посмотреть машины рядом с вами — с возможностью осмотра и прямой связи с продавцом.',
+      'Объявления о продаже автомобилей со всей Сербии. Чаще всего ищут в городах: Белград, Нови-Сад, Ниш, Крагуевац, Панчево. Выберите город, чтобы посмотреть машины рядом с вами — с возможностью осмотра и прямой связи с продавцом.',
 
     dealers_title: 'Автосалонам',
     dealers_offer: 'Своя страница салона и покупатели со всей Сербии',
@@ -1412,9 +1412,9 @@ export const dict = {
     // правка главной молча меняет посадочную страницу.
     home_dealers_title: 'Автосалонам',
     home_dealers_lead:
-      'Собственная страница в каталоге салонов и покупатели со всей Сербии — сербская и русскоязычная аудитории.',
+      'Собственная страница в каталоге салонов и покупатели со всей Сербии — сербская и русскоязычная аудитории.',
     home_dealers_b1:
-      'Витрина на главной странице — ваш салон заметен в каталоге',
+      'Витрина на главной странице — ваш салон заметен в каталоге',
     home_dealers_b2: 'бесплатное размещение для салонов-партнёров',
     // Формулировка про ПРОВЕРКУ КОМПАНИИ, а не про статус «Автосалон»
     // на объявлениях. Метки в проекте нет: её удалили, и 1 сентября
@@ -1423,9 +1423,9 @@ export const dict = {
     // одобрения не находил. Здесь обещаем ровно то, что происходит:
     // заявку проверяет администратор по ПИБ и матичному номеру.
     home_dealers_b3:
-      'проверка компании при заявке — покупатели видят подтверждённый салон, а не анонимного продавца',
+      'проверка компании при заявке — покупатели видят подтверждённый салон, а не анонимного продавца',
     home_dealers_b4:
-      'готовим запуск рекламы — объявления партнёров войдут в этот трафик',
+      'готовим запуск рекламы — объявления партнёров войдут в этот трафик',
     home_dealers_cta: 'Оставить заявку',
     home_dealers_note: 'Свяжемся по почте и поможем с первыми объявлениями.',
 
@@ -1484,14 +1484,14 @@ export const dict = {
     // остаётся в логах, в интерфейс не попадает.
     err_title: 'Что-то пошло не так',
     err_text:
-      'Страница сейчас недоступна. Попробуйте обновить её — если ошибка повторится, вернитесь в каталог.',
+      'Страница сейчас недоступна. Попробуйте обновить её — если ошибка повторится, вернитесь в каталог.',
     err_retry: 'Попробовать снова',
 
     // Контакты
     nav_contact: 'Контакты',
     contact_title: 'Контакты',
     contact_subtitle:
-      'Напишите нам — отвечаем по будням. Для автосалонов есть отдельная форма.',
+      'Напишите нам — отвечаем по будням. Для автосалонов есть отдельная форма.',
     contact_details: 'Реквизиты',
     contact_email: 'Электронная почта',
     contact_phone: 'Телефон поддержки',
@@ -1586,14 +1586,14 @@ export const dict = {
     // чем есть, — люди боятся, что удаляют профиль.
     my_logout_confirm: 'Выйти из аккаунта?',
     my_logout_confirm_text:
-      'Ваши объявления и переписка сохранятся — аккаунт не удаляется. Для повторного входа понадобится SMS-код на тот же номер телефона.',
+      'Ваши объявления и переписка сохранятся — аккаунт не удаляется. Для повторного входа понадобится SMS-код на тот же номер телефона.',
     my_logout_confirm_yes: 'Выйти',
 
     // Вход в кабинет. Код запрашивается только когда сессии нет: она
     // живёт между визитами, как и в приложении.
     my_auth_title: 'Вход',
     my_auth_lead:
-      'Введите адрес почты — пришлём код. Один аккаунт работает на любом устройстве и в любом браузере.',
+      'Введите адрес почты — пришлём код. Один аккаунт работает на любом устройстве и в любом браузере.',
     my_auth_phone: 'Номер телефона',
     my_auth_code: 'Код из SMS',
     my_auth_send: 'Получить код',
@@ -1636,7 +1636,7 @@ export const dict = {
     // повторную проверку. Кнопки «Вернуть» нет — решение
     // администратора продавец не отменяет, но замечание устраняет сам.
     my_archived_fix_hint:
-      'Исправьте замечание и сохраните — объявление уйдёт на повторную проверку.',
+      'Исправьте замечание и сохраните — объявление уйдёт на повторную проверку.',
 
     // Метрики объявления.
     my_metric_views: 'Просмотры',
@@ -1660,7 +1660,7 @@ export const dict = {
     // временно пропадает из выдачи. Объявление, которое уже на
     // модерации или отклонено, этот вопрос не получает — там терять
     // нечего.
-    my_confirm_edit: 'Правка отправит объявление на повторную модерацию — оно временно пропадёт из выдачи. Продолжить?',
+    my_confirm_edit: 'Правка отправит объявление на повторную модерацию — оно временно пропадёт из выдачи. Продолжить?',
     my_confirm_yes: 'Да',
     my_confirm_no: 'Отмена',
     my_action_busy: 'Сохраняем…',
@@ -1686,7 +1686,7 @@ export const dict = {
 
     // Пустое состояние.
     my_empty_title: 'У вас пока нет объявлений',
-    my_empty_text: 'Разместите первое — продажа начинается отсюда.',
+    my_empty_text: 'Разместите первое — продажа начинается отсюда.',
     my_empty_cta: 'Подать объявление',
 
     // Ошибка действия.
@@ -1768,7 +1768,7 @@ export const dict = {
     profile_name_ph: 'Как к вам обращаться',
     profile_phone: 'Телефон',
     profile_phone_hint: 'Номер используется для входа и не меняется',
-    profile_phone_none: 'Номер не привязан к аккаунту — вход выполняется по почте',
+    profile_phone_none: 'Номер не привязан к аккаунту — вход выполняется по почте',
     profile_email: 'E-mail',
     // Подпись под полем почты. Вход идёт по SMS, поэтому адрес пуст,
     // пока владелец не укажет его сам, — а без адреса решение
@@ -1793,7 +1793,7 @@ export const dict = {
     // См. комментарий у sr-версии ключей.
     profile_cover: 'Обложка салона',
     profile_cover_hint:
-      'Рекомендуем 1500×1000 (пропорция 3:2), минимум 900×600. Картинка занимает всю карточку салона в каталоге и верх вашей страницы, а данные стоят полосой поверх низа — держите главное в верхней части кадра. Без картинки показываем фирменный фон.',
+      'Рекомендуем 1500×1000 (пропорция 3:2), минимум 900×600. Картинка занимает всю карточку салона в каталоге и верх вашей страницы, а данные стоят полосой поверх низа — держите главное в верхней части кадра. Без картинки показываем фирменный фон.',
     profile_cover_empty: 'Обложка ещё не загружена',
     profile_cover_change: 'Загрузить обложку',
     profile_cover_replace: 'Заменить обложку',
@@ -1811,7 +1811,7 @@ export const dict = {
     // См. пояснение у sr-версии этой группы.
     dealer_app_title: 'Продаёте как автосалон?',
     dealer_app_intro:
-      'У автосалона есть своя страница в каталоге. Поэтому статус подтверждает администратор — отправьте данные компании, и мы свяжемся с вами.',
+      'У автосалона есть своя страница в каталоге. Поэтому статус подтверждает администратор — отправьте данные компании, и мы свяжемся с вами.',
     dealer_app_open: 'Оставить заявку',
     dealer_app_cancel: 'Отмена',
     dealer_app_submit: 'Отправить заявку',
@@ -1863,7 +1863,7 @@ export const dict = {
     dealer_app_err_person: 'Укажите контактное лицо',
     dealer_app_err_phone: 'Укажите телефон',
     dealer_app_err_email: 'Проверьте email',
-    dealer_app_err_long: 'Одно из полей слишком длинное — сократите текст',
+    dealer_app_err_long: 'Одно из полей слишком длинное — сократите текст',
     dealer_app_err_auth: 'Сессия истекла. Войдите заново.',
     dealer_app_err_unknown: 'Не удалось. Попробуйте ещё раз.',
 
@@ -1945,7 +1945,7 @@ export const dict = {
     dealers_err_email: 'Проверьте email.',
     // См. комментарий в сербском словаре.
     dealers_err_already_dealer:
-      'У вашего аккаунта уже есть статус автосалона — заявка не нужна.',
+      'У вашего аккаунта уже есть статус автосалона — заявка не нужна.',
     dealers_err_application_exists:
       'Заявка по этой компании уже отправлена и ждёт рассмотрения.',
     dealers_err_lead_exists:
@@ -1976,17 +1976,17 @@ export const dict = {
     install_android_3:
       'Выберите **«Установить приложение»** или **«Добавить на главный экран»**.',
     install_android_4:
-      'Подтвердите **«Установить»** — иконка RS Auto появится на экране.',
+      'Подтвердите **«Установить»** — иконка RS Auto появится на экране.',
     install_ios_title: 'iPhone / iPad (Safari)',
     install_ios_1:
       'Откройте RS Auto в браузере **Safari** (в других браузерах на iOS '
       + 'установка недоступна).',
     install_ios_2:
-      'Нажмите кнопку **«Поделиться»** — квадрат со стрелкой вверх, внизу экрана.',
+      'Нажмите кнопку **«Поделиться»** — квадрат со стрелкой вверх, внизу экрана.',
     install_ios_3:
       'В списке выберите **«На экран „Домой“»** (On Home Screen).',
     install_ios_4:
-      'Нажмите **«Добавить»** — иконка RS Auto появится на главном экране.',
+      'Нажмите **«Добавить»** — иконка RS Auto появится на главном экране.',
     // Подпись номера шага для скринридера: кружок с цифрой от него
     // скрыт, и без неё шаги читались бы сплошным списком без номеров.
     install_step: 'Шаг',
@@ -2016,7 +2016,7 @@ export const dict = {
     // ------------------------------------------------------------
     sell_photos_add: 'Добавить фотографии',
     sell_photos_hint:
-      'JPG, PNG, WebP или HEIC. Первая фотография — главная.',
+      'JPG, PNG, WebP или HEIC. Первая фотография — главная.',
     sell_photos_preparing: 'Готовим фотографии…',
     sell_photos_cover: 'Главная',
     sell_photos_move_left: 'Сдвинуть влево',
@@ -2039,18 +2039,18 @@ export const dict = {
     // ------------------------------------------------------------
     about_title: 'О нас',
     about_meta_desc:
-      'RS Auto — площадка для покупки, продажи и аренды автомобилей в Сербии. Объявления бесплатны, с продавцом можно связаться прямо на сайте.',
+      'RS Auto — площадка для покупки, продажи и аренды автомобилей в Сербии. Объявления бесплатны, с продавцом можно связаться прямо на сайте.',
     about_lead:
-      'RS Auto — автомобильный маркетплейс в Сербии. Мы соединяем тех, кто продаёт или сдаёт машину, с теми, кто её ищет, — без посредников и без комиссии с продажи.',
+      'RS Auto — автомобильный маркетплейс в Сербии. Мы соединяем тех, кто продаёт или сдаёт машину, с теми, кто её ищет, — без посредников и без комиссии с продажи.',
 
     about_mission_title: 'Наша задача',
     about_mission_text:
-      'Покупка подержанного автомобиля — решение на несколько тысяч евро, а принимается оно чаще всего по неполным данным. Мы добиваемся, чтобы объявление отвечало на главные вопросы сразу: настоящая цена, реальный пробег, фотографии машины и город, где она стоит. Чем честнее объявление, тем меньше потерянного времени у обеих сторон.',
+      'Покупка подержанного автомобиля — решение на несколько тысяч евро, а принимается оно чаще всего по неполным данным. Мы добиваемся, чтобы объявление отвечало на главные вопросы сразу: настоящая цена, реальный пробег, фотографии машины и город, где она стоит. Чем честнее объявление, тем меньше потерянного времени у обеих сторон.',
 
     about_how_title: 'Как устроена площадка',
     about_how_1_title: 'Одна база объявлений',
     about_how_1_text:
-      'Все объявления в одном месте — одна и та же витрина, с какого устройства ни смотри. Двух разных витрин не существует.',
+      'Все объявления в одном месте — одна и та же витрина, с какого устройства ни смотри. Двух разных витрин не существует.',
     about_how_2_title: 'Проверка до публикации',
     about_how_2_text:
       'Каждое объявление проходит модерацию. Машины с перебитыми номерами, выдуманными ценами и мошеннические тексты до каталога не доходят.',
@@ -2069,7 +2069,7 @@ export const dict = {
     about_seller_1: 'Размещение объявления бесплатно, комиссии с продажи нет.',
     about_seller_2: 'Объявление подаётся прямо на сайте, за несколько минут.',
     about_seller_3: 'Одно и то же объявление видят покупатели по всей Сербии, с любых устройств.',
-    about_seller_4: 'Продвижение — возможность, а не условие публикации.',
+    about_seller_4: 'Продвижение — возможность, а не условие публикации.',
 
     about_dealer_title: 'Автосалонам',
     about_dealer_1: 'Отдельная страница салона со всем автопарком.',
@@ -2078,7 +2078,7 @@ export const dict = {
     about_dealer_4: 'Покупатели со всей Сербии, с любых устройств.',
 
     about_cta_title: 'Есть автомобиль на продажу?',
-    about_cta_text: 'Разместите объявление за несколько минут — бесплатно.',
+    about_cta_text: 'Разместите объявление за несколько минут — бесплатно.',
 
     // ------------------------------------------------------------
     // /how-it-works — как это работает.
@@ -2087,15 +2087,15 @@ export const dict = {
     how_meta_desc:
       'Как купить, продать или сдать автомобиль на RS Auto: пошагово для покупателей, продавцов и автосалонов.',
     how_lead:
-      'Три сценария — покупка, продажа и работа автосалона. Выберите свой и следуйте шагам.',
+      'Три сценария — покупка, продажа и работа автосалона. Выберите свой и следуйте шагам.',
 
     how_buyer_title: 'Покупаю автомобиль',
     how_buyer_1_title: 'Найдите машину',
     how_buyer_1_text:
-      'Откройте каталог и сузьте выбор фильтрами: марка, модель, год, цена, пробег и город. Результатом можно поделиться ссылкой — фильтры сохраняются в адресе.',
+      'Откройте каталог и сузьте выбор фильтрами: марка, модель, год, цена, пробег и город. Результатом можно поделиться ссылкой — фильтры сохраняются в адресе.',
     how_buyer_2_title: 'Сохраните поиск',
     how_buyer_2_text:
-      'Если подходящей машины сейчас нет, сохраните ссылку на поиск — фильтры остаются в адресе. Вернитесь по ней и сразу увидите, что появилось нового.',
+      'Если подходящей машины сейчас нет, сохраните ссылку на поиск — фильтры остаются в адресе. Вернитесь по ней и сразу увидите, что появилось нового.',
     how_buyer_3_title: 'Напишите продавцу',
     how_buyer_3_text:
       'Продавцу пишут прямо из объявления. Ваш номер телефона остаётся скрытым, а вся переписка собрана в личном кабинете.',
@@ -2103,13 +2103,13 @@ export const dict = {
     how_seller_title: 'Продаю автомобиль',
     how_seller_1_title: 'Подайте объявление',
     how_seller_1_text:
-      'Заполните форму из четырёх шагов: автомобиль, детали, фотографии и телефон. Номер подтверждается кодом из SMS — это же и есть вход, отдельная регистрация не нужна.',
+      'Заполните форму из четырёх шагов: автомобиль, детали, фотографии и телефон. Номер подтверждается кодом из SMS — это же и есть вход, отдельная регистрация не нужна.',
     how_seller_2_title: 'Дождитесь проверки',
     how_seller_2_text:
       'Объявление уходит на модерацию. Обычно она занимает до суток. После одобрения оно появляется в каталоге, и его видят покупатели по всей Сербии.',
     how_seller_3_title: 'Получайте сообщения',
     how_seller_3_text:
-      'Заинтересованные покупатели пишут вам прямо на сайте — сообщения и уведомления ждут в личном кабинете. Когда машина продана, отметьте объявление как проданное.',
+      'Заинтересованные покупатели пишут вам прямо на сайте — сообщения и уведомления ждут в личном кабинете. Когда машина продана, отметьте объявление как проданное.',
 
     how_dealer_title: 'У меня автосалон',
     how_dealer_1_title: 'Оставьте заявку',
@@ -2130,7 +2130,7 @@ export const dict = {
     faq_title: 'Вопросы и ответы',
     faq_meta_desc:
       'Ответы на вопросы о размещении объявлений, модерации, связи с продавцом, аренде и условиях для автосалонов на RS Auto.',
-    faq_lead: 'Не нашли ответа — напишите нам через страницу «Контакты».',
+    faq_lead: 'Не нашли ответа — напишите нам через страницу «Контакты».',
     faq_group_general: 'Общее',
     faq_group_buyer: 'Покупателям',
     faq_group_seller: 'Продавцам',
@@ -2141,7 +2141,7 @@ export const dict = {
     // ------------------------------------------------------------
     // Метаданные страниц (title/description для поиска).
     // ------------------------------------------------------------
-    meta_home_title: 'Автомобили в Сербии — покупка, продажа и аренда',
+    meta_home_title: 'Автомобили в Сербии — покупка, продажа и аренда',
     meta_home_desc:
       'Объявления об автомобилях в Сербии: продажа и аренда. Бесплатное размещение объявлений, поиск по марке, модели, городу и цене.',
     // См. комментарий в сербском словаре.
@@ -2152,16 +2152,16 @@ export const dict = {
     meta_rent_desc:
       'Автомобили в аренду в Сербии: цена за сутки, залог и условия. Поиск по марке, модели и городу.',
     meta_sell_desc:
-      'Разместите объявление о продаже автомобиля бесплатно — прямо на сайте. Подтверждение номера кодом из SMS.',
+      'Разместите объявление о продаже автомобиля бесплатно — прямо на сайте. Подтверждение номера кодом из SMS.',
     meta_dealers_desc:
       'Размещайте объявления вашего автосалона на RS Auto: своя страница салона со всем автопарком и покупатели со всей Сербии.',
     // См. комментарий в сербском словаре: телефона поддержки нет.
     meta_contact_desc:
       'Свяжитесь с RS Auto: электронная почта поддержки и форма обращения. Отвечаем по будням.',
     meta_terms_desc:
-      'Условия использования платформы RS Auto — объявления о продаже и аренде автомобилей в Сербии.',
+      'Условия использования платформы RS Auto — объявления о продаже и аренде автомобилей в Сербии.',
     meta_privacy_desc:
-      'Политика конфиденциальности RS Auto — как мы обрабатываем и защищаем персональные данные пользователей.',
+      'Политика конфиденциальности RS Auto — как мы обрабатываем и защищаем персональные данные пользователей.',
 
     common_all: 'Все',
     common_more: 'Показать ещё',
