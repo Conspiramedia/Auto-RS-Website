@@ -1,18 +1,33 @@
 'use client';
 
 // ============================================================
-// RS AUTO — Вход по SMS-коду для кабинета.
+// RS AUTO — Вход по коду на почту.
 // ============================================================
-// Client Component: вход невозможен без состояния (номер, код, таймер
+// Client Component: вход невозможен без состояния (адрес, код, таймер
 // повторной отправки) и без обращения к Supabase из браузера.
+//
+// ПОЧЕМУ ПОЧТА, А НЕ SMS. Раньше здесь был выбор из двух способов, и
+// основным считался SMS. Он убран: Twilio требует одобренного Primary
+// Compliance Profile для сербских номеров, и до его получения код не
+// уходил НИКОМУ — регистрация на сайте была закрыта полностью.
+// Почтовый канал (миграция 0082) уже работал через Resend и был
+// открыт всем профилям с почтой миграцией 0106.
+//
+// ТЕЛЕФОН НЕ ИСЧЕЗ ИЗ ПЛОЩАДКИ. Он перестал быть способом входа и
+// остался контактом в объявлении: спрашивается один раз при подаче
+// обычным полем, без кода, и сохраняется в профиль.
+//
+// ПРИЛОЖЕНИЕ ПРОДОЛЖАЕТ ЛОГИНИТЬ ПО SMS — у него свой клиент и свой
+// провайдер, эта правка его не касается. Следствие, принятое
+// осознанно: один человек, вошедший в приложении по телефону и на
+// сайте по почте, получает два разных аккаунта.
 //
 // ЗАЧЕМ ОТДЕЛЬНЫЙ КОМПОНЕНТ, А НЕ ПЕРЕИСПОЛЬЗОВАНИЕ SellForm.
 // В SellForm вход — четвёртый шаг подачи объявления: он вплетён в
 // загрузку фотографий и вызов create_car_v3, и вытащить его целиком
 // нельзя, не разломав форму. Общими вынесены ровно те части, где
 // расхождение поведения было бы багом: тексты ошибок и задержка
-// повторной отправки (lib/otp.ts), проверка суточной квоты, маска
-// номера (lib/inputFormat.ts) и приём политики (lib/consent.ts).
+// повторной отправки (lib/otp.ts) и приём политики (lib/consent.ts).
 // Разметка совпадает с шагом 4 SellForm по токенам и порядку элементов.
 //
 // ПОСЛЕ УСПЕШНОГО ВХОДА — два разных исхода, отсюда проп redirectTo:
@@ -42,12 +57,6 @@ import CloseButton from './ui/CloseButton';
 import { fieldClass } from './ui/Field';
 import { trackEvent } from '@/lib/analytics';
 import { acceptPolicy, hasAcceptedPolicyHere, migrateGuestConsent } from '@/lib/consent';
-import {
-  formatSerbianPhone,
-  isValidSerbianPhone,
-  SERBIAN_PHONE_PREFIX,
-  serbianPhoneToE164,
-} from '@/lib/inputFormat';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeAwareHref, localeHref } from '@/lib/i18n';
 import {
@@ -81,19 +90,6 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
   const router = useRouter();
   const supabase = getBrowserClient();
 
-  // Способ входа. 'phone' — SMS на сербский мобильный (основной путь
-  // площадки); 'email' — код на почту.
-  //
-  // ПОЧЕМУ ПОЧТА ВООБЩЕ ПОЯВИЛАСЬ: первый администратор площадки
-  // зарегистрирован без телефона, и вход по SMS ему недоступен —
-  // сербского мобильного у него нет. Канал открыт ТОЛЬКО для
-  // администраторов, гейт стоит на сервере (rpc_check_email_login,
-  // миграция 0082), и это вход в существующий аккаунт: регистрации
-  // по почте нет.
-  const [mode, setMode] = useState<'phone' | 'email'>('phone');
-
-  // Поле стартует с кодом страны: набирать «+381» руками незачем.
-  const [phone, setPhone] = useState(SERBIAN_PHONE_PREFIX);
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
@@ -132,66 +128,6 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [resendAt]);
-
-  // ---------- Отправка SMS-кода ----------
-  // resend = true — повторная отправка на тот же номер: квота
-  // проверяется так же, каждая SMS платная и считается сервером.
-  async function sendCode(resend = false) {
-    setError(null);
-    setNotice(null);
-
-    // Согласие — обязательное условие ДО отправки SMS, как в приложении:
-    // аккаунт создаётся самим входом, поэтому политика принимается здесь.
-    if (!agreed) {
-      setError(t('legal_consent_required'));
-      return;
-    }
-
-    // Фиксируем принятие текущей редакции. Пользователь пока гость —
-    // на его uid согласие переедет после успешного входа.
-    acceptPolicy(null);
-
-    // Пустая строка означает, что номер не прошёл проверку: не сербский
-    // мобильный. Отправлять SMS на такой номер нельзя — она не дойдёт,
-    // но спишет суточную квоту.
-    const e164 = serbianPhoneToE164(resend && sentTo ? sentTo : phone) ?? '';
-    if (e164 === '') {
-      setError(t('otp_err_phone'));
-      return;
-    }
-
-    setBusy(true);
-    try {
-      // Квота проверяется ДО отправки: RPC сама пишет журнал и экономит
-      // SMS. Лимит — 5 сообщений на номер за 24 часа (миграция 0035),
-      // сервер здесь источник истины, клиент только показывает результат.
-      const { data: quota, error: quotaError } = await supabase.rpc(
-        'rpc_check_otp_quota',
-        { p_phone: e164 },
-      );
-
-      if (quotaError) throw new Error(supabaseErrorText(quotaError));
-
-      if (quota && quota.allowed === false) {
-        setError(t('otp_err_quota'));
-        return;
-      }
-
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        phone: e164,
-      });
-      if (otpError) throw new Error(supabaseErrorText(otpError));
-
-      setSentTo(e164);
-      setCodeSent(true);
-      setResendAt(Date.now() + RESEND_DELAY_SEC * 1000);
-      if (resend) setNotice(t('otp_resent'));
-    } catch (e) {
-      setError(humanOtpError(e, t));
-    } finally {
-      setBusy(false);
-    }
-  }
 
   // ---------- Отправка кода на почту ----------
   // Отличается от SMS двумя вещами, и обе принципиальны.
@@ -288,14 +224,13 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
     setBusy(true);
 
     try {
-      // Сессию в обоих режимах выдаёт GoTrue одним и тем же
-      // verifyOtp — меняются только поле идентификатора и тип.
-      // Второго пути к сессии у площадки нет намеренно.
-      const { data, error: verifyError } = await supabase.auth.verifyOtp(
-        mode === 'email'
-          ? { email: sentTo, token: code.trim(), type: 'email' }
-          : { phone: sentTo, token: code.trim(), type: 'sms' },
-      );
+      // Сессию выдаёт GoTrue через verifyOtp. Второго пути к сессии
+      // у площадки нет намеренно.
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+        email: sentTo,
+        token: code.trim(),
+        type: 'email',
+      });
 
       if (verifyError) throw new Error(supabaseErrorText(verifyError));
       if (!data.session) throw new Error(t('otp_err_failed'));
@@ -372,70 +307,33 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
 
         {!codeSent ? (
           <>
-            {/* Переключатель способа входа. Сегмент, а не выпадающий
-                список: вариантов два, и оба должны быть видны сразу.
-                Телефон стоит первым и выбран по умолчанию — это
-                основной путь площадки, а почта заведена для
-                администраторов. */}
-            <div
-              role="tablist"
-              aria-label={t('my_auth_title')}
-              className="flex gap-1 rounded-control bg-surface-muted p-1"
-            >
-              {(['phone', 'email'] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  role="tab"
-                  aria-selected={mode === m}
-                  onClick={() => {
-                    // Смена способа сбрасывает ошибку: сообщение
-                    // «неверный номер» рядом с полем почты
-                    // бессмысленно.
-                    setMode(m);
-                    setError(null);
-                    setNotice(null);
-                  }}
-                  disabled={busy}
-                  className={[
-                    'flex-1 rounded-control px-3 py-1.5 text-caption',
-                    'transition-colors duration-fast',
-                    mode === m
-                      ? 'bg-white font-semibold shadow-sticky'
-                      : 'text-neutral-60 hover:text-neutral-100',
-                  ].join(' ')}
-                >
-                  {t(m === 'phone' ? 'auth_tab_phone' : 'auth_tab_email')}
-                </button>
-              ))}
-            </div>
+            {/* ПЕРЕКЛЮЧАТЕЛЯ СПОСОБА ВХОДА БОЛЬШЕ НЕТ.
+                Здесь стоял сегмент «Телефон | Почта». Вход по SMS с
+                сайта убран: Twilio требует одобренного Compliance
+                Profile для сербских номеров, и до его получения код не
+                уходит НИКОМУ — воронка регистрации была закрыта
+                полностью. Почтовый канал (0082) уже работал через
+                Resend, и он стал единственным.
 
+                Телефон при этом никуда не делся из площадки: он
+                спрашивается при подаче объявления как контакт для
+                покупателя — обычным полем, без кода подтверждения.
+
+                Приложение продолжает логинить по SMS: там свой клиент
+                и свой провайдер, эта правка его не касается. */}
             <div>
               <label className="mb-1 block text-caption text-neutral-60">
-                {t(mode === 'email' ? 'auth_email_label' : 'my_auth_phone')}
+                {t('auth_email_label')}
               </label>
-              {mode === 'email' ? (
-                <input
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t('auth_email_ph')}
-                  className={fieldClass}
-                />
-              ) : (
-                /* Маска «+381 6X XXX XXX(X)» — та же, что в приложении
-                   (SerbianPhoneFormatter) и в форме подачи. */
-                <input
-                  type="tel"
-                  inputMode="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(formatSerbianPhone(e.target.value))}
-                  placeholder="6X XXX XXX"
-                  className={fieldClass}
-                />
-              )}
+              <input
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t('auth_email_ph')}
+                className={fieldClass}
+              />
             </div>
 
             {/* Согласие с условиями и политикой — ОБЯЗАТЕЛЬНО до кнопки
@@ -476,19 +374,11 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
                 шаг, зелёный акцент на сайте закреплён за главным
                 действием (публикация объявления). */}
             <Button
-              onClick={() => (mode === 'email' ? sendEmailCode() : sendCode())}
-              // Проверка ПО СУЩЕСТВУ, а не на непустоту: в поле телефона
-              // всегда стоит код страны «+381 », и phone.trim() был бы
-              // истинным ещё до единой введённой цифры. Для почты
-              // достаточно наличия «@» — точную форму проверит
-              // sendEmailCode, а сервер проверит ещё раз.
-              disabled={
-                busy ||
-                !agreed ||
-                (mode === 'email'
-                  ? !email.includes('@')
-                  : !isValidSerbianPhone(phone))
-              }
+              onClick={() => sendEmailCode()}
+              // Проверка ПО СУЩЕСТВУ, а не на непустоту: достаточно
+              // наличия «@» — точную форму проверит sendEmailCode,
+              // а сервер проверит ещё раз.
+              disabled={busy || !agreed || !email.includes('@')}
               variant="info"
               fullWidth
             >
@@ -498,13 +388,13 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
         ) : (
           <>
             <p className="text-caption text-neutral-60">
-              {t(mode === 'email' ? 'auth_email_sent_to' : 'otp_sent_to')}{' '}
+              {t('auth_email_sent_to')}{' '}
               {sentTo}
             </p>
 
             <div>
               <label className="mb-1 block text-caption text-neutral-60">
-                {t(mode === 'email' ? 'auth_email_code' : 'my_auth_code')}
+                {t('auth_email_code')}
               </label>
               <input
                 type="text"
@@ -513,7 +403,7 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
                 // Длина зависит от канала: SMS всегда 6, email-код
                 // GoTrue настраивается и бывает длиннее (см. OTP_LEN).
                 // Жёсткие 6 здесь молча обрезали длинный код из письма.
-                maxLength={OTP_LEN[mode].max}
+                maxLength={OTP_LEN.email.max}
                 value={code}
                 // Только цифры: в приложении поле кода тоже ограничено
                 // digitsOnly.
@@ -532,13 +422,13 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
                 className="font-semibold text-brand-blue disabled:opacity-40"
               >
                 {t(
-                  mode === 'email' ? 'auth_email_change' : 'otp_change_number',
+                  'auth_email_change',
                 )}
               </button>
               <button
                 type="button"
                 onClick={() =>
-                  mode === 'email' ? sendEmailCode(true) : sendCode(true)
+                  sendEmailCode(true)
                 }
                 disabled={busy || resendIn > 0}
                 className="font-semibold text-brand-blue disabled:opacity-40"
@@ -551,7 +441,7 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
 
             <Button
               onClick={submit}
-              disabled={busy || !isOtpComplete(code, mode)}
+              disabled={busy || !isOtpComplete(code, 'email')}
               variant="info"
               fullWidth
             >

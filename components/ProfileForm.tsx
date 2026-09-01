@@ -53,7 +53,7 @@
 import Image from 'next/image';
 import { useRef, useState, useTransition } from 'react';
 
-import { saveContactEmail, saveProfile } from '@/app/my/actions';
+import { saveProfile } from '@/app/my/actions';
 import {
   ACCEPT_ATTR,
   COVER_ASPECT,
@@ -114,7 +114,6 @@ export default function ProfileForm({ locale, profile, application }: Props) {
   // большинства продавцов адрес пуст (profiles.email = NULL, миграция
   // 0035) — и решение модерации отправить некуда. Поле сделано
   // редактируемым именно ради этого канала.
-  const [email, setEmail] = useState(profile.email ?? '');
   const [sellerKind, setSellerKind] = useState(profile.seller_kind);
   const [companyName, setCompanyName] = useState(profile.company_name ?? '');
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url);
@@ -329,33 +328,12 @@ export default function ProfileForm({ locale, profile, application }: Props) {
         return;
       }
 
-      // Почта сохраняется ВТОРЫМ вызовом и только если её изменили.
-      // Отдельно — потому что правила другие: адрес обязан быть
-      // уникальным среди заполненных и проходить проверку формата
-      // (RPC set_my_contact_email, миграция 0071). Складывать их в
-      // saveProfile значило бы либо потерять внятные коды ошибок, либо
-      // тащить проверку уникальности в общий UPDATE профиля.
-      //
-      // Условие «изменили» важно: без него сохранение профиля с той же
-      // почтой упиралось бы в собственную запись при проверке
-      // занятости на каждом нажатии.
-      if (email.trim() !== (profile.email ?? '')) {
-        const emailResult = await saveContactEmail({
-          email,
-          locale,
-        });
-
-        if (!emailResult.ok) {
-          setError(
-            emailResult.code === 'taken'
-              ? t('profile_email_taken')
-              : emailResult.code === 'invalid'
-                ? t('profile_email_invalid')
-                : t('profile_error'),
-          );
-          return;
-        }
-      }
+      // ПОЧТА ЗДЕСЬ БОЛЬШЕ НЕ СОХРАНЯЕТСЯ.
+      // Поле стало read-only (0106, см. разметку ниже): адрес служит
+      // входом на сайт, и бесконтрольная смена была бы способом угона
+      // аккаунта. RPC set_my_contact_email при этом ЖИВА и вызывается
+      // из lib/profile — она понадобится, когда появится смена почты
+      // с подтверждением нового адреса.
 
       setSaved(true);
     });
@@ -428,35 +406,40 @@ export default function ProfileForm({ locale, profile, application }: Props) {
             </div>
           </div>
 
-          {/* Почта — РЕДАКТИРУЕМОЕ поле, в отличие от телефона выше.
-              Телефон служит логином и меняться не может; почта же
-              нигде для входа не используется, зато без неё продавцу
-              некуда отправить решение модерации: при входе по SMS
-              адрес пуст. Пустое значение допустимо и означает «письма
-              не нужны» — уведомления в этом случае остаются только в
-              кабинете. */}
+          {/* ПОЧТА БОЛЬШЕ НЕ РЕДАКТИРУЕТСЯ (миграция 0106).
+              ------------------------------------------------------------
+              Поле было свободно изменяемым, пока почта нигде не служила
+              входом. С переходом сайта на почтовый вход это стало
+              способом угона аккаунта: перехваченная на минуту чужая
+              сессия (общий компьютер, незаблокированный телефон)
+              позволяла вписать свой адрес — подтверждения не
+              требовалось — и дальше входить в этот кабинет когда
+              угодно. Владелец терял и объявления, и переписку.
+
+              Именно это условие ставила миграция 0082: открывать
+              почтовый вход всем можно только после того, как смена
+              адреса перестанет быть бесконтрольной.
+
+              Выбран запрет, а не подтверждение нового адреса кодом:
+              подтверждение — отдельная работа с собственной миграцией
+              (хранение ожидающего адреса, повторные отправки, сроки
+              годности), а живых продавцов, которым нужно менять почту,
+              пока нет. Заводится адрес при регистрации, меняется через
+              поддержку. Полноценная смена с подтверждением остаётся
+              задачей на потом. */}
           <div>
             <label className="mb-1 block text-caption text-neutral-60">
               {t('profile_email')}
             </label>
             <input
-              // type="email" даёт мобильной клавиатуре раскладку с @,
-              // но проверку формата на него НЕ перекладываем: браузер
-              // валидирует поле только внутри <form> с submit, а здесь
-              // отправка идёт по кнопке. Настоящая проверка — в RPC.
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setSaved(false);
-              }}
-              placeholder="you@example.com"
-              className={fieldClass}
+              type="text"
+              value={profile.email ?? '—'}
+              readOnly
+              disabled
+              className={`${fieldClass} bg-surface-muted text-neutral-60`}
             />
             <p className="mt-1 text-small text-neutral-50">
-              {t('profile_email_hint')}
+              {t('profile_email_locked')}
             </p>
           </div>
 

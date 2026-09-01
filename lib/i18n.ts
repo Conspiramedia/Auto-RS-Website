@@ -265,6 +265,18 @@ export const dict = {
     sell_dup_ignore: 'Ipak objavi novi',
     sell_dup_moderation: 'na proveri',
     sell_phone: 'Broj telefona',
+    // Сверка номера перед публикацией. Кодом телефон больше не
+    // подтверждается, и это единственная проверка перед тем, как он
+    // уйдёт в объявление: опечатку заметит только сам продавец.
+    sell_phone_confirm_title: 'Proverite broj telefona',
+    sell_phone_confirm_text:
+      'Kupci će zvati na ovaj broj. Proverite da li je tačan — kasnije ga menjate u oglasu.',
+    sell_phone_confirm_edit: 'Izmeni',
+    sell_phone_confirm_ok: 'Tačno, objavi',
+    // Подпись под полем почты в форме подачи. Объясняет разницу между
+    // двумя контактами на одном экране: телефон видит покупатель,
+    // почту не видит никто — она нужна только для входа.
+    sell_email_hint: 'Na ovu adresu šaljemo kod za prijavu. Kupci je ne vide.',
     sell_code: 'Kod iz SMS-a',
     sell_send_code: 'Pošalji kod',
     sell_confirm: 'Potvrdi',
@@ -662,6 +674,10 @@ export const dict = {
     // ne može da stigne nigde osim u kabinet.
     profile_email_hint:
       'Na ovu adresu šaljemo odluku o oglasu. Ostavite prazno ako ne želite e-poštu.',
+    // Почта больше не редактируется: она служит входом (0106).
+    // Подсказка говорит и о её роли, и о том, куда идти за сменой.
+    profile_email_locked:
+      'Ovom adresom se prijavljujete. Za promenu nas kontaktirajte.',
     profile_email_invalid: 'Proverite adresu e-pošte',
     profile_email_taken: 'Ova adresa se već koristi na drugom nalogu',
     profile_avatar: 'Fotografija',
@@ -1211,6 +1227,18 @@ export const dict = {
     sell_dup_ignore: 'Всё равно подать новое',
     sell_dup_moderation: 'на проверке',
     sell_phone: 'Номер телефона',
+    // Сверка номера перед публикацией. Кодом телефон больше не
+    // подтверждается, и это единственная проверка перед тем, как он
+    // уйдёт в объявление: опечатку заметит только сам продавец.
+    sell_phone_confirm_title: 'Проверьте номер телефона',
+    sell_phone_confirm_text:
+      'Покупатели будут звонить на этот номер. Убедитесь, что он верный — потом его можно изменить в объявлении.',
+    sell_phone_confirm_edit: 'Изменить',
+    sell_phone_confirm_ok: 'Верно, опубликовать',
+    // Подпись под полем почты в форме подачи. Объясняет разницу между
+    // двумя контактами на одном экране: телефон видит покупатель,
+    // почту не видит никто — она нужна только для входа.
+    sell_email_hint: 'На эту почту придёт код для входа. Покупатели её не видят.',
     sell_code: 'Код из SMS',
     sell_send_code: 'Отправить код',
     sell_confirm: 'Подтвердить',
@@ -1609,6 +1637,10 @@ export const dict = {
     // модерации некуда отправить, кроме кабинета.
     profile_email_hint:
       'На этот адрес приходит решение по объявлению. Оставьте пустым, если письма не нужны.',
+    // Почта больше не редактируется: она служит входом (0106).
+    // Подсказка говорит и о её роли, и о том, куда идти за сменой.
+    profile_email_locked:
+      'По этому адресу вы входите на сайт. Для смены напишите нам.',
     profile_email_invalid: 'Проверьте адрес электронной почты',
     profile_email_taken: 'Эта почта уже используется другим аккаунтом',
     profile_avatar: 'Фотография',

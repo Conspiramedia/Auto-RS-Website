@@ -169,6 +169,20 @@ export default function SellForm({
   // Шаг 4: телефон и код.
   // Поле стартует с кодом страны: набирать «+381» руками незачем.
   const [phone, setPhone] = useState(SERBIAN_PHONE_PREFIX);
+  // Адрес для входа. Гость подаёт объявление, ещё не имея аккаунта, —
+  // он создаётся кодом на эту почту (см. sendCode). Телефон выше
+  // остаётся контактом объявления и способом входа больше не является.
+  const [email, setEmail] = useState('');
+  // Номер, показанный продавцу на подтверждение. Пока не null — на
+  // экране стоит вопрос «этот номер верный?», а публикация ждёт.
+  //
+  // ЗАЧЕМ ОТДЕЛЬНЫЙ ШАГ. Телефон больше не подтверждается кодом: SMS
+  // с сайта не уходят, и номер попадает в объявление как есть. Опечатка
+  // в нём означает, что покупатели просто не дозвонятся, а продавец
+  // об этом никогда не узнает — объявление висит, звонков нет.
+  // Поэтому номер показывается крупно и отдельно: единственная
+  // оставшаяся проверка — глаза самого продавца.
+  const [phoneToConfirm, setPhoneToConfirm] = useState<string | null>(null);
   const [code, setCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
   // Номер, на который реально ушёл код, в формате E.164. Держим отдельно
@@ -239,7 +253,27 @@ export default function SellForm({
 
       const uid = data.session?.user.id ?? null;
       setSignedIn(uid !== null);
-      setAccountPhone(data.session?.user.phone ?? null);
+
+      // ТЕЛЕФОН БЕРЁТСЯ ИЗ ПРОФИЛЯ, А НЕ ИЗ СЕССИИ.
+      //
+      // Раньше здесь стоял session.user.phone — поле auth-аккаунта,
+      // которое заполняется ТОЛЬКО при входе по SMS. После перехода
+      // на почтовый вход (0106) оно пустое у всех, и форма спрашивала
+      // бы номер при каждой подаче.
+      //
+      // get_profile_phone отдаёт контакт из profiles — тот, что
+      // продавец ввёл при первой подаче. Ошибку глушим: недоступная
+      // RPC не должна мешать подать объявление, поле просто покажется
+      // пустым и номер спросят заново.
+      if (uid) {
+        const { data: savedPhone } = await supabase.rpc('get_profile_phone');
+        if (!cancelled && typeof savedPhone === 'string' && savedPhone) {
+          setAccountPhone(savedPhone);
+          // Подставляем в поле: продавец видит свой номер и может его
+          // поправить, а не вводить заново.
+          setPhone(formatSerbianPhone(savedPhone));
+        }
+      }
 
       // Согласие могло быть дано ещё гостем — переносим на аккаунт,
       // иначе тот же человек увидит непринятый чекбокс.
@@ -539,12 +573,21 @@ export default function SellForm({
   // ---------- Отправка SMS-кода ----------
   // resend = true — повторная отправка на уже подтверждённый номер:
   // квоту проверяем так же (каждая SMS платная и считается сервером).
+  // ---------- Отправка кода на почту ----------
+  // Гость подаёт объявление, ещё не имея аккаунта: он создаётся самим
+  // входом. Раньше входом был SMS-код на номер продавца, теперь — код
+  // на почту (миграции 0082 и 0106), потому что SMS с сайта не уходят:
+  // Twilio требует одобренного Compliance Profile для сербских номеров.
+  //
+  // ТЕЛЕФОН ПРИ ЭТОМ ВСЁ РАВНО СПРАШИВАЕТСЯ, но выше по форме и как
+  // контакт для покупателя, а не как способ входа: подтверждать его
+  // кодом больше не нужно, продавец проверяет номер глазами.
   async function sendCode(resend = false) {
     setError(null);
     setNotice(null);
 
-    // Согласие — обязательное условие ДО отправки SMS, как в приложении:
-    // аккаунт создаётся самим входом, поэтому политика принимается здесь.
+    // Согласие — обязательное условие ДО создания аккаунта: он
+    // заводится самим входом, поэтому политика принимается здесь.
     if (!agreed) {
       setError(t('legal_consent_required'));
       return;
@@ -554,46 +597,39 @@ export default function SellForm({
     // на его uid согласие переедет после успешного входа.
     acceptPolicy(null);
 
-    const e164 = normalizePhone(resend && sentTo ? sentTo : phone);
+    const clean = (resend && sentTo ? sentTo : email).trim().toLowerCase();
 
-    // Пустая строка означает, что номер не прошёл проверку приложения:
-    // не сербский мобильный (нужно 8–9 цифр национальной части,
-    // начинающихся с 6). Отправлять SMS на такой номер нельзя —
-    // она не дойдёт, но спишет суточную квоту продавца.
-    if (e164 === '') {
-      setError(t('otp_err_phone'));
+    // Грубая проверка формы адреса — до запроса: незачем тратить
+    // квоту и тревожить GoTrue заведомой опечаткой.
+    if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(clean)) {
+      setError(t('auth_email_invalid'));
       return;
     }
 
     setBusy(true);
     try {
-      // Квота проверяется ДО отправки: RPC сама пишет журнал и экономит SMS.
-      // Лимит — 5 SMS на номер за 24 часа (миграция 0035), сервер здесь
-      // источник истины, клиент только показывает результат.
-      const { data: quota, error: quotaError } = await supabase.rpc(
-        'rpc_check_otp_quota',
-        { p_phone: e164 },
-      );
-
-      if (quotaError) throw new Error(supabaseErrorText(quotaError));
-
-      if (quota && quota.allowed === false) {
-        setError(t('otp_err_quota'));
-        return;
-      }
-
+      // Квота проверяется ДО отправки: RPC сама пишет журнал.
+      // В отличие от входа в кабинет здесь НЕ используется
+      // rpc_check_email_login: тот пускает только существующие
+      // профили, а подача объявления гостем — это регистрация.
       const { error: otpError } = await supabase.auth.signInWithOtp({
-        phone: e164,
+        email: clean,
+        options: {
+          // Аккаунт создаётся: это первый вход продавца на площадку.
+          // Отличие от AuthGate, где shouldCreateUser: false —
+          // там вход в УЖЕ существующий кабинет.
+          shouldCreateUser: true,
+        },
       });
       if (otpError) throw new Error(supabaseErrorText(otpError));
 
-      setSentTo(e164);
+      setSentTo(clean);
       setCodeSent(true);
 
-      // Продавец дошёл до подтверждения номера — ключевая точка воронки:
-      // разрыв между sell_start и otp_sent показывает, где теряются люди.
-      // Повторную отправку не считаем: это то же самое событие воронки.
-      // Номер телефона в аналитику НЕ передаётся.
+      // Продавец дошёл до подтверждения адреса — ключевая точка
+      // воронки: разрыв между sell_start и otp_sent показывает, где
+      // теряются люди. Повторную отправку не считаем: то же событие.
+      // Адрес в аналитику НЕ передаётся.
       if (!resend) trackEvent('otp_sent', { listing_type: listingType });
 
       // Запускаем отсчёт до следующей отправки.
@@ -615,6 +651,34 @@ export default function SellForm({
     setResendIn(0);
     setError(null);
     setNotice(null);
+  }
+
+  // ---------- Сверка номера перед публикацией ----------
+  // Промежуточный шаг между кнопкой «Опубликовать» и самой публикацией.
+  // Показывает номер, который уйдёт в объявление, и ждёт подтверждения.
+  //
+  // ПОЧЕМУ НЕ ПРИ ПЕРЕХОДЕ МЕЖДУ ШАГАМИ. Телефон вводится на том же
+  // четвёртом шаге, где стоит кнопка публикации, — «перехода» после
+  // его заполнения просто нет. Сверка привязана к последнему действию,
+  // после которого номер уже не изменить.
+  //
+  // В режиме правки шаг пропускается: продавец правит существующее
+  // объявление, номер в нём уже проверен при первой подаче, и
+  // спрашивать о нём при каждой смене цены — навязчиво.
+  function requestSubmit() {
+    if (isEdit) {
+      void submit();
+      return;
+    }
+
+    const e164 = normalizePhone(phone);
+    if (e164 === '') {
+      setError(t('otp_err_phone'));
+      return;
+    }
+
+    setError(null);
+    setPhoneToConfirm(e164);
   }
 
   // ---------- Подтверждение кода и публикация ----------
@@ -660,12 +724,12 @@ export default function SellForm({
       if (isEdit || signedIn) {
         const { data: current } = await supabase.auth.getSession();
         uid = current.session?.user.id;
-        contactPhone = current.session?.user.phone
-          ? `+${current.session.user.phone.replace(/^\+/, '')}`
-          : // У аккаунта нет номера (вход по почте, миграция 0082) —
-            // берём тот, что в поле формы. При подаче продавец вводит
-            // его сам, при правке он предзаполнен номером объявления.
-            e164;
+        // Телефон берётся из ПОЛЯ ФОРМЫ, а не из session.user.phone.
+        // После перехода на почтовый вход (0106) поле аккаунта пустое
+        // у всех: номер туда пишет только SMS-регистрация. В форме он
+        // либо подставлен из профиля (get_profile_phone при загрузке),
+        // либо только что введён продавцом.
+        contactPhone = e164;
 
         // Телефон обязателен: cars.contact_phone проверяется
         // ограничением на стороне БД, и пустой номер всё равно был бы
@@ -680,9 +744,9 @@ export default function SellForm({
       } else {
         const { data: auth, error: verifyError } =
           await supabase.auth.verifyOtp({
-            phone: e164,
+            email: sentTo,
             token: code.trim(),
-            type: 'sms',
+            type: 'email',
           });
         if (verifyError) throw new Error(supabaseErrorText(verifyError));
         if (!auth.session) throw new Error(t('otp_err_failed'));
@@ -873,6 +937,26 @@ export default function SellForm({
           listing_type: listingType,
           photos: photoUrls.length,
         });
+      }
+
+      // ЗАПОМИНАЕМ ТЕЛЕФОН В ПРОФИЛЕ.
+      //
+      // Номер спрашивается ОДИН РАЗ — при первой подаче, — а дальше
+      // подставляется в форму сам (get_profile_phone при загрузке).
+      // Без этой записи почтовый аккаунт заново вводил бы номер на
+      // каждое объявление: session.user.phone у него пуст всегда.
+      //
+      // Пишем ПОСЛЕ успешной публикации, а не до: если создание
+      // объявления упало, запоминать нечего — продавец, возможно, как
+      // раз правит опечатку в номере.
+      //
+      // Ошибку глушим намеренно. Объявление уже создано и это главное;
+      // несохранённый номер означает лишь, что в следующий раз поле
+      // будет пустым, и рушить из-за этого успешный сценарий нельзя.
+      if (contactPhone) {
+        await supabase
+          .rpc('set_profile_phone', { p_phone: contactPhone })
+          .then(undefined, () => undefined);
       }
 
       setDone(true);
@@ -1450,7 +1534,54 @@ export default function SellForm({
       )}
 
       {/* ---------- Шаг 4: контакты и вход по SMS ---------- */}
-      {step === 4 && (
+      {/* СВЕРКА НОМЕРА ПЕРЕД ПУБЛИКАЦИЕЙ.
+          Перекрывает содержимое шага 4 целиком, а не встаёт рядом:
+          вопрос требует ответа, и оставлять под ним активную форму
+          значило бы позволить опубликовать в обход проверки.
+
+          Номер показан крупно (text-h4) и в том же виде, в каком его
+          увидит покупатель, — сверять мелкий серый текст бесполезно.
+
+          Две кнопки, и «Изменить» стоит первой: она возвращает к форме,
+          то есть отменяет действие, а отмена по правилам площадки
+          всегда левее подтверждения. */}
+      {phoneToConfirm !== null && (
+        <div className="space-y-3">
+          <h2 className="text-h4 font-semibold">
+            {t('sell_phone_confirm_title')}
+          </h2>
+          <p className="text-caption text-neutral-60">
+            {t('sell_phone_confirm_text')}
+          </p>
+
+          <p className="rounded-card border border-neutral-10 bg-surface-subtle px-4 py-3 text-center text-h4 font-semibold">
+            {formatSerbianPhone(phoneToConfirm)}
+          </p>
+
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => setPhoneToConfirm(null)}
+              disabled={busy}
+              className="flex-1"
+            >
+              {t('sell_phone_confirm_edit')}
+            </Button>
+            <Button
+              onClick={() => {
+                setPhoneToConfirm(null);
+                void submit();
+              }}
+              disabled={busy}
+              className="flex-1"
+            >
+              {t('sell_phone_confirm_ok')}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {step === 4 && phoneToConfirm === null && (
         <div className="space-y-3">
           <h2 className="text-h4 font-semibold">{t('sell_step_contact')}</h2>
 
@@ -1514,7 +1645,7 @@ export default function SellForm({
                   его бесполезным для покупателя. У вошедшего С номером
                   проверять нечего — телефон берётся из аккаунта. */}
               <Button
-                onClick={submit}
+                onClick={requestSubmit}
                 disabled={
                   busy || (!accountPhone && !isValidSerbianPhone(phone))
                 }
@@ -1543,9 +1674,34 @@ export default function SellForm({
             </>
           ) : !codeSent ? (
             <>
+              {/* ПОЧТА — способ входа для гостя.
+                  Аккаунт создаётся кодом на этот адрес, поэтому поле
+                  стоит рядом с телефоном, но означает совсем другое:
+                  телефон выше увидит покупатель, почту не увидит
+                  никто — она нужна только для входа. Подпись под полем
+                  об этом и говорит: иначе продавец решит, что оставляет
+                  второй публичный контакт. */}
+              <div>
+                <label className="mb-1 block text-caption text-neutral-60">
+                  {t('auth_email_label')}
+                </label>
+                <input
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t('auth_email_ph')}
+                  className={field}
+                />
+                <p className="mt-1 text-small text-neutral-50">
+                  {t('sell_email_hint')}
+                </p>
+              </div>
+
               {/* Согласие с условиями и политикой — ОБЯЗАТЕЛЬНО до кнопки
                   «Получить код». Тот же порядок, что в приложении: аккаунт
-                  создаётся самим входом по SMS, поэтому документы
+                  создаётся самим входом, поэтому документы
                   принимаются здесь, а не после публикации.
                   Ссылки ведут на страницы сайта и открываются в новой
                   вкладке — иначе продавец потеряет заполненную форму. */}
@@ -1581,11 +1737,22 @@ export default function SellForm({
 
               <Button
                 onClick={() => sendCode()}
-                // Кнопка неактивна без согласия: отправлять SMS раньше
-                // принятия документов нельзя. Номер проверяется по
-                // существу: в поле всегда стоит код страны «+381 », и
-                // phone.trim() был бы истинным на пустом номере.
-                disabled={busy || !isValidSerbianPhone(phone) || !agreed}
+                // Кнопка неактивна без согласия: аккаунт создаётся
+                // самим входом, и заводить его раньше принятия
+                // документов нельзя.
+                //
+                // Проверяются ОБА поля. Телефон — потому что он уйдёт
+                // в объявление контактом, и пустой сделал бы его
+                // бесполезным для покупателя; проверка по существу, а
+                // не на непустоту: в поле всегда стоит «+381 ».
+                // Почта — потому что на неё придёт код входа;
+                // достаточно «@», точную форму проверит sendCode.
+                disabled={
+                  busy ||
+                  !isValidSerbianPhone(phone) ||
+                  !email.includes('@') ||
+                  !agreed
+                }
                 variant="info"
                 fullWidth
               >
@@ -1595,7 +1762,7 @@ export default function SellForm({
           ) : (
             <>
               <p className="text-caption text-neutral-60">
-                {t('otp_sent_to')} {sentTo}
+                {t('auth_email_sent_to')} {sentTo}
               </p>
 
               <div>
@@ -1627,7 +1794,7 @@ export default function SellForm({
                   disabled={busy}
                   className="font-semibold text-brand-blue disabled:opacity-40"
                 >
-                  {t('otp_change_number')}
+                  {t('auth_email_change')}
                 </button>
                 <button
                   type="button"
@@ -1642,7 +1809,7 @@ export default function SellForm({
               </div>
 
               <Button
-                onClick={submit}
+                onClick={requestSubmit}
                 disabled={busy || !canSubmit}
                 fullWidth
               >
