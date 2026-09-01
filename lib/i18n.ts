@@ -767,8 +767,9 @@ export const dict = {
     // zaključan.
     profile_phone_hint:
       'Broj vide kupci u vašim oglasima i unapred se popunjava pri objavi',
-    // Greška pri čuvanju: broj nije srpski mobilni. Ista provera kao
-    // na dugmetu objave oglasa (isValidSerbianPhone).
+    // Greška pri čuvanju: broj ne odgovara srpskom formatu. Provera je
+    // ista kao ograničenje baze (cars_contact_phone_serbian) — fiksni
+    // brojevi 011, 021, 018 prolaze, kao i mobilni.
     profile_phone_invalid: 'Unesite ispravan broj telefona',
     profile_email: 'E-mail',
     // Podnaslov polja e-pošte. Prijava ide preko SMS-a, pa je adresa
@@ -1833,8 +1834,9 @@ export const dict = {
     // телефон стал контактом, который видит покупатель в объявлении.
     profile_phone_hint:
       'Номер видят покупатели в ваших объявлениях; он подставляется при подаче',
-    // Ошибка сохранения: номер не похож на сербский мобильный. Та же
-    // проверка, что на кнопке публикации объявления.
+    // Ошибка сохранения: номер не подходит под сербский формат. Та же
+    // граница, что у ограничения базы cars_contact_phone_serbian —
+    // городские 011, 021, 018 проходят наравне с мобильными.
     profile_phone_invalid: 'Введите корректный номер телефона',
     profile_email: 'E-mail',
     // Подпись под полем почты. Вход идёт по SMS, поэтому адрес пуст,
