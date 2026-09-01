@@ -209,14 +209,19 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                   подачи к сгибу.
 
                   clamp вместо ступени шкалы: между 320px и 640px размер
-                  плавно растёт от 22px до 28px, и заголовок держится в
+                  плавно растёт от 25px до 32px, и заголовок держится в
                   двух строках на всех ходовых ширинах, а не только на
                   той, под которую подобран. Ступенью это не выразить —
                   здесь размер функция от ширины, а не роль в иерархии.
 
+                  Верхняя граница упирается в 320px — самый узкий
+                  экран в обиходе: при 26px заголовок там срывается на
+                  третью строку, поэтому нижнее значение поднимать
+                  дальше нельзя.
+
                   С sm (640px) места хватает, и заголовок возвращается на
                   свою ступень; с lg — на display, как было. */}
-              <h1 className="max-w-2xl text-[clamp(1.375rem,5.2vw,1.75rem)] font-bold leading-tight sm:text-h1 lg:text-display">
+              <h1 className="max-w-2xl text-[clamp(1.5625rem,6.4vw,2rem)] font-bold leading-tight sm:text-h1 lg:text-display">
                 {t('home_hero_title')}
               </h1>
               <p className="mt-3 max-w-xl text-h4 text-neutral-60">
