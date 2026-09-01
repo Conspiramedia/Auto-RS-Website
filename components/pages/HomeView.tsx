@@ -606,7 +606,12 @@ export default async function HomeView({ locale }: { locale: Locale }) {
             картинки. */}
         <section className="border-t border-neutral-10 bg-surface-subtle">
           <div className="mx-auto grid max-w-6xl items-start gap-x-12 gap-y-6 px-4 py-12 lg:grid-cols-5">
-            <div className="order-1 lg:col-span-2">
+            {/* Заголовок и лид по центру на мобильном — как во всех
+                блоках страницы; на десктопе выравнивание сбрасывается.
+                СПИСОК ниже центровку НЕ наследует: у пунктов маркеры,
+                и по центру они встали бы лесенкой с рваным левым
+                краем. */}
+            <div className="order-1 text-center lg:col-span-2 lg:text-left">
               {/* Заголовок и лид на десктопе крупнее: блок стоит рядом
                   с большой картинкой, и на прежних ступенях текст
                   выглядел подписью к ней, а не самостоятельным
@@ -625,7 +630,7 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                   лишней зависимостью от псевдоэлемента) — простые
                   кружки в отдельном span, чтобы текст пункта переносился
                   с ровным отступом, а не подлезал под маркер. */}
-              <ul className="mt-4 space-y-2">
+              <ul className="mt-4 space-y-2 text-left">
                 {(
                   [
                     'home_dealers_b1',
@@ -684,7 +689,16 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                 Микрокопия под кнопкой снимает главный вопрос перед
                 нажатием — «что будет дальше»: обещает ответ по почте и
                 помощь, а не молчание после отправки формы. */}
-            <div className="order-3 lg:col-span-2 lg:col-start-1">
+            {/* text-center до lg: кнопка и микрокопия под ней стоят
+                посреди колонки, как в остальных блоках страницы на
+                мобильном. Центрируется именно ТЕКСТ, а не flex —
+                микрокопия под кнопкой обязана быть отцентрована вместе
+                с ней, а flex-контейнер выровнял бы только кнопку и
+                оставил подпись прижатой к краю.
+
+                На десктопе выравнивание сбрасывается: там колонка
+                узкая и текст в ней читается слева. */}
+            <div className="order-3 text-center lg:col-span-2 lg:col-start-1 lg:text-left">
               <Button
                 variant="info"
                 size="lg"
