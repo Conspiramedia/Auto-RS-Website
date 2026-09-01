@@ -352,16 +352,11 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                 <p className="mt-2 text-neutral-60">
                   {t('home_fresh_empty_text')}
                 </p>
-                <div className="mt-6 flex justify-center">
-                  <Button size="lg" href={localeHref(locale, '/sell')}>
-                    {t('home_hero_cta')}
-                  </Button>
-                </div>
-
-                {/* Изображение ПОД кнопкой — тот же приём, что в герое на
-                    мобильном: сначала оффер и действие, потом картинка.
-                    Поставленная выше, она отодвинула бы кнопку подачи
-                    вниз, а это единственное действие всего блока.
+                {/* Изображение между текстом и кнопкой.
+                    Порядок тот же, что в блоке «Почему RS Auto» ниже:
+                    содержание → картинка → действие. Кнопка закрывает
+                    карточку, и отделять её от края должен воздух, а не
+                    фотография.
 
                     Область зарезервирована через aspect-[16/10] + fill,
                     поэтому загрузка файла не сдвигает вёрстку. priority
@@ -376,7 +371,7 @@ export default async function HomeView({ locale }: { locale: Locale }) {
 
                     Пустой alt: изображение декоративное, весь смысл несут
                     заголовок и кнопка рядом. */}
-                <div className="relative mt-8 aspect-[16/10] overflow-hidden rounded-card">
+                <div className="relative mt-6 aspect-[16/10] overflow-hidden rounded-card">
                   <Image
                     src="/images/sell-cta-car.webp"
                     alt=""
@@ -384,6 +379,12 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                     sizes="(max-width: 543px) calc(100vw - 4rem), 32rem"
                     className="object-cover"
                   />
+                </div>
+
+                <div className="mt-6 flex justify-center">
+                  <Button size="lg" href={localeHref(locale, '/sell')}>
+                    {t('home_sell_free_cta')}
+                  </Button>
                 </div>
               </div>
             </Card>
