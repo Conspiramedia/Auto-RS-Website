@@ -580,22 +580,66 @@ export default async function HomeView({ locale }: { locale: Locale }) {
         </section>
 
         {/* Оффер дилерам — вторая аудитория продавцов. */}
+        {/* РАСКЛАДКА: текст, под ним картинка, под ней кнопка.
+            Раньше блок был строкой «текст слева, кнопка справа». С
+            изображением такая раскладка не работает: кнопка оказалась
+            бы сбоку от картинки и потеряла бы связь с оффером.
+
+            Порядок тот же, что в остальных блоках страницы: сначала
+            содержание, потом изображение, потом действие. Кнопка
+            закрывает секцию, и отделять её от футера должен воздух,
+            а не фотография.
+
+            Ширина ограничена max-w-2xl и центрирована: во всю ширину
+            экрана строка из трёх слов и одна кнопка выглядели бы
+            потерянными, а картинка на 1280px растянулась бы на всю
+            полосу и перевесила бы блок. */}
         <section className="border-t border-neutral-10 bg-surface-subtle">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-10">
-            <div>
-              <h2 className="text-h3 font-semibold">{t('dealers_title')}</h2>
-              <p className="mt-1 text-neutral-60">{t('dealers_offer')}</p>
-              <p className="mt-1 text-caption text-neutral-50">
-                {t('dealers_offer_note')}
-              </p>
+          <div className="mx-auto max-w-2xl px-4 py-10 text-center">
+            <h2 className="text-h3 font-semibold">{t('dealers_title')}</h2>
+            <p className="mt-1 text-neutral-60">{t('dealers_offer')}</p>
+            <p className="mt-1 text-caption text-neutral-50">
+              {t('dealers_offer_note')}
+            </p>
+
+            {/* Три автомобиля в ряд — автопарк салона: изображение
+                отвечает смыслу блока, а не просто заполняет место.
+
+                priority не ставится: секция стоит у самого низа
+                страницы и в LCP не участвует. Область зарезервирована
+                через aspect-[16/10] + fill, подгрузка вёрстку не
+                двигает.
+
+                sizes: до sm картинка занимает ширину окна за вычетом
+                полей секции, дальше упирается в max-w-2xl (42rem).
+
+                Пустой alt: изображение декоративное, смысл несут
+                заголовок и кнопка рядом. */}
+            <div className="relative mt-6 aspect-[16/10] overflow-hidden rounded-card">
+              <Image
+                src="/images/dealers-car.webp"
+                alt=""
+                fill
+                sizes="(max-width: 671px) calc(100vw - 2rem), 42rem"
+                className="object-cover"
+              />
             </div>
-            <Button
-              variant="dark"
-              size="lg"
-              href={localeHref(locale, '/dealers')}
-            >
-              {t('dealers_cta')}
-            </Button>
+
+            {/* Синяя кнопка (variant info), а не тёмная.
+                Зелёный на сайте закреплён за главным действием —
+                подачей объявления, и второй зелёной кнопкой этот блок
+                спорил бы с ним за внимание. Синий по токенам бренда
+                означает связь и второстепенные действия: заявка салона
+                — именно обращение к площадке, а не публикация. */}
+            <div className="mt-6 flex justify-center">
+              <Button
+                variant="info"
+                size="lg"
+                href={localeHref(locale, '/dealers')}
+              >
+                {t('dealers_cta')}
+              </Button>
+            </div>
           </div>
         </section>
       </main>
