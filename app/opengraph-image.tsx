@@ -26,6 +26,9 @@
 // отдаётся из кэша.
 // ============================================================
 
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+
 import { ImageResponse } from 'next/og';
 
 import { brand } from '@/lib/brand';
@@ -36,8 +39,19 @@ export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 export const alt = `${brand.name} — automobili u Srbiji`;
 
-export default function Image() {
+export default async function Image() {
   const t = getT('sr');
+
+  // Фон читается с диска и кодируется в data-URI, а не отдаётся
+  // ссылкой вида '/images/og-cover.webp'. Satori (движок ImageResponse)
+  // рисует на сервере во время сборки, когда сайт сам себе ещё
+  // недоступен, и относительный путь ему разрешать не от чего.
+  // JPEG, а не WebP: Satori (движок ImageResponse) декодирует только
+  // PNG и JPEG — на WebP сборка падает с «TypeError: u2 is not
+  // iterable». Остальные картинки сайта лежат в WebP, и этот файл —
+  // намеренное исключение ради генератора превью.
+  const bg = await readFile(join(process.cwd(), 'public/images/og-cover.jpg'));
+  const bgSrc = `data:image/jpeg;base64,${bg.toString('base64')}`;
 
   return new ImageResponse(
     (
@@ -48,62 +62,122 @@ export default function Image() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          // Фирменный синий во всю плашку: превью должно узнаваться
-          // цветом раньше, чем прочитан текст. Логотип на сайте стоит
-          // на белом, но белое превью в ленте мессенджера сливается с
-          // фоном самого мессенджера.
+          // Фирменный синий остаётся подложкой под фотографией: если
+          // файл фона однажды не прочитается, превью деградирует до
+          // прежней сплошной плашки, а не до белого прямоугольника.
           background: brand.colors.primary,
           padding: '0 80px',
+          position: 'relative',
         }}
       >
-        {/* Логотип набран текстом, а не картинкой: PNG знака пришлось
-            бы читать с диска и кодировать в data-URI, а Satori всё
-            равно нарисовал бы его как изображение без прироста
-            качества.
-            Надпись ЦЕЛЬНАЯ и одноцветная — ровно как в
-            components/ui/Logo.tsx (вариант full). Разбивать её на
-            «RS» + «Auto» разных цветов нельзя: на сайте логотип
-            выглядит иначе, и превью показывало бы другой бренд.
-            Белый вместо брендового синего — по той же причине, что
-            inverted в Logo: на синей плашке синий не читается. */}
-        <div
+        {/* ФОТОГРАФИЯ ФОНОМ. Машина на снимке стоит по центру и справа,
+            поэтому текст уходит в левую треть — иначе логотип лёг бы
+            поверх капота.
+            eslint-disable: next/image здесь неприменим, Satori понимает
+            только обычный <img>. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={bgSrc}
+          alt=""
+          width={size.width}
+          height={size.height}
           style={{
-            display: 'flex',
-            fontSize: 96,
-            fontWeight: 700,
-            color: '#FFFFFF',
-          }}
-        >
-          {brand.name}
-        </div>
-
-        {/* Слоган — единственная строка, объясняющая, что это за сайт.
-            Берётся из словаря, а не пишется здесь константой: он же
-            стоит в подвале и в описании сайта. */}
-        <div
-          style={{
-            display: 'flex',
-            fontSize: 40,
-            color: 'rgba(255,255,255,0.9)',
-            marginTop: 24,
-          }}
-        >
-          {t('site_tagline')}
-        </div>
-
-        {/* Зелёная черта под слоганом — тот же акцент, что у главного
-            действия на сайте. Держит композицию: без неё нижняя треть
-            плашки остаётся пустой. */}
-        <div
-          style={{
-            display: 'flex',
-            width: 160,
-            height: 8,
-            background: brand.colors.green,
-            borderRadius: 999,
-            marginTop: 40,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            // Размеры числом, а не в процентах: Satori раскладывает
+            // абсолютные элементы без родительского контекста
+            // процентов, и '100%' у него схлопывается в ноль.
+            width: size.width,
+            height: size.height,
+            objectFit: 'cover',
           }}
         />
+
+        {/* ГРАДИЕНТ ПОД ТЕКСТОМ. Левая треть снимка светло-синяя
+            (средняя яркость 115 из 255) — белые буквы на ней читались
+            бы на грани. Плёнка гасит фон слева и полностью прозрачна
+            справа, где стоит машина: затемнять её незачем.
+
+            Именно градиент, а не сплошная заливка: резкая граница
+            посреди превью выглядела бы browserом-артефактом, а не
+            дизайном. */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: size.width,
+            height: size.height,
+            background:
+              'linear-gradient(90deg, rgba(9,26,48,0.88) 0%, rgba(9,26,48,0.72) 38%, rgba(9,26,48,0) 72%)',
+          }}
+        />
+
+        {/* Текстовый блок поверх плёнки. position/zIndex обязательны:
+            без них абсолютные слои выше перекрыли бы надписи. */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            position: 'relative',
+            zIndex: 1,
+            // 560px — слоган ложится в две строки и не доезжает до
+            // переднего колеса. Шире текст наезжал бы на машину, уже —
+            // рвался бы на три строки.
+            maxWidth: 560,
+          }}
+            >
+            {/* Логотип набран текстом, а не картинкой: PNG знака пришлось
+              бы читать с диска и кодировать в data-URI, а Satori всё
+              равно нарисовал бы его как изображение без прироста
+              качества.
+              Надпись ЦЕЛЬНАЯ и одноцветная — ровно как в
+              components/ui/Logo.tsx (вариант full). Разбивать её на
+              «RS» + «Auto» разных цветов нельзя: на сайте логотип
+              выглядит иначе, и превью показывало бы другой бренд.
+              Белый вместо брендового синего — по той же причине, что
+              inverted в Logo: на синей плашке синий не читается. */}
+            <div
+            style={{
+              display: 'flex',
+              fontSize: 96,
+              fontWeight: 700,
+              color: '#FFFFFF',
+            }}
+            >
+            {brand.name}
+            </div>
+
+            {/* Слоган — единственная строка, объясняющая, что это за сайт.
+              Берётся из словаря, а не пишется здесь константой: он же
+              стоит в подвале и в описании сайта. */}
+            <div
+            style={{
+              display: 'flex',
+              fontSize: 36,
+              color: 'rgba(255,255,255,0.92)',
+              marginTop: 20,
+              lineHeight: 1.3,
+            }}
+            >
+            {t('site_tagline')}
+            </div>
+
+            {/* Зелёная черта под слоганом — тот же акцент, что у главного
+              действия на сайте. Держит композицию: без неё нижняя треть
+              плашки остаётся пустой. */}
+            <div
+              style={{
+                display: 'flex',
+                width: 160,
+                height: 8,
+                background: brand.colors.green,
+                borderRadius: 999,
+                marginTop: 40,
+              }}
+            />
+        </div>
       </div>
     ),
     size,
