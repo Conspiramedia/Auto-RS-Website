@@ -760,10 +760,16 @@ export const dict = {
     profile_name: 'Ime',
     profile_name_ph: 'Kako da vas oslovimo',
     profile_phone: 'Telefon',
-    profile_phone_hint: 'Broj se koristi za prijavu i ne može se promeniti',
-    // Подсказка для аккаунта БЕЗ номера (вход по e-mail): текст про
-    // «номер для входа» там был бы неверным — входят не им.
-    profile_phone_none: 'Broj nije vezan za nalog — prijavljujete se e-mailom',
+    // Podnaslov polja telefona. Ranije je pisalo da se broj koristi za
+    // prijavu i da se ne menja — to više nije tačno: prijava ide preko
+    // e-pošte (migracija 0106), a telefon je kontakt koji kupac vidi u
+    // oglasu. Zato tekst objašnjava čemu broj služi, a ne zašto je
+    // zaključan.
+    profile_phone_hint:
+      'Broj vide kupci u vašim oglasima i unapred se popunjava pri objavi',
+    // Greška pri čuvanju: broj nije srpski mobilni. Ista provera kao
+    // na dugmetu objave oglasa (isValidSerbianPhone).
+    profile_phone_invalid: 'Unesite ispravan broj telefona',
     profile_email: 'E-mail',
     // Podnaslov polja e-pošte. Prijava ide preko SMS-a, pa je adresa
     // prazna dok je vlasnik sam ne unese — a bez nje odluka moderacije
@@ -1822,8 +1828,14 @@ export const dict = {
     profile_name: 'Имя',
     profile_name_ph: 'Как к вам обращаться',
     profile_phone: 'Телефон',
-    profile_phone_hint: 'Номер используется для входа и не меняется',
-    profile_phone_none: 'Номер не привязан к аккаунту — вход выполняется по почте',
+    // Подпись под полем телефона. Прежний текст «номер используется
+    // для входа и не меняется» устарел: вход идёт по почте (0106), а
+    // телефон стал контактом, который видит покупатель в объявлении.
+    profile_phone_hint:
+      'Номер видят покупатели в ваших объявлениях; он подставляется при подаче',
+    // Ошибка сохранения: номер не похож на сербский мобильный. Та же
+    // проверка, что на кнопке публикации объявления.
+    profile_phone_invalid: 'Введите корректный номер телефона',
     profile_email: 'E-mail',
     // Подпись под полем почты. Вход идёт по SMS, поэтому адрес пуст,
     // пока владелец не укажет его сам, — а без адреса решение

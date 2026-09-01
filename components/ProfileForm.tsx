@@ -71,6 +71,7 @@ import {
   buildOpeningHours,
   formatSerbianPhone,
   formatTime,
+  isValidSerbianPhone,
   isValidTime,
   parseOpeningHours,
 } from '@/lib/inputFormat';
@@ -110,6 +111,18 @@ export default function ProfileForm({ locale, profile, application }: Props) {
   const coverRef = useRef<HTMLInputElement>(null);
 
   const [fullName, setFullName] = useState(profile.full_name ?? '');
+  // КОНТАКТНЫЙ ТЕЛЕФОН ВЛАДЕЛЬЦА. Поле стало редактируемым: пока
+  // входом был SMS-код, номер служил логином и меняться не мог, но
+  // после перехода на почтовый вход (0106) он — обычный контакт,
+  // который показывается покупателю в объявлении. У аккаунта,
+  // заведённого по почте, поле пустое, и заполнить его было негде:
+  // единственным способом завести номер оставалась подача объявления.
+  //
+  // Маска та же, что в подаче и у телефона салона ниже: номер
+  // приводится к «+381 6X XXX XXX» прямо во время набора.
+  const [phone, setPhone] = useState(
+    profile.phone ? formatSerbianPhone(profile.phone) : '',
+  );
   // Почта уведомлений. Вход на площадку идёт по SMS, поэтому у
   // большинства продавцов адрес пуст (profiles.email = NULL, миграция
   // 0035) — и решение модерации отправить некуда. Поле сделано
@@ -294,6 +307,27 @@ export default function ProfileForm({ locale, profile, application }: Props) {
       }
     }
 
+    // ТЕЛЕФОН ПРОВЕРЯЕТСЯ ТАК ЖЕ, КАК В ПОДАЧЕ ОБЪЯВЛЕНИЯ.
+    // isValidSerbianPhone — та же функция, что стоит на кнопке
+    // публикации в SellForm: сербский мобильный, 8–9 цифр
+    // национальной части, первая цифра 6. Сервер формат не проверяет
+    // намеренно (см. set_profile_phone, миграция 0106), поэтому без
+    // этой проверки в профиль ушёл бы городской или обрезанный номер
+    // — и тот же номер потом подставился бы в объявление, где
+    // ограничение cars_contact_phone_serbian его отклонит уже
+    // невнятной ошибкой из PostgREST.
+    //
+    // Пустое поле допустимо: номер не обязателен, его спросят при
+    // первой подаче. Пустым считается и поле с одним кодом страны —
+    // человек открыл поле и передумал.
+    const phoneClean =
+      phone.trim() === SERBIAN_PHONE_PREFIX.trim() ? '' : phone.trim();
+
+    if (phoneClean !== '' && !isValidSerbianPhone(phoneClean)) {
+      setError(t('profile_phone_invalid'));
+      return;
+    }
+
     setError(null);
     setSaved(false);
 
@@ -307,6 +341,7 @@ export default function ProfileForm({ locale, profile, application }: Props) {
     startTransition(async () => {
       const result = await saveProfile({
         fullName,
+        phone: phoneClean,
         sellerKind: kind,
         companyName,
         avatarUrl,
@@ -383,25 +418,45 @@ export default function ProfileForm({ locale, profile, application }: Props) {
               />
             </div>
 
-            {/* Телефон и почта — только чтение. Телефон служит
-                логином, его смена означала бы смену способа входа;
-                почта приходит из auth.users и на сайте не
-                редактируется. */}
+            {/* ТЕЛЕФОН РЕДАКТИРУЕТСЯ. Раньше поле стояло серым, а
+                подпись объясняла, что номер служит логином и не
+                меняется. С почтовым входом (0106) это перестало быть
+                правдой: логин — адрес почты, а телефон стал контактом
+                для покупателя, и владельцу нужно уметь его вписать,
+                исправить и убрать. Почта рядом остаётся только для
+                чтения — вот она вход и есть. */}
             <div>
               <label className="mb-1 block text-caption text-neutral-60">
                 {t('profile_phone')}
               </label>
               <input
-                type="text"
-                value={profile.phone ?? '—'}
-                readOnly
-                disabled
-                className={`${fieldClass} bg-surface-muted text-neutral-60`}
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(formatSerbianPhone(e.target.value));
+                  setSaved(false);
+                }}
+                onFocus={() => {
+                  // Код страны появляется при первом касании пустого
+                  // поля — как в подаче объявления: набирать «+381»
+                  // вручную девять раз из десяти незачем.
+                  if (phone === '') setPhone(SERBIAN_PHONE_PREFIX);
+                }}
+                onBlur={() => {
+                  // Ушли, не набрав ни цифры — очищаем, чтобы поле не
+                  // выглядело заполненным одним кодом страны.
+                  if (phone.trim() === SERBIAN_PHONE_PREFIX.trim()) {
+                    setPhone('');
+                  }
+                }}
+                maxLength={MAX_PHONE}
+                placeholder="+381 6X XXX XXX"
+                className={fieldClass}
               />
               <p className="mt-1 text-small text-neutral-50">
-                {/* У аккаунта без номера (вход по почте) подсказка про
-                    «номер для входа» была бы неверной: входят не им. */}
-                {t(profile.phone ? 'profile_phone_hint' : 'profile_phone_none')}
+                {t('profile_phone_hint')}
               </p>
             </div>
           </div>
