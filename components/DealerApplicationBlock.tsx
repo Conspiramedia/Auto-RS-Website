@@ -43,6 +43,11 @@ import Card from './ui/Card';
 import { fieldClass } from './ui/Field';
 import ListPicker, { type PickerOption } from './ListPicker';
 import { CITIES } from '@/lib/referenceData';
+import {
+  formatSerbianPhone,
+  serbianNationalDigits,
+  SERBIAN_PHONE_PREFIX,
+} from '@/lib/inputFormat';
 import type { DictKey, Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import type { DealerApplication } from '@/lib/types';
@@ -145,7 +150,10 @@ export default function DealerApplicationBlock({
   const [regNum, setRegNum] = useState('');
   const [city, setCity] = useState('');
   const [person, setPerson] = useState('');
-  const [phone, setPhone] = useState('');
+  // Поле стартует с кодом страны: набирать «+381» руками незачем.
+  // Так же ведут себя подача объявления, вход и форма на /dealers —
+  // расходиться этим четырём формам нельзя.
+  const [phone, setPhone] = useState(SERBIAN_PHONE_PREFIX);
   const [email, setEmail] = useState('');
   const [website, setWebsite] = useState('');
   const [comment, setComment] = useState('');
@@ -254,7 +262,11 @@ export default function DealerApplicationBlock({
       setError(t('dealer_app_err_person'));
       return;
     }
-    if (phone.trim() === '') {
+    // Номер проверяем ПО ЦИФРАМ, а не на непустоту: в поле всегда
+    // стоит код страны «+381 », и phone.trim() был бы истинным на
+    // пустом номере — заявка ушла бы с одним кодом страны, который
+    // сервер за пустой не считает. Та же причина, что в SellForm.
+    if (serbianNationalDigits(phone) === '') {
       setError(t('dealer_app_err_phone'));
       return;
     }
@@ -309,6 +321,10 @@ export default function DealerApplicationBlock({
       // (PIB, матични број). Работает вместе с maxLength, а не вместо:
       // тот держит общую длину строки с разделителями.
       maxDigits?: number;
+      // Преобразование ввода на лету — маска телефона. Применяется
+      // до maxDigits, но с ним же вместе не используется: номер
+      // фиксированной длины и форматируемый номер — разные случаи.
+      format?: (raw: string) => string;
       inputMode?: 'numeric' | 'tel' | 'url' | 'email';
       placeholder?: string;
     },
@@ -325,9 +341,11 @@ export default function DealerApplicationBlock({
           onChange={(e) => {
             const raw = e.target.value;
             onChange(
-              options?.maxDigits
-                ? clampDigits(raw, options.maxDigits)
-                : raw,
+              options?.format
+                ? options.format(raw)
+                : options?.maxDigits
+                  ? clampDigits(raw, options.maxDigits)
+                  : raw,
             );
             setError(null);
           }}
@@ -473,10 +491,16 @@ export default function DealerApplicationBlock({
             </div>
 
             <div className="grid items-start gap-3 sm:grid-cols-2">
+              {/* Маска «+381 6X XXX XXX(X)» — та же, что в подаче
+                  объявления, на входе и в форме на /dealers. Номер
+                  приводится к единому виду во время набора, а не
+                  проверяется после. */}
               {field(t('dealer_app_phone'), phone, setPhone, {
                 required: true,
                 inputMode: 'tel',
+                format: formatSerbianPhone,
                 maxLength: 40,
+                placeholder: '6X XXX XXX',
               })}
               {field(t('dealer_app_email'), email, setEmail, {
                 required: true,
