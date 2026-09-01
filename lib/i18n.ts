@@ -437,6 +437,9 @@ export const dict = {
 
     // Пикер (выбор из списка)
     picker_search: 'Pretraga…',
+    // Подсказка необязательного селекта в форме подачи: там «Все»
+    // читалось бы как уже сделанный выбор, а поле ещё пустое.
+    picker_choose: 'Izaberi',
     picker_custom: 'Unesi',
     picker_custom_hint: 'unesi svoje',
     picker_nothing: 'Nema rezultata',
@@ -1466,6 +1469,7 @@ export const dict = {
 
     // Пикер (выбор из списка)
     picker_search: 'Поиск…',
+    picker_choose: 'Выбрать',
     picker_custom: 'Указать',
     picker_custom_hint: 'ввод своего',
     picker_nothing: 'Ничего не найдено',

@@ -1422,6 +1422,7 @@ export default function SellForm({
             <ListPicker
               locale={locale}
               name="body_type"
+              placeholder={t('picker_choose')}
               label={t('filter_body')}
               options={Object.entries(BODY_TYPES).map(
                 ([key, labels]): PickerOption => ({
@@ -1437,6 +1438,7 @@ export default function SellForm({
             <ListPicker
               locale={locale}
               name="transmission"
+              placeholder={t('picker_choose')}
               label={t('filter_transmission')}
               options={Object.entries(TRANSMISSIONS).map(
                 ([key, labels]): PickerOption => ({
@@ -1452,6 +1454,7 @@ export default function SellForm({
             <ListPicker
               locale={locale}
               name="fuel"
+              placeholder={t('picker_choose')}
               label={t('filter_fuel')}
               options={Object.entries(FUELS).map(
                 ([key, labels]): PickerOption => ({
