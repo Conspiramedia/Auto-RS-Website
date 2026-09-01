@@ -165,6 +165,14 @@ export const dict = {
     // обещало список компаний, которого на странице нет.
     nav_dealers: 'Autosalonima',
     nav_install: 'Brzi pristup',
+    // «Поделиться» в меню. share_text — подпись, с которой ссылка
+    // уходит в мессенджер; она же становится текстом сообщения, если
+    // получатель откроет его до подгрузки превью.
+    nav_share: 'Podeli sajt',
+    share_text: 'RS Auto — prodaja i iznajmljivanje automobila u Srbiji',
+    // Запасной путь, когда системного меню шаринга нет (десктоп без
+    // Web Share API): ссылку кладём в буфер и говорим об этом.
+    share_copied: 'Link je kopiran',
     site_tagline: 'Prodaja i iznajmljivanje automobila u Srbiji',
 
     // Каталог
@@ -1230,6 +1238,9 @@ export const dict = {
     // страницы.
     nav_dealers: 'Автосалонам',
     nav_install: 'Быстрый доступ',
+    nav_share: 'Поделиться сайтом',
+    share_text: 'RS Auto — продажа и аренда автомобилей в Сербии',
+    share_copied: 'Ссылка скопирована',
     site_tagline: 'Продажа и аренда автомобилей в Сербии',
 
     catalog_title: 'Автомобили на продажу',

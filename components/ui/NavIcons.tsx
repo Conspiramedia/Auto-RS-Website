@@ -220,3 +220,24 @@ export function BellIcon({ className }: IconProps) {
     </Icon>
   );
 }
+
+// ---------- Действия над самим сайтом ----------
+
+// Share2 — «Поделиться». Три узла, соединённые линиями: знак, который
+// на телефоне узнают без подписи, потому что им же помечено системное
+// меню шаринга в Android.
+//
+// Иконка «стрелка из коробки» (iOS-вариант) не взята намеренно: она
+// узнаётся только владельцами iPhone, а сербский рынок — почти
+// сплошь Android.
+export function ShareIcon({ className }: IconProps) {
+  return (
+    <Icon className={className}>
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="M8.6 13.5l6.8 4" />
+      <path d="M15.4 6.5l-6.8 4" />
+    </Icon>
+  );
+}

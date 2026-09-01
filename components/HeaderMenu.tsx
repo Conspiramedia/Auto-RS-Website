@@ -87,6 +87,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 
+import { brand } from '@/lib/brand';
 import type { DictKey, Locale } from '@/lib/i18n';
 import { getT, localeHref, stripLocale } from '@/lib/i18n';
 import { isParentSectionActive, isSectionActive } from '@/lib/navigation';
@@ -109,6 +110,7 @@ import {
   LogInIcon,
   MailIcon,
   MessageSquareIcon,
+  ShareIcon,
   TagIcon,
 } from './ui/NavIcons';
 
@@ -184,6 +186,10 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
   const t = getT(locale);
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  // Подтверждение «ссылка скопирована» — запасной путь шаринга там,
+  // где системного меню нет. Гаснет само: подтверждение, которое надо
+  // закрывать руками, само становится работой.
+  const [copied, setCopied] = useState(false);
 
   // Сессия и счётчики. Запрашиваются НЕ при открытии меню, а сразу:
   // бейдж на кнопке обязан быть виден до того, как меню откроют, —
@@ -233,6 +239,47 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
 
     return isSectionActive(currentPath, linkPath);
   };
+
+  // ------------------------------------------------------------
+  // «Поделиться сайтом».
+  // ------------------------------------------------------------
+  // Делимся ТЕКУЩИМ адресом, а не главной: человек, открывший
+  // каталог BMW или конкретное объявление, хочет переслать именно
+  // то, что смотрит. Локаль при этом уезжает вместе с адресом — со
+  // страницы /ru уйдёт русская ссылка, и получатель увидит русское
+  // превью (app/ru/opengraph-image.tsx).
+  //
+  // navigator.share есть на телефонах и открывает системное меню со
+  // всеми мессенджерами сразу. На десктопе его чаще нет — тогда
+  // копируем ссылку в буфер: это худший, но рабочий исход, и он
+  // лучше отключённой кнопки.
+  //
+  // AbortError — не ошибка: так браузер сообщает, что человек закрыл
+  // системное меню, не выбрав приложение. Показывать ему что-либо в
+  // этот момент незачем.
+  async function onShare() {
+    const url = window.location.href;
+    const payload = { title: brand.name, text: t('share_text'), url };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(payload);
+        setOpen(false);
+      } catch {
+        // Отмена шаринга или отказ платформы — молча остаёмся в меню.
+      }
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Буфер недоступен (нет HTTPS или запрет в настройках) —
+      // сделать здесь нечего, и ложное «скопировано» было бы враньём.
+    }
+  }
 
   return (
     <>
@@ -407,6 +454,33 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
                   />
                   <span>{t('nav_install')}</span>
                 </Link>
+              </div>
+
+              {/* «Поделиться» — соседом «Быстрого доступа» и по той же
+                  причине: это действие над самим сайтом, а не раздел.
+                  Оба стоят до списка разделов, потому что в ряду
+                  «Каталог / Аренда / Контакты» читались бы как ещё
+                  одна страница.
+
+                  Кнопка, а не ссылка: перехода никуда нет, и <a> без
+                  href был бы враньём для скринридера и для
+                  клавиатуры. Разметка при этом повторяет соседний
+                  пункт один в один — в меню они обязаны выглядеть
+                  одинаково.
+
+                  Строку «Ссылка скопирована» показываем на месте
+                  подписи, не сдвигая пункт: смена текста внутри той же
+                  строки не двигает соседей, а отдельная плашка
+                  толкала бы вниз половину меню. */}
+              <div>
+                <button
+                  type="button"
+                  onClick={onShare}
+                  className="flex w-full items-center gap-2.5 border-l-4 border-transparent py-3 pl-3 pr-4 text-left font-semibold transition-colors duration-fast ease-out hover:bg-surface-hover"
+                >
+                  <ShareIcon className={`${ICON_CLASS} text-neutral-60`} />
+                  <span>{copied ? t('share_copied') : t('nav_share')}</span>
+                </button>
               </div>
 
               {LINKS.map((link) => {
