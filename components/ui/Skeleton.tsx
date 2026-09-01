@@ -115,13 +115,15 @@ export function SkeletonCarPage() {
 
       <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
         <div>
-          {/* Галерея: та же пропорция 4:3, что у CarGallery. */}
-          <div className="aspect-[4/3] animate-pulse rounded-card bg-surface-muted" />
+          {/* Галерея: те же пропорции, что у CarGallery, — 3:2 на
+              телефоне и 4:3 с sm. Расхождение сдвинуло бы страницу
+              в момент подмены скелетона реальной галереей. */}
+          <div className="aspect-[3/2] animate-pulse rounded-card bg-surface-muted sm:aspect-[4/3]" />
 
           {/* Лента миниатюр под галереей. */}
           <div className="mt-2 flex gap-2">
             {Array.from({ length: 4 }, (_, i) => (
-              <SkeletonBox key={i} className="h-16 w-20 shrink-0" />
+              <SkeletonBox key={i} className="h-12 w-16 shrink-0 sm:h-16 sm:w-20" />
             ))}
           </div>
 

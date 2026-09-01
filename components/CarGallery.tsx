@@ -52,7 +52,7 @@ export default function CarGallery({ images, alt }: Props) {
 
   if (images.length === 0) {
     return (
-      <div className="flex aspect-[4/3] items-center justify-center rounded-card bg-surface-muted text-neutral-30">
+      <div className="flex aspect-[3/2] items-center justify-center rounded-card bg-surface-muted text-neutral-30 sm:aspect-[4/3]">
         {alt}
       </div>
     );
@@ -60,7 +60,7 @@ export default function CarGallery({ images, alt }: Props) {
 
   return (
     <div>
-      <div className="relative aspect-[4/3] overflow-hidden rounded-card bg-surface-muted">
+      <div className="relative aspect-[3/2] overflow-hidden rounded-card bg-surface-muted sm:aspect-[4/3]">
         {images.map((img, i) => (
           // Каждый кадр — ДВА СЛОЯ ОДНОГО ФАЙЛА, как _GalleryItem в приложении.
           // Второго запроса нет: src у слоёв одинаковый, и браузер берёт
@@ -104,6 +104,8 @@ export default function CarGallery({ images, alt }: Props) {
               src={img.image_url}
               alt={`${alt} — ${i + 1}`}
               fill
+              // До 1024px кадр занимает всю ширину контейнера, дальше —
+              // левую колонку сетки (2fr из 3fr).
               sizes="(max-width: 1024px) 100vw, 66vw"
               className="object-contain"
               // Первый кадр — главное изображение страницы и её LCP-элемент.
@@ -122,8 +124,8 @@ export default function CarGallery({ images, alt }: Props) {
               onClick={() => setActive(i)}
               className={
                 i === active
-                  ? 'relative h-16 w-20 shrink-0 overflow-hidden rounded-control ring-2 ring-brand-primary'
-                  : 'relative h-16 w-20 shrink-0 overflow-hidden rounded-control opacity-70'
+                  ? 'relative h-12 w-16 shrink-0 overflow-hidden rounded-control ring-2 ring-brand-primary sm:h-16 sm:w-20'
+                  : 'relative h-12 w-16 shrink-0 overflow-hidden rounded-control opacity-70 sm:h-16 sm:w-20'
               }
               aria-label={`${alt} — ${i + 1}`}
             >
