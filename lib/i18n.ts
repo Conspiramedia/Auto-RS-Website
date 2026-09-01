@@ -272,7 +272,7 @@ export const dict = {
     sell_phone_confirm_text:
       'Kupci će zvati na ovaj broj. Proverite da li je tačan — kasnije ga menjate u oglasu.',
     sell_phone_confirm_edit: 'Izmeni',
-    sell_phone_confirm_ok: 'Tačno, objavi',
+    sell_phone_confirm_ok: 'Tačno',
     // Подпись под полем почты в форме подачи. Объясняет разницу между
     // двумя контактами на одном экране: телефон видит покупатель,
     // почту не видит никто — она нужна только для входа.
@@ -1303,7 +1303,7 @@ export const dict = {
     sell_phone_confirm_text:
       'Покупатели будут звонить на этот номер. Убедитесь, что он верный — потом его можно изменить в объявлении.',
     sell_phone_confirm_edit: 'Изменить',
-    sell_phone_confirm_ok: 'Верно, опубликовать',
+    sell_phone_confirm_ok: 'Верно',
     // Подпись под полем почты в форме подачи. Объясняет разницу между
     // двумя контактами на одном экране: телефон видит покупатель,
     // почту не видит никто — она нужна только для входа.

@@ -1558,9 +1558,14 @@ export default function SellForm({
             {formatSerbianPhone(phoneToConfirm)}
           </p>
 
+          {/* size="sm" вместо размера по умолчанию: обе подписи стали
+              короткими («Изменить», «Верно»), и кнопки высотой с
+              «Опубликовать» смотрелись бы тяжело — это подтверждение
+              одного поля, а не главное действие формы. */}
           <div className="flex gap-2">
             <Button
               variant="secondary"
+              size="sm"
               onClick={() => setPhoneToConfirm(null)}
               disabled={busy}
               className="flex-1"
@@ -1568,6 +1573,7 @@ export default function SellForm({
               {t('sell_phone_confirm_edit')}
             </Button>
             <Button
+              size="sm"
               onClick={() => {
                 setPhoneToConfirm(null);
                 void submit();
