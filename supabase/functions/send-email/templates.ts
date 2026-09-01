@@ -132,7 +132,7 @@ const DICT = {
     approved_lead:
       'Vaš oglas je prošao proveru i sada je vidljiv svim posetiocima sajta.',
     approved_hint:
-      'Kupci vam mogu pisati preko sajta ili aplikacije. Odgovorite brzo — prvi odgovor najviše utiče na prodaju.',
+      'Kupci vam mogu pisati direktno sa oglasa. Odgovorite brzo — prvi odgovor najviše utiče na prodaju.',
 
     // Отклонено.
     rejected_subject: 'Oglas nije odobren',
@@ -228,7 +228,7 @@ const DICT = {
     approved_lead:
       'Ваше объявление прошло проверку и теперь видно всем посетителям сайта.',
     approved_hint:
-      'Покупатели могут написать вам через сайт или приложение. Отвечайте быстро — первый ответ сильнее всего влияет на продажу.',
+      'Покупатели могут написать вам прямо со страницы объявления. Отвечайте быстро — первый ответ сильнее всего влияет на продажу.',
 
     rejected_subject: 'Объявление не одобрено',
     rejected_title: 'Объявление не одобрено',
