@@ -20,7 +20,7 @@ import { trackEvent } from '@/lib/analytics';
 import {
   formatSerbianPhone,
   SERBIAN_PHONE_PREFIX,
-  serbianPhoneToE164,
+  serbianContactPhoneToE164,
 } from '@/lib/inputFormat';
 import Alert from './ui/Alert';
 import { fieldClass, fieldClassTextarea } from './ui/Field';
@@ -164,7 +164,13 @@ export default function DealerForm({ locale }: Props) {
           // работает серверный лимит «3 заявки на номер», и «+381 60 …»
           // с пробелами считался бы отдельным номером при каждом
           // варианте расстановки пробелов.
-          p_phone: serbianPhoneToE164(phone) ?? phone,
+          //
+          // Граница КОНТАКТНАЯ, а не входная: здесь номер салона, и
+          // офисный 011 нормализуется наравне с мобильным. Прежняя
+          // serbianPhoneToE164 городские не разбирала и откатывалась
+          // на `?? phone` — в базу уходила строка с пробелами, и лимит
+          // на ней переставал работать.
+          p_phone: serbianContactPhoneToE164(phone) ?? phone,
           p_email: email || null,
           p_city: city || null,
           p_comment: comment || null,

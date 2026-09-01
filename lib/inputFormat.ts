@@ -221,6 +221,12 @@ export function formatSerbianPhone(raw: string): string {
 // Приведение к E.164 для Supabase Auth: «+3816XXXXXXXX».
 // null — номер не похож на сербский мобильный. Требования из приложения:
 // 8–9 цифр национальной части, первая цифра 6 (мобильные операторы).
+//
+// СЕЙЧАС НЕ ВЫЗЫВАЕТСЯ НИ ОДНОЙ ФОРМОЙ САЙТА и оставлена намеренно:
+// это граница SMS-ВХОДА, а сайт вошёл по почте (0106). Все формы
+// спрашивают телефон как КОНТАКТ и пользуются
+// serbianContactPhoneToE164 ниже. Понадобится снова, если SMS-вход
+// вернётся (Twilio Compliance Profile для сербских номеров).
 export function serbianPhoneToE164(raw: string): string | null {
   const d = serbianNationalDigits(raw);
   if (d.length < 8 || d.length > 9) return null;
@@ -255,6 +261,13 @@ export function serbianContactPhoneToE164(raw: string): string | null {
   if (d.length < 8 || d.length > 9) return null;
   if (!/^[1-36]/.test(d)) return null;
   return `+381${d}`;
+}
+
+// Годится ли номер как КОНТАКТ (объявление, профиль). Парная
+// isValidSerbianPhone проверяет пригодность для ВХОДА и строже:
+// городские номера она отклоняет.
+export function isValidSerbianContactPhone(raw: string): boolean {
+  return serbianContactPhoneToE164(raw) !== null;
 }
 
 // ============================================================
