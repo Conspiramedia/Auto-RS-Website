@@ -472,6 +472,7 @@ export default function DealerApplicationBlock({
               <ListPicker
                 locale={locale}
                 name="dealer_app_city"
+                placeholder={t('picker_choose')}
                 label={`${t('dealer_app_city')} *`}
                 options={CITIES.map((c): PickerOption => ({
                   value: c,

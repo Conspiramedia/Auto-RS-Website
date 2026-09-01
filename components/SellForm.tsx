@@ -1193,6 +1193,7 @@ export default function SellForm({
           <ListPicker
             locale={locale}
             name="brand"
+            placeholder={t('picker_choose')}
             label={t('filter_brand')}
             options={BRANDS.map((b): PickerOption => ({ value: b, label: b }))}
             value={brand}
@@ -1204,6 +1205,7 @@ export default function SellForm({
           <ListPicker
             locale={locale}
             name="model"
+            placeholder={t('picker_choose')}
             label={t('filter_model')}
             options={modelList.map(
               (m): PickerOption => ({ value: m.name, label: m.name }),
@@ -1234,6 +1236,7 @@ export default function SellForm({
             <ListPicker
               locale={locale}
               name="year"
+              placeholder={t('picker_choose')}
               label={t('filter_year')}
               options={YEARS.map((y): PickerOption => ({ value: y, label: y }))}
               value={year}
@@ -1245,6 +1248,7 @@ export default function SellForm({
             <ListPicker
               locale={locale}
               name="city"
+              placeholder={t('picker_choose')}
               label={t('filter_city')}
               options={CITIES.map((c): PickerOption => ({ value: c, label: c }))}
               value={city}

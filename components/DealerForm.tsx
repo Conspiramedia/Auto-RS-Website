@@ -307,6 +307,7 @@ export default function DealerForm({ locale }: Props) {
         <ListPicker
           locale={locale}
           name="dealer_city"
+          placeholder={t('picker_choose')}
           label={`${t('dealer_app_city')} *`}
           options={CITIES.map((c): PickerOption => ({ value: c, label: c }))}
           value={city}
