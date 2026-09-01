@@ -1190,9 +1190,16 @@ export const dict = {
     // ------------------------------------------------------------
     // Метаданные страниц (title/description для поиска).
     // ------------------------------------------------------------
-    meta_home_title: 'Automobili u Srbiji — kupovina, prodaja i izdavanje',
+    // Заголовок и описание главной. Идут и в <title>, и в og:title —
+    // buildMetadata собирает их из одних значений, поэтому вкладка
+    // браузера и превью в мессенджере не разойдутся.
+    //
+    // Название бренда внутри строки, а не приклеено снаружи: раньше
+    // заголовок собирался как «RS Auto — » + слоган, и правка слогана
+    // меняла title главной вместе с подписью в подвале.
+    meta_home_title: 'RS Auto — kupite, prodajte ili iznajmite auto u Srbiji',
     meta_home_desc:
-      'Oglasi za automobile u Srbiji: prodaja i iznajmljivanje. Besplatno objavljivanje oglasa, pretraga po marki, modelu, gradu i ceni.',
+      'Polovni i novi automobili od privatnih prodavaca i salona iz Beograda, Novog Sada i cele Srbije. Besplatno objavljivanje, provereni oglasi, na srpskom i ruskom.',
     // meta_catalog_desc — витрина ПРОДАЖИ /cars; meta_all_desc —
     // служебная смешанная витрина /all (она под noindex, но описание
     // нужно для превью при шаринге ссылки).
@@ -2192,9 +2199,9 @@ export const dict = {
     // ------------------------------------------------------------
     // Метаданные страниц (title/description для поиска).
     // ------------------------------------------------------------
-    meta_home_title: 'Автомобили в Сербии — покупка, продажа и аренда',
+    meta_home_title: 'RS Auto — купить, продать или арендовать авто в Сербии',
     meta_home_desc:
-      'Объявления об автомобилях в Сербии: продажа и аренда. Бесплатное размещение объявлений, поиск по марке, модели, городу и цене.',
+      'Б/у и новые автомобили от частников и автосалонов Белграда, Нови-Сада и всей Сербии. Бесплатное размещение, проверенные объявления, сербский и русский.',
     // См. комментарий в сербском словаре.
     meta_catalog_desc:
       'Автомобили на продажу в Сербии. Поиск по марке, модели, городу и цене.',
