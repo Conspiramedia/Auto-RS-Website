@@ -280,6 +280,36 @@ export const dict = {
     home_brands: 'Popularne marke',
     home_all_cars: 'Svi automobili',
 
+    // «Zašto RS Auto» — четыре причины. Про рекламу говорим как о работе
+    // в процессе, без дат и обещаний охвата.
+    home_why_title: 'Zašto RS Auto',
+    home_why_free_title: 'Besplatno objavljivanje',
+    home_why_free_text:
+      'Objavljivanje i kontakt sa kupcima ne naplaćujemo. Bez provizije od prodaje.',
+    home_why_audience_title: 'Dve publike odjednom',
+    home_why_audience_text:
+      'Srpski i ruski u jednom oglasu — prevod interfejsa radi sajt, vi pišete na svom jeziku.',
+    home_why_direct_title: 'Direktan kontakt',
+    home_why_direct_text:
+      'Kupac piše ili zove vas lično. Bez posrednika i bez provizije od prodaje.',
+    home_why_growth_title: 'Pripremamo oglašavanje',
+    home_why_growth_text:
+      'Platforma se pokreće — radimo na dovođenju kupaca. Rani oglasi startuju bez konkurencije.',
+
+    // Пустая витрина свежих объявлений: платформа запускается, объявлений
+    // ещё нет. Не «ništa nije pronađeno» (это про сбой поиска), а
+    // приглашение стать первым.
+    home_fresh_empty_title: 'Budite prvi prodavac',
+    // Про рекламу — «pripremamo» (готовим), без сроков и без цифр охвата:
+    // это факт о нашей работе, а не обещание трафика тому, кто на него
+    // рассчитывает, размещая автомобиль. Ту же осторожность держит
+    // карточка home_why_growth_text.
+    home_fresh_empty_text:
+      'Katalog se tek puni i prvi oglasi dobijaju svu pažnju kupaca. Pripremamo reklamne kampanje — oglasi postavljeni sada dočekaće prvi talas kupaca već na vrhu liste.',
+
+    // Города. Блок ведёт в каталог с фильтром по городу.
+    home_cities_title: 'Automobili po gradovima',
+
     // Дилеры
     dealers_title: 'Za autosalone',
     dealers_offer: 'Sopstvena stranica salona i kupci iz cele Srbije',
@@ -1182,6 +1212,36 @@ export const dict = {
     home_fresh: 'Свежие объявления',
     home_brands: 'Популярные марки',
     home_all_cars: 'Все автомобили',
+
+    // «Почему RS Auto» — четыре причины. Про рекламу говорим как о
+    // текущей работе, без дат и обещаний охвата.
+    home_why_title: 'Почему RS Auto',
+    home_why_free_title: 'Бесплатное размещение',
+    home_why_free_text:
+      'Не берём плату за публикацию и связь с покупателями. Комиссии с продажи нет.',
+    home_why_audience_title: 'Сразу две аудитории',
+    home_why_audience_text:
+      'Сербский и русский в одном объявлении — интерфейс переводит сайт, вы пишете на своём языке.',
+    home_why_direct_title: 'Прямой контакт',
+    home_why_direct_text:
+      'Покупатель пишет или звонит лично вам. Без посредников и комиссии с продажи.',
+    home_why_growth_title: 'Готовим запуск рекламы',
+    home_why_growth_text:
+      'Площадка запускается — работаем над привлечением покупателей. Первые объявления стартуют без конкуренции.',
+
+    // Пустая витрина свежих объявлений: площадка запускается, объявлений
+    // ещё нет. Не «ничего не найдено» (это про сбой поиска), а
+    // приглашение стать первым.
+    home_fresh_empty_title: 'Станьте первым продавцом',
+    // Про рекламу — «готовим», без сроков и без цифр охвата: это факт о
+    // нашей работе, а не обещание трафика тому, кто на него рассчитывает,
+    // размещая автомобиль. Ту же осторожность держит карточка
+    // home_why_growth_text.
+    home_fresh_empty_text:
+      'Каталог только наполняется, и первым объявлениям достаётся всё внимание покупателей. Мы готовим рекламные кампании — размещённые сейчас объявления встретят первый поток покупателей уже наверху выдачи.',
+
+    // Города. Блок ведёт в каталог с фильтром по городу.
+    home_cities_title: 'Автомобили по городам',
 
     dealers_title: 'Автосалонам',
     dealers_offer: 'Своя страница салона и покупатели со всей Сербии',
