@@ -859,7 +859,7 @@ export const dict = {
     // администратор: без неё повторная подача — стрельба вслепую.
     dealer_app_rejected_title: 'Zahtev nije odobren',
     dealer_app_rejected_reason: 'Razlog',
-    dealer_app_retry: 'Pošalji novi zahtev',
+    dealer_app_retry: 'Novi zahtev',
 
     // Подтверждённый статус. Строка стоит там, где раньше был
     // переключатель «Privatno lice | Autosalon».
@@ -1911,7 +1911,7 @@ export const dict = {
 
     dealer_app_rejected_title: 'Заявка отклонена',
     dealer_app_rejected_reason: 'Причина',
-    dealer_app_retry: 'Подать новую заявку',
+    dealer_app_retry: 'Новая заявка',
 
     dealer_app_approved_title: 'Статус автосалона подтверждён',
     dealer_app_approved_text:
