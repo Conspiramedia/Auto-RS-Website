@@ -195,6 +195,23 @@ const DICT = {
     dealer_app_reason_label: 'Razlog',
     dealer_app_no_hint:
       'Ispravite podatke i pošaljite novi zahtev iz svog profila. Oglasi na nalogu ostaju nepromenjeni.',
+    // Срок публикации (0113). Тон обеих строк — напоминание, а не
+    // требование: объявление не удаляется, и продавцу ничего не
+    // угрожает. Кнопка ведёт в кабинет, где продление в один клик.
+    expiring_subject: 'Oglas uskoro ističe',
+    expiring_title: 'Oglas uskoro ističe',
+    expiring_lead:
+      'Rok objave vašeg oglasa uskoro ističe. Produžite ga da ostane u katalogu.',
+    expiring_hint:
+      'Ako je automobil već prodat, ne morate ništa da radite — oglas će se sam skloniti.',
+    expired_subject: 'Oglas je sklonjen',
+    expired_title: 'Oglas je sklonjen',
+    expired_lead:
+      'Rok objave je istekao, pa je oglas sklonjen iz kataloga. Nije obrisan — možete ga vratiti jednim klikom.',
+    expired_hint:
+      'Fotografije, opis i cena su sačuvani. Nakon produžetka oglas se odmah vraća u katalog, bez ponovne provere.',
+    btn_extend: 'Produži oglas',
+
   },
 
   ru: {
@@ -265,6 +282,20 @@ const DICT = {
     dealer_app_reason_label: 'Причина',
     dealer_app_no_hint:
       'Исправьте данные и отправьте новую заявку из своего профиля. Объявления на аккаунте остаются без изменений.',
+    expiring_subject: 'Объявление скоро истечёт',
+    expiring_title: 'Объявление скоро истечёт',
+    expiring_lead:
+      'Срок публикации вашего объявления скоро истекает. Продлите его, чтобы оно осталось в каталоге.',
+    expiring_hint:
+      'Если машина уже продана, делать ничего не нужно — объявление скроется само.',
+    expired_subject: 'Объявление скрыто',
+    expired_title: 'Объявление скрыто',
+    expired_lead:
+      'Срок публикации истёк, и объявление скрыто из каталога. Оно не удалено — вернуть его можно одним нажатием.',
+    expired_hint:
+      'Фотографии, описание и цена сохранены. После продления объявление сразу возвращается в каталог, без повторной проверки.',
+    btn_extend: 'Продлить объявление',
+
   },
 } as const;
 
@@ -917,6 +948,93 @@ ${[
 
 // ============================================================
 // ДИСПЕТЧЕР
+// ---------- Срок публикации: скоро истечёт ----------
+// Предупреждение за N дней. Тон намеренно мягкий: объявление ещё
+// работает, и письмо — напоминание, а не уведомление о санкции.
+// Отдельно сказано, что при уже проданной машине делать ничего не
+// нужно, — иначе продавец решит, что от него требуют действия.
+function listingExpiring(
+  locale: Locale,
+  payload: Payload,
+  siteUrl: string,
+): RenderedEmail {
+  const title = carTitle(payload);
+  // url кладёт expire_listings — это /my, кабинет продавца, где
+  // объявление продлевается одной кнопкой.
+  const extendUrl = str(payload, 'url') || `${siteUrl}/my`;
+  const subject = `${t(locale, 'expiring_subject')}: ${title}`;
+
+  const bodyHtml = [
+    h1(t(locale, 'expiring_title')),
+    p(esc(t(locale, 'expiring_lead'))),
+    panel(`<strong style="font-size:16px;">${esc(title)}</strong>`, COLOR.primary),
+    button(t(locale, 'btn_extend'), extendUrl, COLOR.green),
+    p(esc(t(locale, 'expiring_hint')), true),
+  ].join('
+');
+
+  const text = [
+    t(locale, 'expiring_title'),
+    '',
+    t(locale, 'expiring_lead'),
+    '',
+    title,
+    extendUrl,
+    '',
+    t(locale, 'expiring_hint'),
+  ].join('
+');
+
+  return {
+    subject,
+    html: layout({ locale, title: subject, bodyHtml, siteUrl, accent: COLOR.primary }),
+    text,
+  };
+}
+
+// ---------- Срок публикации: объявление скрыто ----------
+// Письмо после скрытия. Главное здесь — снять тревогу: объявление НЕ
+// удалено, фотографии и описание на месте, возврат мгновенный и без
+// повторной модерации. Продавец, решивший, что потерял работу по
+// заполнению карточки, второй раз её заполнять не станет.
+function listingExpired(
+  locale: Locale,
+  payload: Payload,
+  siteUrl: string,
+): RenderedEmail {
+  const title = carTitle(payload);
+  const extendUrl = str(payload, 'url') || `${siteUrl}/my`;
+  const subject = `${t(locale, 'expired_subject')}: ${title}`;
+
+  const bodyHtml = [
+    h1(t(locale, 'expired_title')),
+    p(esc(t(locale, 'expired_lead'))),
+    panel(`<strong style="font-size:16px;">${esc(title)}</strong>`, COLOR.primary),
+    button(t(locale, 'btn_extend'), extendUrl, COLOR.green),
+    p(esc(t(locale, 'expired_hint')), true),
+  ].join('
+');
+
+  const text = [
+    t(locale, 'expired_title'),
+    '',
+    t(locale, 'expired_lead'),
+    '',
+    title,
+    extendUrl,
+    '',
+    t(locale, 'expired_hint'),
+  ].join('
+');
+
+  return {
+    subject,
+    html: layout({ locale, title: subject, bodyHtml, siteUrl, accent: COLOR.primary }),
+    text,
+  };
+}
+
+
 // ============================================================
 // Единственная точка входа для index.ts. Возвращает null для
 // неизвестного ключа: перечень шаблонов ограничен check-ограничением
@@ -952,6 +1070,10 @@ export function renderEmail(
       return dealerAppApproved(locale, payload, siteUrl);
     case 'dealer_app_rejected':
       return dealerAppRejected(locale, payload, siteUrl);
+    case 'listing_expiring':
+      return listingExpiring(locale, payload, siteUrl);
+    case 'listing_expired':
+      return listingExpired(locale, payload, siteUrl);
     default:
       return null;
   }

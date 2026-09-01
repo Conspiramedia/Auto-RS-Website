@@ -46,6 +46,10 @@ const STATUS_MAP: Record<string, { tone: StatusTone; key: DictKey }> = {
   rejected: { tone: 'error', key: 'my_status_rejected' },
   sold: { tone: 'success', key: 'my_status_sold' },
   archived: { tone: 'neutral', key: 'my_status_archived' },
+  // Истёкший срок — warning, а не neutral: объявление ушло из каталога
+  // без ведома продавца, и бейдж должен звать к действию, а не
+  // сообщать о нейтральном состоянии вроде архива.
+  expired: { tone: 'warning', key: 'my_status_expired' },
 };
 
 type Props = {

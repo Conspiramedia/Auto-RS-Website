@@ -91,8 +91,15 @@ export default async function CarGoneView({
             <p className="mt-0.5 text-caption text-neutral-50">{car.city}</p>
           )}
 
+          {/* Причина недоступности. У истёкшего срока она своя и
+              называется прямо: общий текст «снято с публикации или на
+              проверке» описывал бы не то, что произошло, и читателю
+              (а он тут посторонний, пришедший из поиска) осталось бы
+              гадать, вернётся объявление или нет. */}
           <p className="mx-auto mt-4 max-w-md text-neutral-60">
-            {t('car_gone_text')}
+            {car.status === 'expired'
+              ? t('car_expired_notice')
+              : t('car_gone_text')}
           </p>
 
           {/* Столбик на мобильном, ряд с sm — тот же приём, что на

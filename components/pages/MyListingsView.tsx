@@ -16,6 +16,7 @@
 // обязаны остаться рабочими.
 // ============================================================
 
+import ExpiryBanner from '@/components/ExpiryBanner';
 import MyListingCard from '@/components/MyListingCard';
 import Button from '@/components/ui/Button';
 import StateCard from '@/components/ui/StateCard';
@@ -71,8 +72,30 @@ export default async function MyListingsView({ locale }: Props) {
     );
   }
 
+  // Сколько объявлений скрыто по сроку и сколько истекает на неделе.
+  // Считаем здесь, на сервере: список уже загружен, и отдельный
+  // запрос ради двух чисел был бы лишним. Порог 7 дней тот же, что у
+  // серверного предупреждения и у пометки в карточке.
+  const WARN_MS = 7 * 24 * 60 * 60 * 1000;
+  const expiredCount = listings.filter((l) => l.status === 'expired').length;
+  const expiringCount = listings.filter(
+    (l) =>
+      l.status === 'active' &&
+      l.expires_at !== null &&
+      new Date(l.expires_at).getTime() - Date.now() < WARN_MS,
+  ).length;
+
   return (
     <div className="space-y-4">
+      {/* Баннер о сроке — выше сводки и списка: для продавца без
+          почты это единственный канал, и он должен попасть на глаза
+          сразу при входе. Сам себя прячет, когда истекающих нет. */}
+      <ExpiryBanner
+        locale={locale}
+        expiredCount={expiredCount}
+        expiringCount={expiringCount}
+      />
+
       {totals && (
         // Плашка итогов на приглушённой подложке — как в приложении
         // (surfaceMuted): сводка вторична по отношению к списку и не

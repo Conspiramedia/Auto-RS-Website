@@ -56,6 +56,21 @@ export default function MyListingCard({ locale, listing }: Props) {
   const archivedByAdmin =
     listing.status === 'archived' && listing.archived_by === 'admin';
 
+  // Активное объявление в последнюю неделю срока. Порог тот же, что у
+  // серверного предупреждения (app_settings.listing_warn_days = 7):
+  // продавец получает письмо и в тот же момент видит пометку в
+  // кабинете — два канала об одном событии не должны расходиться.
+  //
+  // Значение зашито здесь константой, а не приходит с сервера: это
+  // подсветка, а не бизнес-правило. Решение о скрытии принимает job,
+  // и оно от этого числа не зависит.
+  const EXPIRY_WARN_DAYS = 7;
+  const expiringSoon =
+    listing.status === 'active' &&
+    listing.expires_at !== null &&
+    new Date(listing.expires_at).getTime() - Date.now() <
+      EXPIRY_WARN_DAYS * 24 * 60 * 60 * 1000;
+
   // Какую цену показывать. Объявление «только аренда» не имеет цены
   // продажи, и без этой проверки карточка написала бы «Цена по запросу»
   // там, где на самом деле указана суточная ставка.
@@ -118,7 +133,34 @@ export default function MyListingCard({ locale, listing }: Props) {
             {listing.is_promoted && (
               <Badge tone="promoted">{t('car_promoted')}</Badge>
             )}
+            {/* «Скоро истечёт» — только у активного и только внутри
+                окна предупреждения. У истёкшего эту роль уже играет
+                сам бейдж статуса, дублировать его нечем. */}
+            {expiringSoon && (
+              <Badge tone="warning">{t('my_expiring_soon')}</Badge>
+            )}
           </div>
+
+          {/* Дата окончания срока. Показывается у активного: продавцу
+              нужно видеть её ЗАРАНЕЕ, а не узнавать о сроке в момент,
+              когда объявление уже скрыто. */}
+          {listing.status === 'active' && listing.expires_at && (
+            <div className="mt-1 text-caption text-neutral-60">
+              {t('my_expires_at').replace(
+                '{date}',
+                formatDate(listing.expires_at, locale),
+              )}
+            </div>
+          )}
+
+          {/* У истёкшего — объяснение и обещание, что ничего не
+              потеряно. Без него продавец решит, что объявление удалено
+              и придётся заводить заново. */}
+          {listing.status === 'expired' && (
+            <Alert tone="warning" className="mt-2">
+              {t('my_expired_hint')}
+            </Alert>
+          )}
 
           {/* Причина отклонения. Без неё красный бейдж «Отклонено» —
               тупик: продавец не знает, что именно исправлять.

@@ -601,6 +601,20 @@ export const dict = {
     my_status_moderation: 'Na proveri',
     my_status_active: 'Objavljeno',
     my_status_archived: 'Arhivirano',
+    // Срок публикации (0113). «Isteklo» вместо «Sklonjeno»: продавцу
+    // важно, ПОЧЕМУ объявление ушло из каталога — сам он его не снимал.
+    my_status_expired: 'Isteklo',
+    my_extend: 'Produži',
+    my_extend_all: 'Produži sve oglase',
+    my_extend_done: 'Produženo oglasa: {n}',
+    my_expires_at: 'Ističe {date}',
+    my_expired_hint:
+      'Rok objave je istekao — oglas nije u katalogu. Produžite ga jednim klikom, sve je sačuvano.',
+    my_expiring_soon: 'Ističe uskoro',
+    my_expiry_banner:
+      'Neki od vaših oglasa uskoro ističu ili su već sklonjeni iz kataloga.',
+    car_expired_notice:
+      'Ovaj oglas više nije objavljen — rok objave je istekao.',
     my_status_rejected: 'Odbijeno',
     my_status_sold: 'Prodato',
     // Razlog odbijanja stiže iz moderation_comment.
@@ -1628,6 +1642,18 @@ export const dict = {
     my_status_moderation: 'На проверке',
     my_status_active: 'Опубликовано',
     my_status_archived: 'В архиве',
+    my_status_expired: 'Истекло',
+    my_extend: 'Продлить',
+    my_extend_all: 'Продлить все объявления',
+    my_extend_done: 'Продлено объявлений: {n}',
+    my_expires_at: 'Истекает {date}',
+    my_expired_hint:
+      'Срок публикации истёк — объявления нет в каталоге. Продлите одним нажатием, всё сохранено.',
+    my_expiring_soon: 'Скоро истечёт',
+    my_expiry_banner:
+      'Часть ваших объявлений скоро истекает или уже скрыта из каталога.',
+    car_expired_notice:
+      'Это объявление больше не опубликовано — срок публикации истёк.',
     my_status_rejected: 'Отклонено',
     my_status_sold: 'Продано',
     // Причина отклонения приходит из moderation_comment.

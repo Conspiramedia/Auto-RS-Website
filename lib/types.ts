@@ -392,6 +392,9 @@ export type MyListing = {
   // Дата, с которой продвижение станет доступно, либо до которой оно
   // уже действует. null для 'available' и 'blocked'.
   promo_available_at: string | null;
+  // Когда объявление уйдёт в expired (0113/0115). NULL у неактивных —
+  // у них таймер не идёт.
+  expires_at: string | null;
 };
 
 // Итоговая плашка кабинета. RPC get_my_stats_totals (миграция 0044).

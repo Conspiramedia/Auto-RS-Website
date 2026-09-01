@@ -72,7 +72,7 @@
 
 import { useState, useTransition } from 'react';
 
-import { promoteCar, setCarStatus } from '@/app/my/actions';
+import { extendListing, promoteCar, setCarStatus } from '@/app/my/actions';
 import Alert from './ui/Alert';
 import Button from './ui/Button';
 import { formatDate } from '@/lib/format';
@@ -204,6 +204,12 @@ export default function ListingActions({
   // пропсам). У неактивного её нет вовсе — там продвижение
   // неприменимо, и сервер отказал бы по статусу.
   const showPromote = status === 'active' && !archivedByAdmin;
+  // «Продлить» — у истёкшего объявления это единственное осмысленное
+  // действие, поэтому кнопка идёт первой и основным стилем. У
+  // активного её нет: срок ещё не поджимает, а лишняя кнопка на
+  // каждой карточке кабинета — шум. Продлить активное заранее можно
+  // кнопкой «Продлить все» на странице кабинета.
+  const showExtend = status === 'expired';
   // Дата подсказки в локальном формате. Считаем один раз здесь:
   // ниже она нужна в двух ветках.
   const promoDate = promoAvailableAt
@@ -246,7 +252,8 @@ export default function ListingActions({
   const soldAction = actions.find((a) => a.target === 'sold') ?? null;
   const otherActions = actions.filter((a) => a.target !== 'sold');
 
-  if (actions.length === 0 && !showPromote && !canEdit) return null;
+  if (actions.length === 0 && !showPromote && !showExtend && !canEdit)
+    return null;
 
   function run(fn: () => Promise<{ ok: boolean; error?: string }>) {
     setError(null);
@@ -414,6 +421,20 @@ export default function ListingActions({
           {/* Продвижение подтверждения не требует: оно ничего не
               ломает и пока бесплатно. Лишний вопрос здесь только
               мешал бы. */}
+          {/* Продление подтверждения не требует: оно возвращает
+              объявление в каталог, то есть делает ровно то, чего
+              продавец и хочет, и ничего не разрушает. */}
+          {showExtend && (
+            <Button
+              size="sm"
+              fullWidth
+              disabled={pending}
+              onClick={() => run(() => extendListing(carId))}
+            >
+              {pending ? t('my_action_busy') : t('my_extend')}
+            </Button>
+          )}
+
           {showPromote && (
             <Button
               size="sm"
