@@ -1312,24 +1312,45 @@ export default function SellForm({
         <div className="space-y-3">
           <h2 className="text-h4 font-semibold">{t('sell_step_details')}</h2>
 
-          {/* Цена продажи — только когда объявление продаётся.
-              Пустое значение допустимо: это «Договорная». */}
+          {/* Цена продажи и пробег. На телефоне — два коротких поля
+              в одной строке: по отдельности они занимали бы два
+              экранных ряда без пользы. С lg возвращаемся к прежней
+              раскладке: пробег уезжает в отдельную строку, оба поля
+              шириной в половину контейнера. Пустая цена допустима:
+              это «Договорная». */}
           {listingType === 'sale' && (
-            <div className="lg:w-1/2 lg:pr-1.5">
-              <label
-                className="mb-1 block text-caption text-neutral-60"
-                htmlFor="sell-price"
-              >
-                {t('sell_sale_price')}, €
-              </label>
-              <NumberInput
-                id="sell-price"
-                value={price}
-                onChange={setPrice}
-                maxDigits={MAX_PRICE_DIGITS}
-                placeholder={t('car_price_negotiable')}
-                className={field}
-              />
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
+              <div className="lg:w-1/2 lg:pr-1.5">
+                <label
+                  className="mb-1 block text-caption text-neutral-60"
+                  htmlFor="sell-price"
+                >
+                  {t('sell_sale_price')}, €
+                </label>
+                <NumberInput
+                  id="sell-price"
+                  value={price}
+                  onChange={setPrice}
+                  maxDigits={MAX_PRICE_DIGITS}
+                  placeholder={t('car_price_negotiable')}
+                  className={field}
+                />
+              </div>
+              <div className="lg:w-1/2 lg:pr-1.5">
+                <label
+                  className="mb-1 block text-caption text-neutral-60"
+                  htmlFor="sell-mileage"
+                >
+                  {t('car_mileage')}, {t('common_km')}
+                </label>
+                <NumberInput
+                  id="sell-mileage"
+                  value={mileage}
+                  onChange={setMileage}
+                  maxDigits={MAX_MILEAGE_DIGITS}
+                  className={field}
+                />
+              </div>
             </div>
           )}
 
@@ -1373,28 +1394,31 @@ export default function SellForm({
             </div>
           )}
 
-          {/* Пробег и цена — короткие числовые поля: на всю ширину
-              1152px они выглядели бы пустыми. Половина строки —
-              достаточно для семи цифр с разделителями. */}
-          <div className="lg:w-1/2 lg:pr-1.5">
-            <label
-              className="mb-1 block text-caption text-neutral-60"
-              htmlFor="sell-mileage"
-            >
-              {t('car_mileage')}, {t('common_km')}
-            </label>
-            <NumberInput
-              id="sell-mileage"
-              value={mileage}
-              onChange={setMileage}
-              maxDigits={MAX_MILEAGE_DIGITS}
-              className={field}
-            />
-          </div>
+          {/* В аренде строку выше занимают ставка и залог, поэтому
+              пробег идёт отдельным полем в половину ширины. */}
+          {listingType === 'rent' && (
+            <div className="lg:w-1/2 lg:pr-1.5">
+              <label
+                className="mb-1 block text-caption text-neutral-60"
+                htmlFor="sell-mileage-rent"
+              >
+                {t('car_mileage')}, {t('common_km')}
+              </label>
+              <NumberInput
+                id="sell-mileage-rent"
+                value={mileage}
+                onChange={setMileage}
+                maxDigits={MAX_MILEAGE_DIGITS}
+                className={field}
+              />
+            </div>
+          )}
 
           {/* Кузов, коробка и топливо — те же полные enum, что в
-              приложении. Поиск не нужен: пунктов не больше десяти. */}
-          <div className="grid grid-cols-3 gap-3">
+              приложении. Поиск не нужен: пунктов не больше десяти.
+              На телефоне селекты идут столбиком: втроём в ряд их
+              подписи и выбранные значения обрезались. */}
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
             <ListPicker
               locale={locale}
               name="body_type"
