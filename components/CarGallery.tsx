@@ -38,7 +38,7 @@
 // ============================================================
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { CarImage } from '@/lib/types';
 
@@ -50,6 +50,58 @@ type Props = {
 export default function CarGallery({ images, alt }: Props) {
   const [active, setActive] = useState(0);
 
+  // Лента миниатюр и сами кнопки в ней. При переключении кадра
+  // активная миниатюра должна сама въехать в видимую часть: на
+  // телефоне в полосу помещается три-четыре штуки из пятнадцати, и
+  // без этого пользователь листает фото, а лента стоит на месте.
+  const stripRef = useRef<HTMLDivElement>(null);
+  const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  useEffect(() => {
+    const strip = stripRef.current;
+    const thumb = thumbRefs.current[active];
+    if (!strip || !thumb) return;
+
+    // scrollIntoView прокрутил бы и саму страницу к галерее — здесь
+    // это лишнее движение. Двигаем только ленту: считаем, на сколько
+    // миниатюра выходит за видимую часть, и доводим её до края.
+    const left = thumb.offsetLeft;
+    const right = left + thumb.offsetWidth;
+    const viewLeft = strip.scrollLeft;
+    const viewRight = viewLeft + strip.clientWidth;
+
+    if (left < viewLeft) {
+      strip.scrollTo({ left: left - 8, behavior: 'smooth' });
+    } else if (right > viewRight) {
+      strip.scrollTo({ left: right - strip.clientWidth + 8, behavior: 'smooth' });
+    }
+  }, [active]);
+
+  // Свайп по самому кадру. На телефоне это основной жест просмотра:
+  // тыкать в мелкие миниатюры неудобно, а соседние кнопки-стрелки
+  // заняли бы место поверх фотографии.
+  const touchX = useRef<number | null>(null);
+
+  function onTouchStart(e: React.TouchEvent) {
+    touchX.current = e.touches[0].clientX;
+  }
+
+  function onTouchEnd(e: React.TouchEvent) {
+    if (touchX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchX.current;
+    touchX.current = null;
+
+    // Порог в 40px отсекает дрожание пальца при обычном тапе и
+    // вертикальной прокрутке страницы.
+    if (Math.abs(dx) < 40) return;
+
+    // По краям листание упирается, а не заворачивается: круговой
+    // переход с последнего кадра на первый читается как сбой.
+    setActive((i) =>
+      dx < 0 ? Math.min(i + 1, images.length - 1) : Math.max(i - 1, 0),
+    );
+  }
+
   if (images.length === 0) {
     return (
       <div className="flex aspect-[3/2] items-center justify-center rounded-card bg-surface-muted text-neutral-30 sm:aspect-[4/3]">
@@ -60,7 +112,11 @@ export default function CarGallery({ images, alt }: Props) {
 
   return (
     <div>
-      <div className="relative aspect-[3/2] overflow-hidden rounded-card bg-surface-muted sm:aspect-[4/3]">
+      <div
+        className="relative aspect-[3/2] overflow-hidden rounded-card bg-surface-muted sm:aspect-[4/3]"
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
         {images.map((img, i) => (
           // Каждый кадр — ДВА СЛОЯ ОДНОГО ФАЙЛА, как _GalleryItem в приложении.
           // Второго запроса нет: src у слоёв одинаковый, и браузер берёт
@@ -113,15 +169,32 @@ export default function CarGallery({ images, alt }: Props) {
             />
           </div>
         ))}
+
+        {/* Счётчик кадров. На телефоне полоса прокрутки у ленты скрыта
+            (no-scrollbar), и понять, что снимков пятнадцать, а не
+            четыре видимых, было неоткуда. Позиция левая: справа над
+            кадром висит крестик выхода из GalleryCloseButton.
+
+            Показываем только когда фото больше одного — на единственном
+            снимке «1 / 1» лишний шум. */}
+        {images.length > 1 && (
+          <div className="absolute bottom-3 left-3 rounded-control bg-black/55 px-2 py-1 text-caption font-medium text-white">
+            {active + 1} / {images.length}
+          </div>
+        )}
       </div>
 
       {images.length > 1 && (
-        <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto">
+        <div ref={stripRef} className="no-scrollbar mt-2 flex gap-2 overflow-x-auto">
           {images.map((img, i) => (
             <button
               key={img.id}
+              ref={(el) => {
+                thumbRefs.current[i] = el;
+              }}
               type="button"
               onClick={() => setActive(i)}
+              aria-current={i === active}
               className={
                 i === active
                   ? 'relative h-12 w-16 shrink-0 overflow-hidden rounded-control ring-2 ring-brand-primary sm:h-16 sm:w-20'
