@@ -63,10 +63,10 @@ export default function DealersPageView({ locale }: { locale: Locale }) {
           <BackCloseButton locale={locale} className="-mr-2 shrink-0" />
         </div>
         {/* Оффер в две строки: первая называет ценность, вторая
-            снимает вопрос цены. Разделены намеренно — зелёным
-            акцентом продаётся выгода, а условие набрано спокойно
-            и не спорит с ней за внимание. */}
-        <p className="mt-2 text-h3 font-semibold text-brand-green">
+            снимает вопрос цены. Ценность выделена весом, а не
+            цветом: зелёный на странице принадлежит кнопке заявки,
+            и второе зелёное пятно спорило бы с ней за клик. */}
+        <p className="mt-2 text-h3 font-semibold">
           {t('dealers_offer')}
         </p>
         <p className="mt-1 text-neutral-60">{t('dealers_offer_note')}</p>
