@@ -200,7 +200,23 @@ export default async function HomeView({ locale }: { locale: Locale }) {
               картинка. */}
           <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 sm:py-16 lg:grid-cols-2 lg:gap-12">
             <div>
-              <h1 className="max-w-2xl text-h1 font-bold sm:text-display">
+              {/* РАЗМЕР ЗАГОЛОВКА НА УЗКОМ ЭКРАНЕ ЗАДАН ЯВНО.
+                  Ступень text-h1 (30px) укладывала «Продажа и аренда
+                  автомобилей в Сербии» в ТРИ строки на телефоне: 38
+                  символов не помещаются в ~328px доступной ширины
+                  (360px экрана минус поля контейнера). Три строки
+                  заголовка съедали первый экран и отодвигали кнопку
+                  подачи к сгибу.
+
+                  clamp вместо ступени шкалы: между 320px и 640px размер
+                  плавно растёт от 22px до 28px, и заголовок держится в
+                  двух строках на всех ходовых ширинах, а не только на
+                  той, под которую подобран. Ступенью это не выразить —
+                  здесь размер функция от ширины, а не роль в иерархии.
+
+                  С sm (640px) места хватает, и заголовок возвращается на
+                  свою ступень; с lg — на display, как было. */}
+              <h1 className="max-w-2xl text-[clamp(1.375rem,5.2vw,1.75rem)] font-bold leading-tight sm:text-h1 lg:text-display">
                 {t('home_hero_title')}
               </h1>
               <p className="mt-3 max-w-xl text-h4 text-neutral-60">
