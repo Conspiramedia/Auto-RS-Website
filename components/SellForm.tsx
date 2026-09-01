@@ -1455,8 +1455,16 @@ export default function SellForm({
             />
           </div>
 
-          <div className="flex gap-3">
-            <Button variant="secondary" onClick={() => setStep(1)}>
+          {/* Та же раскладка, что на шаге фотографий: на мобильном
+              столбец с «Далее» сверху, с sm — ряд. Подробно см.
+              комментарий там. */}
+          <div className="flex flex-col-reverse gap-3 sm:flex-row">
+            <Button
+              variant="secondary"
+              onClick={() => setStep(1)}
+              fullWidth
+              className="sm:w-auto"
+            >
               {t('sell_back')}
             </Button>
             {/* flex-1: «Далее» занимает всё оставшееся место — главное
@@ -1480,8 +1488,25 @@ export default function SellForm({
             maxPhotos={MAX_PHOTOS}
           />
 
-          <div className="flex gap-3">
-            <Button variant="secondary" onClick={() => setStep(2)}>
+          {/* НА МОБИЛЬНОМ — СТОЛБЕЦ, «Далее» СВЕРХУ.
+              flex-col-reverse переворачивает порядок отрисовки, не
+              трогая разметку: в DOM «Назад» остаётся первым (так его
+              находит клавиатура и скринридер — сначала возврат, потом
+              продолжение), а видит человек «Далее» над «Назад».
+              Главное действие обязано быть выше и попадать под большой
+              палец, а не прятаться под второстепенным.
+
+              Обе кнопки во всю ширину: на узком экране две кнопки
+              разной ширины друг под другом читаются как ошибка
+              вёрстки. С sm возвращается прежний ряд, где «Назад»
+              по содержимому, а «Далее» занимает остаток. */}
+          <div className="flex flex-col-reverse gap-3 sm:flex-row">
+            <Button
+              variant="secondary"
+              onClick={() => setStep(2)}
+              fullWidth
+              className="sm:w-auto"
+            >
               {t('sell_back')}
             </Button>
             {/* Без единой фотографии дальше не пускаем: объявление без
