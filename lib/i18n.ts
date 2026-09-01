@@ -285,7 +285,7 @@ export const dict = {
       'Nakon odobrenja moderatora oglas će se pojaviti u katalogu. O rezultatu ćemo vas obavestiti.',
 
     // Главная
-    home_hero_title: 'Prodajte automobil u Srbiji',
+    home_hero_title: 'Prodaja i iznajmljivanje automobila u Srbiji',
     home_hero_text: 'Besplatno objavljivanje. Kupci vam pišu direktno na sajtu.',
     home_hero_cta: 'Objavi auto',
     home_fresh: 'Novi oglasi',
@@ -1246,7 +1246,7 @@ export const dict = {
     sell_success_text:
       'После одобрения модератором объявление появится в каталоге. О результате сообщим.',
 
-    home_hero_title: 'Продайте автомобиль в Сербии',
+    home_hero_title: 'Продажа и аренда автомобилей в Сербии',
     home_hero_text: 'Бесплатное размещение. Покупатели напишут вам прямо на сайте.',
     home_hero_cta: 'Разместить авто',
     home_fresh: 'Свежие объявления',
