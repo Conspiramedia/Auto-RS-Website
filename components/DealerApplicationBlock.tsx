@@ -90,6 +90,26 @@ function digits(value: string): string {
   return value.replace(/\D/g, '');
 }
 
+// Обрезка ввода по КОЛИЧЕСТВУ ЦИФР, а не по длине строки.
+// Атрибут maxLength здесь не годится: он считает символы, и человек,
+// набирающий PIB как «123 456 789», упёрся бы в предел на девятом
+// символе — то есть на седьмой цифре. Поэтому лишние цифры режем
+// сами, а разделители (пробелы, дефисы) оставляем как набраны:
+// сервер их всё равно вычистит.
+function clampDigits(value: string, max: number): string {
+  let seen = 0;
+  let out = '';
+  for (const ch of value) {
+    if (/\d/.test(ch)) {
+      // Цифра сверх нормы — и она, и весь дальнейший ввод отбрасываются.
+      if (seen === max) break;
+      seen += 1;
+    }
+    out += ch;
+  }
+  return out;
+}
+
 type Props = {
   locale: Locale;
   // Последняя заявка пользователя или null, если он не подавал ни
@@ -285,6 +305,10 @@ export default function DealerApplicationBlock({
       required?: boolean;
       hint?: string;
       maxLength?: number;
+      // Предел по количеству цифр — для номеров фиксированной длины
+      // (PIB, матични број). Работает вместе с maxLength, а не вместо:
+      // тот держит общую длину строки с разделителями.
+      maxDigits?: number;
       inputMode?: 'numeric' | 'tel' | 'url' | 'email';
       placeholder?: string;
     },
@@ -299,7 +323,12 @@ export default function DealerApplicationBlock({
           type="text"
           value={value}
           onChange={(e) => {
-            onChange(e.target.value);
+            const raw = e.target.value;
+            onChange(
+              options?.maxDigits
+                ? clampDigits(raw, options.maxDigits)
+                : raw,
+            );
             setError(null);
           }}
           maxLength={options?.maxLength}
@@ -392,6 +421,10 @@ export default function DealerApplicationBlock({
                 // на идентификаторе даёт стрелки прибавления и теряет
                 // ведущий ноль, а номер — не величина.
                 inputMode: 'numeric',
+                // Больше девяти цифр набрать нельзя: подсказка под
+                // полем обещает ровно девять, и поле обязано держать
+                // слово, а не принимать лишнее до нажатия «Отправить».
+                maxDigits: TAX_ID_DIGITS,
                 maxLength: 20,
                 placeholder: '123456789',
               })}
@@ -399,6 +432,7 @@ export default function DealerApplicationBlock({
                 required: true,
                 hint: t('dealer_app_reg_num_hint'),
                 inputMode: 'numeric',
+                maxDigits: REG_NUM_DIGITS,
                 maxLength: 20,
                 placeholder: '12345678',
               })}

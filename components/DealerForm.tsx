@@ -71,6 +71,24 @@ function digits(value: string): string {
   return value.replace(/\D/g, '');
 }
 
+// Обрезка ввода по КОЛИЧЕСТВУ ЦИФР, а не по длине строки. Атрибут
+// maxLength считает символы, и набирающий «123 456 789» упёрся бы
+// в предел на седьмой цифре. Разделители сохраняем — их вычистит RPC.
+// Парная функция стоит в DealerApplicationBlock: у форм заявки два
+// набора состояния, но правило ввода реквизитов одно.
+function clampDigits(value: string, max: number): string {
+  let seen = 0;
+  let out = '';
+  for (const ch of value) {
+    if (/\d/.test(ch)) {
+      if (seen === max) break;
+      seen += 1;
+    }
+    out += ch;
+  }
+  return out;
+}
+
 export default function DealerForm({ locale }: Props) {
   const t = getT(locale);
   const supabase = getBrowserClient();
@@ -251,7 +269,10 @@ export default function DealerForm({ locale }: Props) {
             type="text"
             inputMode="numeric"
             value={taxId}
-            onChange={(e) => setTaxId(e.target.value)}
+            // Больше девяти цифр не принимаем: подсказка обещает ровно
+            // девять, и поле держит слово во время ввода, а не после
+            // нажатия «Оставить заявку».
+            onChange={(e) => setTaxId(clampDigits(e.target.value, TAX_ID_DIGITS))}
             required
             maxLength={20}
             placeholder="123456789"
@@ -267,7 +288,7 @@ export default function DealerForm({ locale }: Props) {
             type="text"
             inputMode="numeric"
             value={regNum}
-            onChange={(e) => setRegNum(e.target.value)}
+            onChange={(e) => setRegNum(clampDigits(e.target.value, REG_NUM_DIGITS))}
             required
             maxLength={20}
             placeholder="12345678"
