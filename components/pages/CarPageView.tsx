@@ -14,6 +14,7 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import CarGallery from '@/components/CarGallery';
 import GalleryCloseButton from '@/components/GalleryCloseButton';
+import CallSellerButton from '@/components/CallSellerButton';
 import ContactSellerButton from '@/components/ContactSellerButton';
 import ShareButton from '@/components/ShareButton';
 import SiteFooter from '@/components/SiteFooter';
@@ -411,6 +412,23 @@ export default async function CarPageView({
                   locale={locale}
                   carId={car.id}
                   sellerId={car.user_id}
+                />
+
+                {/* ЗВОНОК — ВТОРЫМ ДЕЙСТВИЕМ, а не первым. На
+                    авторынке Сербии звонок конверсионнее переписки, но
+                    акцент в блоке один (variant info у кнопки выше), и
+                    две одинаково яркие кнопки подряд заставляли бы
+                    выбирать вместо того, чтобы действовать. Здесь
+                    secondary: действие равнодоступно, но не спорит за
+                    внимание.
+
+                    Телефон приходит из той же RPC, что и карточка, и
+                    только вошедшему (0116) — у гостя он null, и кнопка
+                    сама превращается в приглашение войти. */}
+                <CallSellerButton
+                  locale={locale}
+                  sellerId={car.user_id}
+                  phone={car.contact_phone}
                 />
 
                 <div className="mt-3">
