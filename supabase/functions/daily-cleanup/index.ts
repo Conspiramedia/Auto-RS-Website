@@ -15,6 +15,12 @@
 //                          Сортировка каталога и так проверяет boosted_until,
 //                          но значок VIP на карточке читает именно флаг —
 //                          без гашения он висел бы вечно.
+//   осиротевшие фото     — файлы в бакете car-images, на которые не
+//                          ссылается ни одно объявление (миграция 0123).
+//                          Строки car_images уходят каскадом вместе с
+//                          объявлением, а файлы оставались в бакете
+//                          навсегда. Удаляются пачками и только те, что
+//                          старше суток, — см. комментарий у задачи ниже.
 //   expire_listings      — срок жизни объявлений (миграция 0113): за 7 дней
 //                          до конца предупреждает продавца (уведомление в
 //                          кабинете + письмо, если есть адрес), в срок
@@ -106,6 +112,65 @@ Deno.serve(async (_req: Request) => {
         affected: typeof data === 'number' ? data : 0,
       });
     }
+
+    // ------------------------------------------------------------
+    // ОСИРОТЕВШИЕ ФОТОГРАФИИ (миграция 0123).
+    // ------------------------------------------------------------
+    // Стоит ОТДЕЛЬНО от цикла выше: те задачи — обычные RPC, а эта
+    // состоит из двух шагов, потому что Postgres не умеет удалять
+    // объекты хранилища. SQL возвращает имена, Storage API удаляет.
+    //
+    // ПАЧКАМИ И С ПОТОЛКОМ. Storage API принимает до 100 путей за
+    // вызов, а общее число за запуск ограничено: даже если мусора
+    // накопились тысячи, чистка растянется на несколько дней, зато
+    // ежедневный job не упрётся в таймаут и не создаст пиковую
+    // нагрузку. Отставание не страшно — файлы никуда не денутся.
+    //
+    // ЦИКЛ ОСТАНАВЛИВАЕТСЯ, КАК ТОЛЬКО SQL ВЕРНУЛ НЕПОЛНЫЙ БАТЧ:
+    // это значит, что сироты кончились, и следующий запрос был бы
+    // пустым.
+    const ORPHAN_BATCH = 100;
+    const ORPHAN_MAX_PER_RUN = 500;
+
+    let orphanDeleted = 0;
+    let orphanError: string | undefined;
+
+    try {
+      while (orphanDeleted < ORPHAN_MAX_PER_RUN) {
+        const { data: orphans, error: findError } = await supabase.rpc(
+          'find_orphan_car_images',
+          { p_limit: ORPHAN_BATCH },
+        );
+
+        if (findError) throw new Error(findError.message);
+
+        const names = (orphans ?? []).map(
+          (row: { name: string }) => row.name,
+        );
+
+        if (names.length === 0) break;
+
+        const { error: removeError } = await supabase.storage
+          .from('car-images')
+          .remove(names);
+
+        if (removeError) throw new Error(removeError.message);
+
+        orphanDeleted += names.length;
+
+        // Неполный батч — значит это был последний.
+        if (names.length < ORPHAN_BATCH) break;
+      }
+    } catch (e) {
+      orphanError = e instanceof Error ? e.message : String(e);
+    }
+
+    results.push({
+      task: 'cleanup_orphan_car_images',
+      ok: orphanError === undefined,
+      affected: orphanError === undefined ? orphanDeleted : null,
+      ...(orphanError ? { error: orphanError } : {}),
+    });
 
     const failed = results.filter((r) => !r.ok);
 
