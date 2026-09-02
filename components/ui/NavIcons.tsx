@@ -146,6 +146,17 @@ export function Building2Icon({ className }: IconProps) {
   );
 }
 
+// MapPin — город: метка на карте. Нужна счётчику городов в герое
+// главной, где рядом стоят CarIcon и TagIcon.
+export function MapPinIcon({ className }: IconProps) {
+  return (
+    <Icon className={className}>
+      <path d="M20 10c0 4.4-5.4 9.5-7.4 11.2a1 1 0 0 1-1.2 0C9.4 19.5 4 14.4 4 10a8 8 0 0 1 16 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </Icon>
+  );
+}
+
 // ---------- Справочные разделы ----------
 
 // Smartphone — страница приложения.

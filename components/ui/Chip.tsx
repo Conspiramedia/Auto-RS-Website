@@ -48,12 +48,19 @@ export default function Chip({
   ariaLabel,
   className = '',
 }: Props) {
+  // ХОВЕР ТОЛЬКО У КЛИКАБЕЛЬНОЙ ФОРМЫ. Заливка при наведении обещает
+  // переход, и на <span> она обещает его зря: счётчики площадки в
+  // герое главной подсвечивались под курсором, хотя вести с них
+  // некуда. Ссылочные чипсы (марки, города, фильтры, сортировка)
+  // отклик сохраняют — там он и означает «сюда можно нажать».
   const classes = [
     BASE,
     SIZES[size],
     active
       ? 'bg-brand-dark font-semibold text-white'
-      : 'border border-neutral-15 text-neutral-60 hover:bg-surface-hover',
+      : `border border-neutral-15 text-neutral-60${
+          href ? ' hover:bg-surface-hover' : ''
+        }`,
     className,
   ]
     .filter(Boolean)
