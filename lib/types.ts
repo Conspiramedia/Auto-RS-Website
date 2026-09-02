@@ -42,6 +42,10 @@ export type CatalogCar = {
   site_url: string;
   photo_url: string | null;
   seller_kind: string;
+  // Машины нет в наличии — салон привезёт под заказ (миграция 0118).
+  // Ставится только продавцом со seller_kind = 'dealer': у частника
+  // флаг гасит триггер на стороне базы.
+  is_on_order: boolean;
   created_at: string;
   // Общее число объявлений по текущим фильтрам (одинаково во всех строках).
   total_count: number;
@@ -99,6 +103,8 @@ export type CarDetails = {
   // возвращают в публикацию кнопкой «Вернуть»).
   archived_by: string | null;
   archived_reason: string | null;
+  // Машины нет в наличии — салон привезёт под заказ (миграция 0118).
+  is_on_order: boolean;
 };
 
 // Фотография объявления. Источник: RPC get_car_images (миграция 0052).

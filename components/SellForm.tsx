@@ -137,6 +137,20 @@ export default function SellForm({
   // подаётся двумя отдельными объявлениями. Защита от дублей это
   // разрешает: тип сделки входит в условие совпадения (миграция 0057).
   const [listingType, setListingType] = useState<'sale' | 'rent'>('sale');
+  // ПОМЕТКА «НА ЗАКАЗ» (миграция 0118). Салон торгует не только тем,
+  // что стоит у него на площадке: часть предложений он привозит под
+  // клиента, и покупатель обязан видеть это до звонка.
+  //
+  // Показывается ТОЛЬКО САЛОНУ — isDealer ниже. Частнику поля нет: у
+  // него «привезу под заказ» означало бы объявление о машине, которой
+  // у продавца нет. Проверка дублируется на стороне базы триггером
+  // trg_cars_on_order_dealer_only: клиент отвечает за удобство, а не
+  // за правила.
+  const [isOnOrder, setIsOnOrder] = useState(false);
+  // null — тип продавца ещё не прочитан. До этого момента поле не
+  // рисуется вовсе: мелькнувший и исчезнувший переключатель хуже, чем
+  // его появление на долю секунды позже.
+  const [isDealer, setIsDealer] = useState<boolean | null>(null);
 
   // Шаг 1–2: данные автомобиля.
   const [brand, setBrand] = useState('');
@@ -266,6 +280,20 @@ export default function SellForm({
       // RPC не должна мешать подать объявление, поле просто покажется
       // пустым и номер спросят заново.
       if (uid) {
+        // Тип продавца — прямым select под политикой profiles_select_own:
+        // это своя строка, и заводить ради одного поля RPC незачем.
+        // Ошибку глушим: недоступный профиль не должен мешать подаче,
+        // поле «на заказ» просто не покажется.
+        const { data: profileRow } = await supabase
+          .from('profiles')
+          .select('seller_kind')
+          .eq('id', uid)
+          .maybeSingle();
+
+        if (!cancelled) {
+          setIsDealer(profileRow?.seller_kind === 'dealer');
+        }
+
         const { data: savedPhone } = await supabase.rpc('get_profile_phone');
         if (!cancelled && typeof savedPhone === 'string' && savedPhone) {
           setAccountPhone(savedPhone);
@@ -328,6 +356,7 @@ export default function SellForm({
       // приложение через v2) приводим к продаже: форма сайта предлагает
       // только один тип, а продажа — основная сделка такой карточки.
       setListingType(car.is_for_rent && !car.is_for_sale ? 'rent' : 'sale');
+      setIsOnOrder(Boolean(car.is_on_order));
 
       setBrand((car.brand as string) ?? '');
       setModel((car.model as string) ?? '');
@@ -884,6 +913,9 @@ export default function SellForm({
       // появилась v3.
       const payload = {
         p_listing_type: listingType,
+        // У аренды флаг не имеет смысла и не отправляется как true:
+        // машину сдают ту, что есть.
+        p_is_on_order: listingType === 'sale' && isOnOrder,
         p_brand: brand.trim(),
         p_model: model.trim(),
         p_year: Number(year),
@@ -1202,6 +1234,36 @@ export default function SellForm({
               ))}
             </div>
           </div>
+
+          {/* ПОМЕТКА «НА ЗАКАЗ» — ТОЛЬКО САЛОНУ И ТОЛЬКО ДЛЯ ПРОДАЖИ.
+              ------------------------------------------------------------
+              У аренды смысла нет: машину сдают ту, что есть, а не ту,
+              которую привезут. isDealer === null означает «ещё не
+              выяснили» — до ответа поле не рисуем, чтобы переключатель
+              не мелькнул и не исчез.
+
+              Чекбокс, а не третья кнопка в ряду типов: «продажа» и
+              «аренда» взаимоисключающи, а «на заказ» — свойство поверх
+              продажи, и ставить его в один ряд значило бы предложить
+              выбрать одно из трёх. */}
+          {isDealer && listingType === 'sale' && (
+            <label className="flex cursor-pointer items-start gap-2.5 rounded-card border border-neutral-15 p-3">
+              <input
+                type="checkbox"
+                checked={isOnOrder}
+                onChange={(e) => setIsOnOrder(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-brand-primary"
+              />
+              <span>
+                <span className="block font-medium">
+                  {t('sell_on_order')}
+                </span>
+                <span className="mt-0.5 block text-caption text-neutral-60">
+                  {t('sell_on_order_hint')}
+                </span>
+              </span>
+            </label>
+          )}
 
           {/* Марка и модель — пара связанных полей, на десктопе стоят
               в одной строке: модель каскадом зависит от марки, и видеть
