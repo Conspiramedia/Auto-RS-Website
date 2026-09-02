@@ -8,6 +8,8 @@
 // пропало».
 // ============================================================
 
+import Image from 'next/image';
+
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import BackCloseButton from '@/components/BackCloseButton';
@@ -138,6 +140,39 @@ export default function HowItWorksPageView({ locale }: { locale: Locale }) {
         </div>
         <p className="mt-3 text-h4 text-neutral-60">{t('how_lead')}</p>
 
+        {/* СЪЁМКА АВТО НА ТЕЛЕФОН — ПОД ЛИДОМ.
+            ------------------------------------------------------------
+            Страница — четыре сценария подряд, каждый из трёх шагов
+            текстом. Без иллюстрации она читается как инструкция к
+            прибору, хотя объясняет простое действие: сфотографировал
+            машину, заполнил форму, получил сообщения.
+
+            Кадр отвечает первому и главному сценарию — подаче
+            объявления, — и стоит до того, как начнётся перечисление
+            ролей: ниже он иллюстрировал бы уже конкретный сценарий и
+            спорил бы с остальными тремя.
+
+            priority не ставится: выше стоят заголовок и лид, ранняя
+            загрузка отняла бы полосу у них. Область зарезервирована
+            через aspect + fill — подгрузка не сдвигает шаги под
+            картинкой.
+
+            Пропорции 16/10 на узком экране и 21/9 с sm: страница
+            max-w-3xl, и высокий кадр во всю её ширину отодвинул бы
+            первый сценарий за сгиб.
+
+            Пустой alt: изображение декоративное, смысл несут лид над
+            ним и шаги под ним. */}
+        <div className="relative mt-6 aspect-[16/10] overflow-hidden rounded-card sm:aspect-[21/9]">
+          <Image
+            src="/images/how-photo-phone.webp"
+            alt=""
+            fill
+            sizes="(max-width: 639px) calc(100vw - 2rem), 48rem"
+            className="object-cover"
+          />
+        </div>
+
         {SCENARIOS.map((scenario) => (
           <section key={scenario.title} className="mt-10">
             <h2 className="text-h3 font-semibold">{t(scenario.title)}</h2>
@@ -146,9 +181,17 @@ export default function HowItWorksPageView({ locale }: { locale: Locale }) {
               {scenario.steps.map((step, i) => (
                 <li key={step.title} className="flex gap-4">
                   {/* Номер шага в круге. shrink-0 обязателен: без него
-                      круг сжимается в овал, когда текст шага длинный. */}
+                      круг сжимается в овал, когда текст шага длинный.
+
+                      Цвет brand-primary, а не brand-dark: тёмные круги
+                      читались как служебные метки, тогда как это
+                      навигация по инструкции. Тот же синий несут
+                      иконки в карточках «Почему RS Auto» и в чипсах
+                      счётчиков на главной. Зелёный сюда не годится —
+                      он закреплён за главным действием (подачей), а
+                      brand-blue за связью («Написать», «Войти»). */}
                   <span
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-brand-dark text-caption font-semibold text-white"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-brand-primary text-caption font-semibold text-white"
                     aria-hidden="true"
                   >
                     {i + 1}
