@@ -74,7 +74,12 @@
 
 import { useState, useTransition } from 'react';
 
-import { extendListing, promoteCar, setCarStatus } from '@/app/my/actions';
+import {
+  deleteRejectedCar,
+  extendListing,
+  promoteCar,
+  setCarStatus,
+} from '@/app/my/actions';
 import Alert from './ui/Alert';
 import Button from './ui/Button';
 import { formatDate } from '@/lib/format';
@@ -133,7 +138,10 @@ type StatusAction = {
 // предзагрузка Next.
 type Confirming =
   | { kind: 'status'; action: StatusAction }
-  | { kind: 'edit' };
+  | { kind: 'edit' }
+  // Удаление отклонённого объявления (0122). Отдельный вид, а не
+  // ещё один status: это не переход в матрице 0070, а выход из неё.
+  | { kind: 'delete' };
 
 // Какие действия доступны из каждого статуса. Пустой список означает,
 // что делать нечего (например, статус, о котором клиент ещё не знает).
@@ -166,13 +174,12 @@ const ACTIONS: Record<string, StatusAction[]> = {
       confirmKey: 'my_confirm_archive',
     },
   ],
-  rejected: [
-    {
-      target: 'archived',
-      labelKey: 'my_action_archive',
-      confirmKey: 'my_confirm_archive',
-    },
-  ],
+  // ОТКЛОНЁННОЕ НЕ СНИМАЮТ, А УДАЛЯЮТ. Архив для него бессмыслен:
+  // вернуть оттуда в выдачу нельзя — модерация уже отказала, — и
+  // запись оседала бы в кабинете навсегда, копя мусор в списке.
+  // Кнопка удаления рисуется отдельно (showDelete ниже), потому что
+  // это не переход статуса, а вызов delete_my_rejected_car.
+  rejected: [],
 };
 
 export default function ListingActions({
@@ -212,6 +219,11 @@ export default function ListingActions({
   // каждой карточке кабинета — шум. Продлить активное заранее можно
   // кнопкой «Продлить все» на странице кабинета.
   const showExtend = status === 'expired';
+
+  // Удаление — только у отклонённого и только не снятого админом:
+  // админский архив имеет свой путь (правка → повторная модерация),
+  // и удалять его владелец не должен.
+  const showDelete = status === 'rejected' && !archivedByAdmin;
   // Дата подсказки в локальном формате. Считаем один раз здесь:
   // ниже она нужна в двух ветках.
   const promoDate = promoAvailableAt
@@ -262,7 +274,13 @@ export default function ListingActions({
   const soldAction = actions.find((a) => a.target === 'sold') ?? null;
   const otherActions = actions.filter((a) => a.target !== 'sold');
 
-  if (actions.length === 0 && !showPromote && !showExtend && !canEdit)
+  if (
+    actions.length === 0 &&
+    !showPromote &&
+    !showExtend &&
+    !canEdit &&
+    !showDelete
+  )
     return null;
 
   function run(fn: () => Promise<{ ok: boolean; error?: string }>) {
@@ -336,7 +354,9 @@ export default function ListingActions({
           <p className="text-caption text-neutral-70">
             {confirming.kind === 'edit'
               ? t('my_confirm_edit')
-              : t(confirming.action.confirmKey)}
+              : confirming.kind === 'delete'
+                ? t('my_confirm_delete')
+                : t(confirming.action.confirmKey)}
           </p>
 
           {/* ------------------------------------------------------
@@ -382,6 +402,16 @@ export default function ListingActions({
                 className="flex-1 basis-0"
               >
                 {t('my_confirm_yes')}
+              </Button>
+            ) : confirming.kind === 'delete' ? (
+              <Button
+                size="sm"
+                variant="destructive"
+                disabled={pending}
+                className="flex-1 basis-0"
+                onClick={() => run(() => deleteRejectedCar(carId))}
+              >
+                {pending ? t('my_action_busy') : t('my_confirm_yes')}
               </Button>
             ) : (
               <Button
@@ -521,6 +551,29 @@ export default function ListingActions({
               {t(action.labelKey)}
             </Button>
           ))}
+
+          {/* УДАЛЕНИЕ ОТКЛОНЁННОГО. Стоит последней, как и «Снять» у
+              прочих статусов: действие, убирающее объявление, не должно
+              оказаться под пальцем раньше, чем правка.
+
+              variant secondary, как у соседей: красной кнопка станет
+              только в подтверждении, где выбор уже осознан. Красная в
+              общем ряду притягивала бы нажатие к самому необратимому
+              действию. */}
+          {showDelete && (
+            <Button
+              size="sm"
+              variant="secondary"
+              fullWidth
+              disabled={pending}
+              onClick={() => {
+                setError(null);
+                setConfirming({ kind: 'delete' });
+              }}
+            >
+              {t('my_action_delete')}
+            </Button>
+          )}
         </div>
       )}
 

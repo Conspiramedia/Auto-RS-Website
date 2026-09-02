@@ -659,6 +659,11 @@ export const dict = {
 
     // Radnje nad oglasom.
     my_action_archive: 'Skloni',
+    // Удаление отклонённого объявления (0122). У него архив
+    // бессмыслен — вернуть в выдачу нельзя, — поэтому вместо «Snimi»
+    // предлагается убрать запись совсем.
+    my_action_delete: 'Obriši',
+    my_confirm_delete: 'Obrisati oglas? Vraćanje nije moguće.',
     my_action_restore: 'Vrati',
     my_action_sold: 'Prodato',
     // «Podigni», a ne «Promoviši»: na oglasnim sajtovima to je uobičajen
@@ -1798,6 +1803,9 @@ export const dict = {
 
     // Действия над объявлением.
     my_action_archive: 'Снять',
+    // См. комментарий в сербском словаре.
+    my_action_delete: 'Удалить',
+    my_confirm_delete: 'Удалить объявление? Восстановить не получится.',
     my_action_restore: 'Вернуть',
     my_action_sold: 'Продано',
     // «Поднять», а не «Продвинуть»: на рынке объявлений это устоявшееся
