@@ -94,8 +94,24 @@ export default function FaqPageView({ locale }: { locale: Locale }) {
         <Card className="mt-10 text-center">
           <h2 className="text-h3 font-semibold">{t('faq_more_title')}</h2>
           <p className="mt-2 text-neutral-60">{t('faq_more_text')}</p>
+          {/* КНОПКА ВО ВСЮ ШИРИНУ ДО sm — как в такой же карточке на
+              /how-it-works и /about. На узком экране кнопка по
+              содержимому висит коротким прямоугольником посреди
+              карточки, и блок выглядит незаконченным.
+
+              Здесь она одна, поэтому хватает w-full на самой кнопке:
+              сетка с [&>*]:w-full нужна была там, где кнопок две и их
+              требуется уравнять между собой.
+
+              С sm ширина возвращается к содержимому: страница
+              max-w-3xl, и растянутая кнопка читалась бы как поле
+              ввода. По центру её держит text-center у карточки. */}
           <div className="mt-5">
-            <Button variant="secondary" href={localeHref(locale, '/contact')}>
+            <Button
+              variant="secondary"
+              href={localeHref(locale, '/contact')}
+              className="w-full sm:w-auto"
+            >
               {t('nav_contact')}
             </Button>
           </div>
