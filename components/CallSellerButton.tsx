@@ -9,21 +9,27 @@
 // котором держится SEO. Сервер отдаёт кнопку одинаковой всем, решение
 // принимается в браузере.
 //
-// НОМЕР НЕ ПОКАЗЫВАЕТСЯ СРАЗУ, а раскрывается по нажатию. Причина не
-// косметическая: телефон на странице — это контакт, который собирают
-// перекупы обходом каталога. Одно нажатие поднимает цену такого сбора
-// и заодно даёт метрику намерения позвонить — до этого шага у площадки
-// была статистика только по переписке (seller_contact_click), и
-// сравнить каналы было не с чем.
+// НОМЕР НЕ ПРИХОДИТ С СЕРВЕРНЫМ РЕНДЕРОМ, а запрашивается по нажатию.
+// Причина не в осторожности, а в устройстве страницы: карточку рисует
+// серверный клиент под анонимным ключом (lib/supabase.ts), поэтому при
+// рендере auth.uid() пуст даже у вошедшего, и get_car_details отдаёт
+// contact_phone пустым всем без исключения (миграция 0116). Отдавать
+// же номер в серверный рендер нельзя — он попал бы в HTML, который
+// отдают и краулеру.
+//
+// Поэтому телефон берётся отдельной узкой RPC get_car_phone (0117) из
+// браузера, где сессия есть. Побочные выгоды: номер не лежит в
+// разметке вообще — перекупу нечего собирать обходом каталога, — и
+// нажатие даёт метрику намерения позвонить, которой у площадки не
+// было: до этого статистика существовала только по переписке
+// (seller_contact_click), и сравнить каналы было не с чем.
 //
 // ТРИ СОСТОЯНИЯ, симметрично кнопке переписки:
-//   * гость — ведём на /login с адресом возврата. Номер ему не
-//     достанется и в обход: get_car_details отдаёт contact_phone
-//     только вошедшему (миграция 0116), поэтому phone у гостя
-//     приходит пустым, и прятать на клиенте нечего;
+//   * гость — ведём на /login с адресом возврата: RPC ему всё равно
+//     откажет (права выданы только authenticated);
 //   * владелец объявления — кнопки нет. Звонить самому себе незачем,
 //     ровно как и писать (ContactSellerButton скрывается там же);
-//   * покупатель — «Показать номер», после нажатия сам номер
+//   * покупатель — «Показать номер», после ответа RPC номер
 //     становится ссылкой tel:.
 //
 // До проверки сессии кнопка НЕ рисуется: мелькнувшее «Войдите» у
@@ -33,6 +39,7 @@
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import Alert from './ui/Alert';
 import Button from './ui/Button';
 import { trackEvent } from '@/lib/analytics';
 import { formatSerbianPhone } from '@/lib/inputFormat';
@@ -42,20 +49,21 @@ import { getBrowserClient } from '@/lib/supabaseClient';
 
 type Props = {
   locale: Locale;
+  carId: string;
   // Владелец объявления: сравнивается с текущим пользователем.
   sellerId: string;
-  // Контакт из объявления в виде E.164 («+381612345678»). У гостя
-  // приходит null — RPC его не отдаёт (0116).
-  phone: string | null;
 };
 
-export default function CallSellerButton({ locale, sellerId, phone }: Props) {
+export default function CallSellerButton({ locale, carId, sellerId }: Props) {
   const t = getT(locale);
   const pathname = usePathname();
 
   // undefined — проверка ещё идёт, null — гость.
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
-  const [revealed, setRevealed] = useState(false);
+  // Полученный номер. null — ещё не запрашивали.
+  const [phone, setPhone] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -76,9 +84,7 @@ export default function CallSellerButton({ locale, sellerId, phone }: Props) {
   // Своё объявление: звонить самому себе незачем.
   if (userId === sellerId) return null;
 
-  // Гость: вход с возвратом на эту же карточку. Кнопка показывается
-  // ДАЖЕ без номера — она и есть приглашение войти, а телефон у
-  // гостя не приходит по определению.
+  // Гость: вход с возвратом на эту же карточку.
   if (userId === null) {
     const { path } = stripLocale(pathname);
 
@@ -98,15 +104,11 @@ export default function CallSellerButton({ locale, sellerId, phone }: Props) {
     );
   }
 
-  // Вошедший, но номера нет. Такое бывает у снятого объявления: RPC
-  // отдаёт contact_phone только для active и sold. Кнопку не рисуем —
-  // она бы вела в никуда.
-  if (!phone) return null;
-
-  // Номер раскрыт: сам номер и есть ссылка. tel: работает на телефоне,
-  // на десктопе передаёт номер в Skype или показывает его текстом —
-  // в обоих случаях человек видит цифры и может их набрать вручную.
-  if (revealed) {
+  // Номер получен: он же и есть ссылка. tel: работает на телефоне, на
+  // десктопе передаёт номер в звонилку по умолчанию или показывает его
+  // текстом — в обоих случаях человек видит цифры и может набрать их
+  // вручную.
+  if (phone) {
     return (
       <Button
         href={`tel:${phone}`}
@@ -123,18 +125,48 @@ export default function CallSellerButton({ locale, sellerId, phone }: Props) {
   }
 
   return (
-    <Button
-      variant="secondary"
-      fullWidth
-      className="mt-2"
-      onClick={() => {
-        setRevealed(true);
-        // Событие шлём в момент раскрытия, а не на переходе по tel:
-        // — до самого звонка браузер нас уже не уведомит.
-        trackEvent('seller_call_click', { guest: false });
-      }}
-    >
-      {t('car_call_show')}
-    </Button>
+    <>
+      <Button
+        variant="secondary"
+        fullWidth
+        className="mt-2"
+        disabled={loading}
+        onClick={async () => {
+          setError(null);
+          setLoading(true);
+
+          // Событие шлём в момент нажатия, а не после ответа: намерение
+          // позвонить человек проявил здесь, и сбой запроса не должен
+          // выглядеть в статистике как отсутствие интереса.
+          trackEvent('seller_call_click', { guest: false });
+
+          const { data, error: rpcError } = await getBrowserClient().rpc(
+            'get_car_phone',
+            { p_car_id: carId },
+          );
+
+          setLoading(false);
+
+          // Пустой ответ без ошибки — объявление уже снято с публикации
+          // за время, пока страница лежала в кэше. Текст тот же, что у
+          // сбоя: для покупателя разница между «номер недоступен» и
+          // «не удалось получить» практическая одна.
+          if (rpcError || typeof data !== 'string' || data === '') {
+            setError(t('car_call_failed'));
+            return;
+          }
+
+          setPhone(data);
+        }}
+      >
+        {loading ? t('car_call_loading') : t('car_call_show')}
+      </Button>
+
+      {error && (
+        <Alert tone="error" className="mt-2">
+          {error}
+        </Alert>
+      )}
+    </>
   );
 }
