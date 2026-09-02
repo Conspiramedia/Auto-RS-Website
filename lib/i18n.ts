@@ -289,7 +289,7 @@ export const dict = {
     // двумя контактами на одном экране: телефон видит покупатель,
     // почту не видит никто — она нужна только для входа.
     sell_email_hint: 'Na ovu adresu šaljemo kod za prijavu. Kupci je ne vide.',
-    sell_code: 'Kod iz SMS-a',
+    sell_code: 'Kod iz e-pošte',
     sell_send_code: 'Pošalji kod',
     sell_confirm: 'Potvrdi',
     sell_success_title: 'Oglas je poslat na proveru',
@@ -545,10 +545,10 @@ export const dict = {
     otp_verifying: 'Proveravamo kod…',
     otp_err_phone: 'Unesite ispravan broj telefona',
     otp_err_expired: 'Kod je istekao. Zatražite novi',
-    otp_err_invalid: 'Pogrešan kod iz SMS-a',
+    otp_err_invalid: 'Pogrešan kod iz e-pošte',
     otp_err_failed: 'Nije uspelo potvrđivanje koda. Pokušajte ponovo',
     otp_err_quota:
-      'Prekoračen je dnevni limit SMS poruka za ovaj broj. Pokušajte sutra.',
+      'Prekoračen je dnevni limit poruka za ovu e-adresu. Pokušajte sutra.',
     // Odbijanje zbog duplikata (trg_cars_prevent_duplicate, migracija
     // 0093). Baza vraća tekst na ruskom — bez ovog prevoda prodavac bi
     // ga video takvog kakav jeste, zajedno sa šifrom greške.
@@ -572,7 +572,7 @@ export const dict = {
     // bez toga odjava deluje opasnije nego što jeste.
     my_logout_confirm: 'Odjaviti se sa naloga?',
     my_logout_confirm_text:
-      'Vaši oglasi i prepiska ostaju sačuvani — nalog se ne briše. Za ponovni ulazak biće potreban SMS kod na isti broj telefona.',
+      'Vaši oglasi i prepiska ostaju sačuvani — nalog se ne briše. Za ponovni ulazak biće potreban kod sa iste e-adrese.',
     my_logout_confirm_yes: 'Odjavi se',
 
     // Ulaz u kabinet. Kod se traži samo kada sesije nema: sesija živi
@@ -1199,8 +1199,14 @@ export const dict = {
 
     how_seller_title: 'Prodajem automobil',
     how_seller_1_title: 'Postavite oglas',
+    // ВХОД ПО ПОЧТЕ, А НЕ ПО SMS. Текст обещал код в SMS и номер как
+    // способ входа — так было до миграции 0106. Сейчас код приходит
+    // на почту (SMS с сайта не уходят: Twilio требует одобренного
+    // Compliance Profile для сербских номеров), а телефон
+    // спрашивается как КОНТАКТ для покупателя и кодом не
+    // подтверждается.
     how_seller_1_text:
-      'Popunite formu u četiri koraka: vozilo, detalji, fotografije i broj telefona. Broj se potvrđuje SMS kodom — to je istovremeno i vaša prijava, poseban nalog nije potreban.',
+      'Popunite formu u četiri koraka: vozilo, detalji, fotografije i kontakt. Kod za potvrdu stiže na e-poštu — to je istovremeno i vaša prijava, poseban nalog nije potreban. Broj telefona ostaje kao kontakt za kupce.',
     how_seller_2_title: 'Sačekajte proveru',
     how_seller_2_text:
       'Oglas ide na moderaciju. Obično je gotova u toku dana. Nakon odobrenja pojavljuje se u katalogu i vide ga kupci iz cele Srbije.',
@@ -1283,7 +1289,7 @@ export const dict = {
     meta_rent_desc:
       'Automobili za izdavanje u Srbiji: cena po danu, depozit i uslovi. Pretraga po marki, modelu i gradu.',
     meta_sell_desc:
-      'Objavite oglas za prodaju automobila besplatno — direktno sa sajta. Potvrda broja SMS kodom.',
+      'Objavite oglas za prodaju automobila besplatno — direktno sa sajta. Prijava kodom na e-poštu.',
     meta_dealers_desc:
       'Postavite oglase vašeg autosalona na RS Auto: sopstvena stranica salona sa celim voznim parkom i kupci iz cele Srbije.',
     // Телефон в описании НЕ упоминается: поддержка работает только по
@@ -1425,7 +1431,7 @@ export const dict = {
     // двумя контактами на одном экране: телефон видит покупатель,
     // почту не видит никто — она нужна только для входа.
     sell_email_hint: 'На эту почту придёт код для входа. Покупатели её не видят.',
-    sell_code: 'Код из SMS',
+    sell_code: 'Код из письма',
     sell_send_code: 'Отправить код',
     sell_confirm: 'Подтвердить',
     sell_success_title: 'Объявление отправлено на проверку',
@@ -1676,10 +1682,10 @@ export const dict = {
     otp_verifying: 'Проверяем код…',
     otp_err_phone: 'Введите корректный номер телефона',
     otp_err_expired: 'Срок действия кода истёк. Запросите новый',
-    otp_err_invalid: 'Неверный код из SMS',
+    otp_err_invalid: 'Неверный код из письма',
     otp_err_failed: 'Не удалось подтвердить код. Попробуйте ещё раз',
     otp_err_quota:
-      'Превышен суточный лимит SMS на этот номер. Попробуйте завтра.',
+      'Превышен суточный лимит писем на этот адрес. Попробуйте завтра.',
     // Отказ по дублю (trg_cars_prevent_duplicate, миграция 0093).
     // База отдаёт свой текст, но он технический и с кодом ошибки —
     // продавцу показываем этот.
@@ -1704,7 +1710,7 @@ export const dict = {
     // чем есть, — люди боятся, что удаляют профиль.
     my_logout_confirm: 'Выйти из аккаунта?',
     my_logout_confirm_text:
-      'Ваши объявления и переписка сохранятся — аккаунт не удаляется. Для повторного входа понадобится SMS-код на тот же номер телефона.',
+      'Ваши объявления и переписка сохранятся — аккаунт не удаляется. Для повторного входа понадобится код на ту же почту.',
     my_logout_confirm_yes: 'Выйти',
 
     // Вход в кабинет. Код запрашивается только когда сессии нет: она
@@ -2252,8 +2258,9 @@ export const dict = {
 
     how_seller_title: 'Продаю автомобиль',
     how_seller_1_title: 'Подайте объявление',
+    // См. комментарий в сербском словаре.
     how_seller_1_text:
-      'Заполните форму из четырёх шагов: автомобиль, детали, фотографии и телефон. Номер подтверждается кодом из SMS — это же и есть вход, отдельная регистрация не нужна.',
+      'Заполните форму из четырёх шагов: автомобиль, детали, фотографии и контакты. Код подтверждения придёт на почту — это же и есть вход, отдельная регистрация не нужна. Телефон остаётся контактом для покупателей.',
     how_seller_2_title: 'Дождитесь проверки',
     how_seller_2_text:
       'Объявление уходит на модерацию. Обычно она занимает до суток. После одобрения оно появляется в каталоге, и его видят покупатели по всей Сербии.',
@@ -2318,7 +2325,7 @@ export const dict = {
     meta_rent_desc:
       'Автомобили в аренду в Сербии: цена за сутки, залог и условия. Поиск по марке, модели и городу.',
     meta_sell_desc:
-      'Разместите объявление о продаже автомобиля бесплатно — прямо на сайте. Подтверждение номера кодом из SMS.',
+      'Разместите объявление о продаже автомобиля бесплатно — прямо на сайте. Вход по коду на почту.',
     meta_dealers_desc:
       'Размещайте объявления вашего автосалона на RS Auto: своя страница салона со всем автопарком и покупатели со всей Сербии.',
     // См. комментарий в сербском словаре: телефона поддержки нет.
