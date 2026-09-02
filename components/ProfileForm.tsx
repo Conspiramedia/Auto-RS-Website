@@ -61,6 +61,7 @@ import {
   preparePhoto,
 } from '@/lib/imagePrepare';
 import DealerApplicationBlock from './DealerApplicationBlock';
+import DeleteAccountBlock from './DeleteAccountBlock';
 import ListPicker, { type PickerOption } from './ListPicker';
 import Alert from './ui/Alert';
 import Button from './ui/Button';
@@ -1044,6 +1045,21 @@ export default function ProfileForm({ locale, profile, application }: Props) {
           </Card>
         </div>
       )}
+
+      {/* ------------------------------------------------------------
+          УДАЛЕНИЕ АККАУНТА (0126). ПОД ВСЕЙ ФОРМОЙ, ВО ВСЮ ШИРИНУ.
+          ------------------------------------------------------------
+          col-span-full, а не место в левой колонке: это не поле
+          профиля и не часть редактирования, а выход с площадки. Стоять
+          вплотную к «Сохранить» оно не должно — см. шапку
+          DeleteAccountBlock о цене промаха между двумя кнопками.
+
+          Показывается всем, включая салоны: право на удаление аккаунта
+          не зависит от вида продавца. Салон при этом теряет и статус —
+          профиль обезличивается целиком. */}
+      <div className="lg:col-span-full">
+        <DeleteAccountBlock locale={locale} />
+      </div>
     </div>
   );
 }

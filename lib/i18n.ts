@@ -846,6 +846,34 @@ export const dict = {
     profile_avatar_preparing: 'Pripremamo…',
 
     // ------------------------------------------------------------
+    // BRISANJE NALOGA (migracija 0126).
+    // ------------------------------------------------------------
+    // Reč potvrde je DELETE na oba jezika: to nije tekst interfejsa,
+    // već konstanta protokola koju proverava baza. Prevedena reč
+    // zahtevala bi spisak prevoda na serveru.
+    delete_account_title: 'Brisanje naloga',
+    delete_account_lead:
+      'Nalog i svi podaci se brišu zauvek. Ovo se ne može poništiti.',
+    delete_account_button: 'Obriši nalog',
+    delete_account_confirm_title: 'Obrisati nalog?',
+    delete_account_what: 'Šta se briše:',
+    delete_account_item_listings: 'svi oglasi zajedno sa fotografijama',
+    delete_account_item_chats:
+      'sve prepiske — i kod vas i kod sagovornika',
+    delete_account_item_profile:
+      'ime, telefon, e-adresa, fotografija i podaci salona',
+    delete_account_item_saved: 'omiljeno, sačuvane pretrage i obaveštenja',
+    delete_account_keep:
+      'Ostaje samo evidencija uplata — čuva se po propisima o računovodstvu i ne sadrži vaše lične podatke.',
+    delete_account_return:
+      'Kasnije možete napraviti nov nalog na istu e-adresu, ali stari podaci se ne vraćaju.',
+    delete_account_type: 'Za potvrdu upišite DELETE',
+    delete_account_submit: 'Obriši zauvek',
+    delete_account_cancel: 'Odustani',
+    delete_account_deleting: 'Brišemo…',
+    delete_account_error: 'Brisanje nije uspelo. Pokušajte ponovo.',
+
+    // ------------------------------------------------------------
     // ZAHTEV ZA STATUS AUTOSALONA (migracija 0100).
     // ------------------------------------------------------------
     // Раньше тип продавца переключался кнопкой, и статус салона
@@ -1977,6 +2005,33 @@ export const dict = {
     profile_error: 'Не удалось. Попробуйте ещё раз.',
     profile_avatar_error: 'Не удалось загрузить фотографию',
     profile_avatar_preparing: 'Готовим…',
+
+    // ------------------------------------------------------------
+    // УДАЛЕНИЕ АККАУНТА (миграция 0126).
+    // ------------------------------------------------------------
+    // Слово подтверждения — DELETE на обеих локалях: это не текст
+    // интерфейса, а константа протокола, которую проверяет база.
+    // Переведённое слово потребовало бы списка переводов на сервере.
+    delete_account_title: 'Удаление аккаунта',
+    delete_account_lead:
+      'Аккаунт и все данные удаляются безвозвратно. Отменить нельзя.',
+    delete_account_button: 'Удалить аккаунт',
+    delete_account_confirm_title: 'Удалить аккаунт?',
+    delete_account_what: 'Что будет удалено:',
+    delete_account_item_listings: 'все объявления вместе с фотографиями',
+    delete_account_item_chats: 'вся переписка — и у вас, и у собеседников',
+    delete_account_item_profile:
+      'имя, телефон, почта, фотография и данные салона',
+    delete_account_item_saved: 'избранное, сохранённые поиски и уведомления',
+    delete_account_keep:
+      'Останется только история платежей — она хранится по требованиям учёта и не содержит ваших личных данных.',
+    delete_account_return:
+      'Позже вы сможете завести новый аккаунт на ту же почту, но прежние данные не вернутся.',
+    delete_account_type: 'Для подтверждения введите DELETE',
+    delete_account_submit: 'Удалить навсегда',
+    delete_account_cancel: 'Отмена',
+    delete_account_deleting: 'Удаляем…',
+    delete_account_error: 'Не удалось удалить. Попробуйте ещё раз.',
 
     // ------------------------------------------------------------
     // ЗАЯВКА НА СТАТУС АВТОСАЛОНА (миграция 0100).

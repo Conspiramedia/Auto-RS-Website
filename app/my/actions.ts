@@ -682,3 +682,82 @@ export async function submitDealerApplication(input: {
 
   return { ok: true };
 }
+
+// ============================================================
+// УДАЛЕНИЕ АККАУНТА (миграции 0126, 0127)
+// ============================================================
+// НЕОБРАТИМОЕ ДЕЙСТВИЕ, И ВСЯ ЕГО ЛОГИКА ЖИВЁТ В БАЗЕ.
+// delete_my_account одной транзакцией удаляет объявления, переписку,
+// заявки и прочие следы, обезличивает профиль и освобождает учётные
+// данные в auth.users. Здесь — вызов, гашение сессии и уход на
+// главную. Дублировать хоть одно правило на сервере сайта нельзя:
+// вторая копия правил удаления разошлась бы с первой, а цена
+// расхождения тут — стёртые не те данные.
+//
+// ПОЧЕМУ ПОСЛЕ RPC НУЖЕН ЯВНЫЙ ВЫХОД. Удаление обезличивает профиль,
+// но cookie сессии остаются в браузере и продолжают открывать
+// кабинет — пустой, с профилем без имени и почты. Человек увидел бы
+// не «прощайте», а сломанный кабинет. Гасим сессию тем же способом,
+// что и signOut выше: отдельным клиентом, умеющим писать cookie.
+//
+// СЛОВО ПОДТВЕРЖДЕНИЯ идёт на сервер как есть: база сама сверит его с
+// константой DELETE (одинаковой для обеих локалей и обоих клиентов) и
+// откажет, если оно не совпало. Проверка в диалоге — удобство, а не
+// защита: RPC можно позвать в обход интерфейса.
+export type DeleteAccountResult = {
+  ok: boolean;
+  // Готовый к показу текст берёт клиент из своих локалей — сюда
+  // возвращаем только признак неудачи. Технические подробности
+  // Postgres человеку, удаляющему аккаунт, ничего не объясняют.
+  error?: boolean;
+};
+
+export async function deleteAccount(
+  locale: Locale,
+  confirm: string,
+): Promise<DeleteAccountResult> {
+  const supabase = await getServerClient();
+
+  const { error } = await supabase.rpc('delete_my_account', {
+    p_confirm: confirm.trim(),
+  });
+
+  if (error) return { ok: false, error: true };
+
+  // ---------- Гашение сессии ----------
+  // Тот же приём, что в signOut: getServerClient не пишет cookie
+  // (setAll там намеренно пуст), поэтому нужен отдельный клиент.
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (url && key) {
+    const cookieStore = await cookies();
+
+    const authed = createServerClient(url, key, {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          for (const { name, value, options } of cookiesToSet) {
+            cookieStore.set(name, value, options);
+          }
+        },
+      },
+    });
+
+    // scope: 'local' — как и при обычном выходе. Остальные сессии уже
+    // погашены самой RPC (она чистит auth.sessions), и просить сервер
+    // Supabase сделать это повторно не о чем.
+    await authed.auth.signOut({ scope: 'local' });
+  }
+
+  // Кабинет и его страницы устарели полностью.
+  revalidateMy();
+  revalidatePath('/my/profile');
+  revalidatePath('/ru/my/profile');
+
+  // redirect выбрасывает исключение по устройству Next, поэтому строк
+  // после него не будет — тип возврата остаётся ради ветки с ошибкой.
+  redirect(localeHref(locale, '/'));
+}
