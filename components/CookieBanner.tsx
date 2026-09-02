@@ -17,6 +17,12 @@
 // доступен, как согласие (требование GDPR). «Подробнее» по-прежнему
 // нет: документы висят ссылками в подвале каждой страницы.
 //
+// Кнопки ВЫГЛЯДЯТ ОДИНАКОВО — та же рамка, та же заливка, та же
+// ширина. Равной доступности мало: согласие, полученное визуальным
+// подталкиванием, считается недействительным, и тогда незаконной
+// становится вся собранная статистика. Подробнее — в комментарии у
+// самих кнопок.
+//
 // ПОЧЕМУ РЕНДЕР ОТЛОЖЕН ДО useEffect. Решение по куки живёт в
 // localStorage, а он недоступен на сервере. Отрисуй мы баннер
 // сразу — серверная разметка (баннер есть) разошлась бы с клиентской
@@ -299,16 +305,28 @@ export default function CookieBanner() {
             согласие, — это прямое требование GDPR, и «Принять» яркой
             кнопкой при отказе в виде мелкой ссылки его нарушает.
 
-            Поэтому обе кнопки одного размера и в одном ряду. Различает
-            их только заливка: «Принять» тёмная (тон dark — зелёный на
-            сайте занят главным действием страницы), «Отклонить» —
-            контурная. Это допустимая разница: она подсказывает
-            ожидаемый ответ, но не мешает нажать второй. */}
-        <div className="flex justify-center gap-2">
+            Поэтому обе кнопки ОДИНАКОВЫ ЦЕЛИКОМ — один размер, одна
+            рамка, одна заливка. Раньше «Принять» была тёмной, а
+            «Отклонить» контурной: формально обе доступны, но заливка
+            подсказывала ответ, а именно к такому перекосу у
+            европейских регуляторов и есть вопросы. Согласие,
+            полученное подталкиванием, считается недействительным, и
+            вместе с ним теряет законность вся собранная статистика.
+
+            Различает кнопки только подпись. Порядок оставлен прежним
+            («Отклонить» слева): отказ первым по ходу чтения — ещё
+            один довод в пользу равноправия ответов.
+
+            flex-1 с basis-0: подписи разной длины («Отклонить» и
+            «Принять»), и по содержимому кнопки вышли бы разной ширины
+            — а разный размер читается как разная важность ровно так
+            же, как разный цвет. max-w-xs не даёт им растянуться на
+            всю плашку на широком экране. */}
+        <div className="mx-auto flex max-w-xs justify-center gap-2">
           <button
             type="button"
             onClick={reject}
-            className="rounded-control border border-neutral-15 bg-white px-5 py-2 text-small font-semibold transition-colors duration-fast ease-out hover:bg-surface-hover"
+            className="flex-1 basis-0 rounded-control border border-neutral-15 bg-white px-5 py-2 text-small font-semibold transition-colors duration-fast ease-out hover:bg-surface-hover"
           >
             {t('cookie_banner_reject')}
           </button>
@@ -316,7 +334,7 @@ export default function CookieBanner() {
           <button
             type="button"
             onClick={accept}
-            className="rounded-control bg-brand-dark px-5 py-2 text-small font-semibold text-white transition-colors duration-fast ease-out hover:brightness-110"
+            className="flex-1 basis-0 rounded-control border border-neutral-15 bg-white px-5 py-2 text-small font-semibold transition-colors duration-fast ease-out hover:bg-surface-hover"
           >
             {t('cookie_banner_accept')}
           </button>
