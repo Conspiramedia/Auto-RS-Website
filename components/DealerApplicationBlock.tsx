@@ -376,6 +376,42 @@ export default function DealerApplicationBlock({
             <p className="font-semibold text-brand-red">
               {t('dealer_app_rejected_title')}
             </p>
+            {/* ДАТА РЕШЕНИЯ И НАЗВАНИЕ КОМПАНИИ — та же строка, что у
+                заявки на рассмотрении выше. Блок висит в профиле,
+                пока владелец не подаст новую, и через несколько дней
+                отказ без даты читается как свежий: человек не
+                понимает, вчерашнее это решение или трёхнедельное.
+                Название компании отвечает на второй вопрос — какую
+                именно заявку отклонили, если их было несколько.
+
+                reviewed_at заполняется вместе со сменой статуса, но
+                у заявок, отклонённых до появления колонки, он пуст —
+                тогда строка не показывается вовсе, а не подставляет
+                дату подачи вместо даты решения. */}
+            {application?.reviewed_at && (
+              <p className="mt-1 text-small text-neutral-50">
+                {t('dealer_app_rejected_at')}:{' '}
+                {/* С ВРЕМЕНЕМ, в отличие от даты подачи выше.
+                    Заявку разбирают в тот же день, что и подали, и
+                    одна дата не отвечала на вопрос «это до или после
+                    того, как я дослал документы». toLocaleString
+                    вместо toLocaleDateString: часовой пояс берётся
+                    браузерный, то есть владелец видит время по
+                    своим часам, а не по UTC из базы. */}
+                {new Date(application.reviewed_at).toLocaleString(
+                  locale === 'ru' ? 'ru-RU' : 'sr-Latn-RS',
+                  {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  },
+                )}
+                {' · '}
+                {application.company_name}
+              </p>
+            )}
             {application?.reject_reason && (
               <Alert tone="error" className="mt-2">
                 <span className="font-medium">
