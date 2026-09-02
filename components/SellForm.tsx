@@ -1029,8 +1029,16 @@ export default function SellForm({
               : t('edit_done_text')}
           </p>
 
+          {/* Во всю ширину до sm — как в карточках «Не нашли ответ» на
+              /faq, /how-it-works и /about. Кнопка по содержимому на
+              узком экране висит коротким прямоугольником посреди
+              карточки, и экран выглядит незаконченным. */}
           <div className="mt-6">
-            <Button size="lg" href={localeHref(locale, '/my')}>
+            <Button
+              size="lg"
+              href={localeHref(locale, '/my')}
+              className="w-full sm:w-auto"
+            >
               {t('edit_back_to_list')}
             </Button>
           </div>
@@ -1048,7 +1056,11 @@ export default function SellForm({
           {t('sell_success_text')}
         </p>
 
-        <div className="mt-6 inline-grid grid-cols-1 gap-3 [&>*]:w-full sm:[&>*]:w-auto sm:flex sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
+        {/* grid, а НЕ inline-grid: тот сжимается по содержимому, и
+            [&>*]:w-full растягивал кнопки лишь до ширины самой длинной
+            подписи, а не до карточки. Блочный grid занимает всю ширину,
+            и на узком экране кнопки доходят до её краёв. */}
+        <div className="mt-6 grid grid-cols-1 gap-3 [&>*]:w-full sm:[&>*]:w-auto sm:flex sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
           <Button size="lg" href={localeHref(locale, '/cars')}>
             {t('nf_catalog')}
           </Button>
