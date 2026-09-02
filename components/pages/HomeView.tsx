@@ -438,22 +438,14 @@ export default async function HomeView({ locale }: { locale: Locale }) {
             прилипал к границе серой подложки. Раньше сверху стоял
             блок «Как это работает» со своим отступом, и хватало pb-10. */}
         <section className="mx-auto max-w-6xl px-4 py-12">
-          <div className="mb-4 flex items-center justify-between">
+          {/* ССЫЛКИ «ВСЕ АВТОМОБИЛИ» ЗДЕСЬ НЕТ. Она дублировала кнопку
+              в герое — тот же адрес и та же подпись двумя экранами
+              выше, — а на узком экране висела мелкой строкой справа от
+              заголовка, конкурируя с ним за внимание. Выход в полный
+              каталог остаётся кнопкой в первом экране и пунктом меню
+              в шапке; повторять его над каждой витриной незачем. */}
+          <div className="mb-4">
             <h2 className="text-h3 font-semibold">{t('home_fresh')}</h2>
-            {/* Ссылка «все автомобили» нужна только когда есть куда
-                вести: на пустом каталоге она обещала бы выдачу, в
-                которой ничего нет. */}
-            {fresh.cars.length > 0 && (
-              // Тот же адрес, что у кнопки в герое: одна подпись —
-              // одно назначение.
-              <Link
-                href={localeHref(locale, '/all')}
-                rel="nofollow"
-                className="text-caption font-semibold text-brand-primary hover:underline"
-              >
-                {t('home_all_cars')} →
-              </Link>
-            )}
           </div>
 
           {fresh.cars.length > 0 ? (
