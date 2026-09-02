@@ -58,28 +58,42 @@
 - [ ] `supabase secrets set RESEND_API_KEY=re_…`
 - [ ] `supabase functions deploy send-email` + расписание `*/5 * * * *`
       (Dashboard → Edge Functions → Schedules).
-- [ ] **Проверить расписание `daily-cleanup` — `0 3 * * *`**
-      (Dashboard → Edge Functions → Schedules). Функция задеплоена и
-      активна (`supabase functions list` → `daily-cleanup`, ACTIVE),
-      но CLI расписаний не читает: их видно только в панели.
-      Проверить и, если расписания нет, создать.
+- [x] **Расписание `daily-cleanup` — `0 3 * * *`, работает** (03.09.2026)
 
-      Что копится без него: `expire_promotions` не гасит флаг `is_vip`
-      у истёкших продвижений (на выдачу это не влияет — сортировка
-      сверяет `boosted_until > now()` сама, но распухает частичный
-      индекс `idx_cars_promoted`), а вместе с ней не отрабатывают три
-      другие чистки в той же функции — журнал просмотров
-      (`listing_view_log`), очереди пушей и писем. Именно они, а не
-      промо, растут неограниченно.
+      Заведено через `pg_cron` (`cron.job` → `daily-cleanup-job`,
+      active), вызов идёт `net.http_post` с service_role key. Панель
+      Supabase вкладки Schedules не показывает — расписание живёт в
+      базе, а не в интерфейсе; смотреть его так:
+      `select jobname, schedule, active from cron.job`.
 
-      Проверка после включения: в панели у функции появляется отметка
-      о последнем запуске; ручной прогон —
-      `Invoke` в панели, ожидаемый ответ — по строке на каждую из
-      четырёх задач (см. `supabase/functions/README.md`).
-      `pg_cron` на проекте **не установлен** (проверено:
-      `select extname from pg_extension` не находит ни `pg_cron`, ни
-      `pg_net`), поэтому альтернативный путь из README недоступен —
-      расписание только через панель.
+      ВАЖНО ПРО ДИАГНОСТИКУ. `cron.job_run_details` показывает
+      «succeeded», как только запрос ПОСТАВЛЕН В ОЧЕРЕДЬ, — это не
+      значит, что функция отработала. Настоящий итог здесь:
+      `select status_code, timed_out, error_msg from net._http_response
+      order by created desc limit 5`.
+
+      Именно так и был найден дефект: семь запусков числились
+      успешными, а панель показывала 0 вызовов — вызов обрывался по
+      таймауту `pg_net` в 5 секунд (значение по умолчанию, задание его
+      не передавало). Исправлено миграцией 0124: `timeout_milliseconds
+      := 120000`.
+
+      Проверка вручную (запрос уходит асинхронно, ответ появляется
+      через 10–30 секунд):
+
+      ```sql
+      select net.http_post(
+        url := 'https://<ref>.supabase.co/functions/v1/daily-cleanup',
+        headers := jsonb_build_object(
+          'Authorization', 'Bearer ' ||
+            (regexp_match(command, 'Bearer ([A-Za-z0-9._-]+)'))[1],
+          'Content-Type', 'application/json'),
+        timeout_milliseconds := 120000)
+      from cron.job where jobname = 'daily-cleanup-job';
+      ```
+
+      Ожидаемый ответ — `status_code 200` и по строке на каждую из
+      шести задач с `failed: 0`.
 
 Проверка: сменить статус тестового объявления на `active` → строка в
 `email_queue` со статусом `sent` в течение 5 минут.
