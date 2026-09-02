@@ -8,7 +8,7 @@
 // Обновление: node scripts/generate-suggestions.mjs
 // Автоматически — из npm-скрипта prebuild перед next build.
 //
-// Сгенерировано: 2026-09-01
+// Сгенерировано: 2026-09-02
 // Заготовок из базы: 1, фраз в файле: 1
 // По видам: brand_model=1, brand_price=0
 //
