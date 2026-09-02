@@ -1204,7 +1204,12 @@ export const dict = {
     // Название бренда внутри строки, а не приклеено снаружи: раньше
     // заголовок собирался как «RS Auto — » + слоган, и правка слогана
     // меняла title главной вместе с подписью в подвале.
-    meta_home_title: 'RS Auto — kupite, prodajte ili iznajmite auto u Srbiji',
+    // БЕЗ ИМЕНИ БРЕНДА В НАЧАЛЕ. Ключ идёт и в <title>, и в og:title,
+    // а рядом с последним соцсеть уже показывает og:site_name = «RS
+    // Auto» отдельной строкой — заголовок читался как «RS Auto» над
+    // «RS Auto — kupite…», с брендом дважды подряд. В выдаче Google
+    // имя сайта тоже подставляется само.
+    meta_home_title: 'Kupite, prodajte ili iznajmite auto u Srbiji',
     meta_home_desc:
       'Polovni i novi automobili od privatnih prodavaca i salona iz Beograda, Novog Sada i cele Srbije. Besplatno objavljivanje, provereni oglasi, na srpskom i ruskom.',
     // meta_catalog_desc — витрина ПРОДАЖИ /cars; meta_all_desc —
@@ -2213,7 +2218,9 @@ export const dict = {
     // ------------------------------------------------------------
     // Метаданные страниц (title/description для поиска).
     // ------------------------------------------------------------
-    meta_home_title: 'RS Auto — купить, продать или арендовать авто в Сербии',
+    // См. комментарий в сербском словаре: бренд убран из начала,
+    // потому что соцсеть показывает его отдельной строкой сама.
+    meta_home_title: 'Купить, продать или арендовать авто в Сербии',
     meta_home_desc:
       'Б/у и новые автомобили от частников и автосалонов Белграда, Нови-Сада и всей Сербии. Бесплатное размещение, проверенные объявления, сербский и русский языки.',
     // См. комментарий в сербском словаре.
