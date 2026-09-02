@@ -2,6 +2,8 @@
 // RS AUTO — Содержимое страницы /dealers, общее для sr и ru.
 // ============================================================
 
+import Image from 'next/image';
+
 import DealerForm from '@/components/DealerForm';
 import BackCloseButton from '@/components/BackCloseButton';
 import SiteFooter from '@/components/SiteFooter';
@@ -70,6 +72,37 @@ export default function DealersPageView({ locale }: { locale: Locale }) {
           {t('dealers_offer')}
         </p>
         <p className="mt-1 text-neutral-60">{t('dealers_offer_note')}</p>
+
+        {/* АВТОПАРК — ПОД ОФФЕРОМ, ДО ПРЕИМУЩЕСТВ.
+            ------------------------------------------------------------
+            Оффер обещает салону страницу с его машинами, и снимок ряда
+            автомобилей показывает это обещание раньше, чем начнётся
+            перечисление доводов. Ниже стоят три карточки текстом и
+            форма заявки — блок без единой картинки читался как
+            документ, а не как предложение партнёрства.
+
+            priority не ставится: на странице это не первый элемент,
+            выше идут заголовок и оффер, и ранняя загрузка отняла бы
+            полосу у них. Область зарезервирована через aspect-[16/10]
+            + fill, поэтому подгрузка не сдвигает вёрстку под
+            карточками.
+
+            sizes описывает реальную ширину в вёрстке: до sm это ширина
+            окна за вычетом полей страницы, дальше — контейнер main
+            (max-w-6xl, 72rem).
+
+            Пустой alt: изображение декоративное, смысл несут оффер над
+            ним и карточки под ним, и озвучивать его скринридеру значит
+            мешать. */}
+        <div className="relative mt-6 aspect-[16/10] overflow-hidden rounded-card sm:aspect-[21/9]">
+          <Image
+            src="/images/dealers/lineup-3.webp"
+            alt=""
+            fill
+            sizes="(max-width: 639px) calc(100vw - 2rem), 72rem"
+            className="object-cover"
+          />
+        </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           {BENEFITS.map((b) => (
