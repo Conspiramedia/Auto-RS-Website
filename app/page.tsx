@@ -22,7 +22,10 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: '/',
     title: t('meta_home_title'),
-    description: t('meta_home_desc'),
+    // В <meta name="description"> уходит КОРОТКАЯ версия: Google режет
+    // сниппет примерно на 160 символах и ставит многоточие, обрывая
+    // фразу на полуслове. Длинная возвращается ниже в og/twitter.
+    description: t('meta_home_desc_short'),
   });
 
   // Заголовок главной — absolute: корневой layout добавляет всем
@@ -41,7 +44,24 @@ export async function generateMetadata(): Promise<Metadata> {
   // Правится здесь, а не в buildMetadata: тот общий для всех
   // страниц, и менять его сигнатуру ради двух главных значило бы
   // трогать то, что задача просила не трогать.
-  return { ...meta, title: { absolute: t('meta_home_title') } };
+
+  // ОПИСАНИЕ ДЛЯ МЕССЕНДЖЕРОВ — ДЛИННОЕ, и это не рассогласование.
+  // buildMetadata подставляет одну строку сразу в три тега, а нам
+  // нужны разные: поиск обрезает сниппет жёстко, Telegram и прочие
+  // показывают описание целиком. Возвращаем og:description и
+  // twitter:description к полной версии — meta name="description"
+  // остаётся короткой, той, что ушла в buildMetadata выше.
+  //
+  // Правится здесь, а не в buildMetadata, по той же причине, что и
+  // заголовок: тот общий для всех страниц сайта.
+  const ogDescription = t('meta_home_desc');
+
+  return {
+    ...meta,
+    title: { absolute: t('meta_home_title') },
+    openGraph: { ...meta.openGraph, description: ogDescription },
+    twitter: { ...meta.twitter, description: ogDescription },
+  };
 }
 
 export default async function HomePage() {
