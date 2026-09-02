@@ -867,7 +867,16 @@ export const dict = {
       'Ostaje samo evidencija uplata — čuva se po propisima o računovodstvu i ne sadrži vaše lične podatke.',
     delete_account_return:
       'Kasnije možete napraviti nov nalog na istu e-adresu, ali stari podaci se ne vraćaju.',
+    // ТРИ ПОДСКАЗКИ ВМЕСТО ОДНОЙ (0128). Что именно набирать, решает
+    // сервер по данным профиля: почта есть не у всех — у аккаунтов,
+    // заведённых по SMS, её нет вовсе, и им нечего было бы вводить.
+    delete_account_type_email: 'Za potvrdu upišite e-adresu svog naloga',
+    delete_account_type_phone: 'Za potvrdu upišite broj telefona svog naloga',
     delete_account_type: 'Za potvrdu upišite DELETE',
+    // Ошибка несовпадения отделена от общей: человек должен понимать,
+    // что удаление не сорвалось, а он ошибся в вводе.
+    delete_account_mismatch_email: 'E-adresa se ne poklapa sa nalogom',
+    delete_account_mismatch_phone: 'Broj se ne poklapa sa nalogom',
     delete_account_submit: 'Obriši zauvek',
     delete_account_cancel: 'Odustani',
     delete_account_deleting: 'Brišemo…',
@@ -2046,7 +2055,12 @@ export const dict = {
       'Останется только история платежей — она хранится по требованиям учёта и не содержит ваших личных данных.',
     delete_account_return:
       'Позже вы сможете завести новый аккаунт на ту же почту, но прежние данные не вернутся.',
+    // Три подсказки — см. комментарий в сербском словаре.
+    delete_account_type_email: 'Для подтверждения введите почту вашего аккаунта',
+    delete_account_type_phone: 'Для подтверждения введите телефон вашего аккаунта',
     delete_account_type: 'Для подтверждения введите DELETE',
+    delete_account_mismatch_email: 'Почта не совпадает с аккаунтом',
+    delete_account_mismatch_phone: 'Телефон не совпадает с аккаунтом',
     delete_account_submit: 'Удалить навсегда',
     delete_account_cancel: 'Отмена',
     delete_account_deleting: 'Удаляем…',

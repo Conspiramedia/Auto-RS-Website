@@ -61,7 +61,9 @@ import {
   preparePhoto,
 } from '@/lib/imagePrepare';
 import DealerApplicationBlock from './DealerApplicationBlock';
-import DeleteAccountBlock from './DeleteAccountBlock';
+import DeleteAccountBlock, {
+  type DeleteConfirmKind,
+} from './DeleteAccountBlock';
 import ListPicker, { type PickerOption } from './ListPicker';
 import Alert from './ui/Alert';
 import Button from './ui/Button';
@@ -103,9 +105,18 @@ type Props = {
   // заявки не должен начинать жизнь с «загружаем», а потом менять
   // состояние под руками у того, кто уже начал заполнять форму.
   application: DealerApplication | null;
+  // Чем подтверждается удаление аккаунта (миграция 0128). Приходит с
+  // сервера: почта есть не у всех, и решать это на клиенте нельзя —
+  // см. шапку DeleteAccountBlock.
+  deleteConfirmKind: DeleteConfirmKind;
 };
 
-export default function ProfileForm({ locale, profile, application }: Props) {
+export default function ProfileForm({
+  locale,
+  profile,
+  application,
+  deleteConfirmKind,
+}: Props) {
   const t = getT(locale);
   const fileRef = useRef<HTMLInputElement>(null);
   const logoRef = useRef<HTMLInputElement>(null);
@@ -1058,7 +1069,17 @@ export default function ProfileForm({ locale, profile, application }: Props) {
           не зависит от вида продавца. Салон при этом теряет и статус —
           профиль обезличивается целиком. */}
       <div className="lg:col-span-full">
-        <DeleteAccountBlock locale={locale} />
+        {/* Почта и телефон — из ИСХОДНОГО профиля, не из состояния
+            формы: сверять надо с тем, что лежит в базе, а не с тем,
+            что человек только что напечатал в поле выше и ещё не
+            сохранил. Иначе изменённый, но не сохранённый адрес
+            принимался бы как подтверждение, а настоящий — нет. */}
+        <DeleteAccountBlock
+          locale={locale}
+          kind={deleteConfirmKind}
+          email={profile.email}
+          phone={profile.phone}
+        />
       </div>
     </div>
   );

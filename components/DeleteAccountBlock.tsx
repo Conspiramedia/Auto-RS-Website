@@ -16,15 +16,25 @@
 // вместо кнопки, диалог с набором слова.
 //
 // ДВА ЗАМКА, И ОБА ОСМЫСЛЕННЫ. Первый — сам диалог, где перечислено,
-// что именно исчезнет. Второй — набор слова DELETE: он ломает
-// автоматизм «нажал → подтвердил» и заставляет прочитать список. Ту же
-// проверку независимо делает база (delete_my_account), потому что RPC
-// можно позвать в обход интерфейса.
+// что именно исчезнет. Второй — набор ПОЧТЫ АККАУНТА: он ломает
+// автоматизм «нажал → подтвердил» и заодно отвечает на вопрос, на
+// который слово DELETE не отвечало, — точно ли за экраном владелец
+// аккаунта. Сидящий в чужой незакрытой сессии почты не знает.
 //
-// СЛОВО DELETE НЕ ПЕРЕВОДИТСЯ. Это константа протокола, а не текст
-// интерфейса: база сверяет его с одним и тем же значением для обеих
-// локалей и обоих клиентов. Переведи мы его — сервер держал бы список
-// переводов, и добавление третьего языка молча сломало бы удаление.
+// Ту же проверку независимо делает база (delete_my_account, 0128):
+// здешняя нужна ради мгновенной реакции поля, защитой она не является
+// — RPC можно позвать в обход интерфейса.
+//
+// ЧТО ИМЕННО НАБИРАТЬ — РЕШАЕТ СЕРВЕР. Почта есть не у всех: у
+// аккаунтов, заведённых по SMS, в профиле её нет вовсе (0035), и
+// требовать её значило бы запереть человека в кабинете без всякой
+// возможности уйти. Поэтому вид подтверждения приходит пропсом из
+// get_my_delete_confirmation: 'email' → почта, 'phone' → телефон,
+// 'word' → прежнее слово DELETE.
+//
+// САМО ЗНАЧЕНИЕ СЮДА НЕ ПЕРЕДАЁТСЯ, только вид. Подставить почту в
+// подсказку было бы удобнее для вёрстки и ровно этим отменило бы
+// смысл проверки: человек в чужой сессии прочитал бы адрес с экрана.
 //
 // ЧТО ВИДИТ ЧЕЛОВЕК ПОСЛЕ. Server Action гасит сессию и уводит на
 // главную: оставить его в кабинете удалённого аккаунта значило бы
@@ -40,19 +50,39 @@ import Card from '@/components/ui/Card';
 import { getT, type Locale } from '@/lib/i18n';
 import { useDismissableLayer } from '@/lib/useDismissableLayer';
 
-// Слово подтверждения. См. шапку: не локализуется.
+// Слово подтверждения для последней ступени. См. шапку: не
+// локализуется — база сверяет его с одним значением для обеих локалей
+// и обоих клиентов.
 const CONFIRM_WORD = 'DELETE';
+
+// Что человек должен ввести. Приходит с сервера, см. шапку.
+export type DeleteConfirmKind = 'email' | 'phone' | 'word';
 
 type Props = {
   locale: Locale;
+  kind: DeleteConfirmKind;
+  // Почта и телефон аккаунта — ДЛЯ СВЕРКИ НА КЛИЕНТЕ, не для показа.
+  // Нужны, чтобы кнопка включалась по мере набора, а не после
+  // обращения к серверу. В разметку не попадают ни в каком виде.
+  email: string | null;
+  phone: string | null;
 };
 
-export default function DeleteAccountBlock({ locale }: Props) {
+export default function DeleteAccountBlock({
+  locale,
+  kind,
+  email,
+  phone,
+}: Props) {
   const t = getT(locale);
 
   const [open, setOpen] = useState(false);
   const [word, setWord] = useState('');
-  const [failed, setFailed] = useState(false);
+  // Род отказа, а не флаг: «почта не совпадает» и «не удалось
+  // удалить» требуют от человека разных действий.
+  const [failed, setFailed] = useState<'mismatch' | 'unknown' | null>(
+    null,
+  );
   const [pending, startTransition] = useTransition();
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -66,26 +96,66 @@ export default function DeleteAccountBlock({ locale }: Props) {
     if (open) inputRef.current?.focus();
   }, [open]);
 
-  // Регистр не учитываем: цель проверки — заставить прочитать и
-  // осознанно набрать слово, а не поймать на Caps Lock.
-  const matches = word.trim().toUpperCase() === CONFIRM_WORD;
+  // ------------------------------------------------------------
+  // Сверка ввода. Правила ТЕ ЖЕ, что в базе (0128).
+  // ------------------------------------------------------------
+  // Почта — регистронезависимо: адреса на практике регистр не
+  // различают, и отказать набравшему Ivan@ вместо ivan@ значило бы
+  // придраться на ровном месте.
+  //
+  // Телефон — по цифрам: в профиле он лежит как «+381 61 234 567», а
+  // набирают его как придётся. Сравнение строк отвергало бы верный
+  // номер из-за пробела.
+  const typed = word.trim();
+
+  const matches = (() => {
+    if (kind === 'email') {
+      return (
+        typed.length > 0 &&
+        typed.toLocaleLowerCase() === (email ?? '').trim().toLocaleLowerCase()
+      );
+    }
+    if (kind === 'phone') {
+      const digits = (value: string) => value.replace(/\D/g, '');
+      return digits(typed).length > 0 && digits(typed) === digits(phone ?? '');
+    }
+    // Последняя ступень. Регистр не учитываем: цель — заставить
+    // осознанно набрать слово, а не поймать на Caps Lock.
+    return typed.toUpperCase() === CONFIRM_WORD;
+  })();
+
   const canSubmit = matches && !pending;
+
+  // Подсказка над полем и текст ошибки зависят от ступени.
+  const typeLabel =
+    kind === 'email'
+      ? t('delete_account_type_email')
+      : kind === 'phone'
+        ? t('delete_account_type_phone')
+        : t('delete_account_type');
+
+  const mismatchText =
+    kind === 'email'
+      ? t('delete_account_mismatch_email')
+      : kind === 'phone'
+        ? t('delete_account_mismatch_phone')
+        : t('delete_account_error');
 
   function close() {
     setOpen(false);
     setWord('');
-    setFailed(false);
+    setFailed(null);
   }
 
   function submit() {
     if (!canSubmit) return;
 
-    setFailed(false);
+    setFailed(null);
     startTransition(async () => {
-      const result = await deleteAccount(locale, word.trim());
+      const result = await deleteAccount(locale, typed);
       // Успех сюда не возвращается: Server Action уводит на главную
       // через redirect. Значит любой ответ здесь — отказ.
-      if (!result.ok) setFailed(true);
+      if (!result.ok) setFailed(result.error ?? 'unknown');
     });
   }
 
@@ -161,18 +231,33 @@ export default function DeleteAccountBlock({ locale }: Props) {
               htmlFor="delete-account-word"
               className="mt-4 block text-caption font-medium"
             >
-              {t('delete_account_type')}
+              {typeLabel}
             </label>
             <input
               id="delete-account-word"
               ref={inputRef}
-              type="text"
+              // Тип поля по ступени: на телефоне это меняет клавиатуру —
+              // почте нужна раскладка с «@», номеру цифровая. type="email"
+              // не ставим: браузерная валидация формы здесь ни при чём,
+              // а подсветка «неверный адрес» на чужой почте сбивала бы.
+              type={kind === 'phone' ? 'tel' : 'text'}
+              inputMode={
+                kind === 'email' ? 'email' : kind === 'phone' ? 'tel' : 'text'
+              }
               value={word}
               onChange={(e) => setWord(e.target.value)}
+              // Автозаполнение выключено намеренно: подставленная
+              // браузером почта свела бы проверку к нажатию, а она
+              // ровно затем и стоит, чтобы человек ввёл адрес сам.
               autoComplete="off"
-              autoCapitalize="characters"
+              // Верхний регистр навязываем только слову DELETE. Почте он
+              // помешал бы: адрес набирают строчными.
+              autoCapitalize={kind === 'word' ? 'characters' : 'none'}
               spellCheck={false}
-              placeholder={CONFIRM_WORD}
+              // Плейсхолдер — только у слова. Для почты и телефона его
+              // нет: любой пример здесь читался бы как подсказка, каким
+              // должен быть ответ.
+              placeholder={kind === 'word' ? CONFIRM_WORD : undefined}
               className="
                 mt-1 w-full rounded-control border border-neutral-15 px-3 py-2
                 text-caption outline-none focus:border-neutral-30
@@ -181,7 +266,9 @@ export default function DeleteAccountBlock({ locale }: Props) {
 
             {failed && (
               <Alert tone="error" className="mt-3">
-                {t('delete_account_error')}
+                {failed === 'mismatch'
+                  ? mismatchText
+                  : t('delete_account_error')}
               </Alert>
             )}
 

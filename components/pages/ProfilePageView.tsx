@@ -21,6 +21,7 @@
 
 import { notFound } from 'next/navigation';
 
+import type { DeleteConfirmKind } from '@/components/DeleteAccountBlock';
 import ProfileForm from '@/components/ProfileForm';
 import StateCard from '@/components/ui/StateCard';
 import type { Locale } from '@/lib/i18n';
@@ -40,7 +41,7 @@ export default async function ProfilePageView({ locale }: Props) {
   // Профиль и заявка на статус салона читаются ПАРАЛЛЕЛЬНО: запросы
   // независимы, и последовательное ожидание удвоило бы задержку
   // первого экрана кабинета.
-  const [profileResult, applicationResult] = await Promise.all([
+  const [profileResult, applicationResult, confirmResult] = await Promise.all([
     supabase
       .from('profiles')
       .select(
@@ -53,6 +54,13 @@ export default async function ProfilePageView({ locale }: Props) {
     // блок в форме решает, что показать: приглашение, «ждём
     // решения», причину отказа или подтверждение статуса.
     supabase.rpc('get_my_dealer_application'),
+
+    // Чем подтверждается удаление аккаунта: 'email' | 'phone' | 'word'
+    // (миграция 0128). Спрашиваем СЕРВЕР, а не выводим из профиля
+    // ниже: там phone подменяется номером из сессии, когда в profiles
+    // пусто, — и клиент ждал бы номер, которого база не знает, а
+    // значит не принял бы ни одного верного ответа.
+    supabase.rpc('get_my_delete_confirmation'),
   ]);
 
   if (profileResult.error || !profileResult.data) {
@@ -84,11 +92,20 @@ export default async function ProfilePageView({ locale }: Props) {
     ? null
     : ((applicationResult.data ?? [])[0] ?? null);
 
+  // Вид подтверждения. Ошибка чтения не должна ронять профиль: без
+  // ответа считаем, что подтверждать нужно словом, — это работает у
+  // любого аккаунта, тогда как ошибочно выбранная почта заперла бы
+  // человека без почты. База в любом случае проверит сама.
+  const deleteConfirmKind = (
+    confirmResult.error ? 'word' : (confirmResult.data ?? 'word')
+  ) as DeleteConfirmKind;
+
   return (
     <ProfileForm
       locale={locale}
       profile={profile}
       application={application as DealerApplication | null}
+      deleteConfirmKind={deleteConfirmKind}
     />
   );
 }
