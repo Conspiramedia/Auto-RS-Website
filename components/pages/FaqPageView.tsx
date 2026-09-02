@@ -11,6 +11,8 @@
 //      ответ по клику, для SEO бесполезен.
 // ============================================================
 
+import Image from 'next/image';
+
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import BackCloseButton from '@/components/BackCloseButton';
@@ -58,6 +60,38 @@ export default function FaqPageView({ locale }: { locale: Locale }) {
           <BackCloseButton locale={locale} className="-mr-2 shrink-0" />
         </div>
         <p className="mt-3 text-neutral-60">{t('faq_lead')}</p>
+
+        {/* ИЛЛЮСТРАЦИЯ ПОД ЛИДОМ — как на /about и /how-it-works.
+            ------------------------------------------------------------
+            Дальше идёт длинная лента вопросов в раскрывающихся
+            строках: страница без единого изображения выглядит
+            справочником, в который заходят по необходимости, а не
+            разделом, который читают.
+
+            Кадр про срок публикации: календарь со стрелкой обновления
+            над машиной. Тема сквозная для всех четырёх групп вопросов
+            — сколько объявление висит и как его продлить, — поэтому
+            уместна над лентой целиком, а не внутри одной из групп.
+
+            priority не ставится: выше стоят заголовок и лид, ранняя
+            загрузка отняла бы полосу у них. Область зарезервирована
+            через aspect + fill, подгрузка не сдвигает список вопросов.
+
+            Пропорции 16/10 на узком экране и 21/9 с sm: страница
+            max-w-3xl, и высокий кадр во всю ширину отодвинул бы первый
+            вопрос за сгиб.
+
+            Пустой alt: изображение декоративное, смысл несут заголовок
+            и сами вопросы. */}
+        <div className="relative mt-6 aspect-[16/10] overflow-hidden rounded-card sm:aspect-[21/9]">
+          <Image
+            src="/images/faq-listing-term.webp"
+            alt=""
+            fill
+            sizes="(max-width: 639px) calc(100vw - 2rem), 48rem"
+            className="object-cover"
+          />
+        </div>
 
         {FAQ_GROUPS.map((group) => {
           const groupItems = items.filter((item) => item.group === group);
