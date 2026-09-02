@@ -203,8 +203,22 @@ export default function MyListingCard({ locale, listing }: Props) {
           просмотры, избранное, контакты.
           mt-auto прижимает их вместе с действиями к низу карточки: в
           ряду сетки у соседей разное количество строк сверху, и без
-          этого кнопки стояли бы на разной высоте. */}
-      <div className="mt-auto flex flex-wrap gap-x-5 gap-y-1.5 border-t border-neutral-10 pt-3">
+          этого кнопки стояли бы на разной высоте.
+
+          НА МОДЕРАЦИИ НЕ ПОКАЗЫВАЮТСЯ. Объявления ещё нет в выдаче,
+          его физически некому просматривать, и три нуля подряд
+          читаются как провал, а не как ожидание: продавец видит
+          «0 просмотров» и делает вывод о площадке, хотя показывать
+          объявление ещё не начинали. После одобрения строка появится
+          вместе с первыми настоящими цифрами.
+
+          mt-auto ЗДЕСЬ БОЛЬШЕ НЕ СТОИТ: он прижимал к низу карточки
+          весь низ разом, а со скрытыми метриками ушёл бы вместе с
+          ними, и кнопки у объявлений на проверке поехали бы вверх —
+          в ряду сетки они встали бы на разной высоте с соседями.
+          Теперь распорку держит обёртка действий ниже. */}
+      {listing.status !== 'moderation' && (
+      <div className="flex flex-wrap gap-x-5 gap-y-1.5 border-t border-neutral-10 pt-3">
         <Metric
           label={t('my_metric_views')}
           value={listing.views}
@@ -221,6 +235,7 @@ export default function MyListingCard({ locale, listing }: Props) {
           icon={<IconPhone />}
         />
       </div>
+      )}
 
       {/* Срок продвижения — зелёным, рядом с действиями: продавцу нужно
           понимать, до какого числа объявление стоит в начале выдачи. */}
@@ -231,14 +246,19 @@ export default function MyListingCard({ locale, listing }: Props) {
         </p>
       )}
 
-      <ListingActions
-        locale={locale}
-        carId={listing.car_id}
-        status={listing.status}
-        promoState={listing.promo_state}
-        promoAvailableAt={listing.promo_available_at}
-        archivedByAdmin={archivedByAdmin}
-      />
+      {/* mt-auto перенесён сюда с блока метрик: он обязан работать
+          независимо от того, показаны метрики или нет, иначе карточки
+          на проверке встают в сетке выше соседних. */}
+      <div className="mt-auto">
+        <ListingActions
+          locale={locale}
+          carId={listing.car_id}
+          status={listing.status}
+          promoState={listing.promo_state}
+          promoAvailableAt={listing.promo_available_at}
+          archivedByAdmin={archivedByAdmin}
+        />
+      </div>
     </Card>
   );
 }
