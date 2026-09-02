@@ -146,7 +146,17 @@ export default function AboutPageView({ locale }: { locale: Locale }) {
         <Card className="mt-10 text-center">
           <h2 className="text-h3 font-semibold">{t('about_cta_title')}</h2>
           <p className="mt-2 text-neutral-60">{t('about_cta_text')}</p>
-          <div className="mt-5 inline-grid grid-cols-1 gap-3 [&>*]:w-full sm:[&>*]:w-auto sm:flex sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
+          {/* grid, а НЕ inline-grid. С inline-grid контейнер сжимался
+              по содержимому, и [&>*]:w-full растягивал кнопки лишь до
+              ширины самой длинной подписи — на узком экране они стояли
+              двумя узкими прямоугольниками посреди карточки, разной
+              длины с текстом внутри. Блочный grid занимает всю ширину
+              карточки, и кнопки растягиваются вместе с ним.
+
+              С sm раскладка прежняя: ряд по содержимому, по центру.
+              Растянутая на 48rem кнопка читалась бы как поле ввода, а
+              не как действие. */}
+          <div className="mt-5 grid grid-cols-1 gap-3 [&>*]:w-full sm:[&>*]:w-auto sm:flex sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
             <Button size="lg" href={localeHref(locale, '/sell')}>
               {t('home_hero_cta')}
             </Button>
