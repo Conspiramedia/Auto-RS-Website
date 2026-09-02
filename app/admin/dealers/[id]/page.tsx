@@ -27,6 +27,7 @@ import { notFound } from 'next/navigation';
 import AdminBackBar from '@/components/admin/AdminBackBar';
 import BlockDealerButton from '@/components/admin/BlockDealerButton';
 import CarStatusButton from '@/components/admin/CarStatusButton';
+import RevokeDealerButton from '@/components/admin/RevokeDealerButton';
 import StatusChip from '@/components/admin/StatusChip';
 import TrustedToggle from '@/components/admin/TrustedToggle';
 import { getServerClient } from '@/lib/supabaseServer';
@@ -268,13 +269,17 @@ export default async function AdminDealerPage({
             />
           </div>
 
-          {/* Блокировка — в самом низу колонки и единственная красная
-              кнопка на экране. */}
+          {/* Блокировка и отзыв — в самом низу колонки, одним блоком.
+              Порядок от мягкого к жёсткому: сначала обратимая
+              блокировка, ниже отзыв статуса, за которым владельцу
+              придётся подавать заявку заново. Разделены чертой и
+              подписями, чтобы две красные кнопки подряд не читались
+              как одна и та же с разными словами. */}
           <div className="mt-4 rounded-card border border-neutral-10 p-4">
             <h2 className="text-h4 font-semibold">Блокировка</h2>
             <p className="mt-1 text-caption text-neutral-60">
               Отключает публикацию без модерации и убирает активные
-              объявления из выдачи.
+              объявления из выдачи. Продавец остаётся салоном.
             </p>
             <div className="mt-3">
               <BlockDealerButton
@@ -282,6 +287,23 @@ export default async function AdminDealerPage({
                 companyName={dealer.company_name}
                 activeCount={dealer.active_count}
               />
+            </div>
+
+            <div className="mt-5 border-t border-neutral-10 pt-4">
+              <h2 className="text-h4 font-semibold">Отзыв статуса</h2>
+              <p className="mt-1 text-caption text-neutral-60">
+                Продавец становится частным лицом: страница салона
+                отключается, витрина очищается, активные объявления
+                уходят из выдачи. Вернуть статус сможет только новая
+                заявка владельца.
+              </p>
+              <div className="mt-3">
+                <RevokeDealerButton
+                  userId={dealer.user_id}
+                  companyName={dealer.company_name}
+                  activeCount={dealer.active_count}
+                />
+              </div>
             </div>
           </div>
         </div>
