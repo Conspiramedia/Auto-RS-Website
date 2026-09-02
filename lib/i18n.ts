@@ -1197,7 +1197,7 @@ export const dict = {
     // ------------------------------------------------------------
     how_title: 'Kako funkcioniše',
     how_meta_desc:
-      'Kako da kupite, prodate ili iznajmite automobil na RS Auto: korak po korak za kupce, prodavce i autosalone.',
+      'Kako funkcioniše RS Auto: pretraga auta po filterima, sačuvana pretraga, direktan kontakt sa prodavcem. Četiri scenarija — kupovina, prodaja, iznajmljivanje.',
     how_lead:
       'Tri scenarija — kupovina, prodaja i rad autosalona. Izaberite svoj i pratite korake.',
 
@@ -1267,7 +1267,7 @@ export const dict = {
     // ------------------------------------------------------------
     faq_title: 'Česta pitanja',
     faq_meta_desc:
-      'Odgovori na pitanja o objavljivanju oglasa, moderaciji, kontaktu sa prodavcem, iznajmljivanju i uslovima za autosalone na RS Auto.',
+      'Odgovori na pitanja o prodaji i iznajmljivanju automobila u Srbiji: objavljivanje, moderacija, kontakt sa prodavcem, uslovi za auto-salone.',
     faq_lead: 'Ako ne nađete odgovor, pišite nam preko stranice Kontakt.',
     faq_group_general: 'Opšte',
     faq_group_buyer: 'Za kupce',
@@ -1302,11 +1302,11 @@ export const dict = {
     meta_all_desc:
       'Automobili u Srbiji: prodaja i izdavanje. Pretraga po marki, modelu, gradu i ceni.',
     meta_rent_desc:
-      'Automobili za izdavanje u Srbiji: cena po danu, depozit i uslovi. Pretraga po marki, modelu i gradu.',
+      'Iznajmljivanje automobila u Srbiji: oglasi privatnih vlasnika i salona. Cena po danu, grad, marka, model. Direktna veza sa iznajmljivačem.',
     meta_sell_desc:
-      'Objavite oglas za prodaju automobila besplatno — direktno sa sajta. Prijava kodom na e-poštu.',
+      'Objavite oglas za prodaju ili iznajmljivanje automobila u Srbiji besplatno. Prijava traje 10 minuta, kupci kontaktiraju direktno, bez provizije.',
     meta_dealers_desc:
-      'Postavite oglase vašeg autosalona na RS Auto: sopstvena stranica salona sa celim voznim parkom i kupci iz cele Srbije.',
+      'Stranica auto-salona u katalogu RS Auto: vitrina, kompletan vozni park, kupci iz cele Srbije. Besplatno oglašavanje za salone-partnere.',
     // Телефон в описании НЕ упоминается: поддержка работает только по
     // почте (OPERATOR.phone пуст — см. lib/legal). Обещание в сниппете
     // того, чего на странице нет, — прямой повод для отказа посетителя,
@@ -2266,7 +2266,7 @@ export const dict = {
     // ------------------------------------------------------------
     how_title: 'Как это работает',
     how_meta_desc:
-      'Как купить, продать или сдать автомобиль на RS Auto: пошагово для покупателей, продавцов и автосалонов.',
+      'Как работает RS Auto: поиск авто по фильтрам, сохранённый поиск, прямая связь с продавцом. Четыре сценария — покупка, продажа, аренда, автосалон.',
     how_lead:
       'Три сценария — покупка, продажа и работа автосалона. Выберите свой и следуйте шагам.',
 
@@ -2325,7 +2325,7 @@ export const dict = {
     // ------------------------------------------------------------
     faq_title: 'Вопросы и ответы',
     faq_meta_desc:
-      'Ответы на вопросы о размещении объявлений, модерации, связи с продавцом, аренде и условиях для автосалонов на RS Auto.',
+      'Ответы на вопросы о продаже и аренде авто в Сербии: размещение, модерация, связь с продавцом, условия для автосалонов.',
     faq_lead: 'Не нашли ответа — напишите нам через страницу «Контакты».',
     faq_group_general: 'Общее',
     faq_group_buyer: 'Покупателям',
@@ -2348,11 +2348,11 @@ export const dict = {
     meta_all_desc:
       'Автомобили в Сербии: продажа и аренда. Поиск по марке, модели, городу и цене.',
     meta_rent_desc:
-      'Автомобили в аренду в Сербии: цена за сутки, залог и условия. Поиск по марке, модели и городу.',
+      'Аренда авто в Сербии: объявления от частных владельцев и салонов. Цена за день, город, марка, модель. Связь с арендодателем напрямую.',
     meta_sell_desc:
-      'Разместите объявление о продаже автомобиля бесплатно — прямо на сайте. Вход по коду на почту.',
+      'Разместите объявление о продаже или аренде авто в Сербии бесплатно. Подача за 10 минут, покупатели пишут напрямую, комиссия с продажи — 0%.',
     meta_dealers_desc:
-      'Размещайте объявления вашего автосалона на RS Auto: своя страница салона со всем автопарком и покупатели со всей Сербии.',
+      'Страница автосалона в каталоге RS Auto: витрина, весь автопарк, покупатели со всей Сербии. Бесплатное размещение для салонов-партнёров.',
     // См. комментарий в сербском словаре: телефона поддержки нет.
     meta_contact_desc:
       'Свяжитесь с RS Auto: электронная почта поддержки и форма обращения. Отвечаем по будням.',
