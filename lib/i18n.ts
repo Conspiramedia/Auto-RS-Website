@@ -1312,7 +1312,7 @@ export const dict = {
     // того, чего на странице нет, — прямой повод для отказа посетителя,
     // а для поисковика расхождение сниппета с содержимым страницы.
     meta_contact_desc:
-      'Kontaktirajte RS Auto: e-pošta podrške i obrazac za poruku. Odgovaramo radnim danima.',
+      'Kontaktirajte tim RS Auto: pitanja o oglasima, prodaji i iznajmljivanju automobila u Srbiji. Odgovaramo radnim danima. Za auto-salone — poseban obrazac.',
     meta_terms_desc:
       'Uslovi korišćenja platforme RS Auto — oglasi za prodaju i izdavanje automobila u Srbiji.',
     meta_privacy_desc:
@@ -2355,7 +2355,7 @@ export const dict = {
       'Страница автосалона в каталоге RS Auto: витрина, весь автопарк, покупатели со всей Сербии. Бесплатное размещение для салонов-партнёров.',
     // См. комментарий в сербском словаре: телефона поддержки нет.
     meta_contact_desc:
-      'Свяжитесь с RS Auto: электронная почта поддержки и форма обращения. Отвечаем по будням.',
+      'Свяжитесь с командой RS Auto: вопросы по объявлениям, продаже и аренде авто в Сербии. Отвечаем по будням. Для автосалонов — отдельная форма заявки.',
     meta_terms_desc:
       'Условия использования платформы RS Auto — объявления о продаже и аренде автомобилей в Сербии.',
     meta_privacy_desc:
