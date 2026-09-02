@@ -250,6 +250,10 @@ export const dict = {
     car_seller_private: 'Privatno lice',
     car_contact_title: 'Kontakt sa prodavcem',
     car_qr_hint: 'Skenirajte kod telefonom da otvorite oglas na telefonu',
+    // Подпись под QR на главной. Код ведёт в КАТАЛОГ, а не на главную:
+    // читатель уже понял, что за площадка, и открывать ему на телефоне
+    // тот же экран незачем.
+    home_qr_hint: 'Skenirajte kod da otvorite katalog na telefonu',
 
 
     // Подача объявления
@@ -1364,6 +1368,8 @@ export const dict = {
     car_seller_private: 'Частное лицо',
     car_contact_title: 'Связь с продавцом',
     car_qr_hint: 'Отсканируйте код телефоном, чтобы открыть объявление на телефоне',
+    // См. комментарий в сербском словаре.
+    home_qr_hint: 'Отсканируйте код, чтобы открыть каталог на телефоне',
 
 
     sell_title: 'Продайте автомобиль',

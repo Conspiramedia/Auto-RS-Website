@@ -29,6 +29,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import AppQr from '@/components/AppQr';
 import CarCard from '@/components/CarCard';
 import RecentlyViewed from '@/components/RecentlyViewed';
 import Button from '@/components/ui/Button';
@@ -49,6 +50,7 @@ import { fetchCatalog, fetchSiteBrands, fetchSiteStats } from '@/lib/queries';
 import { OPERATOR, OPERATOR_VERIFIED } from '@/lib/legal';
 import { buildOrganizationJsonLd, buildWebSiteJsonLd } from '@/lib/seo';
 import { slugify } from '@/lib/format';
+import { siteBaseUrl } from '@/lib/supabase';
 
 // ------------------------------------------------------------
 // Популярные марки для чипсов.
@@ -612,25 +614,68 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                 картинки героя. Область зарезервирована через
                 aspect-[16/10] + fill — подгрузка не сдвигает вёрстку.
 
-                sizes: до lg картинка занимает ширину окна за вычетом
-                полей секции (px-4 с двух сторон), с lg упирается в
-                max-w-3xl (48rem) — она уже сетки карточек намеренно,
-                во всю ширину она перетягивала бы на себя весь блок.
-
                 Пустой alt: изображение декоративное, смысл несут
                 карточки выше и подпись кнопки. */}
-            <div className="mx-auto mt-8 max-w-3xl">
-              <div className="relative aspect-[16/10] overflow-hidden rounded-card">
+            {/* QR СЛЕВА, КАРТИНКА СПРАВА — ПО ШИРИНЕ ВСЕЙ СЕКЦИИ.
+                ------------------------------------------------------------
+                Сетка та же, что у блока «Автосалонам» ниже: пять
+                колонок внутри max-w-6xl, левая часть занимает две,
+                картинка — три. Раньше блок был зажат в max-w-3xl по
+                центру, и на широком экране он обрывался посреди
+                секции, не совпадая ни с карточками над ним, ни с
+                остальными блоками страницы.
+
+                items-start, а не center: колонки разной высоты, и
+                центрирование увело бы QR от верхнего края картинки.
+
+                КОД НУЖЕН ТОЛЬКО НА ДЕСКТОПЕ — на телефоне сканировать
+                экран этим же экраном нечем. До lg колонка скрыта
+                (hidden lg:block), и блок остаётся прежним: картинка во
+                всю ширину, кнопка под ней.
+
+                Ведёт код в КАТАЛОГ, а не на главную: читатель уже
+                прошёл четыре довода и понял, что за площадка,
+                открывать ему на телефоне тот же экран незачем. Адрес
+                абсолютный и с учётом локали — QR читает внешнее
+                устройство, относительный путь для него бессмыслен. */}
+            <div className="mt-8 grid items-start gap-x-12 gap-y-6 lg:grid-cols-5">
+              <div className="order-1 hidden lg:col-span-2 lg:block">
+                {/* Размер вдвое против стандартного: код стоит
+                    напротив большой картинки, и на прежних 148px он
+                    читался как иконка рядом с ней, а не как
+                    самостоятельное действие. */}
+                <AppQr
+                  url={`${siteBaseUrl}${localeHref(locale, '/cars')}`}
+                  size={260}
+                />
+                <p className="mt-3 max-w-[280px] text-caption text-neutral-60">
+                  {t('home_qr_hint')}
+                </p>
+              </div>
+
+              {/* Картинка на три колонки — как в блоке «Автосалонам».
+                  lg:row-span-2: занимает обе строки правой колонки,
+                  иначе кнопка из левой растянула бы сетку и
+                  изображение встало бы только напротив кода.
+
+                  sizes: до lg ширина окна за вычетом полей секции, с
+                  lg — три пятых сетки шириной 72rem, около 43rem. */}
+              <div className="relative order-2 aspect-[16/10] overflow-hidden rounded-card lg:col-span-3 lg:col-start-3 lg:row-span-2 lg:row-start-1">
                 <Image
                   src="/images/why-car.webp"
                   alt=""
                   fill
-                  sizes="(max-width: 1023px) calc(100vw - 2rem), 48rem"
+                  sizes="(max-width: 1023px) calc(100vw - 2rem), 43rem"
                   className="object-cover"
                 />
               </div>
 
-              <div className="mt-6 flex justify-center">
+              {/* Кнопка в левой колонке под кодом — та же расстановка,
+                  что у «Автосалонам»: действие замыкает текстовую
+                  сторону блока, а не висит под картинкой по центру.
+                  На мобильном колонки нет, и кнопка просто идёт
+                  следом за изображением. */}
+              <div className="order-3 lg:col-span-2 lg:col-start-1">
                 <Button size="lg" href={localeHref(locale, '/sell')}>
                   {t('home_why_cta')}
                 </Button>
