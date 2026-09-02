@@ -183,15 +183,19 @@ export default function HowItWorksPageView({ locale }: { locale: Locale }) {
                   {/* Номер шага в круге. shrink-0 обязателен: без него
                       круг сжимается в овал, когда текст шага длинный.
 
-                      Цвет brand-primary, а не brand-dark: тёмные круги
-                      читались как служебные метки, тогда как это
-                      навигация по инструкции. Тот же синий несут
-                      иконки в карточках «Почему RS Auto» и в чипсах
-                      счётчиков на главной. Зелёный сюда не годится —
-                      он закреплён за главным действием (подачей), а
-                      brand-blue за связью («Написать», «Войти»). */}
+                      СВЕТЛАЯ ЗАЛИВКА С ТЁМНОЙ ЦИФРОЙ — тот же рисунок,
+                      что у шагов установки на /install. Раньше круги
+                      были тёмными (brand-dark) и читались как
+                      служебные метки; заливку цветом бренда пробовать
+                      незачем — номер шага это ориентир, а не действие,
+                      и цветное пятно рядом с каждым заголовком спорит
+                      с настоящими акцентами страницы.
+
+                      Размер оставлен 32px, а не 24px как в /install:
+                      там плотный список внутри карточки, здесь — шаги
+                      с заголовком и абзацем текста. */}
                   <span
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-brand-primary text-caption font-semibold text-white"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-surface-muted text-caption font-bold text-neutral-100"
                     aria-hidden="true"
                   >
                     {i + 1}
