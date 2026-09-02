@@ -51,6 +51,20 @@ const SCENARIOS: Scenario[] = [
     ctaPath: '/sell',
     ctaPrimary: true,
   },
+  // Аренда идёт ПОСЛЕ продажи: подача та же формой, отличается только
+  // переключателем типа на первом шаге, — и человеку, прочитавшему
+  // сценарий продавца, здесь остаётся понять одну разницу, а не
+  // разбирать процесс заново.
+  {
+    title: 'how_rent_title',
+    steps: [
+      { title: 'how_rent_1_title', text: 'how_rent_1_text' },
+      { title: 'how_rent_2_title', text: 'how_rent_2_text' },
+      { title: 'how_rent_3_title', text: 'how_rent_3_text' },
+    ],
+    ctaLabel: 'how_rent_cta',
+    ctaPath: '/sell',
+  },
   {
     title: 'how_dealer_title',
     steps: [
@@ -156,10 +170,23 @@ export default function HowItWorksPageView({ locale }: { locale: Locale }) {
               ))}
             </ol>
 
+            {/* КНОПКА ВО ВСЮ ШИРИНУ ДО sm. На узком экране подписи у
+                сценариев разной длины («Все автомобили», «Сдать
+                автомобиль», «Оставить заявку»), и кнопки по размеру
+                текста вставали лесенкой у левого края — четыре
+                сценария подряд превращали страницу в рваный столбец.
+                Во всю ширину они выравниваются между собой, а текст
+                внутри и так по центру (justify-center в базовых
+                классах Button).
+
+                С sm ширина возвращается к содержимому: там кнопка
+                стоит в потоке текста колонки, и растянутая на 768px
+                читалась бы как поле, а не как действие. */}
             <div className="mt-5">
               <Button
                 variant={scenario.ctaPrimary ? 'primary' : 'secondary'}
                 href={localeHref(locale, scenario.ctaPath)}
+                className="w-full sm:w-auto"
               >
                 {t(scenario.ctaLabel)}
               </Button>
@@ -170,7 +197,16 @@ export default function HowItWorksPageView({ locale }: { locale: Locale }) {
         <Card className="mt-10 text-center">
           <h2 className="text-h3 font-semibold">{t('faq_more_title')}</h2>
           <p className="mt-2 text-neutral-60">{t('faq_more_text')}</p>
-          <div className="mt-5 inline-grid grid-cols-1 gap-3 [&>*]:w-full sm:[&>*]:w-auto sm:flex sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
+          {/* grid, а НЕ inline-grid. С inline-grid контейнер сжимался
+              по содержимому, и [&>*]:w-full растягивал кнопки лишь до
+              ширины самой длинной подписи — на узком экране они стояли
+              двумя одинаковыми, но узкими прямоугольниками посреди
+              карточки. Блочный grid занимает всю ширину, и кнопки
+              растягиваются вместе с ним, как в сценариях выше.
+
+              С sm раскладка прежняя: ряд по содержимому, по центру
+              карточки. */}
+          <div className="mt-5 grid grid-cols-1 gap-3 [&>*]:w-full sm:[&>*]:w-auto sm:flex sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
             <Button variant="secondary" href={localeHref(locale, '/faq')}>
               {t('nav_faq')}
             </Button>

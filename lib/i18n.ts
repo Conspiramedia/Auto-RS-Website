@@ -1208,6 +1208,26 @@ export const dict = {
     how_seller_3_text:
       'Zainteresovani kupci pišu vam direktno na sajtu — poruke i obaveštenja čekaju vas u kabinetu. Kada je vozilo prodato, označite oglas kao prodat.',
 
+    // Сценарий аренды. Стоит между продавцом и салоном: подача идёт
+    // той же формой с переключателем типа, поэтому шаги повторяют
+    // логику продажи, а отличия названы прямо — цена за день и залог.
+    how_rent_title: 'Izdajem automobil',
+    how_rent_1_title: 'Izaberite izdavanje',
+    how_rent_1_text:
+      'Forma je ista kao za prodaju — na prvom koraku izaberite „Izdavanje“ umesto „Prodaja“. Umesto cene vozila unosite cenu po danu i depozit.',
+    how_rent_2_title: 'Postavite uslove',
+    how_rent_2_text:
+      'Depozit može biti i nula — tako i piše u oglasu. Minimalni period zakupa je jedan dan, a ostalo dogovarate direktno sa klijentom.',
+    how_rent_3_title: 'Primajte zahteve',
+    how_rent_3_text:
+      'Oglas ide u zaseban katalog za izdavanje. Zainteresovani vas zovu ili pišu sa stranice oglasa, kao i kod prodaje.',
+    // Подпись кнопки сценария. Ключ свой, а не home_why_cta с
+    // главной: текст сейчас совпадает, но привязывать страницу
+    // «Как это работает» к ключу с именем блока главной значит
+    // получить неожиданную правку в одном месте при редактуре
+    // другого.
+    how_rent_cta: 'Postavi oglas',
+
     how_dealer_title: 'Imam autosalon',
     how_dealer_1_title: 'Pošaljite zahtev',
     how_dealer_1_text:
@@ -2240,6 +2260,20 @@ export const dict = {
     how_seller_3_title: 'Получайте сообщения',
     how_seller_3_text:
       'Заинтересованные покупатели пишут вам прямо на сайте — сообщения и уведомления ждут в личном кабинете. Когда машина продана, отметьте объявление как проданное.',
+
+    // См. комментарий в сербском словаре.
+    how_rent_title: 'Сдаю автомобиль в аренду',
+    how_rent_1_title: 'Выберите аренду',
+    how_rent_1_text:
+      'Форма та же, что для продажи, — на первом шаге выберите «Аренда» вместо «Продажа». Вместо цены автомобиля указываете стоимость за день и залог.',
+    how_rent_2_title: 'Задайте условия',
+    how_rent_2_text:
+      'Залог может быть нулевым — так и будет указано в объявлении. Минимальный срок аренды — один день, остальное вы обсуждаете с клиентом напрямую.',
+    how_rent_3_title: 'Принимайте заявки',
+    how_rent_3_text:
+      'Объявление попадает в отдельный каталог аренды. Заинтересованные звонят или пишут со страницы объявления — так же, как при продаже.',
+    // См. комментарий в сербском словаре.
+    how_rent_cta: 'Подать объявление',
 
     how_dealer_title: 'У меня автосалон',
     how_dealer_1_title: 'Оставьте заявку',
