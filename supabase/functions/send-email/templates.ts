@@ -970,8 +970,7 @@ function listingExpiring(
     panel(`<strong style="font-size:16px;">${esc(title)}</strong>`, COLOR.primary),
     button(t(locale, 'btn_extend'), extendUrl, COLOR.green),
     p(esc(t(locale, 'expiring_hint')), true),
-  ].join('
-');
+  ].join('\n');
 
   const text = [
     t(locale, 'expiring_title'),
@@ -982,8 +981,7 @@ function listingExpiring(
     extendUrl,
     '',
     t(locale, 'expiring_hint'),
-  ].join('
-');
+  ].join('\n');
 
   return {
     subject,
@@ -1012,8 +1010,7 @@ function listingExpired(
     panel(`<strong style="font-size:16px;">${esc(title)}</strong>`, COLOR.primary),
     button(t(locale, 'btn_extend'), extendUrl, COLOR.green),
     p(esc(t(locale, 'expired_hint')), true),
-  ].join('
-');
+  ].join('\n');
 
   const text = [
     t(locale, 'expired_title'),
@@ -1024,8 +1021,7 @@ function listingExpired(
     extendUrl,
     '',
     t(locale, 'expired_hint'),
-  ].join('
-');
+  ].join('\n');
 
   return {
     subject,
