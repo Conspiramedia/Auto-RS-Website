@@ -44,6 +44,7 @@ import {
   hasAcceptedPolicyHere,
   migrateGuestConsent,
 } from '@/lib/consent';
+import type { CarAvailability } from '@/lib/types';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { BRANDS, CITIES, YEAR_MIN, yearMax } from '@/lib/referenceData';
@@ -137,16 +138,23 @@ export default function SellForm({
   // подаётся двумя отдельными объявлениями. Защита от дублей это
   // разрешает: тип сделки входит в условие совпадения (миграция 0057).
   const [listingType, setListingType] = useState<'sale' | 'rent'>('sale');
-  // ПОМЕТКА «НА ЗАКАЗ» (миграция 0118). Салон торгует не только тем,
-  // что стоит у него на площадке: часть предложений он привозит под
-  // клиента, и покупатель обязан видеть это до звонка.
+  // ДОСТУПНОСТЬ АВТОМОБИЛЯ (миграция 0119). Салон торгует не только
+  // тем, что стоит у него на площадке: часть машин он привозит под
+  // клиента, часть уже куплена и едет к нему. Покупатель обязан
+  // видеть это до звонка.
   //
-  // Показывается ТОЛЬКО САЛОНУ — isDealer ниже. Частнику поля нет: у
+  // ОДНО ПОЛЕ, А НЕ ДВА ЧЕКБОКСА: «под заказ» и «в пути»
+  // взаимоисключающи, и выбор из трёх вариантов физически не даёт
+  // отметить оба. Та же логика в базе — там это enum, а не пара
+  // булевых флагов.
+  //
+  // Показывается ТОЛЬКО САЛОНУ (isDealer ниже). Частнику поля нет: у
   // него «привезу под заказ» означало бы объявление о машине, которой
   // у продавца нет. Проверка дублируется на стороне базы триггером
-  // trg_cars_on_order_dealer_only: клиент отвечает за удобство, а не
-  // за правила.
-  const [isOnOrder, setIsOnOrder] = useState(false);
+  // trg_cars_availability_dealer_only: клиент отвечает за удобство, а
+  // не за правила.
+  const [availability, setAvailability] =
+    useState<CarAvailability>('in_stock');
   // null — тип продавца ещё не прочитан. До этого момента поле не
   // рисуется вовсе: мелькнувший и исчезнувший переключатель хуже, чем
   // его появление на долю секунды позже.
@@ -356,7 +364,9 @@ export default function SellForm({
       // приложение через v2) приводим к продаже: форма сайта предлагает
       // только один тип, а продажа — основная сделка такой карточки.
       setListingType(car.is_for_rent && !car.is_for_sale ? 'rent' : 'sale');
-      setIsOnOrder(Boolean(car.is_on_order));
+      setAvailability(
+        (car.availability as CarAvailability | undefined) ?? 'in_stock',
+      );
 
       setBrand((car.brand as string) ?? '');
       setModel((car.model as string) ?? '');
@@ -913,9 +923,9 @@ export default function SellForm({
       // появилась v3.
       const payload = {
         p_listing_type: listingType,
-        // У аренды флаг не имеет смысла и не отправляется как true:
-        // машину сдают ту, что есть.
-        p_is_on_order: listingType === 'sale' && isOnOrder,
+        // У аренды доступность не имеет смысла: сдают ту машину,
+        // которая есть, — поэтому туда всегда уходит 'in_stock'.
+        p_availability: listingType === 'sale' ? availability : 'in_stock',
         p_brand: brand.trim(),
         p_model: model.trim(),
         p_year: Number(year),
@@ -1235,34 +1245,56 @@ export default function SellForm({
             </div>
           </div>
 
-          {/* ПОМЕТКА «НА ЗАКАЗ» — ТОЛЬКО САЛОНУ И ТОЛЬКО ДЛЯ ПРОДАЖИ.
+          {/* ДОСТУПНОСТЬ — ТОЛЬКО САЛОНУ И ТОЛЬКО ДЛЯ ПРОДАЖИ.
               ------------------------------------------------------------
-              У аренды смысла нет: машину сдают ту, что есть, а не ту,
-              которую привезут. isDealer === null означает «ещё не
-              выяснили» — до ответа поле не рисуем, чтобы переключатель
-              не мелькнул и не исчез.
+              У аренды смысла нет: сдают ту машину, которая есть, а не
+              ту, которую привезут. isDealer === null означает «ещё не
+              выяснили» — до ответа поле не рисуем, чтобы оно не
+              мелькнуло и не исчезло.
 
-              Чекбокс, а не третья кнопка в ряду типов: «продажа» и
-              «аренда» взаимоисключающи, а «на заказ» — свойство поверх
-              продажи, и ставить его в один ряд значило бы предложить
-              выбрать одно из трёх. */}
+              РЯД ИЗ ТРЁХ КНОПОК, А НЕ ДВА ЧЕКБОКСА. Значения
+              взаимоисключающи, и выбор одного из трёх физически не
+              даёт отметить «под заказ» и «в пути» одновременно — то
+              же правило, что в базе, где это enum. Двумя чекбоксами
+              пришлось бы гасить один при нажатии другого и объяснять
+              человеку, почему галочка снялась сама.
+
+              Вёрстка та же, что у переключателя «Продаю / Сдаю» выше:
+              продавец уже видел этот рисунок строкой раньше и
+              понимает, что выбрать можно одно. */}
           {isDealer && listingType === 'sale' && (
-            <label className="flex cursor-pointer items-start gap-2.5 rounded-card border border-neutral-15 p-3">
-              <input
-                type="checkbox"
-                checked={isOnOrder}
-                onChange={(e) => setIsOnOrder(e.target.checked)}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-brand-primary"
-              />
-              <span>
-                <span className="block font-medium">
-                  {t('sell_on_order')}
-                </span>
-                <span className="mt-0.5 block text-caption text-neutral-60">
-                  {t('sell_on_order_hint')}
-                </span>
-              </span>
-            </label>
+            <div>
+              <label className="mb-1 block text-caption text-neutral-60">
+                {t('sell_availability')}
+              </label>
+
+              <div className="grid grid-cols-3 gap-2">
+                {(
+                  [
+                    ['in_stock', t('availability_in_stock')],
+                    ['on_order', t('availability_on_order')],
+                    ['in_transit', t('availability_in_transit')],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setAvailability(value)}
+                    className={
+                      availability === value
+                        ? 'rounded-control bg-brand-dark px-3 py-2.5 text-caption font-semibold text-white'
+                        : 'rounded-control border border-neutral-15 px-3 py-2.5 text-caption hover:bg-surface-hover'
+                    }
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              <p className="mt-1 text-small text-neutral-50">
+                {t('sell_availability_hint')}
+              </p>
+            </div>
           )}
 
           {/* Марка и модель — пара связанных полей, на десктопе стоят

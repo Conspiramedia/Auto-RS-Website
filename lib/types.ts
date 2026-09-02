@@ -16,6 +16,12 @@
 export type ListingType = 'sale' | 'rent' | 'both';
 
 // Строка каталога. Источник: RPC search_cars_public (миграции 0051, 0055).
+// Доступность автомобиля. Зеркалит enum car_availability из базы
+// (миграция 0119). Три значения вместо пары булевых флагов: машина не
+// может быть одновременно «под заказ» и «в пути», и запрет на такое
+// сочетание должен жить в типе, а не в проверке.
+export type CarAvailability = 'in_stock' | 'on_order' | 'in_transit';
+
 export type CatalogCar = {
   id: string;
   brand: string;
@@ -42,10 +48,15 @@ export type CatalogCar = {
   site_url: string;
   photo_url: string | null;
   seller_kind: string;
-  // Машины нет в наличии — салон привезёт под заказ (миграция 0118).
-  // Ставится только продавцом со seller_kind = 'dealer': у частника
-  // флаг гасит триггер на стороне базы.
-  is_on_order: boolean;
+  // Доступность автомобиля (миграция 0119):
+  //   'in_stock'   — стоит у продавца, можно посмотреть сегодня;
+  //   'on_order'   — салон привезёт под клиента;
+  //   'in_transit' — конкретная машина куплена салоном и едет к нему.
+  // Значения кроме 'in_stock' ставит только продавец со
+  // seller_kind = 'dealer': у частника их гасит триггер в базе.
+  // Взаимоисключение обеспечено самим типом — двух пометок сразу не
+  // бывает.
+  availability: CarAvailability;
   created_at: string;
   // Общее число объявлений по текущим фильтрам (одинаково во всех строках).
   total_count: number;
@@ -103,8 +114,8 @@ export type CarDetails = {
   // возвращают в публикацию кнопкой «Вернуть»).
   archived_by: string | null;
   archived_reason: string | null;
-  // Машины нет в наличии — салон привезёт под заказ (миграция 0118).
-  is_on_order: boolean;
+  // Доступность автомобиля (0119). См. комментарий у CatalogCar.
+  availability: CarAvailability;
 };
 
 // Фотография объявления. Источник: RPC get_car_images (миграция 0052).

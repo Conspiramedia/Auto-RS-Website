@@ -432,13 +432,16 @@ export const dict = {
 
     // Подача: тип объявления
     sell_type: 'Tip oglasa',
-    // Пометка «на заказ» (0118). Показывается только салону и только
-    // для продажи: машину сдают ту, что есть.
-    sell_on_order: 'Automobil se dovozi po porudžbini',
-    sell_on_order_hint:
-      'Vozila trenutno nema na placu — dovozite ga za kupca. Oglas dobija oznaku „Po porudžbini“.',
-    // Бейдж на карточке и в объявлении.
-    badge_on_order: 'Po porudžbini',
+    // Доступность автомобиля (0119). Показывается только салону и
+    // только для продажи: сдают ту машину, которая есть.
+    sell_availability: 'Dostupnost',
+    sell_availability_hint:
+      'Kupac vidi oznaku u oglasu. „Po porudžbini“ — vozila još nema, dovozite ga; „U dolasku“ — vozilo je kupljeno i stiže.',
+    // Варианты выбора в форме и бейджи в каталоге — один и тот же
+    // текст: разные слова для одного состояния сбивали бы с толку.
+    availability_in_stock: 'Na stanju',
+    availability_on_order: 'Po porudžbini',
+    availability_in_transit: 'U dolasku',
     sell_type_sale: 'Prodajem',
     sell_type_rent: 'Izdajem',
     sell_type_both: 'Prodajem i izdajem',
@@ -1580,10 +1583,12 @@ export const dict = {
     // Подача: тип объявления
     sell_type: 'Тип объявления',
     // См. комментарий в сербском словаре.
-    sell_on_order: 'Автомобиль привозится под заказ',
-    sell_on_order_hint:
-      'Машины сейчас нет на площадке — вы привезёте её для покупателя. Объявление получит пометку «На заказ».',
-    badge_on_order: 'На заказ',
+    sell_availability: 'Наличие',
+    sell_availability_hint:
+      'Покупатель увидит пометку в объявлении. «На заказ» — машины ещё нет, вы её привезёте; «В пути» — машина куплена и едет.',
+    availability_in_stock: 'В наличии',
+    availability_on_order: 'На заказ',
+    availability_in_transit: 'В пути',
     sell_type_sale: 'Продаю',
     sell_type_rent: 'Сдаю',
     sell_type_both: 'Продаю и сдаю',

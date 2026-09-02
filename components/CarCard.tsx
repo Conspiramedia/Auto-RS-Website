@@ -40,9 +40,10 @@ type Props = {
     // там, где тип продавца не читается (например, в блоке «недавно
     // просмотренные»), и пометка там просто не рисуется.
     seller_kind?: string;
-    // Машины нет в наличии, салон привезёт под заказ (0118).
-    // Необязательное по той же причине, что seller_kind выше.
-    is_on_order?: boolean;
+    // Доступность (0119). Необязательное по той же причине, что
+    // seller_kind выше: карточка показывается и там, где поле не
+    // читается, и бейдж тогда просто не рисуется.
+    availability?: string;
   };
   // Витрина, в которой показана карточка.
   //   'sale' | 'rent' — специализированный раздел: показываем цену
@@ -156,11 +157,11 @@ export default function CarCard({
             сами не могут и налезли бы друг на друга — та же ошибка,
             что уже была в верхнем ряду.
 
-            «На заказ» справа: это свойство предложения, а продвижение
+            Пометка доступности справа: это свойство предложения, а продвижение
             — купленное место, и смешивать их в одну кучу слева не
             стоит. justify-between разводит их по углам, а когда плашка
             одна, ml-auto у второй прижимает её к своему краю. */}
-        {(car.is_promoted || car.is_on_order) && (
+        {(car.is_promoted || (car.availability && car.availability !== 'in_stock')) && (
           <div className="pointer-events-none absolute inset-x-2 bottom-2 flex flex-wrap items-end gap-1.5">
             {car.is_promoted && (
               <Badge tone="promoted" size="xs">
@@ -168,9 +169,18 @@ export default function CarCard({
               </Badge>
             )}
 
-            {car.is_on_order && (
+            {/* «В наличии» бейджа не получает: это состояние по
+                умолчанию у подавляющего большинства объявлений, и
+                плашка о нём была бы шумом в каждой карточке. */}
+            {car.availability === 'on_order' && (
               <Badge tone="info-soft" size="xs" className="ml-auto">
-                {t('badge_on_order')}
+                {t('availability_on_order')}
+              </Badge>
+            )}
+
+            {car.availability === 'in_transit' && (
+              <Badge tone="info-soft" size="xs" className="ml-auto">
+                {t('availability_in_transit')}
               </Badge>
             )}
           </div>
