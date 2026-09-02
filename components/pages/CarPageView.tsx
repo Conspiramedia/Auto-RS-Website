@@ -408,19 +408,9 @@ export default async function CarPageView({
               <div className="mt-4 border-t border-neutral-10 pt-4">
                 <div className="font-semibold">{t('car_contact_title')}</div>
 
-                <ContactSellerButton
-                  locale={locale}
-                  carId={car.id}
-                  sellerId={car.user_id}
-                />
-
-                {/* ЗВОНОК — ВТОРЫМ ДЕЙСТВИЕМ, а не первым. На
-                    авторынке Сербии звонок конверсионнее переписки, но
-                    акцент в блоке один (variant info у кнопки выше), и
-                    две одинаково яркие кнопки подряд заставляли бы
-                    выбирать вместо того, чтобы действовать. Здесь
-                    secondary: действие равнодоступно, но не спорит за
-                    внимание.
+                {/* ЗВОНОК ПЕРВЫМ И ЗЕЛЁНЫМ. На авторынке Сербии
+                    звонок — более частый способ связи, чем переписка,
+                    поэтому он стоит выше и держит акцент блока.
 
                     Номер сюда НЕ передаётся: страница рендерится под
                     анонимным ключом ради кэша, и телефон в серверных
@@ -428,6 +418,12 @@ export default async function CarPageView({
                     сама из браузера, где есть сессия (0117), — заодно
                     он не попадает в HTML, который читает краулер. */}
                 <CallSellerButton
+                  locale={locale}
+                  carId={car.id}
+                  sellerId={car.user_id}
+                />
+
+                <ContactSellerButton
                   locale={locale}
                   carId={car.id}
                   sellerId={car.user_id}

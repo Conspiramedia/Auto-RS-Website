@@ -82,7 +82,7 @@ export default function ContactSellerButton({
         href={`${localeHref(locale, '/login')}?redirect=${encodeURIComponent(path)}`}
         variant="info"
         fullWidth
-        className="mt-3"
+        className="mt-2"
         // Клик гостя тоже событие: намерение связаться он проявил, и
         // без этой отметки в воронке не видно, сколько покупателей
         // теряется на форме входа между кнопкой и созданием диалога.
@@ -98,7 +98,7 @@ export default function ContactSellerButton({
       <Button
         variant="info"
         fullWidth
-        className="mt-3"
+        className="mt-2"
         disabled={pending}
         onClick={() =>
           startTransition(async () => {

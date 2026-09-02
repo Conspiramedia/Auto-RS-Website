@@ -24,6 +24,12 @@
 // было: до этого статистика существовала только по переписке
 // (seller_contact_click), и сравнить каналы было не с чем.
 //
+// ВАРИАНТ primary (зелёная, белый текст) — звонок стоит первым
+// действием блока: на авторынке Сербии по объявлению чаще звонят, чем
+// пишут. Цвет берётся вариантом кнопки, а не своими классами: зелёный
+// живёт в токенах бренда (bg-brand-green), и при смене палитры
+// правится в одном месте.
+//
 // ТРИ СОСТОЯНИЯ, симметрично кнопке переписки:
 //   * гость — ведём на /login с адресом возврата: RPC ему всё равно
 //     откажет (права выданы только authenticated);
@@ -91,9 +97,9 @@ export default function CallSellerButton({ locale, carId, sellerId }: Props) {
     return (
       <Button
         href={`${localeHref(locale, '/login')}?redirect=${encodeURIComponent(path)}`}
-        variant="secondary"
+        variant="primary"
         fullWidth
-        className="mt-2"
+        className="mt-3"
         // Намерение позвонить у гостя — такое же событие воронки, как
         // и намерение написать: без него не видно, сколько покупателей
         // теряется на форме входа.
@@ -112,9 +118,9 @@ export default function CallSellerButton({ locale, carId, sellerId }: Props) {
     return (
       <Button
         href={`tel:${phone}`}
-        variant="secondary"
+        variant="primary"
         fullWidth
-        className="mt-2"
+        className="mt-3"
       >
         {/* Маска «+381 61 234 567» вместо слитного E.164: номер
             показывается человеку, а не системе, и группы цифр он
@@ -127,9 +133,9 @@ export default function CallSellerButton({ locale, carId, sellerId }: Props) {
   return (
     <>
       <Button
-        variant="secondary"
+        variant="primary"
         fullWidth
-        className="mt-2"
+        className="mt-3"
         disabled={loading}
         onClick={async () => {
           setError(null);
