@@ -1568,11 +1568,12 @@ export default function SellForm({
             </div>
           )}
 
-          {/* Кузов, коробка и топливо — те же полные enum, что в
-              приложении. Поиск не нужен: пунктов не больше десяти.
-              На телефоне селекты идут столбиком: втроём в ряд их
-              подписи и выбранные значения обрезались. */}
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+          {/* Кузов, коробка, топливо и объём — те же полные enum, что
+              в приложении. Поиск не нужен: пунктов не больше десяти.
+              Сетка 2×2 на всех ширинах, как в панели фильтров: втроём
+              в ряд подписи и выбранные значения обрезались, а
+              столбиком четыре поля растягивали шаг формы. */}
+          <div className="grid grid-cols-2 gap-3">
             <ListPicker
               locale={locale}
               name="body_type"
@@ -1623,19 +1624,29 @@ export default function SellForm({
 
             {/* Объём необязателен: у электромобиля ДВС нет, и
                 подсказка говорит об этом прямо, чтобы продавец не
-                искал, что вписать. */}
-            <ListPicker
-              locale={locale}
-              name="engine_volume"
-              placeholder={t('picker_choose')}
-              label={t('sell_engine')}
-              emptyHint={t('sell_engine_hint')}
-              options={ENGINE_VOLUME_VALUES.map(
-                (v): PickerOption => ({ value: v, label: v }),
-              )}
-              value={engineVolume}
-              onChange={setEngineVolume}
-            />
+                искал, что вписать.
+
+                Подсказка стоит ОТДЕЛЬНЫМ абзацем, а не через
+                emptyHint пикера: тот показывается только у
+                заблокированного поля (как «Сначала выберите марку» у
+                модели), а объём доступен всегда — и текст не
+                появился бы никогда. */}
+            <div>
+              <ListPicker
+                locale={locale}
+                name="engine_volume"
+                placeholder={t('picker_choose')}
+                label={t('sell_engine')}
+                options={ENGINE_VOLUME_VALUES.map(
+                  (v): PickerOption => ({ value: v, label: v }),
+                )}
+                value={engineVolume}
+                onChange={setEngineVolume}
+              />
+              <p className="mt-1 text-small text-neutral-50">
+                {t('sell_engine_hint')}
+              </p>
+            </div>
           </div>
 
           <div>
