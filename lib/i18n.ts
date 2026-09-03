@@ -963,8 +963,28 @@ export const dict = {
     // Отказ от статуса. Возврат в «частное лицо» разрешён без
     // разрешения администратора — это право владельца.
     dealer_app_leave: 'Postani privatno lice',
-    dealer_app_leave_confirm:
-      'Kartica salona i podaci vitrine biće uklonjeni iz kataloga. Oglasi ostaju. Nastaviti?',
+    // ПОДРОБНЫЙ ДИАЛОГ ВМЕСТО window.confirm. Прежняя одна строка
+    // умещала не всё: человек не знал, что вернуться можно без новой
+    // заявки, и что витрину придётся заполнять заново. Строки ниже
+    // разложены по тому же принципу, что у удаления аккаунта —
+    // сначала что пропадёт, потом что останется.
+    //
+    // Ключ dealer_app_leave_confirm сохранён и используется как
+    // заголовок: переименование ничего бы не улучшило.
+    dealer_app_leave_confirm: 'Preći na privatno lice?',
+    dealer_app_leave_what: 'Šta se gubi:',
+    dealer_app_leave_item_card:
+      'kartica salona nestaje iz kataloga salona',
+    dealer_app_leave_item_page:
+      'stranica salona prestaje da radi, oglasi gube potpis «Autosalon»',
+    dealer_app_leave_item_showcase:
+      'naslovna slika, slogan, opis, radno vreme, grad i telefon salona se brišu',
+    dealer_app_leave_keep:
+      'Oglasi ostaju objavljeni — samo se prikazuju kao od privatnog prodavca.',
+    dealer_app_leave_back:
+      'Status možete vratiti bez novog zahteva: odobreni zahtev i dalje važi. Ali podatke vitrine ćete morati da unesete ponovo.',
+    dealer_app_leave_submit: 'Postani privatno lice',
+    dealer_app_leave_cancel: 'Odustani',
 
     // Ошибки подачи. Коды приходят из submitDealerApplication —
     // текст сервера русский, а строки подбираются здесь.
@@ -2116,8 +2136,20 @@ export const dict = {
     dealer_app_approved_text:
       'Данные салона ниже видят покупатели на вашей странице и в каталоге.',
     dealer_app_leave: 'Стать частным лицом',
-    dealer_app_leave_confirm:
-      'Карточка салона и данные витрины пропадут из каталога. Объявления останутся. Продолжить?',
+    // Подробный диалог — см. комментарий в сербском словаре.
+    dealer_app_leave_confirm: 'Стать частным лицом?',
+    dealer_app_leave_what: 'Что вы потеряете:',
+    dealer_app_leave_item_card: 'карточка салона пропадёт из каталога салонов',
+    dealer_app_leave_item_page:
+      'страница салона перестанет открываться, с объявлений исчезнет подпись «Автосалон»',
+    dealer_app_leave_item_showcase:
+      'обложка, слоган, описание, часы работы, город и телефон салона будут стёрты',
+    dealer_app_leave_keep:
+      'Объявления останутся опубликованными — просто будут показываться как от частного продавца.',
+    dealer_app_leave_back:
+      'Вернуть статус можно без новой заявки: одобренная продолжает действовать. Но данные витрины придётся заполнить заново.',
+    dealer_app_leave_submit: 'Стать частным лицом',
+    dealer_app_leave_cancel: 'Отмена',
 
     dealer_app_err_pending: 'Заявка уже отправлена и ждёт решения',
     dealer_app_err_already: 'У вас уже есть статус автосалона',

@@ -52,6 +52,7 @@ import {
 import type { DictKey, Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import type { DealerApplication } from '@/lib/types';
+import { useDismissableLayer } from '@/lib/useDismissableLayer';
 import { usePhoneCaret } from '@/lib/usePhoneCaret';
 
 // Соответствие кода ошибки ключу словаря. Таблицей, а не цепочкой
@@ -151,6 +152,18 @@ export default function DealerApplicationBlock({
   // каждого, оттесняли бы вниз то, за чем в профиль заходят.
   const [open, setOpen] = useState(false);
 
+  // Диалог отказа от статуса салона. Раньше здесь стоял
+  // window.confirm — системное окно с одной строкой текста, которое
+  // и выглядит чужим на сайте, и вмещает слишком мало: человек не
+  // узнавал ни что витрину придётся заполнять заново, ни что
+  // вернуться можно без новой заявки. Второе особенно важно —
+  // не зная этого, отказ читают как необратимый.
+  const [leaveOpen, setLeaveOpen] = useState(false);
+
+  // Esc, клик вне окна и блокировка прокрутки фона — общий хук, тот
+  // же, что у остальных слоёв сайта.
+  useDismissableLayer({ open: leaveOpen, onClose: () => setLeaveOpen(false) });
+
   const [companyName, setCompanyName] = useState('');
   const [taxId, setTaxId] = useState('');
   const [regNum, setRegNum] = useState('');
@@ -188,12 +201,13 @@ export default function DealerApplicationBlock({
             </p>
           </div>
 
-          {/* Отказ от статуса — вторичной кнопкой и с подтверждением.
-              Цена ошибки высока: салон пропадёт из каталога витрин, а
-              поля витрины (обложка, слоган, часы, телефон) сервер
-              затрёт при сохранении с seller_kind = 'private'. Вернуть
-              статус можно без новой заявки — одобренная продолжает
-              действовать, — но заполнять витрину придётся заново. */}
+          {/* Отказ от статуса — вторичной кнопкой и с подробным
+              диалогом. Цена ошибки высока: салон пропадёт из каталога
+              витрин, а поля витрины (обложка, слоган, часы, телефон)
+              сервер затрёт при сохранении с seller_kind = 'private'.
+              Вернуть статус можно без новой заявки — одобренная
+              продолжает действовать, — но заполнять витрину придётся
+              заново, и об этом человек обязан узнать ДО нажатия. */}
           {/* НА МОБИЛЬНОМ КНОПКА ПО ЦЕНТРУ, на десктопе слева. В узкой
               колонке текст блока занимает всю ширину, и короткая
               кнопка у левого края висела под ним без всякой опоры. На
@@ -203,15 +217,90 @@ export default function DealerApplicationBlock({
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => {
-                if (window.confirm(t('dealer_app_leave_confirm'))) {
-                  onLeaveDealer();
-                }
-              }}
+              onClick={() => setLeaveOpen(true)}
             >
               {t('dealer_app_leave')}
             </Button>
           </div>
+
+          {/* ------------------------------------------------------------
+              ДИАЛОГ ОТКАЗА ОТ СТАТУСА.
+              ------------------------------------------------------------
+              Разметка повторяет диалог удаления аккаунта
+              (DeleteAccountBlock): два разных модальных окна в одном
+              кабинете читались бы как элементы разных продуктов.
+
+              НАБОРА СЛОВА ЗДЕСЬ НЕТ, в отличие от удаления. Второй
+              замок ставят там, где действие необратимо; отказ от
+              статуса откатывается самим владельцем — заявка остаётся
+              одобренной. Требовать за него ту же цену значило бы
+              уравнять в глазах человека потерю витрины и потерю
+              аккаунта.
+
+              Поле подтверждения отсутствует, поэтому и автофокуса
+              нет — диалог открывается целиком видимым и на мобильном
+              не уезжает под клавиатуру. */}
+          {leaveOpen && (
+            <div
+              className="fixed inset-0 z-modal flex items-end justify-center bg-surface-overlay p-0 sm:items-center sm:p-4"
+              onClick={() => setLeaveOpen(false)}
+            >
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="leave-dealer-title"
+                onClick={(e) => e.stopPropagation()}
+                className="
+                  max-h-[90dvh] w-full overflow-y-auto rounded-t-card bg-white p-4
+                  sm:max-w-lg sm:rounded-card sm:p-6
+                "
+              >
+                <h2
+                  id="leave-dealer-title"
+                  className="text-h3 font-semibold"
+                >
+                  {t('dealer_app_leave_confirm')}
+                </h2>
+
+                <p className="mt-3 text-caption font-medium">
+                  {t('dealer_app_leave_what')}
+                </p>
+                <ul className="mt-1 list-disc space-y-1 pl-5 text-caption text-neutral-60">
+                  <li>{t('dealer_app_leave_item_card')}</li>
+                  <li>{t('dealer_app_leave_item_page')}</li>
+                  <li>{t('dealer_app_leave_item_showcase')}</li>
+                </ul>
+
+                {/* Что остаётся и как вернуться. Обе строки обязательны:
+                    без первой человек боится за объявления, без второй
+                    считает отказ окончательным. */}
+                <p className="mt-3 text-micro text-neutral-50">
+                  {t('dealer_app_leave_keep')}
+                </p>
+                <p className="mt-2 text-micro text-neutral-50">
+                  {t('dealer_app_leave_back')}
+                </p>
+
+                <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setLeaveOpen(false)}
+                  >
+                    {t('dealer_app_leave_cancel')}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      setLeaveOpen(false);
+                      onLeaveDealer();
+                    }}
+                  >
+                    {t('dealer_app_leave_submit')}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </Card>
     );
