@@ -281,22 +281,42 @@ export default function DealerApplicationBlock({
                   {t('dealer_app_leave_back')}
                 </p>
 
-                <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                  <Button
-                    variant="secondary"
-                    onClick={() => setLeaveOpen(false)}
-                  >
-                    {t('dealer_app_leave_cancel')}
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() => {
-                      setLeaveOpen(false);
-                      onLeaveDealer();
-                    }}
-                  >
-                    {t('dealer_app_leave_submit')}
-                  </Button>
+                {/* КНОПКИ ДЕЛЯТ ШИРИНУ ОКНА ПОРОВНУ. Прежде они
+                    жались вправо и разъезжались по ширине текста:
+                    «Отмена» выходила вдвое уже «Стать частным лицом»,
+                    и пара читалась как случайная, а не как выбор из
+                    двух равных вариантов.
+
+                    flex-1 на обёртках, а не fullWidth на кнопках: тот
+                    даёт w-full, что в flex-строке лишь растягивает
+                    кнопку по её собственному содержимому. Ширину
+                    поровну делят именно контейнеры.
+
+                    На мобильном строка складывается в столбец
+                    (flex-col-reverse), и каждая кнопка занимает всю
+                    ширину — там делить нечего. */}
+                <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row">
+                  <div className="flex-1">
+                    <Button
+                      variant="secondary"
+                      fullWidth
+                      onClick={() => setLeaveOpen(false)}
+                    >
+                      {t('dealer_app_leave_cancel')}
+                    </Button>
+                  </div>
+                  <div className="flex-1">
+                    <Button
+                      variant="destructive"
+                      fullWidth
+                      onClick={() => {
+                        setLeaveOpen(false);
+                        onLeaveDealer();
+                      }}
+                    >
+                      {t('dealer_app_leave_submit')}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
