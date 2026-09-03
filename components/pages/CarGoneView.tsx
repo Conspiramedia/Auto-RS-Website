@@ -102,16 +102,20 @@ export default async function CarGoneView({
               : t('car_gone_text')}
           </p>
 
-          {/* Столбик на мобильном, ряд с sm — тот же приём, что на
-              экранах 404 и 500: inline-grid уравнивает кнопки по самой
-              широкой, поэтому ширина берётся по длине подписи. */}
-          <div className="mt-6 inline-grid grid-cols-1 gap-3 [&>*]:w-full sm:[&>*]:w-auto sm:flex sm:flex-row sm:items-center sm:justify-center">
-            <Button size="lg" href={localeHref(locale, catalogPath)}>
+          {/* Кнопки во всю ширину карточки — столбиком на любом
+              экране. На 404 и 500 здесь стоит inline-grid: там блок
+              висит на пустой странице, растягиваться не по чему, и
+              ширина берётся по длине подписи. Внутри Card рамка сама
+              задаёт ширину, и кнопки, ужатые по тексту, выглядели
+              случайно узкими на её фоне. */}
+          <div className="mt-6 grid grid-cols-1 gap-3">
+            <Button size="lg" fullWidth href={localeHref(locale, catalogPath)}>
               {catalogLabel}
             </Button>
             <Button
               variant="secondary"
               size="lg"
+              fullWidth
               href={localeHref(locale, '/')}
             >
               {t('nf_home')}
