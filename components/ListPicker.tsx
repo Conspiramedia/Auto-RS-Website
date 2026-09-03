@@ -258,7 +258,7 @@ export default function ListPicker({
               </div>
             )}
 
-            <div className="max-h-[55vh] overflow-y-auto sm:max-h-64">
+            <div className="no-scrollbar max-h-[55vh] overflow-y-auto sm:max-h-64">
               {/* «Указать своё» — первым пунктом, как в приложении. */}
               {showCustom && (
                 <button

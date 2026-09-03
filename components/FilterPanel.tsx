@@ -284,7 +284,7 @@ export default function FilterPanel({
           onClick={() => setOpen(false)}
         >
           <div
-            className="max-h-[90vh] w-full overflow-y-auto rounded-t-card bg-white p-4 sm:max-w-lg sm:rounded-card"
+            className="no-scrollbar max-h-[90vh] w-full overflow-y-auto rounded-t-card bg-white p-4 sm:max-w-lg sm:rounded-card"
             onClick={(e) => e.stopPropagation()}
             // Те же роли, что у диалога выхода: шторка перекрывает
             // страницу целиком, и скринридер обязан объявить её окном,
