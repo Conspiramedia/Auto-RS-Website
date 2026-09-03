@@ -88,15 +88,33 @@ export const OPERATOR_VERIFIED =
 
 // Версия и дата редакции документа. Поднимается при КАЖДОЙ правке
 // текста: по ней проверяется, принимал ли пользователь действующую
-// редакцию. Редакция .2 — терминологическая: сервис называется
+// редакцию. Редакция .2 была терминологической: сервис стал называться
 // «Платформа»/„Platforma“ вместо прежнего «Приложение»/„Aplikacija“.
 // Сайт решает все задачи сам, и документ, называющий его приложением,
 // вводил читателя в заблуждение относительно предмета соглашения.
-export const POLICY_VERSION = '2026-08-26.2';
+//
+// РЕДАКЦИЯ ОТ 3 СЕНТЯБРЯ — СОДЕРЖАТЕЛЬНАЯ, и версия поднята именно
+// поэтому: изменился состав обрабатываемых данных и способ входа, а
+// это условия, на которые пользователь давал согласие. Что вошло:
+//
+//   • появился раздел о cookie и аналитике. До него Политика не
+//     упоминала их вовсе, хотя баннер согласия на сайте стоит и по
+//     согласию подключается GA4, который куки ставит;
+//   • вход описан честно — по SMS ЛИБО по коду на почту (миграции
+//     0082, 0106, 0107 открыли почтовый канал всем), а почта внесена
+//     в перечень обрабатываемых данных;
+//   • убраны push-уведомления и сбор идентификатора устройства:
+//     на сайте их нет, уведомления живут в кабинете и дублируются
+//     письмом. Заявлять сбор данных, которого не происходит, нельзя
+//     ровно так же, как умалчивать о реальном;
+//   • название приведено к «RS Auto»: в документах оставалось
+//     «Auto RS», не совпадавшее ни с брендом (lib/brand.ts), ни с
+//     наименованием Оператора.
+export const POLICY_VERSION = '2026-09-03.3';
 
 export const POLICY_UPDATED: Record<Locale, string> = {
-  sr: '26. avgust 2026.',
-  ru: '26 августа 2026 г.',
+  sr: '3. septembar 2026.',
+  ru: '3 сентября 2026 г.',
 };
 
 // Пункт документа: заголовок раздела и его абзацы. Структура вместо
@@ -122,9 +140,9 @@ export type LegalSection = {
 const PRIVACY_RU: LegalSection[] = [
   {
     paragraphs: [
-      'Настоящая Политика конфиденциальности (далее — «Политика») определяет порядок обработки и защиты персональной информации пользователей (далее — «Пользователь»), которую платформа «Auto RS» (далее — «Платформа») может получить во время использования сервиса.',
-      `Оператором персональных данных (лицом, определяющим цели и способы обработки) является ${OPERATOR.legalName} (далее — «Оператор» или «мы»). Полные реквизиты Оператора указаны на странице «Контакты» сайта и в разделе 8 настоящей Политики.`,
-      'Платформа предназначено для лиц, достигших 18 лет. Используя Платформу, Пользователь подтверждает, что ему исполнилось 18 лет. Мы сознательно не собираем данные лиц младше этого возраста; при обнаружении таких данных они удаляются.',
+      'Настоящая Политика конфиденциальности (далее — «Политика») определяет порядок обработки и защиты персональной информации пользователей (далее — «Пользователь»), которую платформа «RS Auto» (далее — «Платформа») может получить во время использования сервиса.',
+      `Оператором персональных данных (лицом, определяющим цели и способы обработки) является ${OPERATOR.legalName} (далее — «Оператор» или «мы»). Полные реквизиты Оператора указаны на странице «Контакты» сайта и в разделе 9 настоящей Политики.`,
+      'Платформа предназначена для лиц, достигших 18 лет. Используя Платформу, Пользователь подтверждает, что ему исполнилось 18 лет. Мы сознательно не собираем данные лиц младше этого возраста; при обнаружении таких данных они удаляются.',
       'Использование Платформы означает безоговорочное согласие Пользователя с настоящей Политикой и указанными в ней условиями обработки его персональной информации. В случае несогласия с этими условиями Пользователь должен воздержаться от использования Платформы.',
     ],
   },
@@ -133,7 +151,7 @@ const PRIVACY_RU: LegalSection[] = [
     paragraphs: [
       'Мы обрабатываем данные исключительно для исполнения пользовательского соглашения, предоставления сервисов Платформы и защиты интересов Пользователей.',
       '• Предоставление сервиса: обеспечение возможности публикации объявлений о продаже и аренде автомобилей, связи между покупателями/арендаторами и продавцами.',
-      '• Идентификация: создание, верификация и защита учётной записи Пользователя (вход выполняется по номеру телефона и одноразовому коду из SMS).',
+      '• Идентификация: создание, верификация и защита учётной записи Пользователя (вход выполняется по одноразовому коду, который направляется на номер телефона в SMS либо на адрес электронной почты — по выбору Пользователя).',
       '• Связь и уведомления: направление уведомлений, запросов и информации, касающихся использования Платформы, а также обработка запросов от Пользователя.',
       '• Безопасность: предотвращение мошенничества, спама, оскорблений и других нарушений правил Платформы.',
       '• Аналитика: улучшение качества Платформы, удобства его использования и разработка новых функций на основе обезличенных технических данных.',
@@ -144,12 +162,13 @@ const PRIVACY_RU: LegalSection[] = [
     paragraphs: [
       'Платформа собирает и обрабатывает следующие категории данных:',
       'Данные, предоставляемые Пользователем:',
-      '• Номер телефона (используется для авторизации по SMS-коду, для связи и отображается в объявлениях как контакт продавца).',
+      '• Номер телефона (используется для авторизации по SMS-коду, для связи и отображается в объявлениях как контакт продавца). Указание номера обязательно для публикации объявления.',
+      '• Адрес электронной почты (используется как альтернативный способ входа по одноразовому коду и для служебных уведомлений — например, о решении модерации или об истечении срока публикации объявления). Другим пользователям адрес не показывается.',
       '• Данные профиля (имя или псевдоним, изображение профиля/аватар).',
       '• Контент объявлений (марка, модель, год, пробег, цена, город, тип кузова, коробка передач, топливо, текстовое описание и фотографии автомобиля).',
       'Автоматически собираемые данные:',
       '• Геоданные (город, указанный Пользователем вручную при подаче объявления).',
-      '• Технические данные (уникальный идентификатор устройства, тип и модель устройства, версия операционной системы, версия Платформы, IP-адрес, время доступа).',
+      '• Технические данные (IP-адрес, тип и версия браузера, операционная система устройства, страницы Платформы, которые Пользователь открывал, и время доступа).',
     ],
   },
   {
@@ -160,13 +179,35 @@ const PRIVACY_RU: LegalSection[] = [
       '• Публичные данные: имя, аватар, номер телефона и контент объявлений становятся доступны другим пользователям Платформы в целях совершения сделок купли-продажи и аренды автомобилей.',
       '• Облачная инфраструктура: данные передаются и хранятся на серверах провайдера инфраструктуры (Supabase) на основании соглашения об обработке данных и при условии соблюдения строгих мер безопасности.',
       '• Отправка SMS: для доставки одноразовых кодов авторизации номер телефона передаётся провайдеру SMS-рассылки.',
-      '• Push-уведомления: для доставки уведомлений на устройство может использоваться сервис облачных уведомлений. При включении уведомлений обрабатывается технический токен устройства; содержимое личной переписки в таких уведомлениях не раскрывается.',
+      '• Отправка электронной почты: для доставки одноразовых кодов входа и служебных уведомлений адрес электронной почты передаётся провайдеру почтовых рассылок.',
+      '• Уведомления Платформы: сообщения о решении модерации, ответах в переписке и сроке публикации показываются в личном кабинете и дублируются письмом на указанный адрес электронной почты. Содержимое личной переписки в письмах не раскрывается.',
       '• Требование законодательства: передача предусмотрена применимым законодательством в рамках установленной процедуры (по запросу суда или уполномоченных органов).',
       'Платформа обязуется не продавать, не сдавать в аренду и не передавать персональные данные Пользователя в маркетинговых целях третьим лицам без явного согласия.',
     ],
   },
   {
-    heading: '4. Место обработки, защита и хранение данных',
+    // РАЗДЕЛ О КУКИ. Появился в редакции .3: до неё Политика не
+    // упоминала их вовсе, хотя на сайте стоит баннер согласия и по
+    // согласию подключается GA4, который куки ставит. Баннер,
+    // спрашивающий согласие на то, о чём документ молчит, — пробел не
+    // стилистический, а юридический.
+    //
+    // Текст описывает РЕАЛЬНОЕ поведение кода (lib/analytics.ts,
+    // lib/consent.ts), а не типовую формулировку: Plausible работает
+    // всегда и куки не ставит, GA4 — только после согласия, само
+    // согласие лежит в localStorage браузера и на сервер не уходит.
+    heading: '4. Файлы cookie и аналитика',
+    paragraphs: [
+      'Cookie — небольшие файлы, которые сайт сохраняет в браузере Пользователя. Платформа использует их в двух целях, и правила для этих целей разные.',
+      '• Технически необходимые. Обеспечивают работу входа и сохранение сессии: без них Пользователь не сможет оставаться авторизованным, публиковать объявления и вести переписку. Такие файлы устанавливаются всегда, поскольку без них сервис не работает; согласия они не требуют.',
+      '• Аналитические. Помогают понять, какими разделами пользуются и где посетители испытывают затруднения. Устанавливаются ТОЛЬКО после явного согласия Пользователя, данного в баннере при первом посещении.',
+      'Базовая статистика посещаемости собирается инструментом, который не использует cookie и не формирует профиль посетителя: он не хранит идентификаторов между визитами и не позволяет узнать конкретного человека. Поэтому такая статистика собирается независимо от решения в баннере, в том числе при отказе.',
+      'Отказ от аналитических cookie не ограничивает доступ к Платформе: все функции остаются доступны в полном объёме.',
+      'Решение Пользователя сохраняется в локальном хранилище его браузера и на серверы Платформы не передаётся. Изменить или отозвать согласие можно, очистив данные сайта в настройках браузера, — после этого баннер будет показан снова. Повторный запрос происходит и при выходе новой редакции настоящей Политики.',
+    ],
+  },
+  {
+    heading: '5. Место обработки, защита и хранение данных',
     paragraphs: [
       '• Сроки хранения: данные хранятся в течение всего срока существования учётной записи Пользователя и до момента достижения целей их обработки, либо до отзыва согласия Пользователем.',
       '• Меры безопасности: для защиты данных применяются современные технические и организационные меры, включая шифрование данных при передаче (SSL/TLS), ограничение прав доступа на уровне базы данных (Row Level Security — RLS), регулярные аудиты безопасности.',
@@ -175,7 +216,7 @@ const PRIVACY_RU: LegalSection[] = [
     ],
   },
   {
-    heading: '5. Права Пользователей',
+    heading: '6. Права Пользователей',
     paragraphs: [
       'Пользователь имеет право:',
       '• На доступ и изменение: самостоятельно редактировать, обновлять или исправлять свои персональные данные через профиль на Платформе.',
@@ -185,7 +226,7 @@ const PRIVACY_RU: LegalSection[] = [
     ],
   },
   {
-    heading: '6. Ответственность Пользователя за размещаемый контент',
+    heading: '7. Ответственность Пользователя за размещаемый контент',
     paragraphs: [
       'Пользователь несёт полную и единоличную ответственность за любой контент (тексты объявлений, фотографии, описания, комментарии и сообщения), который он размещает или передаёт через Платформу.',
       'Размещая контент, Пользователь гарантирует и обязуется, что он:',
@@ -198,13 +239,13 @@ const PRIVACY_RU: LegalSection[] = [
     ],
   },
   {
-    heading: '7. Изменение Политики конфиденциальности',
+    heading: '8. Изменение Политики конфиденциальности',
     paragraphs: [
       'Мы оставляем за собой право вносить изменения в настоящую Политику. Новая редакция вступает в силу с момента её размещения на Платформе, если иное не предусмотрено новой редакцией Политики. При внесении существенных изменений, влияющих на права Пользователя, Платформа обязуется уведомить об этом (например, через всплывающее окно) и запросить повторное согласие.',
     ],
   },
   {
-    heading: '8. Контакты и реквизиты',
+    heading: '9. Контакты и реквизиты',
     paragraphs: [
       'По любым вопросам, связанным с обработкой, изменением или удалением персональных данных, вы можете обратиться к нам через страницу «Контакты» на сайте, через форму обратной связи или по электронной почте.',
       `Оператор: ${OPERATOR.legalName}.`,
@@ -224,8 +265,8 @@ const PRIVACY_RU: LegalSection[] = [
 const PRIVACY_SR: LegalSection[] = [
   {
     paragraphs: [
-      'Ova Politika privatnosti (u daljem tekstu: „Politika“) određuje način obrade i zaštite ličnih podataka korisnika (u daljem tekstu: „Korisnik“) koje platforma „Auto RS“ (u daljem tekstu: „Platforma“) može dobiti tokom korišćenja servisa.',
-      `Rukovalac ličnih podataka (lice koje određuje svrhe i način obrade) jeste ${OPERATOR.legalName} (u daljem tekstu: „Rukovalac“ ili „mi“). Puni podaci Rukovaoca navedeni su na stranici „Kontakt“ na sajtu i u odeljku 8 ove Politike.`,
+      'Ova Politika privatnosti (u daljem tekstu: „Politika“) određuje način obrade i zaštite ličnih podataka korisnika (u daljem tekstu: „Korisnik“) koje platforma „RS Auto“ (u daljem tekstu: „Platforma“) može dobiti tokom korišćenja servisa.',
+      `Rukovalac ličnih podataka (lice koje određuje svrhe i način obrade) jeste ${OPERATOR.legalName} (u daljem tekstu: „Rukovalac“ ili „mi“). Puni podaci Rukovaoca navedeni su na stranici „Kontakt“ na sajtu i u odeljku 9 ove Politike.`,
       'Platforma je namenjena licima starijim od 18 godina. Korišćenjem Platforme Korisnik potvrđuje da ima 18 godina. Svesno ne prikupljamo podatke lica mlađih od tog uzrasta; ako se takvi podaci otkriju, brišu se.',
       'Korišćenje Platforme znači bezuslovnu saglasnost Korisnika sa ovom Politikom i u njoj navedenim uslovima obrade njegovih ličnih podataka. U slučaju neslaganja sa ovim uslovima, Korisnik treba da se uzdrži od korišćenja Platforme.',
     ],
@@ -235,7 +276,7 @@ const PRIVACY_SR: LegalSection[] = [
     paragraphs: [
       'Podatke obrađujemo isključivo radi izvršenja korisničkog ugovora, pružanja usluga Platforme i zaštite interesa Korisnika.',
       '• Pružanje usluge: omogućavanje objavljivanja oglasa za prodaju i izdavanje automobila, kao i povezivanje kupaca/zakupaca i prodavaca.',
-      '• Identifikacija: kreiranje, verifikacija i zaštita korisničkog naloga (prijava se vrši putem broja telefona i jednokratnog koda iz SMS-a).',
+      '• Identifikacija: kreiranje, verifikacija i zaštita korisničkog naloga (prijava se vrši jednokratnim kodom koji se šalje na broj telefona SMS-om ili na adresu elektronske pošte — po izboru Korisnika).',
       '• Komunikacija i obaveštenja: slanje obaveštenja, upita i informacija u vezi sa korišćenjem Platforme, kao i obrada zahteva Korisnika.',
       '• Bezbednost: sprečavanje prevara, spama, uvreda i drugih kršenja pravila Platforme.',
       '• Analitika: poboljšanje kvaliteta Platforme, njene upotrebljivosti i razvoj novih funkcija na osnovu anonimizovanih tehničkih podataka.',
@@ -246,12 +287,13 @@ const PRIVACY_SR: LegalSection[] = [
     paragraphs: [
       'Platforma prikuplja i obrađuje sledeće kategorije podataka:',
       'Podaci koje dostavlja Korisnik:',
-      '• Broj telefona (koristi se za prijavu putem SMS koda, za kontakt i prikazuje se u oglasima kao kontakt prodavca).',
+      '• Broj telefona (koristi se za prijavu putem SMS koda, za kontakt i prikazuje se u oglasima kao kontakt prodavca). Navođenje broja je obavezno za objavljivanje oglasa.',
+      '• Adresa elektronske pošte (koristi se kao alternativni način prijave jednokratnim kodom i za službena obaveštenja — na primer o odluci moderacije ili o isteku roka objave oglasa). Drugim korisnicima adresa se ne prikazuje.',
       '• Podaci profila (ime ili nadimak, slika profila/avatar).',
       '• Sadržaj oglasa (marka, model, godište, kilometraža, cena, grad, tip karoserije, menjač, gorivo, tekstualni opis i fotografije automobila).',
       'Automatski prikupljani podaci:',
       '• Geopodaci (grad koji je Korisnik ručno naveo pri postavljanju oglasa).',
-      '• Tehnički podaci (jedinstveni identifikator uređaja, tip i model uređaja, verzija operativnog sistema, verzija Platforme, IP adresa, vreme pristupa).',
+      '• Tehnički podaci (IP adresa, tip i verzija pregledača, operativni sistem uređaja, stranice Platforme koje je Korisnik otvarao i vreme pristupa).',
     ],
   },
   {
@@ -262,22 +304,36 @@ const PRIVACY_SR: LegalSection[] = [
       '• Javni podaci: ime, avatar, broj telefona i sadržaj oglasa postaju dostupni drugim korisnicima Platforme radi zaključivanja poslova kupoprodaje i izdavanja automobila.',
       '• Cloud infrastruktura: podaci se prenose i čuvaju na serverima pružaoca infrastrukture (Supabase) na osnovu ugovora o obradi podataka i uz poštovanje strogih mera bezbednosti.',
       '• Slanje SMS-a: radi dostave jednokratnih kodova za prijavu, broj telefona se prosleđuje pružaocu usluge SMS slanja.',
-      '• Push obaveštenja: za dostavu obaveštenja na uređaj može se koristiti servis cloud obaveštenja. Pri uključenim obaveštenjima obrađuje se tehnički token uređaja; sadržaj lične prepiske se u takvim obaveštenjima ne otkriva.',
+      '• Slanje elektronske pošte: radi dostave jednokratnih kodova za prijavu i službenih obaveštenja, adresa elektronske pošte se prosleđuje pružaocu usluge slanja e-pošte.',
+      '• Obaveštenja Platforme: poruke o odluci moderacije, odgovorima u prepisci i roku objave prikazuju se u korisničkom nalogu i dupliraju se e-poštom na navedenu adresu. Sadržaj lične prepiske se u porukama ne otkriva.',
       '• Zahtev zakona: prenos je predviđen važećim propisima u okviru propisanog postupka (po zahtevu suda ili nadležnih organa).',
       'Platforma se obavezuje da neće prodavati, iznajmljivati niti prenositi lične podatke Korisnika u marketinške svrhe trećim licima bez izričite saglasnosti.',
     ],
   },
   {
-    heading: '4. Mesto obrade, zaštita i čuvanje podataka',
+    // Сербское зеркало раздела о куки — см. комментарий у русской
+    // версии выше.
+    heading: '4. Kolačići i analitika',
+    paragraphs: [
+      'Kolačići (cookies) su male datoteke koje sajt čuva u pregledaču Korisnika. Platforma ih koristi u dve svrhe, a pravila za te svrhe se razlikuju.',
+      '• Tehnički neophodni. Omogućavaju rad prijave i čuvanje sesije: bez njih Korisnik ne može ostati prijavljen, objavljivati oglase i voditi prepisku. Takve datoteke se postavljaju uvek, jer bez njih servis ne radi; saglasnost za njih nije potrebna.',
+      '• Analitički. Pomažu da se razume koji se delovi koriste i gde posetioci nailaze na poteškoće. Postavljaju se ISKLJUČIVO nakon izričite saglasnosti Korisnika date u baneru pri prvoj poseti.',
+      'Osnovna statistika poseta prikuplja se alatom koji ne koristi kolačiće i ne formira profil posetioca: ne čuva identifikatore između poseta i ne omogućava prepoznavanje konkretne osobe. Zato se takva statistika prikuplja nezavisno od odluke u baneru, uključujući i odbijanje.',
+      'Odbijanje analitičkih kolačića ne ograničava pristup Platformi: sve funkcije ostaju dostupne u punom obimu.',
+      'Odluka Korisnika čuva se u lokalnom skladištu njegovog pregledača i ne prenosi se na servere Platforme. Saglasnost se može izmeniti ili povući brisanjem podataka sajta u podešavanjima pregledača — nakon toga se baner prikazuje ponovo. Ponovni upit se javlja i kada izađe nova verzija ove Politike.',
+    ],
+  },
+  {
+    heading: '5. Mesto obrade, zaštita i čuvanje podataka',
     paragraphs: [
       '• Rokovi čuvanja: podaci se čuvaju tokom celog perioda postojanja korisničkog naloga i do ostvarenja svrhe njihove obrade, odnosno do povlačenja saglasnosti Korisnika.',
       '• Mere bezbednosti: za zaštitu podataka primenjuju se savremene tehničke i organizacione mere, uključujući šifrovanje podataka pri prenosu (SSL/TLS), ograničenje prava pristupa na nivou baze podataka (Row Level Security — RLS) i redovne bezbednosne provere.',
-      '• Bezbednost poruka: lične poruke, liste omiljenih i istorija operacija su izolovane i zaštićene od pristupa trećih lica.',
+      '• Bezbednost poruka: lične poruke, liste favorita i istorija operacija su izolovane i zaštićene od pristupa trećih lica.',
       '• Merodavno pravo: na obradu podataka i na ovu Politiku primenjuje se zakonodavstvo Republike Srbije. Podaci se mogu čuvati i obrađivati na serverima pružalaca infrastrukture izvan Srbije, uz poštovanje odgovarajućih mera zaštite.',
     ],
   },
   {
-    heading: '5. Prava Korisnika',
+    heading: '6. Prava Korisnika',
     paragraphs: [
       'Korisnik ima pravo:',
       '• Na pristup i izmenu: da samostalno uređuje, ažurira ili ispravlja svoje lične podatke putem profila na Platformi.',
@@ -287,7 +343,7 @@ const PRIVACY_SR: LegalSection[] = [
     ],
   },
   {
-    heading: '6. Odgovornost Korisnika za objavljeni sadržaj',
+    heading: '7. Odgovornost Korisnika za objavljeni sadržaj',
     paragraphs: [
       'Korisnik snosi punu i isključivu odgovornost za svaki sadržaj (tekstove oglasa, fotografije, opise, komentare i poruke) koji objavljuje ili prenosi putem Platforme.',
       'Objavljivanjem sadržaja Korisnik garantuje i obavezuje se da sadržaj:',
@@ -300,13 +356,13 @@ const PRIVACY_SR: LegalSection[] = [
     ],
   },
   {
-    heading: '7. Izmena Politike privatnosti',
+    heading: '8. Izmena Politike privatnosti',
     paragraphs: [
       'Zadržavamo pravo da menjamo ovu Politiku. Nova verzija stupa na snagu od trenutka njenog objavljivanja na Platformi, osim ako novom verzijom Politike nije drugačije predviđeno. Pri unošenju bitnih izmena koje utiču na prava Korisnika, Platforma se obavezuje da o tome obavesti (na primer, putem iskačućeg prozora) i zatraži ponovnu saglasnost.',
     ],
   },
   {
-    heading: '8. Kontakt i podaci',
+    heading: '9. Kontakt i podaci',
     paragraphs: [
       'Za sva pitanja u vezi sa obradom, izmenom ili brisanjem ličnih podataka možete nam se obratiti putem stranice „Kontakt“ na sajtu, obrasca za kontakt ili e-poštom.',
       `Rukovalac: ${OPERATOR.legalName}.`,
@@ -327,22 +383,22 @@ const PRIVACY_SR: LegalSection[] = [
 const TERMS_RU: LegalSection[] = [
   {
     paragraphs: [
-      'Настоящие Условия использования (далее — «Условия») регулируют отношения между Пользователем и Оператором платформы «Auto RS» (далее — «Платформа») в связи с использованием Платформы.',
-      'Начиная использовать Платформа, Пользователь подтверждает, что полностью ознакомился с настоящими Условиями и принимает их. В случае несогласия следует прекратить использование Платформы.',
+      'Настоящие Условия использования (далее — «Условия») регулируют отношения между Пользователем и Оператором платформы «RS Auto» (далее — «Платформа») в связи с использованием Платформы.',
+      'Начиная использовать Платформу, Пользователь подтверждает, что полностью ознакомился с настоящими Условиями и принимает их. В случае несогласия следует прекратить использование Платформы.',
     ],
   },
   {
     heading: '1. Предмет и статус Платформы',
     paragraphs: [
-      'Платформа «Auto RS» является информационной площадкой (сервисом объявлений об автомобилях), которая предоставляет Пользователям техническую возможность размещать объявления о продаже и аренде автомобилей, находить транспортные средства и связываться друг с другом.',
+      'Платформа «RS Auto» является информационной площадкой (сервисом объявлений об автомобилях), которая предоставляет Пользователям техническую возможность размещать объявления о продаже и аренде автомобилей, находить транспортные средства и связываться друг с другом.',
       'Платформа НЕ является стороной сделок между Пользователями, не выступает продавцом, покупателем, арендодателем, посредником, агентом или гарантом по сделкам. Все сделки заключаются и исполняются Пользователями напрямую, на их собственный риск и под их ответственность.',
     ],
   },
   {
     heading: '2. Регистрация и учётная запись',
     paragraphs: [
-      '• Использование ряда функций (публикация объявлений, переписка, избранное) требует авторизации по номеру телефона и одноразовому коду из SMS.',
-      '• Платформа предназначено для лиц старше 18 лет. Регистрируясь, Пользователь подтверждает своё совершеннолетие.',
+      '• Использование ряда функций (публикация объявлений, переписка, избранное, скрытие объявлений из выдачи) требует авторизации. Вход выполняется по одноразовому коду, который направляется на номер телефона в SMS либо на адрес электронной почты — по выбору Пользователя.',
+      '• Платформа предназначена для лиц старше 18 лет. Регистрируясь, Пользователь подтверждает своё совершеннолетие.',
       '• Пользователь отвечает за сохранность доступа к своей учётной записи и за все действия, совершённые под ней.',
       '• Запрещается создавать учётные записи от имени третьих лиц и вводить в заблуждение относительно своей личности.',
     ],
@@ -411,21 +467,21 @@ const TERMS_RU: LegalSection[] = [
 const TERMS_SR: LegalSection[] = [
   {
     paragraphs: [
-      'Ovi Uslovi korišćenja (u daljem tekstu: „Uslovi“) uređuju odnose između Korisnika i Rukovaoca platforme „Auto RS“ (u daljem tekstu: „Platforma“) u vezi sa korišćenjem Platforme.',
+      'Ovi Uslovi korišćenja (u daljem tekstu: „Uslovi“) uređuju odnose između Korisnika i Rukovaoca platforme „RS Auto“ (u daljem tekstu: „Platforma“) u vezi sa korišćenjem Platforme.',
       'Počinjanjem korišćenja Platforme Korisnik potvrđuje da se u potpunosti upoznao sa ovim Uslovima i da ih prihvata. U slučaju neslaganja, potrebno je prekinuti korišćenje Platforme.',
     ],
   },
   {
     heading: '1. Predmet i status Platforme',
     paragraphs: [
-      'Platforma „Auto RS“ je informativna platforma (servis oglasa o automobilima) koja Korisnicima pruža tehničku mogućnost da postavljaju oglase za prodaju i izdavanje automobila, pronalaze vozila i međusobno stupaju u kontakt.',
+      'Platforma „RS Auto“ je informativna platforma (servis oglasa o automobilima) koja Korisnicima pruža tehničku mogućnost da postavljaju oglase za prodaju i izdavanje automobila, pronalaze vozila i međusobno stupaju u kontakt.',
       'Platforma NIJE strana u poslovima između Korisnika, ne nastupa kao prodavac, kupac, zakupodavac, posrednik, agent ili garant u poslovima. Svi poslovi se zaključuju i izvršavaju između Korisnika neposredno, na njihov sopstveni rizik i odgovornost.',
     ],
   },
   {
     heading: '2. Registracija i korisnički nalog',
     paragraphs: [
-      '• Korišćenje niza funkcija (objavljivanje oglasa, prepiska, omiljeni) zahteva prijavu putem broja telefona i jednokratnog koda iz SMS-a.',
+      '• Korišćenje niza funkcija (objavljivanje oglasa, prepiska, favoriti, sakrivanje oglasa iz pretrage) zahteva prijavu. Prijava se vrši jednokratnim kodom koji se šalje na broj telefona SMS-om ili na adresu elektronske pošte — po izboru Korisnika.',
       '• Platforma je namenjena licima starijim od 18 godina. Registracijom Korisnik potvrđuje svoju punoletnost.',
       '• Korisnik odgovara za čuvanje pristupa svom nalogu i za sve radnje izvršene pod tim nalogom.',
       '• Zabranjeno je kreiranje naloga u ime trećih lica i dovođenje u zabludu u pogledu sopstvenog identiteta.',
