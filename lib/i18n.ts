@@ -982,7 +982,7 @@ export const dict = {
     dealer_app_leave_keep:
       'Oglasi ostaju objavljeni — samo se prikazuju kao od privatnog prodavca.',
     dealer_app_leave_back:
-      'Status možete vratiti bez novog zahteva: odobreni zahtev i dalje važi. Ali podatke vitrine ćete morati da unesete ponovo.',
+      'Za povratak statusa podnosite nov zahtev — administrator ga ponovo proverava. Podatke vitrine unosite iznova.',
     dealer_app_leave_submit: 'Postani privatno lice',
     dealer_app_leave_cancel: 'Odustani',
 
@@ -2147,7 +2147,7 @@ export const dict = {
     dealer_app_leave_keep:
       'Объявления останутся опубликованными — просто будут показываться как от частного продавца.',
     dealer_app_leave_back:
-      'Вернуть статус можно без новой заявки: одобренная продолжает действовать. Но данные витрины придётся заполнить заново.',
+      'Чтобы вернуть статус, нужно подать новую заявку — её снова проверит администратор. Данные витрины придётся заполнить заново.',
     dealer_app_leave_submit: 'Стать частным лицом',
     dealer_app_leave_cancel: 'Отмена',
 
