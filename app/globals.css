@@ -49,15 +49,53 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 
-/* Прокрутка без видимой полосы: горизонтальные ленты чипсов и
-   галереи, а также шторка фильтров и списки пикеров — там серый
-   системный жёлоб Windows резал скруглённый угол панели. */
+/* Горизонтальная лента чипсов и галереи: прокрутка без видимой полосы. */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* ============================================================
+   ТОНКАЯ ПОЛОСА ПРОКРУТКИ БЕЗ КНОПОК-СТРЕЛОК.
+   ============================================================
+   Списки пикеров: полоса нужна как признак того, что пунктов
+   больше видимых, но системный жёлоб Windows приходит вместе с
+   кнопками-стрелками сверху и снизу — они занимают половину
+   высоты короткого списка и выглядят чужеродно на скруглённой
+   панели.
+   scrollbar-button убирает стрелки в Chrome/Edge/Safari;
+   в Firefox их нет изначально, и там всё делает scrollbar-width:
+   thin вместе с scrollbar-color. Цвета — токены бренда. */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--neutral-15) transparent;
+}
+.thin-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+/* Ключевое правило: обнуляет кнопки-стрелки на обоих концах. */
+.thin-scrollbar::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--neutral-15);
+  /* Полностью скруглённый ползунок под стать радиусам панели. */
+  border-radius: 9999px;
+  /* Отступ от края создаётся прозрачной рамкой: собственной
+     margin у ползунка нет. */
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--neutral-40);
 }
 
 /* ============================================================
