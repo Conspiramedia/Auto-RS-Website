@@ -63,7 +63,24 @@ export default function Switch({
       </div>
 
       {/* type="button" обязателен: контрол живёт внутри <form> профиля,
-          и кнопка по умолчанию отправила бы форму при каждом клике. */}
+          и кнопка по умолчанию отправила бы форму при каждом клике.
+
+          РАЗМЕРЫ ВЗЯТЫ ИЗ iOS: дорожка 51×31pt, бегунок 27pt с зазором
+          2pt по кругу. Это не подражание ради подражания — у системного
+          переключателя бегунок занимает почти всю высоту дорожки, и
+          именно по этой пропорции контрол читается как переключатель, а
+          не как индикатор загрузки. Прежние 44×24 с бегунком 20 давали
+          заметный «воротник» пустой дорожки сверху и снизу.
+
+          ЦВЕТ ВКЛЮЧЁННОГО — brand-green, а не brand-primary. Синий у нас
+          занят действиями (кнопки, ссылки), а зелёный на переключателе
+          означает ровно одно: «включено». Тот же цвет, что у iOS, и он
+          уже есть в палитре бренда.
+
+          -mt-1 ПРИ items-start: дорожка (31px) выше строки подписи
+          (24px), и без компенсации переключатель выпирал бы над
+          текстом. Тянуть его вниз к описанию нельзя — привязан он
+          к подписи, а описание бывает и в две строки. */}
       <button
         type="button"
         role="switch"
@@ -72,16 +89,26 @@ export default function Switch({
         aria-describedby={description ? descId : undefined}
         disabled={disabled}
         onClick={() => onChange(!checked)}
-        className={`relative mt-0.5 h-6 w-11 shrink-0 rounded-pill transition-colors duration-fast ease-out disabled:cursor-not-allowed disabled:opacity-40 ${
-          checked ? 'bg-brand-primary' : 'bg-neutral-15'
+        className={`relative -mt-1 h-[31px] w-[51px] shrink-0 rounded-pill transition-colors duration-fast ease-out disabled:cursor-not-allowed disabled:opacity-40 ${
+          checked ? 'bg-brand-green' : 'bg-neutral-15'
         }`}
       >
-        {/* Бегунок. translate-x вместо left: анимация трансформацией
-            не вызывает пересчёт раскладки на каждом кадре. */}
+        {/* Бегунок. translate-x вместо left: анимация трансформацией не
+            вызывает пересчёт раскладки на каждом кадре.
+
+            Тень — двойная, как у системной: широкая мягкая даёт объём,
+            узкая плотная у самого края отделяет белый круг от светло-
+            серой дорожки в выключенном состоянии. Одной тенью это не
+            получается: мягкая на светлом фоне не видна, а плотная без
+            мягкой выглядит наклейкой. */}
         <span
-          className={`absolute top-0.5 h-5 w-5 rounded-pill bg-white shadow-sm transition-transform duration-fast ease-out ${
-            checked ? 'translate-x-5' : 'translate-x-0.5'
+          className={`absolute left-0.5 top-0.5 h-[27px] w-[27px] rounded-pill bg-white transition-transform duration-fast ease-out ${
+            checked ? 'translate-x-5' : 'translate-x-0'
           }`}
+          style={{
+            boxShadow:
+              '0 3px 8px rgba(0,0,0,0.15), 0 1px 1px rgba(0,0,0,0.16)',
+          }}
         />
       </button>
     </div>
