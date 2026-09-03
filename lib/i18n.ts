@@ -251,17 +251,26 @@ export const dict = {
     car_favorite_remove: 'Sačuvano',
     // Значок-сердце на карточке в списке: подписи нет, поэтому текст
     // уходит в aria-label и tooltip.
-    car_favorite_aria_add: 'Dodaj u omiljeno',
-    car_favorite_aria_remove: 'Ukloni iz omiljenog',
+    car_favorite_aria_add: 'Dodaj u favorite',
+    car_favorite_aria_remove: 'Ukloni iz favorita',
     // Меню «три точки». Формулировки — дословно как в aplikaciji.
     catalog_hide_title: 'Sakrij preporuku',
     catalog_hide_car: 'Ne zanima me ovaj oglas',
     catalog_hide_city: 'Ne odgovara grad ili region',
     catalog_hide_aria: 'Sakrij preporuku',
     catalog_hide_failed: 'Nije uspelo sakrivanje oglasa',
-    // Раздел избранного.
-    favorites_title: 'Omiljeno',
-    favorites_empty: 'Nemate omiljene oglase',
+    // Раздел избранного. НАЗВАНИЕ ЗАДАЁТ САЙТ, а не приложение: в
+    // приложении раздел зовётся «Omiljeno», и первая версия этих
+    // строк была перенесена оттуда дословно. Решением владельца
+    // источник истины по интерфейсу — сайт, приложение подстраивается
+    // под него, поэтому здесь «Favoriti».
+    //
+    // Переименование сквозное: заголовок раздела, подписи у значка
+    // сердца (car_favorite_aria_*), метрика в кабинете продавца и
+    // перечень удаляемого при удалении аккаунта. Половинчатая замена
+    // дала бы кнопку «Dodaj u omiljeno», которая приводит в «Favoriti».
+    favorites_title: 'Favoriti',
+    favorites_empty: 'Nemate sačuvane oglase',
     favorites_empty_body: 'Dodajte oglase srcem — pojaviće se ovde',
     favorites_go_to_catalog: 'Idi na katalog',
     // Gostu se ne govori «prijavite se»: dugme ga samo vodi na prijavu
@@ -676,7 +685,7 @@ export const dict = {
 
     // Metrike oglasa.
     my_metric_views: 'Pregledi',
-    my_metric_favorites: 'U omiljenim',
+    my_metric_favorites: 'U favoritima',
     my_metric_contacts: 'Kontakti',
 
     // Radnje nad oglasom.
@@ -884,7 +893,7 @@ export const dict = {
       'sve prepiske — i kod vas i kod sagovornika',
     delete_account_item_profile:
       'ime, telefon, e-adresa, fotografija i podaci salona',
-    delete_account_item_saved: 'omiljeno, sačuvane pretrage i obaveštenja',
+    delete_account_item_saved: 'favoriti, sačuvane pretrage i obaveštenja',
     delete_account_keep:
       'Ostaje samo evidencija uplata — čuva se po propisima o računovodstvu i ne sadrži vaše lične podatke.',
     delete_account_return:
