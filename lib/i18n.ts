@@ -962,7 +962,7 @@ export const dict = {
       'Podaci salona ispod se prikazuju kupcima na vašoj stranici i u katalogu.',
     // Отказ от статуса. Возврат в «частное лицо» разрешён без
     // разрешения администратора — это право владельца.
-    dealer_app_leave: 'Prebaci nalog na privatno lice',
+    dealer_app_leave: 'Postani privatno lice',
     dealer_app_leave_confirm:
       'Kartica salona i podaci vitrine biće uklonjeni iz kataloga. Oglasi ostaju. Nastaviti?',
 
