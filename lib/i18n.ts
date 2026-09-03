@@ -1778,7 +1778,7 @@ export const dict = {
     picker_custom: 'Указать',
     picker_custom_hint: 'ввод своего',
     picker_nothing: 'Ничего не найдено',
-    picker_model_no_brand: 'Сначала выберите марку',
+    picker_model_no_brand: 'Выберите марку',
     picker_model_empty: 'Нет моделей для этой марки',
     picker_placeholder: 'Выбрать',
 
