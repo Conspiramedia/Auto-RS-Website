@@ -398,7 +398,7 @@ export const dict = {
       'Sopstvena stranica u katalogu salona i kupci iz cele Srbije — srpska i ruskojezična publika.',
     home_dealers_b1:
       'Vitrina na glavnoj strani — vaš salon se ističe u katalogu',
-    home_dealers_b2: 'besplatno oglašavanje za salone-partnere',
+    home_dealers_b2: 'Besplatno oglašavanje za salone-partnere',
     // Формулировка про ПРОВЕРКУ КОМПАНИИ, а не про метку «Auto-salon»
     // на объявлениях. Метки в проекте нет: её удалили, и 1 сентября
     // отдельной задачей вычистили обещание из текста над формой заявки
@@ -406,9 +406,9 @@ export const dict = {
     // одобрения не находил. Здесь обещаем ровно то, что происходит:
     // заявку проверяет администратор по PIB и матичном броју.
     home_dealers_b3:
-      'provera kompanije pri prijavi — kupci vide potvrđeni salon, a ne anonimnog prodavca',
+      'Provera kompanije pri prijavi — kupci vide potvrđeni salon, a ne anonimnog prodavca',
     home_dealers_b4:
-      'uskoro pokrećemo reklamne kampanje — oglasi partnera ulaze u taj saobraćaj',
+      'Uskoro pokrećemo reklamne kampanje — oglasi partnera ulaze u taj saobraćaj',
     home_dealers_cta: 'Ostavi zahtev',
     home_dealers_note: 'Javićemo vam se imejlom i pomoći oko prvih oglasa.',
 
@@ -1629,7 +1629,7 @@ export const dict = {
       'Собственная страница в каталоге салонов и покупатели со всей Сербии — сербская и русскоязычная аудитории.',
     home_dealers_b1:
       'Витрина на главной странице — ваш салон заметен в каталоге',
-    home_dealers_b2: 'бесплатное размещение для салонов-партнёров',
+    home_dealers_b2: 'Бесплатное размещение для салонов-партнёров',
     // Формулировка про ПРОВЕРКУ КОМПАНИИ, а не про статус «Автосалон»
     // на объявлениях. Метки в проекте нет: её удалили, и 1 сентября
     // отдельной задачей вычистили обещание из текста над формой заявки
@@ -1637,9 +1637,9 @@ export const dict = {
     // одобрения не находил. Здесь обещаем ровно то, что происходит:
     // заявку проверяет администратор по ПИБ и матичному номеру.
     home_dealers_b3:
-      'проверка компании при заявке — покупатели видят подтверждённый салон, а не анонимного продавца',
+      'Проверка компании при заявке — покупатели видят подтверждённый салон, а не анонимного продавца',
     home_dealers_b4:
-      'готовим запуск рекламы — объявления партнёров войдут в этот трафик',
+      'Готовим запуск рекламы — объявления партнёров войдут в этот трафик',
     home_dealers_cta: 'Оставить заявку',
     home_dealers_note: 'Свяжемся по почте и поможем с первыми объявлениями.',
 
