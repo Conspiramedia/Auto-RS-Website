@@ -45,8 +45,13 @@ type Props = {
   disabled?: boolean;
   // Согласие с документами не отмечено. Отдельный признак от disabled:
   // причина другая, и родитель показывает по ней свой текст ошибки.
-  onBlocked?: () => void;
   blocked?: boolean;
+  onBlocked?: () => void;
+  // Не удалось даже начать поток — GoTrue не отдал адрес авторизации.
+  // ОТДЕЛЬНЫЙ коллбэк, а не переиспользование onBlocked: причина здесь
+  // техническая, и текст «примите условия» указал бы человеку на
+  // галочку, которая на самом деле стоит.
+  onFailed?: () => void;
 };
 
 export default function GoogleSignInButton({
@@ -55,6 +60,7 @@ export default function GoogleSignInButton({
   disabled,
   blocked,
   onBlocked,
+  onFailed,
 }: Props) {
   const t = getT(locale);
   const [busy, setBusy] = useState(false);
@@ -98,9 +104,10 @@ export default function GoogleSignInButton({
 
     if (error || !data?.url) {
       // Молчать нельзя, но и показывать техническую ошибку незачем:
-      // родитель покажет общий текст «вход не завершён».
+      // родитель покажет общий текст «вход не завершён» — тот же, что
+      // и при возврате из Google без сессии.
       setBusy(false);
-      onBlocked?.();
+      onFailed?.();
       return;
     }
 

@@ -574,6 +574,11 @@ export const dict = {
     legal_consent_privacy: 'Politiku privatnosti',
     legal_consent_required:
       'Da biste dobili kod, potrebno je prihvatiti uslove i politiku privatnosti.',
+    // Isti uslov, druga radnja. Kod prijave preko Google naloga nema
+    // nikakvog koda, pa bi „da biste dobili kod" upućivalo na korak
+    // koji se u tom putu uopšte ne dešava.
+    legal_consent_required_oauth:
+      'Da biste nastavili, potrebno je prihvatiti uslove i politiku privatnosti.',
 
     // Баннер согласия на куки. Одна фраза и одна кнопка — по макету:
     // ссылки «Detaljnije» нет намеренно, документы и так доступны из
@@ -1860,6 +1865,11 @@ export const dict = {
     legal_consent_privacy: 'Политику конфиденциальности',
     legal_consent_required:
       'Чтобы получить код, примите условия и политику конфиденциальности.',
+    // То же условие, другое действие. При входе через Google никакого
+    // кода нет, и фраза «чтобы получить код» отсылала бы к шагу,
+    // которого в этом пути не существует.
+    legal_consent_required_oauth:
+      'Чтобы продолжить, примите условия и политику конфиденциальности.',
 
     // Баннер согласия на куки. Одна фраза и одна кнопка — по макету:
     // ссылки «Подробнее» нет намеренно, документы и так доступны из
