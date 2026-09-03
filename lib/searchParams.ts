@@ -32,7 +32,7 @@ function num(value: string | string[] | undefined): number | undefined {
   return parsed;
 }
 
-// Тип объявления из URL. Значение 'both' («Всё») в адрес не пишется —
+// Тип объявления из URL. Значение 'both' («Все») в адрес не пишется —
 // это состояние по умолчанию, и явный параметр создал бы второй URL
 // для той же выдачи.
 function parseListingType(

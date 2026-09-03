@@ -1758,7 +1758,7 @@ export const dict = {
     sell_err_deposit: 'Залог не может быть отрицательным.',
 
     filter_listing_type: 'Тип объявления',
-    filter_type_all: 'Всё',
+    filter_type_all: 'Все',
     catalog_mixed_title: 'Автомобили в Сербии',
     badge_rent: 'Аренда',
 

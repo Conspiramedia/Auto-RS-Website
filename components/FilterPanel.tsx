@@ -79,7 +79,7 @@ type Props = {
   typeNavHrefs?: { both: string; sale: string; rent: string };
   // Тип витрины для подсветки сегмента. ОТДЕЛЬНО от mode: тот схлопывает
   // 'both' в 'sale' (смешанная выдача показывает цены как продажа), и
-  // подсветка по нему зажигала бы на /all «Продажу» вместо «Всё».
+  // подсветка по нему зажигала бы на /all «Продажу» вместо «Все».
   navType?: ListingType;
 };
 
@@ -112,7 +112,7 @@ export default function FilterPanel({
   useDismissableLayer({ open, onClose: () => setOpen(false) });
 
   // Тип объявления. Витрина каталога смешанная, поэтому по умолчанию
-  // 'both' — «Всё». На SEO-лендинге /rent тип задан адресом и сегмент
+  // 'both' — «Все». На SEO-лендинге /rent тип задан адресом и сегмент
   // не показывается: сменить его там означало бы уйти со страницы.
   const [listingType, setListingType] = useState<ListingType>(
     filters.listingType ?? 'both',
@@ -408,7 +408,7 @@ export default function FilterPanel({
                           key={value}
                           href={typeNavHrefs?.[value] ?? '#'}
                           className={cls}
-                          // «Всё» ведёт на служебную витрину /all: она
+                          // «Все» ведёт на служебную витрину /all: она
                           // под noindex, и краулеру идти по ссылке
                           // незачем. Два лендинга остаются проходимыми.
                           rel={value === 'both' ? 'nofollow' : undefined}
