@@ -211,6 +211,11 @@ export const dict = {
 
     // Карточка
     car_price_negotiable: 'Cena na upit',
+    // Плейсхолдер поля цены при подаче. Отдельно от
+    // car_price_negotiable: там это САМОСТОЯТЕЛЬНАЯ надпись на месте
+    // суммы в карточке, здесь — подсказка внутри поля, которое уже
+    // подписано «Cena, €», и слово «Cena» дублировалось бы.
+    sell_price_negotiable_ph: 'Na upit',
     car_year: 'Godište',
     car_mileage: 'Kilometraža',
     car_body: 'Karoserija',
@@ -1513,6 +1518,7 @@ export const dict = {
       'Сохраните ссылку на этот поиск — фильтры остаются в адресе, и новые предложения проверяются в один клик.',
 
     car_price_negotiable: 'Цена договорная',
+    sell_price_negotiable_ph: 'Договорная',
     car_year: 'Год выпуска',
     car_mileage: 'Пробег',
     car_body: 'Кузов',

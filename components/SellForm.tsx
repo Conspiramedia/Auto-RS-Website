@@ -1486,7 +1486,7 @@ export default function SellForm({
                   value={price}
                   onChange={setPrice}
                   maxDigits={MAX_PRICE_DIGITS}
-                  placeholder={t('car_price_negotiable')}
+                  placeholder={t('sell_price_negotiable_ph')}
                   className={field}
                 />
               </div>
