@@ -194,17 +194,24 @@ export default function DealerApplicationBlock({
               затрёт при сохранении с seller_kind = 'private'. Вернуть
               статус можно без новой заявки — одобренная продолжает
               действовать, — но заполнять витрину придётся заново. */}
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => {
-              if (window.confirm(t('dealer_app_leave_confirm'))) {
-                onLeaveDealer();
-              }
-            }}
-          >
-            {t('dealer_app_leave')}
-          </Button>
+          {/* НА МОБИЛЬНОМ КНОПКА ПО ЦЕНТРУ, на десктопе слева. В узкой
+              колонке текст блока занимает всю ширину, и короткая
+              кнопка у левого края висела под ним без всякой опоры. На
+              широком экране карточка сама узкая, и центрировать в ней
+              нечего — левый край совпадает с началом текста. */}
+          <div className="flex justify-center sm:justify-start">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                if (window.confirm(t('dealer_app_leave_confirm'))) {
+                  onLeaveDealer();
+                }
+              }}
+            >
+              {t('dealer_app_leave')}
+            </Button>
+          </div>
         </div>
       </Card>
     );
