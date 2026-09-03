@@ -500,6 +500,9 @@ export const dict = {
     picker_nothing: 'Nema rezultata',
     picker_model_no_brand: 'Prvo izaberite marku',
     picker_model_empty: 'Nema modela za ovu marku',
+    // Подпись пустого поля-списка. Отличается от filter_any: там это
+    // пункт «любое значение» внутри списка, здесь — призыв открыть его.
+    picker_placeholder: 'Izaberite',
 
     // Страница 404
     nf_title: 'Stranica nije pronađena',
@@ -1767,6 +1770,7 @@ export const dict = {
     picker_nothing: 'Ничего не найдено',
     picker_model_no_brand: 'Сначала выберите марку',
     picker_model_empty: 'Нет моделей для этой марки',
+    picker_placeholder: 'Выбрать',
 
     // Страница 404
     nf_title: 'Страница не найдена',

@@ -151,7 +151,9 @@ export default function ListPicker({
     // продавцом вручную, или значение из адреса страницы.
     selected ||
     placeholder ||
-    t('filter_any');
+    // Пустое поле зовёт открыть список («Выбрать»), а не сообщает
+    // о значении. Пункт сброса внутри списка остаётся на filter_any.
+    t('picker_placeholder');
 
   function pick(next: string) {
     setSelected(next);
