@@ -34,7 +34,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { revalidateMyListings } from '@/app/my/actions';
 import { getBrowserClient } from '@/lib/supabaseClient';
@@ -59,6 +59,7 @@ import {
   validateYear,
 } from '@/lib/inputFormat';
 import { usePhoneCaret } from '@/lib/usePhoneCaret';
+import { findContacts, splitByContacts } from '@/lib/contactGuard';
 import {
   BODY_TYPES,
   ENGINE_VOLUME_VALUES,
@@ -191,6 +192,23 @@ export default function SellForm({
   // электромобиля так и должно быть.
   const [engineVolume, setEngineVolume] = useState('');
   const [description, setDescription] = useState('');
+
+  // КОНТАКТЫ В ОПИСАНИИ (lib/contactGuard.ts, миграция 0135).
+  //
+  // Считаем на каждое изменение текста, но через useMemo: описание
+  // длиной до 6000 символов прогоняется через дюжину регулярок, и
+  // делать это на каждый ререндер формы (а их много — соседние поля,
+  // прогресс загрузки фотографий) незачем.
+  //
+  // Это ВЕРХНИЙ слой, подсказка. Жёсткий барьер — в базе: клиент
+  // обходится вызовом RPC напрямую, и последнее слово за сервером.
+  // Здесь мы лишь показываем проблему сразу, а не после загрузки
+  // фотографий на последнем шаге.
+  const descriptionContacts = useMemo(
+    () => findContacts(description),
+    [description],
+  );
+  const hasDescriptionContacts = descriptionContacts.length > 0;
 
   // Шаг 3: фотографии. Набор смешанный: при подаче это только выбранные
   // файлы, при правке — ещё и уже загруженные снимки объявления
@@ -1191,6 +1209,15 @@ export default function SellForm({
       if (sale !== null && sale <= 0) return t('sell_err_price_positive');
     }
 
+    // КОНТАКТЫ В ОПИСАНИИ. Проверка стоит здесь, на переходе со второго
+    // шага, а не в момент отправки: дальше идут загрузка фотографий и
+    // (для гостя) SMS-код, и узнавать о запрете после них — самое
+    // дорогое, что можно предложить продавцу.
+    //
+    // Сервер проверит это ещё раз и откажет жёстко (миграция 0135):
+    // здесь мы экономим время, а не обеспечиваем правило.
+    if (hasDescriptionContacts) return t('sell_err_contacts');
+
     return null;
   }
 
@@ -1659,8 +1686,55 @@ export default function SellForm({
               rows={5}
               maxLength={6000}
               placeholder={t('car_description_hint')}
-              className={fieldTextarea}
+              // Рамка краснеет сразу, как только в тексте появился
+              // номер: продавец видит связь между тем, что печатает, и
+              // отказом, — а не узнаёт о запрете на последнем шаге.
+              className={`${fieldTextarea}${
+                hasDescriptionContacts ? ' border-error' : ''
+              }`}
+              aria-invalid={hasDescriptionContacts || undefined}
+              aria-describedby={
+                hasDescriptionContacts ? 'description-contacts' : undefined
+              }
             />
+
+            {/* ПОДСВЕТКА НАЙДЕННОГО.
+                Textarea не умеет красить куски своего текста, а
+                накладывать поверх него позиционированный слой — приём
+                хрупкий: он ломается на переносах строк, скролле и
+                разных шрифтах. Поэтому показываем найденные фрагменты
+                ОТДЕЛЬНЫМ списком под полем. Продавцу нужно понять, что
+                именно убрать, и точная позиция в тексте для этого не
+                обязательна — достаточно увидеть сам номер. */}
+            {hasDescriptionContacts && (
+              <div id="description-contacts" className="mt-2">
+                <Alert tone="error">{t('sell_err_contacts')}</Alert>
+                <p className="mt-2 text-caption text-neutral-60">
+                  {t('sell_contacts_found')}
+                </p>
+                <p className="mt-1 break-words text-caption">
+                  {/* Слитный текст описания с покрашенными находками:
+                      так видно и сам фрагмент, и его окружение. */}
+                  {splitByContacts(description).map((chunk, i) =>
+                    chunk.match ? (
+                      <mark
+                        key={i}
+                        className="rounded-control bg-status-error px-0.5 text-brand-red"
+                      >
+                        {chunk.text}
+                      </mark>
+                    ) : (
+                      // Чистые куски показываем приглушённо: внимание
+                      // должно уходить на подсвеченное, а не на весь
+                      // текст целиком.
+                      <span key={i} className="text-neutral-50">
+                        {chunk.text}
+                      </span>
+                    ),
+                  )}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Та же раскладка, что на шаге фотографий: на мобильном

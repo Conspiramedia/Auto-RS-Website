@@ -148,6 +148,34 @@ export function humanOtpError(e: unknown, t: Translate): string {
     return t('sell_err_duplicate');
   }
 
+  // ------------------------------------------------------------
+  // Отказ по контактным данным в описании.
+  // ------------------------------------------------------------
+  // Барьер f_has_contact_info (миграция 0135) бросает check_violation
+  // с hint = 'contacts_in_description'. Именно по hint эту ветку и
+  // отличаем: код 23514 у объявления означает ещё и цену, и год, и
+  // залог, и подставлять им текст про телефоны было бы враньём.
+  //
+  // hint приходит отдельным полем PostgrestError, а supabaseErrorText
+  // склеивает все поля в строку — проверяем оба места по той же
+  // причине, что и у дубля выше: формат склейки может измениться.
+  //
+  // Форма до сервера обычно не доводит (contactGuard проверяет при
+  // вводе), но клиент обходится, и текст отказа нужен человеческий
+  // на обеих локалях, а не русская строка из базы с «(23514)».
+  const hint = String(
+    (typeof e === 'object' && e !== null
+      ? ((e as Record<string, unknown>).hint ?? '')
+      : '') || '',
+  );
+
+  if (
+    hint === 'contacts_in_description' ||
+    message.includes('contacts_in_description')
+  ) {
+    return t('sell_err_contacts');
+  }
+
   if (message.includes('expired')) return t('otp_err_expired');
 
   if (message.includes('invalid') || message.includes('incorrect')) {

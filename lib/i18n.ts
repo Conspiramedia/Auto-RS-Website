@@ -614,6 +614,13 @@ export const dict = {
     // ga video takvog kakav jeste, zajedno sa šifrom greške.
     sell_err_duplicate:
       'Oglas za ovaj automobil već postoji. Izmenite postojeći oglas ili ga uklonite iz objave.',
+    // Zabrana kontakata u opisu (f_has_contact_info, migracija 0135).
+    // Poruka objašnjava RAZLOG i odmah kaže kako će kupac stupiti u
+    // kontakt — bez toga zabrana izgleda kao hir platforme.
+    sell_err_contacts:
+      'U opisu nije dozvoljeno navoditi telefon, email ni linkove ka messengerima. Kupci će vas kontaktirati preko ćaskanja i telefona navedenog u oglasu.',
+    // Naslov iznad istaknutih mesta u tekstu opisa.
+    sell_contacts_found: 'Pronađeni kontakt podaci u opisu:',
 
     // ------------------------------------------------------------
     // Kabinet prodavca (/my). Sve stranice su noindex.
@@ -1905,6 +1912,13 @@ export const dict = {
     // продавцу показываем этот.
     sell_err_duplicate:
       'Объявление об этой машине уже существует. Отредактируйте его или снимите с публикации.',
+    // Запрет контактов в описании (f_has_contact_info, миграция 0135).
+    // Сообщение объясняет ПРИЧИНУ и сразу говорит, как с продавцом
+    // свяжутся, — без этого запрет выглядит прихотью площадки.
+    sell_err_contacts:
+      'В описании нельзя указывать телефон, email и ссылки на мессенджеры. Покупатели свяжутся с вами через чат и по телефону, указанному в объявлении.',
+    // Заголовок над подсвеченными местами в тексте описания.
+    sell_contacts_found: 'Найденные контактные данные в описании:',
 
     // ------------------------------------------------------------
     // Кабинет продавца (/my). Все страницы — noindex.

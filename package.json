@@ -19,6 +19,8 @@
     "test:report": "playwright show-report",
     "//sql": "SQL-тесты серверных гейтов. Требуют поднятого локального Supabase.",
     "test:sql": "node scripts/run-sql-checks.mjs",
+    "//contacts": "Юнит-тесты запрета контактов в описании (клиентский слой lib/contactGuard.ts). Ни браузера, ни базы не требуют — Node импортирует .ts напрямую. Серверная половина тех же правил проверяется в supabase/checks/0135_contact_guard_test.sql через test:sql.",
+    "test:contacts": "node --test --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-contact-guard.mjs",
     "//supabase": "Локальный стек в Docker. start поднимает, reset пересобирает базу с нуля и заливает seed.",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
