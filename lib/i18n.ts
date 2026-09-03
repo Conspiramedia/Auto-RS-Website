@@ -282,7 +282,7 @@ export const dict = {
     car_seller_dealer: 'Autosalon',
     car_seller_private: 'Privatno lice',
     car_contact_title: 'Kontakt sa prodavcem',
-    car_qr_hint: 'Skenirajte kod telefonom da otvorite oglas na telefonu',
+    car_qr_hint: 'Skenirajte kod da otvorite oglas na telefonu',
     // Подпись под QR на главной. Код ведёт в КАТАЛОГ, а не на главную:
     // читатель уже понял, что за площадка, и открывать ему на телефоне
     // тот же экран незачем.
@@ -1021,7 +1021,7 @@ export const dict = {
     dealer_app_leave_confirm: 'Preći na privatno lice?',
     dealer_app_leave_what: 'Šta se gubi:',
     dealer_app_leave_item_card:
-      'kartica salona nestaje iz kataloga salona',
+      'kartica salona nestaje iz kataloga',
     dealer_app_leave_item_page:
       'stranica salona prestaje da radi, oglasi gube potpis «Autosalon»',
     dealer_app_leave_item_showcase:
@@ -1570,7 +1570,7 @@ export const dict = {
     car_seller_dealer: 'Автосалон',
     car_seller_private: 'Частное лицо',
     car_contact_title: 'Связь с продавцом',
-    car_qr_hint: 'Отсканируйте код телефоном, чтобы открыть объявление на телефоне',
+    car_qr_hint: 'Отсканируйте код, чтобы открыть объявление на телефоне',
     // См. комментарий в сербском словаре.
     home_qr_hint: 'Отсканируйте код, чтобы открыть каталог на телефоне',
 
@@ -2234,7 +2234,7 @@ export const dict = {
     // Подробный диалог — см. комментарий в сербском словаре.
     dealer_app_leave_confirm: 'Стать частным лицом?',
     dealer_app_leave_what: 'Что вы потеряете:',
-    dealer_app_leave_item_card: 'карточка салона пропадёт из каталога салонов',
+    dealer_app_leave_item_card: 'карточка салона пропадёт из каталога',
     dealer_app_leave_item_page:
       'страница салона перестанет открываться, с объявлений исчезнет подпись «Автосалон»',
     dealer_app_leave_item_showcase:
@@ -2435,7 +2435,7 @@ export const dict = {
     sell_photos_uploading: 'Загрузка фотографий',
     sell_err_photos_required: 'Добавьте хотя бы одну фотографию автомобиля.',
     sell_err_photo_type: 'Поддерживаются форматы JPG, PNG, WebP и HEIC.',
-    sell_err_photo_size: 'Фотография слишком большая — не больше 25 МБ.',
+    sell_err_photo_size: 'Фотография слишком большая — максимум 25 МБ.',
     // HEIC в браузере без системного декодера (всё, кроме Safari).
     // Сообщение обязано говорить ЧТО СДЕЛАТЬ, а не только что не вышло.
     sell_err_photo_heic:
