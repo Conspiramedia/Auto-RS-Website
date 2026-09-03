@@ -13,6 +13,14 @@
 // Реализовано одной разметкой с брейкпоинтом sm: два отдельных
 // компонента означали бы двойную поддержку одной и той же логики.
 //
+// ПАНЕЛЬ ВЫНЕСЕНА ПОРТАЛОМ В <body>. Пикер стоит ВНУТРИ шторки
+// фильтров, у которой overflow-y-auto, а такой предок обрезает своих
+// absolute-потомков по краю — z-index тут бессилен, обрезка идёт до
+// наложения слоёв. На десктопе нижние поля («Топливо») открывали
+// список, у которого была видна лишь верхняя строка. Портал уводит
+// панель из-под обрезки, а координаты поля замеряются и передаются
+// в fixed-позицию. Тот же приём уже применён в CardActions.
+//
 // ЗНАЧЕНИЕ УХОДИТ В URL: компонент рендерит скрытый <input name>,
 // поэтому обычная GET-форма фильтров подхватывает выбор без JS-обвязки,
 // а страница остаётся полностью SSR.
@@ -22,7 +30,14 @@
 // сербской раскладки на клавиатуре у пользователя может не быть.
 // ============================================================
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { createPortal } from 'react-dom';
 
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
@@ -68,6 +83,12 @@ type Props = {
   onChange?: (value: string) => void;
 };
 
+// useLayoutEffect на сервере печатает предупреждение — там его просто
+// не существует. Панель всё равно рисуется только после mounted,
+// поэтому на сервере подменяем его безвредным useEffect.
+const useIsomorphicLayoutEffect =
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
 export default function ListPicker({
   locale,
   name,
@@ -88,11 +109,108 @@ export default function ListPicker({
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(value);
   const boxRef = useRef<HTMLDivElement>(null);
+  const fieldRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Координаты десктопной панели в системе fixed. null — панель ещё
+  // не отрисована (первый кадр) либо идёт мобильная раскладка, где
+  // список прижат к низу экрана и в замерах не нуждается.
+  const [at, setAt] = useState<{
+    // Задан ровно один из двух якорей: панель либо свисает от поля
+    // вниз (top), либо растёт вверх и держится нижним краем (bottom).
+    top?: number;
+    bottom?: number;
+    left: number;
+    width: number;
+    maxHeight: number;
+  } | null>(null);
+
+  // Портал монтируется только на клиенте: на сервере document нет.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   // Значение может измениться извне (сброс фильтров, смена марки).
   useEffect(() => {
     setSelected(value);
   }, [value]);
+
+  // ------------------------------------------------------------
+  // ПОЗИЦИЯ ДЕСКТОПНОЙ ПАНЕЛИ.
+  // ------------------------------------------------------------
+  // Считается от прямоугольника поля. Пересчитывается на скролле и
+  // ресайзе: панель вынесена в <body> и за полем сама не поедет.
+  // Закрывать её на скролле, как делает меню в CardActions, здесь
+  // нельзя — шторку фильтров прокручивают ИМЕННО чтобы дотянуться
+  // до нужного пункта списка.
+  // useLayoutEffect, а не useEffect: замер обязан пройти ДО покраски.
+  // Обычный эффект отрисовал бы первый кадр с at === null, то есть по
+  // мобильным классам, и панель на десктопе мигала бы внизу экрана,
+  // прежде чем встать под поле.
+  useIsomorphicLayoutEffect(() => {
+    if (!open) {
+      // Сброс обязателен: иначе следующее открытие отрисует первый
+      // кадр по координатам прошлого раза, и панель мигнёт не на
+      // своём месте — страница за это время могла прокрутиться.
+      setAt(null);
+      return;
+    }
+
+    // Мобильная раскладка — шит снизу, замеры не нужны.
+    const isDesktop = () => window.innerWidth >= 640;
+
+    const measure = () => {
+      const field = fieldRef.current;
+      if (!field || !isDesktop()) {
+        setAt(null);
+        return;
+      }
+
+      const box = field.getBoundingClientRect();
+      // Воздух до кромки окна, чтобы панель не липла к краю.
+      const GUTTER = 8;
+      // Отступ панели от поля — тот же, что давал класс sm:mt-1.
+      const OFFSET = 4;
+      // Потолок высоты — прежние 20rem класса sm:max-h-80. Панель
+      // выше него не растёт, а вот ужиматься под тесное окно обязана:
+      // иначе список снова уедет за край.
+      const MAX = 320;
+
+      const below = window.innerHeight - box.bottom - OFFSET - GUTTER;
+      const above = box.top - OFFSET - GUTTER;
+
+      // Раскрываем вверх, только если снизу мало места И сверху его
+      // ощутимо больше. Иначе список у нижних полей прыгал бы вверх
+      // при каждом лишнем пикселе, хотя внизу ещё можно прокрутить.
+      const openAbove = below < Math.min(MAX, 240) && above > below;
+      const space = openAbove ? above : below;
+
+      setAt({
+        top: openAbove ? undefined : box.bottom + OFFSET,
+        // Отсчёт снизу окна: так панель растёт вверх от поля, а не
+        // от собственной высоты, которую до отрисовки не измерить.
+        bottom: openAbove
+          ? window.innerHeight - box.top + OFFSET
+          : undefined,
+        left: box.left,
+        width: box.width,
+        // Панель не выше доступного места: остаток берёт на себя
+        // собственная прокрутка списка.
+        maxHeight: Math.max(120, Math.min(MAX, space)),
+      });
+    };
+
+    measure();
+
+    // capture: true — прокручивается не окно, а шторка фильтров;
+    // её событие scroll не всплывает, и без перехвата панель
+    // осталась бы висеть на прежнем месте.
+    window.addEventListener('scroll', measure, true);
+    window.addEventListener('resize', measure);
+    return () => {
+      window.removeEventListener('scroll', measure, true);
+      window.removeEventListener('resize', measure);
+    };
+  }, [open]);
 
   // Закрытие по клику вне панели и по Escape — привычное поведение
   // выпадающих списков; без него панель на десктопе «залипает».
@@ -100,7 +218,13 @@ export default function ListPicker({
     if (!open) return;
 
     const onDocClick = (e: MouseEvent) => {
-      if (boxRef.current && !boxRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      // Панель живёт в портале, ВНЕ boxRef, поэтому одной проверки
+      // на обёртку мало: клик по пункту списка считался бы кликом
+      // снаружи и закрывал бы список раньше, чем выбор доходил до
+      // обработчика.
+      if (panelRef.current?.contains(target)) return;
+      if (boxRef.current && !boxRef.current.contains(target)) {
         setOpen(false);
       }
     };
@@ -177,6 +301,7 @@ export default function ListPicker({
       )}
 
       <button
+        ref={fieldRef}
         type="button"
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
@@ -204,125 +329,159 @@ export default function ListPicker({
         <span className="shrink-0 text-neutral-40">▾</span>
       </button>
 
-      {open && !disabled && (
-        <>
-          {/* Затемнение — только на мобильных, где панель занимает экран. */}
-          <div
-            // Слой modal, а не header: пикер открывается ВНУТРИ шторки
-            // фильтров (z-filter-sheet), и затемнение обязано лежать выше
-            // неё — иначе шторка просвечивает поверх открытого списка.
-            className="fixed inset-0 z-modal bg-surface-overlay sm:hidden"
-            onClick={() => setOpen(false)}
-            aria-hidden="true"
-          />
+      {open &&
+        !disabled &&
+        mounted &&
+        // Портал в <body>: см. пояснение в шапке файла — внутри
+        // шторки с overflow панель обрезалась бы её краем.
+        createPortal(
+          <>
+            {/* Затемнение — только на мобильных, где панель занимает экран. */}
+            <div
+              // Слой modal, а не header: пикер открывается ВНУТРИ шторки
+              // фильтров (z-filter-sheet), и затемнение обязано лежать выше
+              // неё — иначе шторка просвечивает поверх открытого списка.
+              className="fixed inset-0 z-modal bg-surface-overlay sm:hidden"
+              onClick={() => setOpen(false)}
+              aria-hidden="true"
+            />
 
-          <div
-            id={listId}
-            role="listbox"
-            aria-label={label}
-            className={
-              // Мобильные: шит снизу. Десктоп: панель под полем.
-              // z-tooltip — самый верхний слой: сам список должен быть
-              // над собственным затемнением (z-modal).
-              'fixed inset-x-0 bottom-0 z-tooltip max-h-[75vh] overflow-hidden rounded-t-card bg-white shadow-modal ' +
-              'sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-0 sm:top-full sm:mt-1 sm:max-h-80 sm:w-full sm:rounded-card sm:border sm:border-neutral-15'
-            }
-          >
-            <div className="flex items-center justify-between border-b border-neutral-10 px-4 py-3 sm:hidden">
-              <span className="font-semibold">{label}</span>
-              <CloseButton
-                onClick={() => setOpen(false)}
-                label={t('common_close')}
-              />
-            </div>
-
-            {searchable && (
-              <div className="border-b border-neutral-10 p-2">
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={
-                    allowCustom
-                      ? `${t('picker_search')} / ${t('picker_custom_hint')}`
-                      : t('picker_search')
-                  }
-                  className="w-full rounded-control border border-neutral-15 px-3 py-2 text-caption outline-none focus:border-brand-primary"
-                  // autoFocus только на десктопе: на мобильном он поднимает
-                  // клавиатуру поверх списка ещё до того, как пользователь
-                  // увидел варианты.
-                  autoFocus={
-                    typeof window !== 'undefined' && window.innerWidth >= 640
-                  }
+            <div
+              ref={panelRef}
+              id={listId}
+              role="listbox"
+              aria-label={label}
+              className={
+                // Мобильные: шит снизу — координаты не нужны, панель
+                // прижата к краям экрана. Десктоп: fixed по замеру.
+                // z-tooltip — самый верхний слой: сам список должен быть
+                // над собственным затемнением (z-modal).
+                'fixed inset-x-0 bottom-0 z-tooltip flex max-h-[75vh] flex-col overflow-hidden rounded-t-card bg-white shadow-modal ' +
+                // sm:max-h-none — потолок 75vh нужен только мобильному
+                // шиту; на десктопе высоту задаёт вычисленный
+                // maxHeight, и класс-потолок спорил бы с ним.
+                'sm:inset-x-auto sm:max-h-none sm:rounded-card sm:border sm:border-neutral-15'
+              }
+              // Координаты приходят готовыми из эффекта: обращаться
+              // к window прямо в рендере нельзя — он идёт и на сервере.
+              style={
+                at
+                  ? {
+                      // 'auto', а не undefined: undefined НЕ гасит
+                      // класс bottom-0 мобильной раскладки, и панель,
+                      // свисающая вниз, растянулась бы до низа окна.
+                      top: at.top ?? 'auto',
+                      bottom: at.bottom ?? 'auto',
+                      left: at.left,
+                      width: at.width,
+                      maxHeight: at.maxHeight,
+                      // Инлайновые координаты обязаны победить классы
+                      // мобильной раскладки (inset-x-0, bottom-0).
+                      right: 'auto',
+                    }
+                  : undefined
+              }
+            >
+              <div className="flex items-center justify-between border-b border-neutral-10 px-4 py-3 sm:hidden">
+                <span className="font-semibold">{label}</span>
+                <CloseButton
+                  onClick={() => setOpen(false)}
+                  label={t('common_close')}
                 />
               </div>
-            )}
 
-            <div className="thin-scrollbar max-h-[55vh] overflow-y-auto sm:max-h-64">
-              {/* «Указать своё» — первым пунктом, как в приложении. */}
-              {showCustom && (
-                <button
-                  type="button"
-                  onClick={() => pick(trimmed)}
-                  className="flex w-full items-center gap-2 border-b border-neutral-10 px-4 py-3 text-left text-caption hover:bg-surface-hoverStrong"
-                >
-                  <span className="text-brand-green">+</span>
-                  <span>
-                    {t('picker_custom')} «{trimmed}»
-                  </span>
-                </button>
-              )}
-
-              {/* «Все» — сброс значения. В обязательных полях не нужен. */}
-              {!allowCustom && (
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={selected === ''}
-                  onClick={() => pick('')}
-                  className={
-                    'flex w-full items-center justify-between px-4 py-3 text-left text-caption hover:bg-surface-hoverStrong ' +
-                    (selected === '' ? 'font-semibold' : '')
-                  }
-                >
-                  <span>{placeholder || t('filter_any')}</span>
-                  {selected === '' && <span className="text-brand-primary">✓</span>}
-                </button>
-              )}
-
-              {filtered.map((o) => (
-                <button
-                  key={o.value}
-                  type="button"
-                  role="option"
-                  aria-selected={selected === o.value}
-                  onClick={() => pick(o.value)}
-                  className={
-                    'flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-caption hover:bg-surface-hoverStrong ' +
-                    (selected === o.value ? 'font-semibold' : '')
-                  }
-                >
-                  <span className="truncate">{o.label}</span>
-                  <span className="flex shrink-0 items-center gap-2">
-                    {o.count !== undefined && o.count > 0 && (
-                      <span className="text-neutral-40">{o.count}</span>
-                    )}
-                    {selected === o.value && (
-                      <span className="text-brand-primary">✓</span>
-                    )}
-                  </span>
-                </button>
-              ))}
-
-              {filtered.length === 0 && !showCustom && (
-                <div className="px-4 py-6 text-center text-caption text-neutral-60">
-                  {t('picker_nothing')}
+              {searchable && (
+                <div className="border-b border-neutral-10 p-2">
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={
+                      allowCustom
+                        ? `${t('picker_search')} / ${t('picker_custom_hint')}`
+                        : t('picker_search')
+                    }
+                    className="w-full rounded-control border border-neutral-15 px-3 py-2 text-caption outline-none focus:border-brand-primary"
+                    // autoFocus только на десктопе: на мобильном он поднимает
+                    // клавиатуру поверх списка ещё до того, как пользователь
+                    // увидел варианты.
+                    autoFocus={
+                      typeof window !== 'undefined' && window.innerWidth >= 640
+                    }
+                  />
                 </div>
               )}
+
+              {/* min-h-0 — обязателен: без него flex-потомок не даёт
+                  себя сжать ниже содержимого, и панель на десктопе
+                  переросла бы вычисленный maxHeight. Потолок 55vh
+                  остаётся для мобильного шита. */}
+              <div className="thin-scrollbar min-h-0 max-h-[55vh] flex-1 overflow-y-auto sm:max-h-none">
+                {/* «Указать своё» — первым пунктом, как в приложении. */}
+                {showCustom && (
+                  <button
+                    type="button"
+                    onClick={() => pick(trimmed)}
+                    className="flex w-full items-center gap-2 border-b border-neutral-10 px-4 py-3 text-left text-caption hover:bg-surface-hoverStrong"
+                  >
+                    <span className="text-brand-green">+</span>
+                    <span>
+                      {t('picker_custom')} «{trimmed}»
+                    </span>
+                  </button>
+                )}
+
+                {/* «Все» — сброс значения. В обязательных полях не нужен. */}
+                {!allowCustom && (
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={selected === ''}
+                    onClick={() => pick('')}
+                    className={
+                      'flex w-full items-center justify-between px-4 py-3 text-left text-caption hover:bg-surface-hoverStrong ' +
+                      (selected === '' ? 'font-semibold' : '')
+                    }
+                  >
+                    <span>{placeholder || t('filter_any')}</span>
+                    {selected === '' && <span className="text-brand-primary">✓</span>}
+                  </button>
+                )}
+
+                {filtered.map((o) => (
+                  <button
+                    key={o.value}
+                    type="button"
+                    role="option"
+                    aria-selected={selected === o.value}
+                    onClick={() => pick(o.value)}
+                    className={
+                      'flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-caption hover:bg-surface-hoverStrong ' +
+                      (selected === o.value ? 'font-semibold' : '')
+                    }
+                  >
+                    <span className="truncate">{o.label}</span>
+                    <span className="flex shrink-0 items-center gap-2">
+                      {o.count !== undefined && o.count > 0 && (
+                        <span className="text-neutral-40">{o.count}</span>
+                      )}
+                      {selected === o.value && (
+                        <span className="text-brand-primary">✓</span>
+                      )}
+                    </span>
+                  </button>
+                ))}
+
+                {filtered.length === 0 && !showCustom && (
+                  <div className="px-4 py-6 text-center text-caption text-neutral-60">
+                    {t('picker_nothing')}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </>
-      )}
+          </>,
+          document.body,
+        )}
     </div>
   );
 }
