@@ -24,7 +24,6 @@
 // та же RPC, что вызывает приложение).
 // ============================================================
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { trackEvent } from '@/lib/analytics';
@@ -81,7 +80,10 @@ type Props = {
   // (CatalogView) вместе с остальными ссылками каталога: собирать путь
   // строкой в клиентском компоненте правило проекта запрещает.
   // Нужны только при lockedType.
-  typeNavHrefs?: { both: string; sale: string; rent: string };
+  // Пути витрин для режима навигации: куда отправлять форму, когда
+  // человек сменил тип объявления. Без query — его собирает сама
+  // GET-форма из своих полей.
+  typeNavPaths?: { both: string; sale: string; rent: string };
   // Тип витрины для подсветки сегмента. ОТДЕЛЬНО от mode: тот схлопывает
   // 'both' в 'sale' (смешанная выдача показывает цены как продажа), и
   // подсветка по нему зажигала бы на /all «Продажу» вместо «Все».
@@ -98,7 +100,7 @@ export default function FilterPanel({
   activeCount,
   mode = 'sale',
   lockedType = false,
-  typeNavHrefs,
+  typeNavPaths,
   navType,
 }: Props) {
   const t = getT(locale);
@@ -117,10 +119,14 @@ export default function FilterPanel({
   useDismissableLayer({ open, onClose: () => setOpen(false) });
 
   // Тип объявления. Витрина каталога смешанная, поэтому по умолчанию
-  // 'both' — «Все». На SEO-лендинге /rent тип задан адресом и сегмент
-  // не показывается: сменить его там означало бы уйти со страницы.
+  // 'both' — «Все».
+  //
+  // В режиме навигации (lockedType) стартовое значение берётся из
+  // типа САМОЙ витрины: filters.listingType там пуст — тип задан
+  // адресом, а не query, и в фильтры его не кладут, чтобы он не
+  // попал в счётчик применённых.
   const [listingType, setListingType] = useState<ListingType>(
-    filters.listingType ?? 'both',
+    lockedType ? (navType ?? mode) : (filters.listingType ?? 'both'),
   );
 
   // Выбранная марка и модели для каскада. Стартуют из фильтров страницы.
@@ -161,6 +167,19 @@ export default function FilterPanel({
   const [mileageMax, setMileageMax] = useState(
     filters.mileageMax != null ? String(filters.mileageMax) : '',
   );
+
+  // ЗАКРЫЛИ ШТОРКУ, НЕ ПРИМЕНИВ, — тип возвращается к текущей выдаче.
+  // Сегмент теперь применяется по кнопке, поэтому его состояние может
+  // разойтись с тем, что человек видит на странице: выбрал «Аренду»,
+  // передумал, закрыл крестиком — и подсветка осталась бы на аренде,
+  // хотя выдача прежняя. Остальные поля этим не страдают: их значения
+  // видны в чипсах над выдачей, а тип в них не попадает.
+  useEffect(() => {
+    if (open) return;
+    setListingType(
+      lockedType ? (navType ?? mode) : (filters.listingType ?? 'both'),
+    );
+  }, [open, lockedType, navType, mode, filters.listingType]);
 
   // Догрузка моделей при смене марки прямо в панели. На сервере модели
   // уже пришли для марки из URL — повторный запрос делаем только когда
@@ -338,7 +357,16 @@ export default function FilterPanel({
                 одного URL для краулера. */}
             <form
               method="get"
-              action={action}
+              // КУДА ОТПРАВЛЯЕМ. В режиме фильтра — на ту же страницу:
+              // тип уходит скрытым полем ?type=. В режиме навигации у
+              // каждого типа СВОЯ витрина (/all, /cars, /rent), и
+              // смена типа означает переход на другой адрес — он и
+              // становится целью формы. Так переключение раздела
+              // происходит по «Показать результаты» вместе с
+              // остальными фильтрами, а не мгновенно по клику.
+              action={
+                lockedType ? (typeNavPaths?.[listingType] ?? action) : action
+              }
               className="space-y-3"
               onSubmit={(e) => {
                 const form = e.currentTarget;
@@ -369,30 +397,38 @@ export default function FilterPanel({
 
                 trackEvent('search_performed', {
                   filters_used: used,
-                  listing_type: filters.listingType ?? 'both',
+                  // Тип берём из СОСТОЯНИЯ формы, а не из фильтров
+                  // страницы: сегмент теперь применяется вместе с
+                  // остальными полями, и filters.listingType показал
+                  // бы витрину, с которой человек уходит, а не ту,
+                  // куда он отправляет поиск.
+                  listing_type: listingType,
                 });
               }}
             >
               {/* Тип объявления — сегмент из трёх кнопок. Первым полем:
                   он определяет саму выдачу, а не сужает её по признаку.
 
-                  Сегмент выглядит одинаково везде, но работает по-разному,
-                  и разница задана адресом страницы:
+                  ВЫБОР НЕ ПРИМЕНЯЕТСЯ СРАЗУ. Нажатие только подсвечивает
+                  положение; выдача меняется по кнопке «Показать
+                  результаты» — как и у всех остальных полей шторки.
+                  Раньше в навигационном режиме это были ссылки, и клик
+                  уводил со страницы мгновенно, не дав дособрать фильтры.
 
-                  * /cars — ФИЛЬТР. Тип приходит из query (?type=), кнопки
-                    меняют состояние формы, значение уходит скрытым полем
-                    вместе с остальными фильтрами.
+                  Разница между режимами осталась, но ушла внутрь формы —
+                  в её адрес назначения:
 
-                  * /rent и SEO-страницы марок — НАВИГАЦИЯ (lockedType).
-                    Тип там задан самим маршрутом, а не выбором человека:
-                    менять его формой нельзя (адрес врал бы), но и прятать
-                    сегмент незачем — он показывает, в каком разделе
-                    пользователь находится, и даёт выход в остальные.
-                    Текущий тип подсвечен и некликабелен, соседние —
-                    ссылки в каталог с ПЕРЕНОСОМ применённых фильтров
-                    (адреса собраны в CatalogView).
-                    В счётчик и чипсы этот тип не входит: пользователь его
-                    не выбирал (см. countable в CatalogView). */}
+                  * /cars с ?type= — ФИЛЬТР. Тип уходит скрытым полем
+                    вместе с остальными фильтрами, адрес прежний.
+
+                  * /all, /rent и SEO-страницы марок — НАВИГАЦИЯ
+                    (lockedType). У каждого типа своя витрина, поэтому
+                    смена типа меняет action формы: отправка уводит на
+                    /all, /cars или /rent, унося фильтры полями формы.
+
+                  В счётчик и чипсы навигационный тип не входит:
+                  пользователь его не выбирал (см. countable в
+                  CatalogView). */}
               <div>
                 <label className="mb-1 block text-caption text-neutral-60">
                   {t('filter_listing_type')}
@@ -405,11 +441,11 @@ export default function FilterPanel({
                       ['rent', t('mode_rent')],
                     ] as const
                   ).map(([value, label]) => {
-                    // Активный сегмент: в режиме навигации активен тип
-                    // самой страницы, в режиме фильтра — выбор в форме.
-                    const active = lockedType
-                      ? value === (navType ?? mode)
-                      : listingType === value;
+                    // Активен ВЫБОР В ФОРМЕ — одинаково в обоих
+                    // режимах. В навигационном он стартует с типа
+                    // текущей витрины, поэтому до первого нажатия
+                    // подсвечен раздел, в котором человек находится.
+                    const active = listingType === value;
 
                     const cls =
                       'rounded-control px-2 py-2 text-center text-caption font-semibold transition-colors ' +
@@ -417,40 +453,17 @@ export default function FilterPanel({
                         ? 'bg-white text-brand-dark shadow-sticky'
                         : 'text-neutral-55 hover:text-brand-dark');
 
-                    if (lockedType) {
-                      // Текущий раздел — не ссылка на самого себя:
-                      // переход никуда не ведёт, а скринридер объявил бы
-                      // его равноправным пунктом. aria-current называет
-                      // активный раздел явно.
-                      if (active) {
-                        return (
-                          <span key={value} className={cls} aria-current="true">
-                            {label}
-                          </span>
-                        );
-                      }
-
-                      return (
-                        <Link
-                          key={value}
-                          href={typeNavHrefs?.[value] ?? '#'}
-                          className={cls}
-                          // «Все» ведёт на служебную витрину /all: она
-                          // под noindex, и краулеру идти по ссылке
-                          // незачем. Два лендинга остаются проходимыми.
-                          rel={value === 'both' ? 'nofollow' : undefined}
-                        >
-                          {label}
-                        </Link>
-                      );
-                    }
-
                     return (
                       <button
                         key={value}
                         type="button"
                         onClick={() => setListingType(value)}
                         className={cls}
+                        // Сегмент — это выбор из трёх взаимоисключающих
+                        // положений, а не набор независимых кнопок:
+                        // aria-pressed сообщает скринридеру, какое
+                        // сейчас нажато.
+                        aria-pressed={active}
                       >
                         {label}
                       </button>

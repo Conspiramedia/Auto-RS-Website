@@ -124,30 +124,25 @@ export default function CatalogView({
     ...(lockedType ? { listingType: undefined } : null),
   };
 
-  // Адреса навигационного сегмента «Тип объявления». Нужны только там,
-  // где тип задан маршрутом (lockedType): на /rent и SEO-страницах
+  // Пути витрин для сегмента «Тип объявления». Нужны там, где тип
+  // задан маршрутом (lockedType): на /cars, /rent и SEO-страницах
   // сегмент переключает не фильтр, а РАЗДЕЛ.
-  //
-  // Переносим применённые фильтры: человек отобрал BMW в Белграде и
-  // жмёт «Продажа» — он ожидает те же BMW в Белграде, а не пустой
-  // каталог. Не переносим:
-  //   * тип — его задаёт целевая ссылка;
-  //   * страницу — на другой выдаче номер страницы бессмысленен и
-  //     нередко ведёт за её пределы.
-  // Марка и модель SEO-страницы переносятся в query автоматически:
-  // они лежат в filters, куда их положил сам маршрут (BrandPageView).
   //
   // У каждого положения сегмента — собственная витрина: /all (продажа
   // и аренда вперемешку), /cars (продажа), /rent (аренда). Тип в query
   // не пишется вовсе: его задаёт сам адрес, а лишний ?type= вернул бы
   // параметр в счётчик фильтров и раздвоил canonical.
-  const navQuery = buildQuery(filters, { listingType: undefined, page: 1 });
-
-  const typeNavHrefs = lockedType
+  //
+  // БЕЗ QUERY: это адрес назначения ФОРМЫ, а не готовая ссылка.
+  // Переключение раздела больше не происходит по клику — оно ждёт
+  // кнопки «Показать результаты», и фильтры на целевую витрину
+  // переносит сама форма своими полями. Приклей мы сюда query,
+  // браузер всё равно отбросил бы его при GET-отправке.
+  const typeNavPaths = lockedType
     ? {
-        both: localePath(locale, '/all', navQuery),
-        sale: localePath(locale, '/cars', navQuery),
-        rent: localePath(locale, '/rent', navQuery),
+        both: localePath(locale, '/all'),
+        sale: localePath(locale, '/cars'),
+        rent: localePath(locale, '/rent'),
       }
     : undefined;
 
@@ -291,7 +286,7 @@ export default function CatalogView({
             activeCount={activeCount}
             mode={pageMode}
             lockedType={lockedType}
-            typeNavHrefs={typeNavHrefs}
+            typeNavPaths={typeNavPaths}
             navType={mode}
           />
           {/* Счётчик в этом ряду показывается только в диапазоне
@@ -357,7 +352,7 @@ export default function CatalogView({
           activeCount={activeCount}
           mode={pageMode}
           lockedType={lockedType}
-          typeNavHrefs={typeNavHrefs}
+          typeNavPaths={typeNavPaths}
           navType={mode}
         />
 
