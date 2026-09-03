@@ -280,19 +280,42 @@ export default function DeleteAccountBlock({
               </Alert>
             )}
 
-            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button variant="secondary" onClick={close} disabled={pending}>
-                {t('delete_account_cancel')}
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={submit}
-                disabled={!canSubmit}
-              >
-                {pending
-                  ? t('delete_account_deleting')
-                  : t('delete_account_submit')}
-              </Button>
+            {/* КНОПКИ ДЕЛЯТ ШИРИНУ ОКНА ПОРОВНУ — как в диалоге
+                отказа от статуса салона (DealerApplicationBlock). Два
+                диалога кабинета обязаны выглядеть одинаково: разная
+                раскладка кнопок читалась бы как разница в смысле, а
+                её здесь нет.
+
+                flex-1 на обёртках, а не fullWidth на кнопках: тот
+                даёт w-full, что в flex-строке лишь растягивает кнопку
+                по её собственному содержимому. Ширину делят именно
+                контейнеры.
+
+                На мобильном строка складывается в столбец, и каждая
+                кнопка занимает всю ширину — там делить нечего. */}
+            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row">
+              <div className="flex-1">
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  onClick={close}
+                  disabled={pending}
+                >
+                  {t('delete_account_cancel')}
+                </Button>
+              </div>
+              <div className="flex-1">
+                <Button
+                  variant="destructive"
+                  fullWidth
+                  onClick={submit}
+                  disabled={!canSubmit}
+                >
+                  {pending
+                    ? t('delete_account_deleting')
+                    : t('delete_account_submit')}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
