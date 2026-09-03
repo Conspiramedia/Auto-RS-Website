@@ -27,9 +27,23 @@
 // ссылки и увёл человека на страницу объявления вместо переключения
 // закладки. Поэтому у обоих обработчиков stopPropagation +
 // preventDefault.
+//
+// МЕНЮ «ТРИ ТОЧКИ» РИСУЕТСЯ ПОРТАЛОМ В <body>. Карточка (Card)
+// обязана нести overflow-hidden — им обрезается фотография по
+// скруглённым углам, — и выпадающий внутри неё список упирался в
+// нижнюю кромку карточки: первый пункт был виден наполовину, второй
+// не виден вовсе. Ни z-index, ни порядок элементов этого не лечат:
+// overflow обрезает потомков независимо от слоя, а снять его нельзя,
+// не отпустив углы фотографии.
+//
+// Портал выносит список из потока карточки целиком — обрезать его
+// больше нечему. document.body здесь безопасен без проверки на
+// сервер: портал существует только когда menuAt не null, а это
+// состояние возникает исключительно по клику, то есть в браузере.
 // ============================================================
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { useCardActions } from './CardActionsProvider';
 import { HeartIcon, MoreHorizontalIcon } from './ui/NavIcons';
@@ -60,7 +74,40 @@ export default function CardActions({ locale, carId, city, kind }: Props) {
   const { signedIn, isFavorite, toggleFavorite, hideCar, hideCity } =
     useCardActions();
 
-  const [menuOpen, setMenuOpen] = useState(false);
+  // Меню рисуется ПОРТАЛОМ в <body> по координатам кнопки, а не
+  // absolute внутри карточки. Причина — overflow-hidden у Card
+  // (components/ui/Card.tsx): он обязателен, потому что обрезает
+  // фотографию по скруглённым углам карточки, но заодно обрезал и
+  // выпадающий список — тот упирался в нижний край карточки и
+  // показывал первый пункт наполовину.
+  //
+  // Портал выносит меню из потока карточки целиком: обрезать его
+  // больше нечему. Расплата — позицию приходится считать самому
+  // (position: fixed от края окна), зато список одинаково цел и в
+  // сетке каталога, и в блоке «похожие», и в избранном.
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [menuAt, setMenuAt] = useState<{ top: number; right: number } | null>(
+    null,
+  );
+  const menuOpen = menuAt !== null;
+
+  // Координаты считаются от кнопки в момент открытия. При прокрутке и
+  // изменении размера окна меню закрывается, а не едет следом:
+  // пересчитывать позицию на каждый кадр прокрутки ради всплывашки,
+  // которую всё равно закрывают первым же действием, — лишняя работа
+  // в самом горячем месте (прокрутка ленты карточек).
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const close = () => setMenuAt(null);
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+
+    return () => {
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+    };
+  }, [menuOpen]);
 
   // Сессия ещё проверяется — значков нет. Мелькнувшее пустое сердце у
   // того, кто объявление сохранил, читается как потеря закладки.
@@ -123,8 +170,9 @@ export default function CardActions({ locale, carId, city, kind }: Props) {
   if (!signedIn) return null;
 
   return (
-    <div className="relative">
+    <>
       <button
+        ref={buttonRef}
         type="button"
         aria-label={t('catalog_hide_aria')}
         title={t('catalog_hide_aria')}
@@ -134,74 +182,98 @@ export default function CardActions({ locale, carId, city, kind }: Props) {
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
-          setMenuOpen((v) => !v);
+
+          if (menuOpen) {
+            setMenuAt(null);
+            return;
+          }
+
+          const box = buttonRef.current?.getBoundingClientRect();
+          if (!box) return;
+
+          // Правый край меню равняется по правому краю кнопки, отсчёт
+          // идёт от ПРАВОГО края окна — потому меню и раскрывается
+          // влево. Выпадающий вправо список уехал бы за границу
+          // экрана: значок стоит у правого края карточки, а на
+          // мобильном карточка сама прижата к краю.
+          setMenuAt({
+            top: box.bottom + 4,
+            right: window.innerWidth - box.right,
+          });
         }}
       >
         <MoreHorizontalIcon className="h-5 w-5" />
       </button>
 
-      {menuOpen && (
-        <>
-          {/* Слой z-header, а не filter-sheet: меню обязано
-              перекрыть соседние карточки, но НЕ залипающую шапку —
-              шторка фильтров занимает ступень выше именно потому, что
-              перекрывает её намеренно, а всплывашка на карточке —
-              нет.
+      {menuAt &&
+        createPortal(
+          <>
+            {/* Слой z-modal: меню вынесено в <body> и перекрывает
+                собой всё, включая залипающую шапку. Раньше здесь
+                стоял z-header в расчёте на то, что всплывашка шапку
+                перекрывать НЕ должна, — но это было верно, пока меню
+                жило внутри карточки и вместе с ней уезжало под шапку
+                при прокрутке. Портал отменяет прокрутку как способ
+                убрать меню с дороги (оно закрывается по первому же
+                скроллу), и ступень ниже шапки означала бы список,
+                наполовину заехавший под неё.
 
-              Подложка на весь экран: клик мимо меню закрывает его.
-              Обязателен именно элемент, а не обработчик на document, —
-              он же перехватывает клик, который иначе прошёл бы по
-              ссылке-карточке под меню. */}
-          <div
-            className="fixed inset-0 z-header"
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              setMenuOpen(false);
-            }}
-          />
+                Подложка на весь экран: клик мимо меню закрывает его.
+                Обязателен именно элемент, а не обработчик на
+                document, — он же перехватывает клик, который иначе
+                прошёл бы по ссылке-карточке под меню. */}
+            <div
+              className="fixed inset-0 z-modal"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setMenuAt(null);
+              }}
+            />
 
-          {/* Меню открывается ВЛЕВО (right-0): значок стоит у правого
-              края карточки, и выпадающий вправо список уехал бы за
-              границу экрана на мобильном. */}
-          <div
-            role="menu"
-            className="absolute right-0 top-9 z-header w-56 rounded-card border border-neutral-10 bg-white p-1 shadow-dropdown"
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-            }}
-          >
-            <div className="px-3 py-2 text-caption font-semibold text-neutral-60">
-              {t('catalog_hide_title')}
+            <div
+              role="menu"
+              // Ширина ограничена ещё и шириной окна: на 360px меню в
+              // 224px помещается, но с отступом от края в 8px — иначе
+              // оно липнет к самой кромке экрана.
+              className="fixed z-modal max-w-[calc(100vw-1rem)] w-56 rounded-card border border-neutral-10 bg-white p-1 shadow-dropdown"
+              style={{ top: menuAt.top, right: menuAt.right }}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+              }}
+            >
+              <div className="px-3 py-2 text-caption font-semibold text-neutral-60">
+                {t('catalog_hide_title')}
+              </div>
+
+              <button
+                type="button"
+                role="menuitem"
+                className="block w-full rounded-control px-3 py-2 text-left text-small hover:bg-surface-muted"
+                onClick={() => {
+                  setMenuAt(null);
+                  void hideCar(carId);
+                }}
+              >
+                {t('catalog_hide_car')}
+              </button>
+
+              <button
+                type="button"
+                role="menuitem"
+                className="block w-full rounded-control px-3 py-2 text-left text-small hover:bg-surface-muted"
+                onClick={() => {
+                  setMenuAt(null);
+                  void hideCity(city);
+                }}
+              >
+                {t('catalog_hide_city')}
+              </button>
             </div>
-
-            <button
-              type="button"
-              role="menuitem"
-              className="block w-full rounded-control px-3 py-2 text-left text-small hover:bg-surface-muted"
-              onClick={() => {
-                setMenuOpen(false);
-                void hideCar(carId);
-              }}
-            >
-              {t('catalog_hide_car')}
-            </button>
-
-            <button
-              type="button"
-              role="menuitem"
-              className="block w-full rounded-control px-3 py-2 text-left text-small hover:bg-surface-muted"
-              onClick={() => {
-                setMenuOpen(false);
-                void hideCity(city);
-              }}
-            >
-              {t('catalog_hide_city')}
-            </button>
-          </div>
-        </>
-      )}
-    </div>
+          </>,
+          document.body,
+        )}
+    </>
   );
 }
