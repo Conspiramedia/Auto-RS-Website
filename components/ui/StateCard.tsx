@@ -82,26 +82,32 @@ export default function StateCard({
         // с обработчиком: страницы кабинета серверные, и повтор для
         // них означает повторный запрос страницы. Клиентский reset
         // потребовал бы делать компонент клиентским ради одной кнопки.
-        <div className="mt-6 inline-grid grid-cols-1 gap-3 [&>*]:w-full sm:[&>*]:w-auto sm:flex sm:flex-row sm:items-center sm:justify-center">
-          <Button size="sm" href={localeHref(locale, retryPath)}>
+        <div className="mt-6 grid grid-cols-1 gap-3">
+          <Button size="sm" fullWidth href={localeHref(locale, retryPath)}>
             {t('err_retry')}
           </Button>
           <Button
             variant="secondary"
             size="sm"
+            fullWidth
             href={localeHref(locale, '/cars')}
           >
             {t('nav_catalog')}
           </Button>
         </div>
       ) : (
-        // На мобильном действия идут столбиком РАВНОЙ ширины: при
-        // flex-wrap каждая кнопка получала ширину по своей подписи, и
-        // «Сбросить фильтры» с «Сообщить, когда появится» вставали
-        // друг под другом разными по ширине — это читалось как брак
-        // вёрстки. С sm: возвращается обычный ряд по ширине контента.
+        // Действия идут столбиком во всю ширину карточки — так же, как
+        // кнопки ветки ошибки выше и на странице недоступного
+        // объявления. Прежде они уравнивались по самой длинной
+        // подписи: «Сбросить фильтры» и «Сообщить, когда появится»
+        // вставали друг под другом разной ширины, и это читалось как
+        // брак вёрстки.
+        //
+        // Ширину задаёт [&>*]:w-full, а не проп fullWidth: кнопки
+        // приходят готовым JSX снаружи, и добавить им проп изнутри
+        // нельзя. В ветке выше кнопки свои, там стоит fullWidth.
         actions && (
-          <div className="mt-6 inline-grid grid-cols-1 gap-3 [&>*]:w-full sm:[&>*]:w-auto sm:flex sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
+          <div className="mt-6 grid grid-cols-1 gap-3 [&>*]:w-full">
             {actions}
           </div>
         )
