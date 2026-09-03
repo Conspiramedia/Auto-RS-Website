@@ -245,6 +245,13 @@ export const dict = {
     car_published: 'Objavljeno',
     car_share: 'Podeli',
     car_share_copied: 'Link je kopiran',
+    // Izbor: dugme ima dva stanja, tekst se menja prema stanju —
+    // aria-pressed prenosi isto stanje čitačima ekrana.
+    car_favorite_add: 'Sačuvaj',
+    car_favorite_remove: 'Sačuvano',
+    // Gostu se ne govori «prijavite se»: dugme ga samo vodi na prijavu
+    // i vraća nazad na isti oglas.
+    car_favorite_failed: 'Nije uspelo. Pokušajte ponovo',
     car_seller: 'Prodavac',
     car_seller_dealer: 'Autosalon',
     car_seller_private: 'Privatno lice',
@@ -1481,6 +1488,13 @@ export const dict = {
     car_published: 'Опубликовано',
     car_share: 'Поделиться',
     car_share_copied: 'Ссылка скопирована',
+    // Избранное: у кнопки два состояния, подпись меняется по нему —
+    // то же состояние передаётся скринридеру через aria-pressed.
+    car_favorite_add: 'Сохранить',
+    car_favorite_remove: 'Сохранено',
+    // Гостю не пишем «войдите»: кнопка сама уводит на вход и
+    // возвращает на ту же карточку.
+    car_favorite_failed: 'Не удалось. Попробуйте ещё раз',
     car_seller: 'Продавец',
     car_seller_dealer: 'Автосалон',
     car_seller_private: 'Частное лицо',

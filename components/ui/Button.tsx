@@ -85,6 +85,16 @@ type ButtonProps = CommonProps & {
   type?: 'button' | 'submit';
   disabled?: boolean;
   onClick?: () => void;
+  // Кнопка-переключатель (избранное): состояние «нажата». Скринридер
+  // объявляет его сам, и без атрибута смена подписи остаётся для него
+  // просто другим текстом, без указания, что это два состояния одного
+  // переключателя.
+  //
+  // Поле перечислено явно, а не расширением ButtonHTMLAttributes:
+  // props здесь закрытые намеренно — открытый набор позволил бы
+  // передать снаружи className-конфликты и обработчики, которые
+  // компонент не контролирует.
+  'aria-pressed'?: boolean;
 };
 
 type LinkProps = CommonProps & {
@@ -152,13 +162,19 @@ export default function Button(props: ButtonProps | LinkProps) {
   }
 
   // Кнопка.
-  const { type = 'button', disabled, onClick } = props as ButtonProps;
+  const {
+    type = 'button',
+    disabled,
+    onClick,
+    'aria-pressed': ariaPressed,
+  } = props as ButtonProps;
 
   return (
     <button
       type={type}
       disabled={disabled}
       onClick={onClick}
+      aria-pressed={ariaPressed}
       className={classes}
     >
       {children}

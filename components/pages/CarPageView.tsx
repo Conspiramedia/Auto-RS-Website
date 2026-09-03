@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import AppQr from '@/components/AppQr';
+import FavoriteButton from '@/components/FavoriteButton';
 import CarCard from '@/components/CarCard';
 import CarGoneView from '@/components/pages/CarGoneView';
 import RecentlyViewed from '@/components/RecentlyViewed';
@@ -451,6 +452,15 @@ export default async function CarPageView({
                 />
 
                 <ContactSellerButton
+                  locale={locale}
+                  carId={car.id}
+                  sellerId={car.user_id}
+                />
+
+                {/* Избранное стоит ПОД связью с продавцом и НАД
+                    «Поделиться»: это шаг между «интересно» и «звоню», и
+                    в стеке он занимает своё место по силе намерения. */}
+                <FavoriteButton
                   locale={locale}
                   carId={car.id}
                   sellerId={car.user_id}
