@@ -17,6 +17,7 @@ import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import type { ListingType } from '@/lib/types';
 import Badge from './ui/Badge';
+import CardActions from './CardActions';
 import Card from './ui/Card';
 import ViewedBadge from './ViewedBadge';
 
@@ -39,11 +40,17 @@ type Props = {
     // 'private' | 'dealer'. Необязательное: карточка показывается и
     // там, где тип продавца не читается (например, в блоке «недавно
     // просмотренные»), и пометка там просто не рисуется.
-    seller_kind?: string;
+    //
+    // null допустим наравне с отсутствием поля: у объявления удалённой
+    // учётной записи профиля нет вовсе (0126), и выборка отдаёт здесь
+    // null. Для карточки оба случая означают одно — пометку не
+    // рисуем, — и заставлять каждый источник приводить null к
+    // undefined значило бы плодить преобразования на ровном месте.
+    seller_kind?: string | null;
     // Доступность (0119). Необязательное по той же причине, что
     // seller_kind выше: карточка показывается и там, где поле не
     // читается, и бейдж тогда просто не рисуется.
-    availability?: string;
+    availability?: string | null;
   };
   // Витрина, в которой показана карточка.
   //   'sale' | 'rent' — специализированный раздел: показываем цену
@@ -188,14 +195,44 @@ export default function CarCard({
       </div>
 
       <div className="p-3">
-        <div className="truncate font-semibold">
-          {car.brand} {car.model}
+        {/* НАЗВАНИЕ И СЕРДЦЕ В ОДНОЙ СТРОКЕ — раскладка приложения
+            (car_card.dart): значок избранного стоит справа от марки с
+            моделью, а не поверх фотографии. Верхний ряд над фото занят
+            бейджами аренды и просмотра, и третий элемент туда не
+            помещается: на 360px карточка выходит 156px.
+
+            Название получает min-w-0 + truncate и отдаёт место значку:
+            без min-w-0 flex-элемент не сжимается ниже содержимого и
+            вытолкнул бы сердце за край карточки. */}
+        <div className="flex items-start gap-1">
+          <div className="min-w-0 flex-1 truncate font-semibold">
+            {car.brand} {car.model}
+          </div>
+
+          <CardActions
+            locale={locale}
+            carId={car.id}
+            city={car.city}
+            kind="favorite"
+          />
         </div>
 
-        <div className="mt-1 text-h4 font-bold text-brand-primary">
-          {showRent
-            ? formatRentPrice(car.rent_price_daily ?? null, car.currency, locale)
-            : formatPrice(car.sale_price, car.currency, locale)}
+        {/* ЦЕНА И «ТРИ ТОЧКИ» — вторая строка приложения. Цена в
+            min-w-0 по той же причине, что название выше: длинная сумма
+            ужимается, а не выдавливает значок. */}
+        <div className="flex items-center gap-1">
+          <div className="min-w-0 flex-1 truncate text-h4 font-bold text-brand-primary">
+            {showRent
+              ? formatRentPrice(car.rent_price_daily ?? null, car.currency, locale)
+              : formatPrice(car.sale_price, car.currency, locale)}
+          </div>
+
+          <CardActions
+            locale={locale}
+            carId={car.id}
+            city={car.city}
+            kind="menu"
+          />
         </div>
 
         {/* Вторая цена. Объявление, доступное и к продаже, и к аренде,

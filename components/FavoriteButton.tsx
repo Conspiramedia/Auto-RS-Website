@@ -1,51 +1,39 @@
 'use client';
 
 // ============================================================
-// RS AUTO — Кнопка «Сохранить» (избранное). Client Component.
+// RS AUTO — Значок «в избранное» на странице объявления.
 // ============================================================
-// ЗАЧЕМ. Таблица favorites и RPC toggle_favorite существуют с миграции
-// 0023, но на сайте закладку поставить было НЕГДЕ: покупатель мог
-// только позвонить или написать. Между «понравилось» и «готов
-// связаться» лежит целый шаг выбора — человек отбирает три-четыре
-// машины, сравнивает и возвращается через день. Без закладок он
-// возвращался в поиск и набирал фильтры заново, а часть просто не
-// возвращалась.
+// Стоит справа от заголовка карточки. Раньше здесь была кнопка
+// «Сохранить» во всю ширину в блоке контактов — третья подряд после
+// «Показать номер» и «Написать продавцу», то есть равная им по весу,
+// хотя закладка несоизмеримо легче звонка. Значок и знаком совпадает
+// с карточкой в каталоге, и веса кнопки-действия не занимает.
 //
-// ПОЧЕМУ КЛИЕНТСКИЙ И БЕЗ SERVER ACTION. Карточка объявления
-// кэшируется (revalidate 300) — на этом держится SEO. Чтение сессии на
-// сервере перевело бы страницу в динамический рендер, а Server Action
-// с revalidatePath сбрасывал бы кэш карточки на КАЖДОЕ нажатие
-// закладки, то есть чужой интерес обнулял бы кэш чужой страницы.
-// Поэтому кнопка решает всё в браузере: сервер отдаёт её одинаковой
-// всем, а состояние она выясняет сама. Тот же приём, что в
-// ContactSellerButton.
+// ЗНАК ТОТ ЖЕ, ЧТО В СПИСКЕ И В ПРИЛОЖЕНИИ: контурное сердце —
+// не сохранено, закрашенное красное — сохранено.
+//
+// СОСТОЯНИЕ ОБЩЕЕ С КАРТОЧКАМИ СПИСКА (CardActionsProvider): на этой
+// же странице ниже стоит блок «похожие» с обычными карточками, и, будь
+// у страницы своё состояние, сердце у заголовка и сердце на карточке
+// того же объявления могли бы разойтись.
 //
 // ТРИ СОСТОЯНИЯ:
-//   * гость — ведём на /login с адресом возврата, как «Написать
-//     продавцу»: сохранить закладку без учётной записи некуда, но и
-//     терять намерение нельзя;
-//   * владелец объявления — кнопки нет. Своя машина в избранном
+//   * гость — ссылка на вход с возвратом на эту же карточку;
+//   * владелец объявления — значка нет: своя машина в избранном
 //     бессмысленна, а метрика «в избранном» в кабинете считала бы
 //     самого продавца;
-//   * покупатель — toggle_favorite переключает закладку.
+//   * покупатель — переключатель закладки.
 //
-// ОПТИМИСТИЧНОЕ ПЕРЕКЛЮЧЕНИЕ. Состояние меняется ДО ответа сервера и
-// откатывается при ошибке: закладка — действие на один тап, и ждать
-// ответа сети, глядя на неизменившуюся кнопку, человек не станет —
-// нажмёт второй раз и снимет то, что только что поставил.
-//
-// До проверки сессии кнопка НЕ рисуется: мелькнувшее пустое сердце у
-// того, кто уже сохранил объявление, читается как потеря закладки.
+// Размер области нажатия — 40px против 32px на карточке списка:
+// здесь рядом заголовок в text-h1, и значок 32px выглядел бы при нём
+// потерянным, а места на странице объявления достаточно.
 // ============================================================
 
-import { usePathname } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
-
-import Button from './ui/Button';
+import { useCardActions } from './CardActionsProvider';
+import { HeartIcon } from './ui/NavIcons';
 import { trackEvent } from '@/lib/analytics';
 import type { Locale } from '@/lib/i18n';
-import { getT, localeHref, stripLocale } from '@/lib/i18n';
-import { getBrowserClient } from '@/lib/supabaseClient';
+import { getT, localeHref } from '@/lib/i18n';
 
 type Props = {
   locale: Locale;
@@ -54,120 +42,57 @@ type Props = {
   sellerId: string;
 };
 
+const HIT_AREA =
+  'flex h-10 w-10 shrink-0 items-center justify-center rounded-full ' +
+  'transition-colors hover:bg-surface-muted';
+
 export default function FavoriteButton({ locale, carId, sellerId }: Props) {
   const t = getT(locale);
-  const pathname = usePathname();
+  const { signedIn, userId, isFavorite, toggleFavorite } = useCardActions();
 
-  // undefined — проверка сессии ещё идёт, null — гость.
-  const [userId, setUserId] = useState<string | null | undefined>(undefined);
-  const [saved, setSaved] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const [pending, startTransition] = useTransition();
+  // Сессия ещё проверяется: пустое сердце, мелькнувшее у того, кто
+  // объявление сохранил, читается как потеря закладки.
+  if (signedIn === undefined) return null;
 
-  useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      const supabase = getBrowserClient();
-      const { data } = await supabase.auth.getSession();
-      const id = data.session?.user.id ?? null;
-      if (cancelled) return;
-      setUserId(id);
-
-      // Гостю и владельцу закладку не показываем — и запрос за ней не
-      // делаем: лишний поход в базу ради кнопки, которой не будет.
-      if (id === null || id === sellerId) return;
-
-      // Есть ли уже закладка. Читаем таблицу напрямую: политика
-      // favorites_select_own (0023, ужесточена в 0063) отдаёт строки
-      // только их владельцу, поэтому отдельная RPC ничего бы не
-      // проверила сверх неё. head + count вместо выборки строки:
-      // нужен факт наличия, а не содержимое.
-      const { count } = await supabase
-        .from('favorites')
-        .select('car_id', { count: 'exact', head: true })
-        .eq('car_id', carId);
-
-      if (!cancelled) setSaved((count ?? 0) > 0);
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [carId, sellerId]);
-
-  // Проверка не завершена — не показываем ничего.
-  if (userId === undefined) return null;
-
-  // Своё объявление: класть в избранное себя же незачем.
+  // Своё объявление — значка нет.
   if (userId === sellerId) return null;
 
   // Гость: вход с возвратом на эту же карточку.
-  if (userId === null) {
-    const { path } = stripLocale(pathname);
-
+  if (!signedIn) {
     return (
-      <Button
-        href={`${localeHref(locale, '/login')}?redirect=${encodeURIComponent(path)}`}
-        variant="secondary"
-        fullWidth
-        className="mt-2"
-        // Клик гостя тоже событие: интерес он проявил, а дойдёт ли до
-        // входа — как раз то, что показывает разница с favorite_added
-        // от вошедших.
+      <a
+        href={`${localeHref(locale, '/login')}?redirect=${encodeURIComponent(
+          localeHref(locale, `/car/${carId}`),
+        )}`}
+        className={`${HIT_AREA} text-neutral-60`}
+        aria-label={t('car_favorite_aria_add')}
+        title={t('car_favorite_aria_add')}
+        // Клик гостя тоже событие: интерес проявлен, а дойдёт ли он до
+        // входа — как раз то, что показывает разница с событиями
+        // вошедших.
         onClick={() => trackEvent('favorite_added', { guest: true })}
       >
-        {t('car_favorite_add')}
-      </Button>
+        <HeartIcon className="h-6 w-6" />
+      </a>
     );
   }
 
+  const saved = isFavorite(carId);
+
   return (
-    <Button
-      variant="secondary"
-      fullWidth
-      className="mt-2"
-      disabled={pending}
-      // Кнопка-переключатель: состояние сообщается скринридеру, иначе
-      // смена подписи для него — просто другой текст без объяснения.
+    <button
+      type="button"
+      // Переключатель: без aria-pressed смена значка для скринридера
+      // не существует вовсе.
       aria-pressed={saved}
-      onClick={() =>
-        startTransition(async () => {
-          const next = !saved;
-
-          // Оптимистично: показываем результат сразу (см. шапку файла).
-          setSaved(next);
-          setFailed(false);
-
-          const { data, error } = await getBrowserClient().rpc(
-            'toggle_favorite',
-            { p_car_id: carId },
-          );
-
-          if (error) {
-            // Откат: закладки на сервере нет, и кнопка не должна
-            // утверждать обратное.
-            setSaved(!next);
-            setFailed(true);
-            return;
-          }
-
-          // RPC возвращает фактическое состояние (true — добавлено).
-          // Доверяем ему, а не своему предположению: при гонке двух
-          // вкладок расходится именно оно.
-          if (typeof data === 'boolean') setSaved(data);
-
-          // Считаем только добавление — снятие закладки интереса не
-          // выражает (см. lib/analytics, favorite_added).
-          if (data === true) trackEvent('favorite_added', { guest: false });
-        })
+      aria-label={
+        saved ? t('car_favorite_aria_remove') : t('car_favorite_aria_add')
       }
+      title={saved ? t('car_favorite_aria_remove') : t('car_favorite_aria_add')}
+      className={`${HIT_AREA} ${saved ? 'text-brand-red' : 'text-neutral-60'}`}
+      onClick={() => void toggleFavorite(carId)}
     >
-      {failed
-        ? t('car_favorite_failed')
-        : saved
-          ? t('car_favorite_remove')
-          : t('car_favorite_add')}
-    </Button>
+      <HeartIcon className="h-6 w-6" filled={saved} />
+    </button>
   );
 }

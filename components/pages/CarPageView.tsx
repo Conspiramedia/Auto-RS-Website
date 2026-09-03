@@ -217,7 +217,29 @@ export default async function CarPageView({
               <GalleryCloseButton locale={locale} fallbackPath={catalogPath} />
             </div>
 
-            <h1 className="mt-5 text-h2 font-bold sm:text-h1">{title}</h1>
+            {/* ЗАГОЛОВОК И СЕРДЦЕ В ОДНОЙ СТРОКЕ — как на карточке в
+                списке и как в приложении. Раньше избранное жило
+                кнопкой «Сохранить» во всю ширину в блоке контактов:
+                она была третьей подряд после «Показать номер» и
+                «Написать продавцу», то есть равной им по весу, хотя
+                закладка — действие несоизмеримо более лёгкое. Значок
+                у названия и знаком тот же, что в каталоге, и веса
+                кнопки-действия не занимает.
+
+                items-start, а не center: заголовок на узком экране
+                занимает две-три строки, и центрирование увело бы
+                значок к их середине, оторвав от первой строки. */}
+            <div className="mt-5 flex items-start gap-2">
+              <h1 className="min-w-0 flex-1 text-h2 font-bold sm:text-h1">
+                {title}
+              </h1>
+
+              <FavoriteButton
+                locale={locale}
+                carId={car.id}
+                sellerId={car.user_id}
+              />
+            </div>
 
             {/* Бейджи состояния. На карточке они крупнее, чем на плитке
                 каталога: здесь это ключевой факт об объявлении, а не
@@ -457,15 +479,10 @@ export default async function CarPageView({
                   sellerId={car.user_id}
                 />
 
-                {/* Избранное стоит ПОД связью с продавцом и НАД
-                    «Поделиться»: это шаг между «интересно» и «звоню», и
-                    в стеке он занимает своё место по силе намерения. */}
-                <FavoriteButton
-                  locale={locale}
-                  carId={car.id}
-                  sellerId={car.user_id}
-                />
-
+                {/* Избранного здесь НЕТ намеренно: оно переехало
+                    значком-сердцем к заголовку объявления. В этом
+                    блоке остаются только действия связи с продавцом —
+                    звонок, переписка — и шаринг. */}
                 <div className="mt-3">
                   <ShareButton locale={locale} url={canonicalUrl} title={title} />
                 </div>

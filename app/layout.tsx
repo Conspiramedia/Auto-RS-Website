@@ -11,6 +11,7 @@ import type { Metadata, Viewport } from 'next';
 import { Montserrat } from 'next/font/google';
 
 import Analytics from '@/components/Analytics';
+import CardActionsProvider from '@/components/CardActionsProvider';
 import CookieBanner from '@/components/CookieBanner';
 import GoogleAnalyticsGate from '@/components/GoogleAnalytics';
 import { brand } from '@/lib/brand';
@@ -96,7 +97,17 @@ export default function RootLayout({
   return (
     <html lang="sr-Latn" className={montserrat.variable}>
       <body>
-        {children}
+        {/* Состояние значков карточки (избранное, скрытые объявления) —
+            на весь сайт, а не на отдельный список. Карточки стоят в
+            каталоге, на витринах марок и моделей, на главной, у
+            салона и в блоке «похожие»: оборачивать каждый список
+            порознь значило бы забыть про следующий.
+
+            Один провайдер = один запрос сессии и один запрос за
+            закладками на страницу, сколько бы карточек на ней ни было.
+            Сам layout остаётся серверным: 'use client' стоит внутри
+            провайдера, и в клиентский бандл уезжает только он. */}
+        <CardActionsProvider>{children}</CardActionsProvider>
 
         {/* Баннер согласия на куки. В КОРНЕВОМ layout'е, а не в
             страницах: он обязан появиться на любом адресе сайта, в

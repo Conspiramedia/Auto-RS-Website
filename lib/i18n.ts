@@ -249,6 +249,21 @@ export const dict = {
     // aria-pressed prenosi isto stanje čitačima ekrana.
     car_favorite_add: 'Sačuvaj',
     car_favorite_remove: 'Sačuvano',
+    // Значок-сердце на карточке в списке: подписи нет, поэтому текст
+    // уходит в aria-label и tooltip.
+    car_favorite_aria_add: 'Dodaj u omiljeno',
+    car_favorite_aria_remove: 'Ukloni iz omiljenog',
+    // Меню «три точки». Формулировки — дословно как в aplikaciji.
+    catalog_hide_title: 'Sakrij preporuku',
+    catalog_hide_car: 'Ne zanima me ovaj oglas',
+    catalog_hide_city: 'Ne odgovara grad ili region',
+    catalog_hide_aria: 'Sakrij preporuku',
+    catalog_hide_failed: 'Nije uspelo sakrivanje oglasa',
+    // Раздел избранного.
+    favorites_title: 'Omiljeno',
+    favorites_empty: 'Nemate omiljene oglase',
+    favorites_empty_body: 'Dodajte oglase srcem — pojaviće se ovde',
+    favorites_go_to_catalog: 'Idi na katalog',
     // Gostu se ne govori «prijavite se»: dugme ga samo vodi na prijavu
     // i vraća nazad na isti oglas.
     car_favorite_failed: 'Nije uspelo. Pokušajte ponovo',
@@ -1492,6 +1507,21 @@ export const dict = {
     // то же состояние передаётся скринридеру через aria-pressed.
     car_favorite_add: 'Сохранить',
     car_favorite_remove: 'Сохранено',
+    // Значок-сердце на карточке в списке: подписи нет, поэтому текст
+    // уходит в aria-label и подсказку.
+    car_favorite_aria_add: 'Добавить в избранное',
+    car_favorite_aria_remove: 'Убрать из избранного',
+    // Меню «три точки». Формулировки — дословно как в приложении.
+    catalog_hide_title: 'Скрыть рекомендацию',
+    catalog_hide_car: 'Не интересует это объявление',
+    catalog_hide_city: 'Не подходит город или регион',
+    catalog_hide_aria: 'Скрыть рекомендацию',
+    catalog_hide_failed: 'Не удалось скрыть объявление',
+    // Раздел избранного.
+    favorites_title: 'Избранное',
+    favorites_empty: 'В избранном пусто',
+    favorites_empty_body: 'Добавляйте объявления сердечком — они появятся здесь',
+    favorites_go_to_catalog: 'Перейти в каталог',
     // Гостю не пишем «войдите»: кнопка сама уводит на вход и
     // возвращает на ту же карточку.
     car_favorite_failed: 'Не удалось. Попробуйте ещё раз',

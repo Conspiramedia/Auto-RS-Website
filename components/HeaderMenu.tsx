@@ -43,6 +43,7 @@
 //   ── блок аккаунта ───────────────────────────────
 //   LogIn          Войти            только гостю
 //   CarFront       Мои объявления   только вошедшему
+//   Heart          Избранное        только вошедшему
 //   MessageSquare  Сообщения        + счётчик справа
 //   Bell           Уведомления      + счётчик справа
 //   CircleUser     Профиль
@@ -104,6 +105,7 @@ import {
   CarIcon,
   CircleHelpIcon,
   CircleUserIcon,
+  HeartIcon,
   InfoIcon,
   KeyRoundIcon,
   LightbulbIcon,
@@ -167,6 +169,11 @@ const MY_LINKS: {
   badge?: 'messages' | 'notifications';
 }[] = [
   { path: '/my', label: 'my_tab_listings', icon: CarFrontIcon },
+  // «Избранное» — сразу за своими объявлениями и ДО переписки: это
+  // страница покупателя, и у посетителя, который ничего не продаёт,
+  // она в этом блоке единственная нужная. Порядок повторяет
+  // приложение, где избранное тоже стоит перед чатами.
+  { path: '/my/favorites', label: 'favorites_title', icon: HeartIcon },
   {
     path: '/my/messages',
     label: 'my_tab_messages',

@@ -316,6 +316,34 @@ export type SellerListing = {
   created_at: string;
 };
 
+// Объявление в избранном. RPC get_my_favorites (миграция 0130).
+//
+// Повторяет SellerListing и добавляет три поля: availability и
+// seller_kind рисует карточка каталога (бейдж «на заказ», пометка
+// «Автосалон»), а favorited_at задаёт порядок списка — новые закладки
+// сверху. created_at здесь, наоборот, не нужен: сортировка идёт по
+// дате закладки, а не по дате объявления.
+export type FavoriteListing = {
+  id: string;
+  brand: string;
+  model: string;
+  year: number;
+  mileage: number | null;
+  city: string;
+  currency: string;
+  sale_price: number | null;
+  rent_price_daily: number | null;
+  is_for_sale: boolean;
+  is_for_rent: boolean;
+  status: string;
+  is_promoted: boolean;
+  availability: string | null;
+  seller_kind: string | null;
+  site_url: string;
+  photo_url: string | null;
+  favorited_at: string;
+};
+
 // ------------------------------------------------------------
 // КАБИНЕТ ПРОДАВЦА
 // ------------------------------------------------------------

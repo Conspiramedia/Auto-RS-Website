@@ -10,6 +10,7 @@
 import { Fragment } from 'react';
 
 import CarCard from './CarCard';
+import HideableCard from './HideableCard';
 import DealerShowcaseCard from './DealerShowcaseCard';
 import SearchSuggestInput from './SearchSuggestInput';
 import EmptyState from './EmptyState';
@@ -424,13 +425,20 @@ export default function CatalogView({
           <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-flow-row-dense xl:grid-cols-4">
             {result.cars.map((car, i) => (
               <Fragment key={car.id}>
-                <CarCard
-                  locale={locale}
-                  car={car}
-                  mode={mode}
-                  // Первые четыре карточки — над сгибом, грузим приоритетно.
-                  priority={i < 4}
-                />
+                {/* Обёртка убирает карточку из списка сразу после
+                    «Не интересует» в меню «три точки»: страница
+                    кэширована и отрендерена без сессии, поэтому
+                    серверная фильтрация скрытого на ней не
+                    срабатывает (подробнее — HideableCard). */}
+                <HideableCard carId={car.id} city={car.city}>
+                  <CarCard
+                    locale={locale}
+                    car={car}
+                    mode={mode}
+                    // Первые четыре карточки — над сгибом, грузим приоритетно.
+                    priority={i < 4}
+                  />
+                </HideableCard>
 
                 {/* Плитка идёт ПОСЛЕ 12-й карточки, то есть при i === 11.
                     Условие на длину списка обязательно: на неполной
