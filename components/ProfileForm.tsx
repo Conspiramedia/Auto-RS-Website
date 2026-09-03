@@ -75,6 +75,7 @@ import {
   formatSerbianPhone,
   formatTime,
   isValidTime,
+  maskEmail,
   parseOpeningHours,
   serbianContactPhoneToE164,
 } from '@/lib/inputFormat';
@@ -536,9 +537,20 @@ export default function ProfileForm({
             <label className="mb-1 block text-caption text-neutral-60">
               {t('profile_email')}
             </label>
+            {/* АДРЕС ПОКАЗЫВАЕТСЯ ЧАСТИЧНО: «tay***@gmail.com».
+                Кабинет открывают не только дома — экран видно через
+                плечо, а скриншот профиля человек присылает в поддержку
+                не задумываясь. Адрес входа это половина учётных данных,
+                и печатать его целиком ради того, чтобы владелец узнал
+                собственную почту, незачем: ему хватает начала и домена,
+                чтобы убедиться, что указана та самая почта.
+
+                Значение поля — уже замаскированное: подставлять полный
+                адрес и прятать его стилями нельзя, он остался бы в
+                разметке страницы. */}
             <input
               type="text"
-              value={profile.email ?? '—'}
+              value={profile.email ? maskEmail(profile.email) : '—'}
               readOnly
               disabled
               className={`${fieldClass} bg-surface-muted text-neutral-60`}
