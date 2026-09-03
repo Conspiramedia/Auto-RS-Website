@@ -212,6 +212,15 @@ const DICT = {
       'Fotografije, opis i cena su sačuvani. Nakon produžetka oglas se odmah vraća u katalog, bez ponovne provere.',
     btn_extend: 'Produži oglas',
 
+    // Nova poruka u prepisci.
+    message_subject: 'Nova poruka',
+    message_title: 'Nova poruka',
+    message_lead_named: 'vam je poslao poruku u vezi sa oglasom',
+    message_lead_anon: 'Dobili ste poruku u vezi sa oglasom',
+    message_hint:
+      'Odgovorite direktno na sajtu. Brz odgovor najviše utiče na prodaju — kupci obično pišu većem broju prodavaca odjednom.',
+    btn_open_chat: 'Otvori prepisku',
+
   },
 
   ru: {
@@ -295,6 +304,15 @@ const DICT = {
     expired_hint:
       'Фотографии, описание и цена сохранены. После продления объявление сразу возвращается в каталог, без повторной проверки.',
     btn_extend: 'Продлить объявление',
+
+    // Новое сообщение в переписке.
+    message_subject: 'Новое сообщение',
+    message_title: 'Новое сообщение',
+    message_lead_named: 'написал вам по объявлению',
+    message_lead_anon: 'Вам написали по объявлению',
+    message_hint:
+      'Ответить можно прямо на сайте. Быстрый ответ решает больше всего — покупатели обычно пишут сразу нескольким продавцам.',
+    btn_open_chat: 'Открыть переписку',
 
   },
 } as const;
@@ -1037,6 +1055,71 @@ function listingExpired(
 // в базе, но функция может оказаться старее миграции (деплой ещё не
 // прошёл) — и тогда письмо должно уйти в failed с внятной ошибкой,
 // а не уронить разбор всей пачки.
+// ---------- 11) Новое сообщение в переписке ----------
+// Ссылка ведёт прямо в диалог (/my/messages/{chat_id}), а не в список
+// чатов: письмо приходит по конкретному сообщению, и лишний шаг выбора
+// нужного собеседника здесь ничем не оправдан.
+//
+// Превью сообщения показываем в плашке, но короткое — те же 50
+// символов, что в колокольчике и пуше. Письмо не должно раскрывать
+// переписку больше, чем остальные каналы: почтовый ящик читают на
+// экране блокировки и через сторонние клиенты.
+function newMessage(
+  locale: Locale,
+  payload: Payload,
+  siteUrl: string,
+): RenderedEmail {
+  const sender = str(payload, 'sender');
+  const preview = str(payload, 'preview');
+  const car = carTitle(payload);
+
+  // Ссылку собрал триггер: локаль получателя там уже учтена. Пустой
+  // chat_url (теоретический случай) не должен давать битую кнопку —
+  // тогда ведём в список переписок.
+  const prefix = locale === 'ru' ? '/ru' : '';
+  const chatUrl = str(payload, 'chat_url') || `${siteUrl}${prefix}/my/messages`;
+
+  // Имя отправителя в теме: по нему человек сразу понимает, отвечать
+  // ли немедленно. Имени нет (профиль не заполнен) — тема остаётся
+  // нейтральной, выдумывать имя нельзя.
+  const subject = sender
+    ? `${t(locale, 'message_subject')}: ${sender}`
+    : t(locale, 'message_subject');
+
+  // Формулировка зависит от наличия имени: в сербском имя стоит перед
+  // сказуемым, в русском — тоже, поэтому обе локали строят строку
+  // одинаково, а безымянный вариант вынесен отдельной строкой словаря.
+  const lead = sender
+    ? `<strong>${esc(sender)}</strong> ${esc(t(locale, 'message_lead_named'))}`
+    : esc(t(locale, 'message_lead_anon'));
+
+  const bodyHtml = [
+    h1(t(locale, 'message_title')),
+    p(car ? `${lead} <strong>${esc(car)}</strong>.` : `${lead}.`),
+    preview ? panel(escMultiline(preview), COLOR.primary) : '',
+    p(esc(t(locale, 'message_hint')), true),
+    button(t(locale, 'btn_open_chat'), chatUrl, COLOR.primary),
+  ].filter(Boolean).join('\n');
+
+  const text = [
+    t(locale, 'message_title'),
+    '',
+    sender
+      ? `${sender} ${t(locale, 'message_lead_named')}${car ? ` ${car}` : ''}.`
+      : `${t(locale, 'message_lead_anon')}${car ? ` ${car}` : ''}.`,
+    ...(preview ? ['', preview] : []),
+    '',
+    t(locale, 'message_hint'),
+    chatUrl,
+  ].join('\n');
+
+  return {
+    subject,
+    html: layout({ locale, title: subject, bodyHtml, siteUrl, accent: COLOR.primary }),
+    text,
+  };
+}
+
 export function renderEmail(
   templateKey: string,
   payload: Payload,
@@ -1070,6 +1153,8 @@ export function renderEmail(
       return listingExpiring(locale, payload, siteUrl);
     case 'listing_expired':
       return listingExpired(locale, payload, siteUrl);
+    case 'new_message':
+      return newMessage(locale, payload, siteUrl);
     default:
       return null;
   }
