@@ -9,8 +9,8 @@
 // Автоматически — из npm-скрипта prebuild перед next build.
 //
 // Сгенерировано: 2026-09-03
-// Заготовок из базы: 2, фраз в файле: 2
-// По видам: brand_model=2, brand_price=0
+// Заготовок из базы: 5, фраз в файле: 5
+// По видам: brand_model=4, brand_price=1
 //
 // В списке ТОЛЬКО фразы с маркой авто: «марка+модель» и «марка+цена».
 // Голое топливо («Бензин», «Дизель») исключено — такая подсказка не
@@ -36,11 +36,23 @@ export type SearchSuggestion = {
 
 export const SEARCH_SUGGESTIONS: SearchSuggestion[] = [
   {
+    text: { sr: "Audi do 29.000 €", ru: "Audi до 29 000 €" },
+    filters: {"brand":"Audi","priceTo":29000},
+  },
+  {
+    text: { sr: "Audi A4", ru: "Audi A4" },
+    filters: {"brand":"Audi","model":"A4"},
+  },
+  {
     text: { sr: "Audi A6", ru: "Audi A6" },
     filters: {"brand":"Audi","model":"A6"},
   },
   {
     text: { sr: "Volkswagen Tiguan", ru: "Volkswagen Tiguan" },
     filters: {"brand":"Volkswagen","model":"Tiguan"},
+  },
+  {
+    text: { sr: "Volvo XC60", ru: "Volvo XC60" },
+    filters: {"brand":"Volvo","model":"XC60"},
   },
 ];
