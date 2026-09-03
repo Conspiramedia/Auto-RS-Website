@@ -32,6 +32,7 @@
 // ============================================================
 
 import { useState, useTransition } from 'react';
+import type { FocusEvent, MouseEvent, TouchEvent } from 'react';
 
 import {
   submitDealerApplication,
@@ -51,6 +52,7 @@ import {
 import type { DictKey, Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import type { DealerApplication } from '@/lib/types';
+import { usePhoneCaret } from '@/lib/usePhoneCaret';
 
 // Соответствие кода ошибки ключу словаря. Таблицей, а не цепочкой
 // if: добавление новой причины отказа — одна строка здесь, а не
@@ -139,6 +141,10 @@ export default function DealerApplicationBlock({
   onLeaveDealer,
 }: Props) {
   const t = getT(locale);
+
+  // Каретка в поле телефона — только в конец номера, чтобы тап
+  // в середину кода страны «+381 » не уводил туда цифры.
+  const phoneCaret = usePhoneCaret();
 
   // Форма раскрыта. Свёрнутая по умолчанию: большинство продавцов —
   // частники, и восемь полей реквизитов, развёрнутых в профиле у
@@ -327,6 +333,15 @@ export default function DealerApplicationBlock({
       format?: (raw: string) => string;
       inputMode?: 'numeric' | 'tel' | 'url' | 'email';
       placeholder?: string;
+      // Обработчики каретки из usePhoneCaret: ставят её в конец
+      // значения при клике, тапе и фокусе. Передаются ТОЛЬКО полю
+      // телефона — остальные поля обычные, и запрет ткнуть пальцем в
+      // середину названия компании мешал бы правке.
+      caret?: {
+        onFocus: (e: FocusEvent<HTMLInputElement>) => void;
+        onClick: (e: MouseEvent<HTMLInputElement>) => void;
+        onTouchEnd: (e: TouchEvent<HTMLInputElement>) => void;
+      };
     },
   ) {
     return (
@@ -349,6 +364,7 @@ export default function DealerApplicationBlock({
             );
             setError(null);
           }}
+          {...(options?.caret ?? {})}
           maxLength={options?.maxLength}
           inputMode={options?.inputMode}
           placeholder={options?.placeholder}
@@ -538,6 +554,9 @@ export default function DealerApplicationBlock({
                 format: formatSerbianPhone,
                 maxLength: 40,
                 placeholder: '6X XXX XXX',
+                // Каретка — в конец номера: тап в середину кода страны
+                // уводил бы туда набранную цифру.
+                caret: phoneCaret,
               })}
               {field(t('dealer_app_email'), email, setEmail, {
                 required: true,

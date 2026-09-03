@@ -83,6 +83,7 @@ import { getT, localeHref } from '@/lib/i18n';
 import { supabaseErrorText } from '@/lib/otp';
 import { CITIES } from '@/lib/referenceData';
 import { getBrowserClient } from '@/lib/supabaseClient';
+import { usePhoneCaret } from '@/lib/usePhoneCaret';
 import type { DealerApplication, MyProfile } from '@/lib/types';
 
 // Границы длины полей витрины. Совпадают с CHECK на таблице profiles
@@ -121,6 +122,13 @@ export default function ProfileForm({
   const fileRef = useRef<HTMLInputElement>(null);
   const logoRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
+
+  // Каретка в полях телефона — только в конец номера. Два отдельных
+  // экземпляра, по одному на поле: хук помнит запланированный кадр, и
+  // общий на два поля отменял бы установку каретки во втором, если
+  // человек перескочил из одного в другое быстрее кадра.
+  const phoneCaret = usePhoneCaret();
+  const dealerPhoneCaret = usePhoneCaret();
 
   const [fullName, setFullName] = useState(profile.full_name ?? '');
   // КОНТАКТНЫЙ ТЕЛЕФОН ВЛАДЕЛЬЦА. Поле стало редактируемым: пока
@@ -463,11 +471,17 @@ export default function ProfileForm({
                   setPhone(formatSerbianPhone(e.target.value));
                   setSaved(false);
                 }}
-                onFocus={() => {
+                onClick={phoneCaret.onClick}
+                onTouchEnd={phoneCaret.onTouchEnd}
+                onFocus={(e) => {
                   // Код страны появляется при первом касании пустого
                   // поля — как в подаче объявления: набирать «+381»
                   // вручную девять раз из десяти незачем.
                   if (phone === '') setPhone(SERBIAN_PHONE_PREFIX);
+                  // Каретка — в конец номера. Хук вызывается ПОСЛЕ
+                  // подстановки префикса: он ставит позицию кадром
+                  // позже, когда значение уже обновилось.
+                  phoneCaret.onFocus(e);
                 }}
                 onBlur={() => {
                   // Ушли, не набрав ни цифры — очищаем, чтобы поле не
@@ -811,7 +825,9 @@ export default function ProfileForm({
                           setDealerPhone(formatSerbianPhone(e.target.value));
                           setSaved(false);
                         }}
-                        onFocus={() => {
+                        onClick={dealerPhoneCaret.onClick}
+                        onTouchEnd={dealerPhoneCaret.onTouchEnd}
+                        onFocus={(e) => {
                           // Код страны появляется при первом касании
                           // пустого поля: держать его там всегда значило
                           // бы, что «незаполненный телефон» выглядит
@@ -819,6 +835,8 @@ export default function ProfileForm({
                           if (dealerPhone === '') {
                             setDealerPhone(SERBIAN_PHONE_PREFIX);
                           }
+                          // Каретка — в конец. См. поле выше.
+                          dealerPhoneCaret.onFocus(e);
                         }}
                         onBlur={() => {
                           // Ушли, не набрав ни цифры — очищаем поле,

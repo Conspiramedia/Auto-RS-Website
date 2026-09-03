@@ -58,6 +58,7 @@ import {
   serbianContactPhoneToE164,
   validateYear,
 } from '@/lib/inputFormat';
+import { usePhoneCaret } from '@/lib/usePhoneCaret';
 import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
 import type { SimilarListing } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
@@ -113,6 +114,10 @@ export default function SellForm({
   carId,
 }: Props) {
   const t = getT(locale);
+
+  // Каретка в поле телефона — только в конец номера, чтобы тап
+  // в середину кода страны «+381 » не уводил туда цифры.
+  const phoneCaret = usePhoneCaret();
   const router = useRouter();
   const supabase = getBrowserClient();
 
@@ -1811,6 +1816,10 @@ export default function SellForm({
                 inputMode="tel"
                 value={phone}
                 onChange={(e) => setPhone(formatSerbianPhone(e.target.value))}
+                // Каретка встаёт в конец номера, а не туда, куда попал
+                // палец: в поле стоит код страны «+381 », и тап в его
+                // середину уводил набранную цифру внутрь кода.
+                {...phoneCaret}
                 placeholder="6X XXX XXX"
                 className={field}
                 disabled={codeSent}

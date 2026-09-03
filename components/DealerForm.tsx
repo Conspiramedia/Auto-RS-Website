@@ -22,6 +22,7 @@ import {
   SERBIAN_PHONE_PREFIX,
   serbianContactPhoneToE164,
 } from '@/lib/inputFormat';
+import { usePhoneCaret } from '@/lib/usePhoneCaret';
 import Alert from './ui/Alert';
 import { fieldClass, fieldClassTextarea } from './ui/Field';
 import Button from './ui/Button';
@@ -91,6 +92,10 @@ function clampDigits(value: string, max: number): string {
 
 export default function DealerForm({ locale }: Props) {
   const t = getT(locale);
+
+  // Каретка в поле телефона — только в конец номера, чтобы тап
+  // в середину кода страны «+381 » не уводил туда цифры.
+  const phoneCaret = usePhoneCaret();
   const supabase = getBrowserClient();
 
   const [company, setCompany] = useState('');
@@ -349,6 +354,8 @@ export default function DealerForm({ locale }: Props) {
             inputMode="tel"
             value={phone}
             onChange={(e) => setPhone(formatSerbianPhone(e.target.value))}
+            // Каретка — в конец номера: см. lib/usePhoneCaret.ts.
+            {...phoneCaret}
             required
             placeholder="6X XXX XXX"
             className={field}
