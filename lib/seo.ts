@@ -155,6 +155,9 @@ export function buildVehicleJsonLd(params: {
     fuel: string | null;
     transmission: string | null;
     body_type: string | null;
+    // Необязательное: карточки, собранные до миграции 0133, поля не
+    // имеют, и требовать его значило бы ломать их вызовы.
+    engine_volume?: number | null;
     sale_price: number | null;
     rent_price_daily?: number | null;
     is_for_sale?: boolean;
@@ -232,6 +235,21 @@ export function buildVehicleJsonLd(params: {
     fuelType: car.fuel ?? undefined,
     vehicleTransmission: car.transmission ?? undefined,
     bodyType: car.body_type ?? undefined,
+    // Объём двигателя. LTR — код литра по UN/CEFACT, тот же
+    // справочник, что и KMT для километров выше. У электромобиля
+    // объёма нет, и поле просто не выводится: пустой EngineSpecification
+    // хуже отсутствующего — валидатор считает его неполными данными.
+    vehicleEngine:
+      car.engine_volume != null
+        ? {
+            '@type': 'EngineSpecification',
+            engineDisplacement: {
+              '@type': 'QuantitativeValue',
+              value: car.engine_volume,
+              unitCode: 'LTR',
+            },
+          }
+        : undefined,
     // Один Offer отдаём объектом, два — массивом: так разметку читают
     // и валидаторы, и поисковые системы.
     // Договорная цена (null) не подставляется: выдумывать число нельзя,

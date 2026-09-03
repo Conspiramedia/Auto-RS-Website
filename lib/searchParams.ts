@@ -9,7 +9,7 @@
 // ============================================================
 
 import type { CatalogFilters } from './queries';
-import { isSortKey } from './types';
+import { isEngineVolumeKey, isSortKey } from './types';
 import type { ListingType } from './types';
 
 // Тип, в котором Next отдаёт query-параметры страницы.
@@ -46,6 +46,7 @@ function parseListingType(
 // Разбор query-параметров в фильтры каталога.
 export function parseFilters(sp: SearchParams): CatalogFilters {
   const sort = one(sp.sort);
+  const engine = one(sp.engine);
 
   return {
     listingType: parseListingType(sp.type),
@@ -61,6 +62,10 @@ export function parseFilters(sp: SearchParams): CatalogFilters {
     bodyType: one(sp.body) || undefined,
     transmission: one(sp.gearbox) || undefined,
     fuel: one(sp.fuel) || undefined,
+    // Ступень объёма двигателя. Неизвестный ключ отбрасывается, а не
+    // роняет страницу: мусорный ?engine= в адресе не должен мешать
+    // краулеру получить каталог.
+    engineVolume: isEngineVolumeKey(engine) ? engine : undefined,
     // Неизвестное значение сортировки молча заменяется на дефолтное.
     sort: isSortKey(sort) ? sort : 'fresh',
     page: num(sp.page) || 1,
@@ -94,6 +99,7 @@ export function buildQuery(
   if (merged.bodyType) params.set('body', merged.bodyType);
   if (merged.transmission) params.set('gearbox', merged.transmission);
   if (merged.fuel) params.set('fuel', merged.fuel);
+  if (merged.engineVolume) params.set('engine', merged.engineVolume);
   // Сортировка по умолчанию в адрес не пишется: '/cars' и '/cars?sort=fresh'
   // должны быть одной страницей, а не двумя.
   if (merged.sort && merged.sort !== 'fresh') params.set('sort', merged.sort);
@@ -122,6 +128,7 @@ export function hasActiveFilters(filters: CatalogFilters): boolean {
       filters.priceTo ||
       filters.bodyType ||
       filters.transmission ||
-      filters.fuel,
+      filters.fuel ||
+      filters.engineVolume,
   );
 }

@@ -59,7 +59,12 @@ import {
   validateYear,
 } from '@/lib/inputFormat';
 import { usePhoneCaret } from '@/lib/usePhoneCaret';
-import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
+import {
+  BODY_TYPES,
+  ENGINE_VOLUME_VALUES,
+  FUELS,
+  TRANSMISSIONS,
+} from '@/lib/types';
 import type { SimilarListing } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
 import PhotoPicker, { type PhotoItem } from './PhotoPicker';
@@ -181,6 +186,10 @@ export default function SellForm({
   const [bodyType, setBodyType] = useState('');
   const [transmission, setTransmission] = useState('');
   const [fuel, setFuel] = useState('');
+  // Объём двигателя строкой («1.6»): в RPC уходит числом, но в
+  // состоянии удобнее строка — пустая означает «не указан», а у
+  // электромобиля так и должно быть.
+  const [engineVolume, setEngineVolume] = useState('');
   const [description, setDescription] = useState('');
 
   // Шаг 3: фотографии. Набор смешанный: при подаче это только выбранные
@@ -380,6 +389,14 @@ export default function SellForm({
       setBodyType((car.body_type as string) ?? '');
       setTransmission((car.transmission as string) ?? '');
       setFuel((car.fuel as string) ?? '');
+      // toFixed(1) обязателен: БД отдаёт numeric как 1.6 или как 2,
+      // а в списке значения записаны с одним знаком — без приведения
+      // «2» не совпало бы с пунктом «2.0» и поле выглядело бы пустым.
+      setEngineVolume(
+        car.engine_volume != null
+          ? Number(car.engine_volume).toFixed(1)
+          : '',
+      );
       setDescription((car.description as string) ?? '');
 
       // Числовые поля хранят ЧИСТЫЕ ЦИФРЫ («125000»): разделители
@@ -956,6 +973,8 @@ export default function SellForm({
         p_body_type: bodyType || null,
         p_transmission: transmission || null,
         p_fuel: fuel || null,
+        // Пустая строка — это «не указан» (электромобиль), а не ноль.
+        p_engine_volume: engineVolume ? Number(engineVolume) : null,
         p_description: description.trim() || null,
         p_phone: contactPhone,
       };
@@ -1600,6 +1619,22 @@ export default function SellForm({
               value={fuel}
               searchable={false}
               onChange={setFuel}
+            />
+
+            {/* Объём необязателен: у электромобиля ДВС нет, и
+                подсказка говорит об этом прямо, чтобы продавец не
+                искал, что вписать. */}
+            <ListPicker
+              locale={locale}
+              name="engine_volume"
+              placeholder={t('picker_choose')}
+              label={t('sell_engine')}
+              emptyHint={t('sell_engine_hint')}
+              options={ENGINE_VOLUME_VALUES.map(
+                (v): PickerOption => ({ value: v, label: v }),
+              )}
+              value={engineVolume}
+              onChange={setEngineVolume}
             />
           </div>
 

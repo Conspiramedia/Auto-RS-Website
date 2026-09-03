@@ -16,7 +16,12 @@ import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import type { CatalogFilters } from '@/lib/queries';
 import { buildQuery } from '@/lib/searchParams';
-import { labelBodyType, labelFuel, labelTransmission } from '@/lib/format';
+import {
+  labelBodyType,
+  labelEngineVolumeStep,
+  labelFuel,
+  labelTransmission,
+} from '@/lib/format';
 
 type Props = {
   locale: Locale;
@@ -74,6 +79,15 @@ export default function FilterChips({
   if (filters.transmission)
     add('transmission', labelTransmission(filters.transmission, locale));
   if (filters.fuel) add('fuel', labelFuel(filters.fuel, locale));
+  // Единица в чипсе не повторяется: «Объём двигателя, л 1.6 – 2.0»
+  // читается тяжело, а «1.6 – 2.0 л» — сразу понятно.
+  if (filters.engineVolume)
+    add(
+      'engineVolume',
+      `${labelEngineVolumeStep(filters.engineVolume, locale)} ${
+        locale === 'sr' ? 'l' : 'л'
+      }`,
+    );
 
   if (chips.length === 0) return null;
 

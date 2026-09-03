@@ -5,7 +5,7 @@
 // цена в каталоге, на карточке и в OG-картинке выглядела одинаково.
 // ============================================================
 
-import { BODY_TYPES, FUELS, TRANSMISSIONS } from './types';
+import { BODY_TYPES, ENGINE_VOLUMES, FUELS, TRANSMISSIONS } from './types';
 import type { Locale } from './i18n';
 import { dict } from './i18n';
 
@@ -107,6 +107,33 @@ export function labelTransmission(value: string | null, locale: Locale): string 
 export function labelFuel(value: string | null, locale: Locale): string {
   if (!value) return '—';
   return FUELS[value]?.[locale] ?? value;
+}
+
+// Подпись СТУПЕНИ объёма («1.6 – 2.0») — для чипса применённого
+// фильтра. Значение приходит ключом из ENGINE_VOLUMES.
+export function labelEngineVolumeStep(
+  value: string | null,
+  locale: Locale,
+): string {
+  if (!value) return '—';
+  return ENGINE_VOLUMES.find((s) => s.key === value)?.[locale] ?? value;
+}
+
+// Подпись САМОГО объёма («1.6 л») — для карточки объявления.
+// Дробная часть печатается всегда: «2 л» читается как обрезанное
+// число, «2.0 л» — как объём двигателя.
+export function formatEngineVolume(
+  value: number | null,
+  locale: Locale,
+): string {
+  if (value == null) return '—';
+  // INTL_LOCALE, а не своя строка: десятичный разделитель у сербской
+  // и русской локали разный («2,0»), и брать его надо из той же
+  // карты, что и остальные числа сайта.
+  return `${new Intl.NumberFormat(INTL_LOCALE[locale], {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(value)} ${locale === 'sr' ? 'l' : 'л'}`;
 }
 
 // Заголовок объявления: «BMW X5, 2019».

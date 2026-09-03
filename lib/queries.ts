@@ -11,6 +11,7 @@
 // ============================================================
 
 import { supabase } from './supabase';
+import { engineVolumeRange } from './types';
 import type {
   CarDetails,
   CarImage,
@@ -42,6 +43,9 @@ export type CatalogFilters = {
   bodyType?: string;
   transmission?: string;
   fuel?: string;
+  // Ступень объёма двигателя (ключ из ENGINE_VOLUMES, миграция 0133).
+  // В RPC уходит не ключом, а парой границ — см. вызов ниже.
+  engineVolume?: string;
   sort?: SortKey;
   page?: number;
   perPage?: number;
@@ -99,6 +103,17 @@ export async function fetchCatalog(
     p_offset: (page - 1) * perPage,
     p_limit: perPage,
     p_listing_type: filters.listingType ?? 'sale',
+    // ГРАНИЦЫ ОБЪЁМА ДВИГАТЕЛЯ передаются только когда ступень
+    // выбрана. Причина та же, что у параметров ленты ниже:
+    // supabase-js вызывает RPC по именам, и лишние ключи означают
+    // другую сигнатуру — на базе без миграции 0133 обычная выдача
+    // продолжит работать, а фильтр по объёму просто не применится.
+    ...(filters.engineVolume
+      ? (() => {
+          const { from, to } = engineVolumeRange(filters.engineVolume);
+          return { p_engine_from: from, p_engine_to: to };
+        })()
+      : {}),
     // ПАРАМЕТРЫ БЕСКОНЕЧНОЙ ЛЕНТЫ ДОБАВЛЯЮТСЯ ТОЛЬКО КОГДА НУЖНЫ.
     // supabase-js вызывает RPC по ИМЕНАМ параметров, и лишний ключ в
     // объекте — это другая сигнатура: пока миграция 0059 не применена,

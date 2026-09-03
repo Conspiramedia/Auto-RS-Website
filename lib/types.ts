@@ -31,6 +31,8 @@ export type CatalogCar = {
   body_type: string | null;
   transmission: string | null;
   fuel: string | null;
+  // Объём двигателя в литрах. null у электромобилей (0133).
+  engine_volume: number | null;
   currency: string;
   // null означает «Договорная» — цена не указана продавцом.
   sale_price: number | null;
@@ -75,6 +77,8 @@ export type CarDetails = {
   body_type: string | null;
   transmission: string | null;
   fuel: string | null;
+  // Объём двигателя в литрах. null у электромобилей (0133).
+  engine_volume: number | null;
   currency: string;
   sale_price: number | null;
   rent_price_daily: number | null;
@@ -216,6 +220,65 @@ export const FUELS: Record<string, { sr: string; ru: string }> = {
   electric: { sr: 'Električni', ru: 'Электро' },
   gas: { sr: 'Gas (TNG)', ru: 'Газ' },
 };
+
+// ------------------------------------------------------------
+// Объём двигателя: ступени фильтра (миграция 0133).
+// ------------------------------------------------------------
+// Готовые ступени, а не пара полей «от/до»: покупатель мыслит
+// классами моторов («полторашка», «двухлитровый»), а не точными
+// литрами, и выбор из списка быстрее ввода двух чисел с телефона.
+//
+// Границы полуинтервальные: from включается, to — нет. Иначе машина
+// ровно 2.0 л попала бы и в «1.6–2.0», и в «2.0–3.0», а счётчики
+// результатов у соседних ступеней не сошлись бы с суммой.
+//
+// to: null у последней ступени — верхней границы нет. В RPC уходит
+// как null, то есть «сверху не ограничивать».
+export const ENGINE_VOLUMES = [
+  { key: 'to_1_4', from: null, to: 1.4, sr: 'Do 1.4', ru: 'До 1.4' },
+  { key: '1_4_1_6', from: 1.4, to: 1.6, sr: '1.4 – 1.6', ru: '1.4 – 1.6' },
+  { key: '1_6_2_0', from: 1.6, to: 2.0, sr: '1.6 – 2.0', ru: '1.6 – 2.0' },
+  { key: '2_0_3_0', from: 2.0, to: 3.0, sr: '2.0 – 3.0', ru: '2.0 – 3.0' },
+  { key: 'from_3_0', from: 3.0, to: null, sr: 'Preko 3.0', ru: 'Свыше 3.0' },
+] as const;
+
+export type EngineVolumeKey = (typeof ENGINE_VOLUMES)[number]['key'];
+
+// Проверка ступени из URL. Мусорный ?engine= не должен ронять
+// каталог — по той же причине, что и у сортировки: страница обязана
+// отдать контент краулеру, а не ошибку.
+export function isEngineVolumeKey(
+  value: string | undefined,
+): value is EngineVolumeKey {
+  return ENGINE_VOLUMES.some((o) => o.key === value);
+}
+
+// Границы ступени для передачи в RPC. Неизвестный ключ даёт пустые
+// границы, то есть фильтр просто не применяется.
+export function engineVolumeRange(value: string | undefined): {
+  from: number | null;
+  to: number | null;
+} {
+  const step = ENGINE_VOLUMES.find((o) => o.key === value);
+  return { from: step?.from ?? null, to: step?.to ?? null };
+}
+
+// Точные значения объёма для формы подачи (миграция 0133).
+// Список, а не свободный ввод: NumberInput принимает только целые
+// (он стоит на ценах и пробеге), а расширять его ради одного поля
+// значило бы рисковать всеми остальными. Шаг 0.1 от 0.6 до 6.0
+// покрывает легковой транспорт; редкие моторы крупнее продавец
+// укажет в описании.
+//
+// В БАЗУ УХОДИТ ТОЧНОЕ ЧИСЛО, а ступени ENGINE_VOLUMES работают
+// поверх него в фильтре. Так карточка показывает «1.6 л», а не
+// «1.4 – 1.6», и данные остаются пригодными для любых будущих
+// разрезов.
+export const ENGINE_VOLUME_VALUES: readonly string[] = (() => {
+  const out: string[] = [];
+  for (let v = 6; v <= 60; v += 1) out.push((v / 10).toFixed(1));
+  return out;
+})();
 
 // Варианты сортировки каталога. Значение key уходит в p_sort RPC
 // search_cars_public — набор строк обязан совпадать с миграцией 0051.

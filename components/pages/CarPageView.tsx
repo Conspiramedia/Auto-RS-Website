@@ -25,6 +25,7 @@ import {
   carTitle,
   formatDate,
   formatDeposit,
+  formatEngineVolume,
   formatMileage,
   formatPrice,
   formatRentPrice,
@@ -144,6 +145,17 @@ export default async function CarPageView({
       value: labelTransmission(car.transmission, locale),
     },
     { label: t('car_fuel'), value: labelFuel(car.fuel, locale) },
+    // Объём показываем ТОЛЬКО когда он есть: у электромобиля ДВС
+    // нет, и прочерк в этой строке выглядел бы как недозаполненное
+    // объявление, а не как «двигателя не существует».
+    ...(car.engine_volume != null
+      ? [
+          {
+            label: t('car_engine'),
+            value: formatEngineVolume(car.engine_volume, locale),
+          },
+        ]
+      : []),
     { label: t('car_city'), value: car.city },
   ];
 

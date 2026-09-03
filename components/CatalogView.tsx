@@ -169,6 +169,7 @@ export default function CatalogView({
     countable.bodyType,
     countable.transmission,
     countable.fuel,
+    countable.engineVolume,
   ].filter(Boolean).length;
 
   // JSON-LD ItemList текущей выдачи. Ставится ЗДЕСЬ, а не в каждой

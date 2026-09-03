@@ -38,7 +38,12 @@ import {
   YEAR_DIGITS,
 } from '@/lib/inputFormat';
 import { getBrowserClient } from '@/lib/supabaseClient';
-import { BODY_TYPES, FUELS, TRANSMISSIONS } from '@/lib/types';
+import {
+  BODY_TYPES,
+  ENGINE_VOLUMES,
+  FUELS,
+  TRANSMISSIONS,
+} from '@/lib/types';
 import { useDismissableLayer } from '@/lib/useDismissableLayer';
 import type { ListingType, SiteBrand, SiteCity } from '@/lib/types';
 import ListPicker, { type PickerOption } from './ListPicker';
@@ -235,6 +240,13 @@ export default function FilterPanel({
       value,
       label: labels[locale],
     }));
+
+  // Ступени объёма лежат массивом, а не словарём: у них есть порядок
+  // (по возрастанию литров) и границы, которые словарь не выразил бы.
+  const engineOptions: PickerOption[] = ENGINE_VOLUMES.map((step) => ({
+    value: step.key,
+    label: step[locale],
+  }));
 
   return (
     <>
@@ -594,9 +606,10 @@ export default function FilterPanel({
                 </div>
               </div>
 
-              {/* Кузов, коробка и топливо — каждый на своей строке:
-                  в три колонки подписи значений обрезались. */}
-              <div className="flex flex-col gap-3">
+              {/* Четыре списка в сетке 2×2. В три колонки подписи
+                  значений обрезались, а в столбик четыре поля тянули
+                  форму вниз — пара на строку читается и помещается. */}
+              <div className="grid grid-cols-2 gap-3">
                 <ListPicker
                   size="compact"
                   locale={locale}
@@ -626,6 +639,19 @@ export default function FilterPanel({
                   label={t('filter_fuel')}
                   options={enumOptions(FUELS)}
                   value={filters.fuel ?? ''}
+                  searchable={false}
+                />
+
+                {/* Объём — ступенями, а не парой полей «от/до»:
+                    покупатель мыслит классами моторов, и выбор из
+                    списка быстрее ввода двух чисел с телефона. */}
+                <ListPicker
+                  size="compact"
+                  locale={locale}
+                  name="engine"
+                  label={t('filter_engine')}
+                  options={engineOptions}
+                  value={filters.engineVolume ?? ''}
                   searchable={false}
                 />
               </div>

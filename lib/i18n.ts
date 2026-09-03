@@ -195,6 +195,7 @@ export const dict = {
     filter_body: 'Karoserija',
     filter_transmission: 'Menjač',
     filter_fuel: 'Gorivo',
+    filter_engine: 'Zapremina motora, l',
     filter_from: 'od',
     filter_to: 'do',
     filter_any: 'Sve',
@@ -215,6 +216,7 @@ export const dict = {
     car_body: 'Karoserija',
     car_transmission: 'Menjač',
     car_fuel: 'Gorivo',
+    car_engine: 'Zapremina motora',
     car_city: 'Grad',
     car_description: 'Opis',
     // Подсказка в пустом поле описания. Три ориентира вместо общего
@@ -465,6 +467,10 @@ export const dict = {
     sell_type: 'Tip oglasa',
     // Доступность автомобиля (0119). Показывается только салону и
     // только для продажи: сдают ту машину, которая есть.
+    sell_engine: 'Zapremina motora, l',
+    // Подсказка объясняет, почему поле можно пропустить: у
+    // электромобиля двигателя внутреннего сгорания нет.
+    sell_engine_hint: 'Ostavite prazno za električna vozila',
     sell_availability: 'Dostupnost',
     sell_availability_hint:
       'Kupac vidi oznaku u oglasu. „Po porudžbini“ — vozila još nema, dovozite ga; „U dolasku“ — vozilo je kupljeno i stiže.',
@@ -1493,6 +1499,7 @@ export const dict = {
     filter_body: 'Кузов',
     filter_transmission: 'Коробка',
     filter_fuel: 'Топливо',
+    filter_engine: 'Объём двигателя, л',
     filter_from: 'от',
     filter_to: 'до',
     filter_any: 'Все',
@@ -1511,6 +1518,7 @@ export const dict = {
     car_body: 'Кузов',
     car_transmission: 'Коробка',
     car_fuel: 'Топливо',
+    car_engine: 'Объём двигателя',
     car_city: 'Город',
     car_description: 'Описание',
     car_description_hint: 'Состояние, комплектация, история…',
@@ -1741,6 +1749,8 @@ export const dict = {
     // Подача: тип объявления
     sell_type: 'Тип объявления',
     // См. комментарий в сербском словаре.
+    sell_engine: 'Объём двигателя, л',
+    sell_engine_hint: 'Оставьте пустым для электромобилей',
     sell_availability: 'Наличие',
     sell_availability_hint:
       'Покупатель увидит пометку в объявлении. «На заказ» — машины ещё нет, вы её привезёте; «В пути» — машина куплена и едет.',
