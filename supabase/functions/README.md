@@ -94,17 +94,29 @@ select public.set_admin_email('info.rsauto.rs@gmail.com');
 supabase secrets list
 ```
 
-## 3. Настройка расписаний в Dashboard
+## 3. Настройка расписаний
 
-Путь: **Dashboard → Edge Functions → выбрать функцию → вкладка Schedules →
-кнопка `Add schedule`** (в некоторых версиях панели раздел называется
-**Integrations → Cron**).
+**ВКЛАДКИ `Schedules` В ПАНЕЛИ ЭТОГО ПРОЕКТА НЕТ.** Прежняя редакция этого
+раздела вела в **Dashboard → Edge Functions → Schedules**, и оба раза, когда
+по ней шли, расписание в итоге не появлялось: у `daily-cleanup` дефект нашли
+через месяц (миграция 0124), у `send-email` — через неделю, когда 26 писем
+так и лежали в очереди неотправленными (миграция 0134).
 
-В форме заполняются три поля:
+Расписания живут **в базе, в `pg_cron`**, и заводятся миграцией — см.
+раздел 5 и сами миграции 0124 / 0134 как образец. В интерфейсе их не видно;
+смотреть так:
 
-- **Name** — произвольное имя расписания;
-- **Schedule** — cron-выражение (см. таблицу ниже);
-- **Type / Method** — HTTP-вызов этой же функции, метод `POST`.
+```sql
+select jobname, schedule, active from cron.job;
+```
+
+Диагностика: `cron.job_run_details` пишет «succeeded», как только запрос
+ПОСТАВЛЕН В ОЧЕРЕДЬ, — это не значит, что функция отработала. Настоящий итог
+здесь:
+
+```sql
+select status_code, timed_out, error_msg from net._http_response order by created desc limit 5;
+```
 
 ### Cron-выражения
 
@@ -202,9 +214,18 @@ select * from pg_available_extensions where name in ('pg_cron', 'pg_net');
 select cron.schedule('daily-cleanup', '0 3 * * *', $$select public.cleanup_view_log(); select public.cleanup_push_queue(); select public.cleanup_email_queue(); select public.expire_promotions();$$);
 ```
 
-`send-push` и `send-email` через pg_cron вызвать нельзя — им нужен
-HTTP-запрос наружу (к FCM и к Resend), поэтому их расписания в любом
-случае настраиваются в Edge Functions.
+Через `pg_cron` вызываются и `send-push`, и `send-email` — вопреки тому,
+что было написано в этом разделе раньше. Наружу (к FCM и к Resend) ходит не
+база, а сама Edge Function; база лишь дёргает её HTTP-запросом через
+`net.http_post`, как это делает работающее задание `daily-cleanup-job`:
+
+```sql
+select cron.schedule('send-email-job', '*/5 * * * *', $$select net.http_post(url := 'https://<ref>.supabase.co/functions/v1/send-email', headers := jsonb_build_object('Authorization', 'Bearer <service_role_key>', 'Content-Type', 'application/json'), timeout_milliseconds := 120000);$$);
+```
+
+`timeout_milliseconds` указывать ОБЯЗАТЕЛЬНО: по умолчанию `net.http_post`
+рвёт соединение через 5 секунд, и вызов не доходит до функции, а задание при
+этом числится успешным (см. миграции 0124 и 0134).
 
 Держать оба механизма одновременно не нужно: выберите либо Schedules, либо
-pg_cron, иначе чистки будут выполняться дважды.
+pg_cron, иначе задачи будут выполняться дважды.
