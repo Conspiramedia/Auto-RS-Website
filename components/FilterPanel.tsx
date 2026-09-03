@@ -489,92 +489,99 @@ export default function FilterPanel({
                 />
               </div>
 
-              <ListPicker
-                size="compact"
-                locale={locale}
-                name="city"
-                label={t('filter_city')}
-                options={cityOptions}
-                value={filters.city ?? ''}
-              />
-
+              {/* Город и пробег делят одну полосу: оба поля —
+                  одиночные, в паре они экономят высоту шторки. */}
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-caption text-neutral-60">
-                    {mode === 'rent'
-                      ? `${t('rent_price')}, €`
-                      : `${t('filter_price')}, €`}
-                  </label>
-                  <div className="flex gap-2">
-                    <NumberInput
-                      name="price_from"
-                      value={priceFrom}
-                      onChange={setPriceFrom}
-                      maxDigits={MAX_PRICE_DIGITS}
-                      placeholder={t('filter_from')}
-                      aria-label={`${t('filter_price')} ${t('filter_from')}`}
-                      className={field}
-                    />
-                    <NumberInput
-                      name="price_to"
-                      value={priceTo}
-                      onChange={setPriceTo}
-                      maxDigits={MAX_PRICE_DIGITS}
-                      placeholder={t('filter_to')}
-                      aria-label={`${t('filter_price')} ${t('filter_to')}`}
-                      className={field}
-                    />
-                  </div>
-                </div>
+                <ListPicker
+                  size="compact"
+                  locale={locale}
+                  name="city"
+                  label={t('filter_city')}
+                  options={cityOptions}
+                  value={filters.city ?? ''}
+                />
 
                 <div>
                   <label className="mb-1 block text-caption text-neutral-60">
-                    {t('filter_year')}
+                    {t('filter_mileage')}, {t('common_km')}
                   </label>
-                  {/* Границы совпадают с constraint chk_year таблицы cars:
-                      от 1900 до следующего года включительно. */}
-                  <div className="flex gap-2">
-                    {/* separator={false}: год — метка на шкале, а не
-                        количество. «2019», а не «2 019». */}
-                    <NumberInput
-                      name="year_from"
-                      value={yearFrom}
-                      onChange={setYearFrom}
-                      maxDigits={YEAR_DIGITS}
-                      separator={false}
-                      placeholder={t('filter_from')}
-                      aria-label={`${t('filter_year')} ${t('filter_from')}`}
-                      className={field}
-                    />
-                    <NumberInput
-                      name="year_to"
-                      value={yearTo}
-                      onChange={setYearTo}
-                      maxDigits={YEAR_DIGITS}
-                      separator={false}
-                      placeholder={t('filter_to')}
-                      aria-label={`${t('filter_year')} ${t('filter_to')}`}
-                      className={field}
-                    />
-                  </div>
+                  <NumberInput
+                    name="mileage_max"
+                    value={mileageMax}
+                    onChange={setMileageMax}
+                    maxDigits={MAX_MILEAGE_DIGITS}
+                    aria-label={`${t('filter_mileage')}, ${t('common_km')}`}
+                    className={field}
+                  />
+                </div>
+              </div>
+
+              {/* Цена и год — диапазоны из двух полей каждый, поэтому
+                  идут отдельными строками: четыре узких поля в ряд
+                  нечитаемы. */}
+              <div>
+                <label className="mb-1 block text-caption text-neutral-60">
+                  {mode === 'rent'
+                    ? `${t('rent_price')}, €`
+                    : `${t('filter_price')}, €`}
+                </label>
+                <div className="flex gap-2">
+                  <NumberInput
+                    name="price_from"
+                    value={priceFrom}
+                    onChange={setPriceFrom}
+                    maxDigits={MAX_PRICE_DIGITS}
+                    placeholder={t('filter_from')}
+                    aria-label={`${t('filter_price')} ${t('filter_from')}`}
+                    className={field}
+                  />
+                  <NumberInput
+                    name="price_to"
+                    value={priceTo}
+                    onChange={setPriceTo}
+                    maxDigits={MAX_PRICE_DIGITS}
+                    placeholder={t('filter_to')}
+                    aria-label={`${t('filter_price')} ${t('filter_to')}`}
+                    className={field}
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="mb-1 block text-caption text-neutral-60">
-                  {t('filter_mileage')}, {t('common_km')}
+                  {t('filter_year')}
                 </label>
-                <NumberInput
-                  name="mileage_max"
-                  value={mileageMax}
-                  onChange={setMileageMax}
-                  maxDigits={MAX_MILEAGE_DIGITS}
-                  aria-label={`${t('filter_mileage')}, ${t('common_km')}`}
-                  className={field}
-                />
+                {/* Границы совпадают с constraint chk_year таблицы cars:
+                    от 1900 до следующего года включительно. */}
+                <div className="flex gap-2">
+                  {/* separator={false}: год — метка на шкале, а не
+                      количество. «2019», а не «2 019». */}
+                  <NumberInput
+                    name="year_from"
+                    value={yearFrom}
+                    onChange={setYearFrom}
+                    maxDigits={YEAR_DIGITS}
+                    separator={false}
+                    placeholder={t('filter_from')}
+                    aria-label={`${t('filter_year')} ${t('filter_from')}`}
+                    className={field}
+                  />
+                  <NumberInput
+                    name="year_to"
+                    value={yearTo}
+                    onChange={setYearTo}
+                    maxDigits={YEAR_DIGITS}
+                    separator={false}
+                    placeholder={t('filter_to')}
+                    aria-label={`${t('filter_year')} ${t('filter_to')}`}
+                    className={field}
+                  />
+                </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              {/* Кузов, коробка и топливо — каждый на своей строке:
+                  в три колонки подписи значений обрезались. */}
+              <div className="flex flex-col gap-3">
                 <ListPicker
                   size="compact"
                   locale={locale}
