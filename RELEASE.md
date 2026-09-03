@@ -323,6 +323,83 @@ Dashboard и CLI. Порядок важен.
 почты при её смене в профиле: иначе смена почты станет способом угона
 аккаунта.
 
+## 6b. Вход через Google (OAuth)
+
+Код написан и собирается, но кнопка не заработает, пока провайдер не
+включён: без настройки Supabase ответит `provider is not enabled`, и
+человек вернётся на страницу входа с сообщением об ошибке. Почтовый
+вход при этом продолжает работать — он от Google не зависит.
+
+**Ключи Google в репозиторий и в переменные Vercel НЕ попадают.** Обмен
+кода на сессию выполняет GoTrue на стороне Supabase, поэтому Client ID
+и Client Secret живут только в дашборде Supabase. Сайту дополнительных
+переменных окружения не нужно вовсе — он обходится теми же
+`NEXT_PUBLIC_SUPABASE_URL` и `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+
+1. **Создать OAuth-клиент:** [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+   → APIs & Services → Credentials → Create credentials → **OAuth client
+   ID** → тип **Web application**.
+
+   Перед этим потребуется заполнить **OAuth consent screen**: тип
+   **External**, название приложения `RS Auto`, домен `rsauto.rs`,
+   ссылки на `https://rsauto.rs/terms` и `https://rsauto.rs/privacy`
+   (страницы уже есть). Из scopes достаточно `email` и `profile` —
+   больше приложение не запрашивает, а лишние потребовали бы проверки
+   от Google.
+
+- [ ] OAuth consent screen заполнен, клиент создан.
+
+2. **Authorized redirect URI** — вписывается адрес **Supabase**, а не
+   сайта. Это место, где ошибаются чаще всего: браузер приходит на наш
+   `/auth/callback` уже вторым шагом, от GoTrue, и Google про этот
+   адрес знать не должен.
+
+   ```
+   https://nedjfdswonnbhuxaxjsv.supabase.co/auth/v1/callback
+   ```
+
+   В **Authorized JavaScript origins** — боевой домен сайта:
+   `https://rsauto.rs`. Для локальной разработки туда же добавляется
+   `http://localhost:3000`.
+
+- [ ] Redirect URI и origins прописаны.
+
+3. **Включить провайдера в Supabase:** Dashboard → Authentication →
+   Providers → **Google** → включить, вставить **Client ID** и **Client
+   Secret** из консоли Google.
+
+- [ ] Провайдер включён, ключи вставлены.
+
+4. **Site URL и Redirect URLs:** Dashboard → Authentication → URL
+   Configuration. **Site URL** — `https://rsauto.rs`. В **Redirect
+   URLs** добавить адрес нашего обработчика, иначе GoTrue откажется
+   возвращать на него браузер:
+
+   ```
+   https://rsauto.rs/auth/callback
+   ```
+
+   Для локальной разработки — `http://localhost:3000/auth/callback`.
+
+- [ ] Site URL и Redirect URLs заданы.
+
+5. **Слияние аккаунтов по адресу.** Человек, ранее входивший по коду на
+   ту же почту, должен попасть в СВОЙ аккаунт — со своими объявлениями
+   и перепиской, а не в пустой новый. В Supabase за это отвечает
+   настройка связывания учётных записей по подтверждённому адресу
+   (Authentication → Providers, «link identities with the same email»).
+   Проверить фактически: войти по коду, выйти, войти через Google той
+   же почтой — объявления обязаны остаться на месте.
+
+- [ ] Слияние проверено на живом аккаунте.
+
+**Проверочный сценарий целиком.** Открыть `/login` на русском зеркале
+(`/ru/login`), нажать «Войти через Google», подтвердить — вернуться
+обязано в кабинет `/ru/my`, а не на `/my`: язык приезжает параметром
+`?locale=` и определяет зеркало возврата. Затем повторить, нажав в окне
+Google «Отмена»: человек возвращается на страницу входа с текстом
+«Вход через Google не завершён», без технических подробностей.
+
 ## 7. Аналитика (Plausible)
 
 Скрипт подключается только при заданной переменной: пока её нет,

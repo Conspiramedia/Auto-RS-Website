@@ -31,8 +31,15 @@ export function generateMetadata(): Metadata {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirect?: string }>;
+  searchParams: Promise<{ redirect?: string; oauth_error?: string }>;
 }) {
-  const { redirect: redirectParam } = await searchParams;
-  return <LoginPageView locale={locale} redirectParam={redirectParam} />;
+  const { redirect: redirectParam, oauth_error: oauthErrorParam } =
+    await searchParams;
+  return (
+    <LoginPageView
+      locale={locale}
+      redirectParam={redirectParam}
+      oauthErrorParam={oauthErrorParam}
+    />
+  );
 }

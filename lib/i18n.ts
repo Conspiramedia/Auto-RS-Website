@@ -658,6 +658,18 @@ export const dict = {
     auth_email_not_allowed:
       'Previše pokušaja ili adresa nije ispravna. Proverite adresu i pokušajte kasnije.',
     auth_email_invalid: 'Unesite ispravnu e-mail adresu.',
+
+    // ---------- Prijava preko Google naloga ----------
+    // Natpis na dugmetu je propisan pravilima brenda Google
+    // („Sign in with Google" / prevod), zato je ovo cela fraza,
+    // a ne „Google" pored ikonice.
+    auth_google_btn: 'Prijavite se preko Google naloga',
+    auth_or: 'ili',
+    // Povratak bez sesije: čovek je odustao u Google prozoru ili je
+    // razmena koda pala. Jedan tekst za oba slučaja — razlika je
+    // tehnička i posetiocu ne govori ništa.
+    auth_google_failed: 'Prijava preko Google naloga nije završena. Pokušajte ponovo.',
+
     my_auth_submit: 'Prijavi se',
     my_auth_checking: 'Proveravamo…',
     // Privremeni tekst sekcija koje stižu u sledećim paketima.
@@ -1928,6 +1940,18 @@ export const dict = {
     auth_email_not_allowed:
       'Слишком много попыток или адрес неверный. Проверьте адрес и попробуйте позже.',
     auth_email_invalid: 'Введите корректный адрес электронной почты.',
+
+    // ---------- Вход через Google ----------
+    // Надпись на кнопке продиктована правилами бренда Google
+    // («Sign in with Google» и его переводы), поэтому здесь целая
+    // фраза, а не слово «Google» рядом с иконкой.
+    auth_google_btn: 'Войти через Google',
+    auth_or: 'или',
+    // Возврат без сессии: человек отменил вход в окне Google либо
+    // обмен кода не удался. Текст один на оба случая — разница
+    // техническая и посетителю ничего не объясняет.
+    auth_google_failed: 'Вход через Google не завершён. Попробуйте ещё раз.',
+
     my_auth_submit: 'Войти',
     my_auth_checking: 'Проверяем…',
     // Временный текст разделов, которые приходят в следующих пакетах.

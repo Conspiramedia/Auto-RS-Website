@@ -110,11 +110,29 @@ export const OPERATOR_VERIFIED =
 //   • название приведено к «RS Auto»: в документах оставалось
 //     «Auto RS», не совпадавшее ни с брендом (lib/brand.ts), ни с
 //     наименованием Оператора.
-export const POLICY_VERSION = '2026-09-03.3';
+//
+// РЕДАКЦИЯ ОТ 4 СЕНТЯБРЯ — ВХОД ЧЕРЕЗ GOOGLE. Появился третий способ
+// авторизации (OAuth), и документы обязаны назвать его прямо: оба
+// перечисляли способы входа закрытым списком «SMS либо почта», и
+// умолчание о третьем было бы тем же расхождением, которое правила
+// предыдущая редакция. Что изменено:
+//
+//   • способ входа дополнен учётной записью Google — в цели
+//     «Идентификация» Политики и в перечне функций Условий;
+//   • в получателей данных внесён обмен с компанией Google с прямой
+//     оговоркой, что пароль от учётной записи Платформе неизвестен:
+//     это первый случай, когда данные приходят В Платформу от
+//     стороннего сервиса, а не уходят из неё;
+//   • в перечне обрабатываемых данных сказано, что адрес и имя
+//     профиля передаёт сам Google по согласию, выражаемому в его окне.
+//
+// Версия поднята: состав получателей данных и способ входа — условия,
+// на которые пользователь давал согласие, и оно запрашивается заново.
+export const POLICY_VERSION = '2026-09-04.1';
 
 export const POLICY_UPDATED: Record<Locale, string> = {
-  sr: '3. septembar 2026.',
-  ru: '3 сентября 2026 г.',
+  sr: '4. septembar 2026.',
+  ru: '4 сентября 2026 г.',
 };
 
 // Пункт документа: заголовок раздела и его абзацы. Структура вместо
@@ -151,7 +169,7 @@ const PRIVACY_RU: LegalSection[] = [
     paragraphs: [
       'Мы обрабатываем данные исключительно для исполнения пользовательского соглашения, предоставления сервисов Платформы и защиты интересов Пользователей.',
       '• Предоставление сервиса: обеспечение возможности публикации объявлений о продаже и аренде автомобилей, связи между покупателями/арендаторами и продавцами.',
-      '• Идентификация: создание, верификация и защита учётной записи Пользователя (вход выполняется по одноразовому коду, который направляется на номер телефона в SMS либо на адрес электронной почты — по выбору Пользователя).',
+      '• Идентификация: создание, верификация и защита учётной записи Пользователя (вход выполняется по одноразовому коду, который направляется на номер телефона в SMS либо на адрес электронной почты, или через учётную запись Google — по выбору Пользователя).',
       '• Связь и уведомления: направление уведомлений, запросов и информации, касающихся использования Платформы, а также обработка запросов от Пользователя.',
       '• Безопасность: предотвращение мошенничества, спама, оскорблений и других нарушений правил Платформы.',
       '• Аналитика: улучшение качества Платформы, удобства его использования и разработка новых функций на основе обезличенных технических данных.',
@@ -163,7 +181,7 @@ const PRIVACY_RU: LegalSection[] = [
       'Платформа собирает и обрабатывает следующие категории данных:',
       'Данные, предоставляемые Пользователем:',
       '• Номер телефона (используется для авторизации по SMS-коду, для связи и отображается в объявлениях как контакт продавца). Указание номера обязательно для публикации объявления.',
-      '• Адрес электронной почты (используется как альтернативный способ входа по одноразовому коду и для служебных уведомлений — например, о решении модерации или об истечении срока публикации объявления). Другим пользователям адрес не показывается.',
+      '• Адрес электронной почты (используется как альтернативный способ входа по одноразовому коду и для служебных уведомлений — например, о решении модерации или об истечении срока публикации объявления). При входе через учётную запись Google адрес и имя профиля передаются Платформе самим сервисом Google — по согласию Пользователя, выражаемому в окне Google. Другим пользователям адрес не показывается.',
       '• Данные профиля (имя или псевдоним, изображение профиля/аватар).',
       '• Контент объявлений (марка, модель, год, пробег, цена, город, тип кузова, коробка передач, топливо, текстовое описание и фотографии автомобиля).',
       'Автоматически собираемые данные:',
@@ -180,6 +198,7 @@ const PRIVACY_RU: LegalSection[] = [
       '• Облачная инфраструктура: данные передаются и хранятся на серверах провайдера инфраструктуры (Supabase) на основании соглашения об обработке данных и при условии соблюдения строгих мер безопасности.',
       '• Отправка SMS: для доставки одноразовых кодов авторизации номер телефона передаётся провайдеру SMS-рассылки.',
       '• Отправка электронной почты: для доставки одноразовых кодов входа и служебных уведомлений адрес электронной почты передаётся провайдеру почтовых рассылок.',
+      '• Вход через Google: если Пользователь выбирает вход через учётную запись Google, обмен данными происходит между Пользователем и компанией Google — Платформа получает от неё адрес электронной почты и имя профиля. Пароль от учётной записи Google Платформе не передаётся и ей неизвестен.',
       '• Уведомления Платформы: сообщения о решении модерации, ответах в переписке и сроке публикации показываются в личном кабинете и дублируются письмом на указанный адрес электронной почты. Содержимое личной переписки в письмах не раскрывается.',
       '• Требование законодательства: передача предусмотрена применимым законодательством в рамках установленной процедуры (по запросу суда или уполномоченных органов).',
       'Платформа обязуется не продавать, не сдавать в аренду и не передавать персональные данные Пользователя в маркетинговых целях третьим лицам без явного согласия.',
@@ -276,7 +295,7 @@ const PRIVACY_SR: LegalSection[] = [
     paragraphs: [
       'Podatke obrađujemo isključivo radi izvršenja korisničkog ugovora, pružanja usluga Platforme i zaštite interesa Korisnika.',
       '• Pružanje usluge: omogućavanje objavljivanja oglasa za prodaju i izdavanje automobila, kao i povezivanje kupaca/zakupaca i prodavaca.',
-      '• Identifikacija: kreiranje, verifikacija i zaštita korisničkog naloga (prijava se vrši jednokratnim kodom koji se šalje na broj telefona SMS-om ili na adresu elektronske pošte — po izboru Korisnika).',
+      '• Identifikacija: kreiranje, verifikacija i zaštita korisničkog naloga (prijava se vrši jednokratnim kodom koji se šalje na broj telefona SMS-om ili na adresu elektronske pošte, ili preko Google naloga — po izboru Korisnika).',
       '• Komunikacija i obaveštenja: slanje obaveštenja, upita i informacija u vezi sa korišćenjem Platforme, kao i obrada zahteva Korisnika.',
       '• Bezbednost: sprečavanje prevara, spama, uvreda i drugih kršenja pravila Platforme.',
       '• Analitika: poboljšanje kvaliteta Platforme, njene upotrebljivosti i razvoj novih funkcija na osnovu anonimizovanih tehničkih podataka.',
@@ -288,7 +307,7 @@ const PRIVACY_SR: LegalSection[] = [
       'Platforma prikuplja i obrađuje sledeće kategorije podataka:',
       'Podaci koje dostavlja Korisnik:',
       '• Broj telefona (koristi se za prijavu putem SMS koda, za kontakt i prikazuje se u oglasima kao kontakt prodavca). Navođenje broja je obavezno za objavljivanje oglasa.',
-      '• Adresa elektronske pošte (koristi se kao alternativni način prijave jednokratnim kodom i za službena obaveštenja — na primer o odluci moderacije ili o isteku roka objave oglasa). Drugim korisnicima adresa se ne prikazuje.',
+      '• Adresa elektronske pošte (koristi se kao alternativni način prijave jednokratnim kodom i za službena obaveštenja — na primer o odluci moderacije ili o isteku roka objave oglasa). Pri prijavi preko Google naloga adresu i ime profila Platformi prosleđuje sam Google servis — uz saglasnost Korisnika koja se daje u Google prozoru. Drugim korisnicima adresa se ne prikazuje.',
       '• Podaci profila (ime ili nadimak, slika profila/avatar).',
       '• Sadržaj oglasa (marka, model, godište, kilometraža, cena, grad, tip karoserije, menjač, gorivo, tekstualni opis i fotografije automobila).',
       'Automatski prikupljani podaci:',
@@ -305,6 +324,7 @@ const PRIVACY_SR: LegalSection[] = [
       '• Cloud infrastruktura: podaci se prenose i čuvaju na serverima pružaoca infrastrukture (Supabase) na osnovu ugovora o obradi podataka i uz poštovanje strogih mera bezbednosti.',
       '• Slanje SMS-a: radi dostave jednokratnih kodova za prijavu, broj telefona se prosleđuje pružaocu usluge SMS slanja.',
       '• Slanje elektronske pošte: radi dostave jednokratnih kodova za prijavu i službenih obaveštenja, adresa elektronske pošte se prosleđuje pružaocu usluge slanja e-pošte.',
+      '• Prijava preko Google naloga: ako Korisnik izabere prijavu preko Google naloga, razmena podataka se odvija između Korisnika i kompanije Google — Platforma od nje dobija adresu elektronske pošte i ime profila. Lozinka Google naloga se Platformi ne prosleđuje i njoj nije poznata.',
       '• Obaveštenja Platforme: poruke o odluci moderacije, odgovorima u prepisci i roku objave prikazuju se u korisničkom nalogu i dupliraju se e-poštom na navedenu adresu. Sadržaj lične prepiske se u porukama ne otkriva.',
       '• Zahtev zakona: prenos je predviđen važećim propisima u okviru propisanog postupka (po zahtevu suda ili nadležnih organa).',
       'Platforma se obavezuje da neće prodavati, iznajmljivati niti prenositi lične podatke Korisnika u marketinške svrhe trećim licima bez izričite saglasnosti.',
@@ -397,7 +417,7 @@ const TERMS_RU: LegalSection[] = [
   {
     heading: '2. Регистрация и учётная запись',
     paragraphs: [
-      '• Использование ряда функций (публикация объявлений, переписка, избранное, скрытие объявлений из выдачи) требует авторизации. Вход выполняется по одноразовому коду, который направляется на номер телефона в SMS либо на адрес электронной почты — по выбору Пользователя.',
+      '• Использование ряда функций (публикация объявлений, переписка, избранное, скрытие объявлений из выдачи) требует авторизации. Вход выполняется по одноразовому коду, который направляется на номер телефона в SMS либо на адрес электронной почты, или через учётную запись Google — по выбору Пользователя.',
       '• Платформа предназначена для лиц старше 18 лет. Регистрируясь, Пользователь подтверждает своё совершеннолетие.',
       '• Пользователь отвечает за сохранность доступа к своей учётной записи и за все действия, совершённые под ней.',
       '• Запрещается создавать учётные записи от имени третьих лиц и вводить в заблуждение относительно своей личности.',
@@ -481,7 +501,7 @@ const TERMS_SR: LegalSection[] = [
   {
     heading: '2. Registracija i korisnički nalog',
     paragraphs: [
-      '• Korišćenje niza funkcija (objavljivanje oglasa, prepiska, favoriti, sakrivanje oglasa iz pretrage) zahteva prijavu. Prijava se vrši jednokratnim kodom koji se šalje na broj telefona SMS-om ili na adresu elektronske pošte — po izboru Korisnika.',
+      '• Korišćenje niza funkcija (objavljivanje oglasa, prepiska, favoriti, sakrivanje oglasa iz pretrage) zahteva prijavu. Prijava se vrši jednokratnim kodom koji se šalje na broj telefona SMS-om ili na adresu elektronske pošte, ili preko Google naloga — po izboru Korisnika.',
       '• Platforma je namenjena licima starijim od 18 godina. Registracijom Korisnik potvrđuje svoju punoletnost.',
       '• Korisnik odgovara za čuvanje pristupa svom nalogu i za sve radnje izvršene pod tim nalogom.',
       '• Zabranjeno je kreiranje naloga u ime trećih lica i dovođenje u zabludu u pogledu sopstvenog identiteta.',

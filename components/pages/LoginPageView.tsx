@@ -34,6 +34,10 @@ type Props = {
   locale: Locale;
   // Сырое значение ?redirect= из адресной строки.
   redirectParam?: string;
+  // Значение ?oauth_error= — его ставит app/auth/callback/route.ts,
+  // когда вход через Google не довёл до сессии. Само содержимое здесь
+  // не разбирается: причина техническая, а форме нужен только факт.
+  oauthErrorParam?: string;
 };
 
 // Проверка адреса возврата. Разрешаем только путь внутри сайта:
@@ -54,6 +58,7 @@ function safeRedirect(raw: string | undefined): string {
 export default async function LoginPageView({
   locale,
   redirectParam,
+  oauthErrorParam,
 }: Props) {
   const t = getT(locale);
   const target = safeRedirect(redirectParam);
@@ -89,6 +94,7 @@ export default async function LoginPageView({
             redirectTo={target}
             title={t('login_title')}
             closeHref="/"
+            oauthFailed={Boolean(oauthErrorParam)}
           />
         </div>
       </main>

@@ -51,6 +51,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import Alert from './ui/Alert';
+import GoogleSignInButton from './GoogleSignInButton';
 import Button from './ui/Button';
 import Card from './ui/Card';
 import CloseButton from './ui/CloseButton';
@@ -83,9 +84,20 @@ type Props = {
   // это вся страница, и её можно покинуть. Внутри кабинета крестика
   // нет — за формой ничего не стоит, закрывать нечего.
   closeHref?: string;
+  // Вход через Google не завершился, и callback вернул человека сюда
+  // (app/auth/callback/route.ts). Признак приходит с сервера страницей
+  // входа, а не читается здесь из адреса: разбор строки запроса в
+  // клиентском компоненте разошёлся бы с серверным рендером.
+  oauthFailed?: boolean;
 };
 
-export default function AuthGate({ locale, redirectTo, title, closeHref }: Props) {
+export default function AuthGate({
+  locale,
+  redirectTo,
+  title,
+  closeHref,
+  oauthFailed,
+}: Props) {
   const t = getT(locale);
   const router = useRouter();
   const supabase = getBrowserClient();
@@ -99,7 +111,12 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
   const [sentTo, setSentTo] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Ошибка возврата из Google показывается сразу при открытии формы:
+  // человек уже сделал попытку входа, и пустая форма без объяснения
+  // выглядела бы так, будто нажатие не сработало.
+  const [error, setError] = useState<string | null>(
+    oauthFailed ? t('auth_google_failed') : null,
+  );
   const [notice, setNotice] = useState<string | null>(null);
 
   // Момент, когда повторная отправка снова разрешена. Храним метку
@@ -342,6 +359,32 @@ export default function AuthGate({ locale, redirectTo, title, closeHref }: Props
 
                 Приложение продолжает логинить по SMS: там свой клиент
                 и свой провайдер, эта правка его не касается. */}
+            {/* GOOGLE — ПЕРВЫМ, ДО ПОЛЯ ПОЧТЫ.
+                Порядок не косметический: вход одним нажатием быстрее
+                цепочки «адрес → письмо → код из письма», и человеку,
+                у которого есть аккаунт Google, незачем читать про
+                второй способ. Поле почты остаётся для всех остальных —
+                убирать его нельзя, иначе вход на площадку окажется
+                привязан к одной внешней компании. */}
+            <GoogleSignInButton
+              locale={locale}
+              redirectTo={redirectTo}
+              disabled={busy}
+              // Документы принимаются один раз и до создания аккаунта —
+              // неважно, каким способом он создаётся. Галочка ниже
+              // общая для обоих путей.
+              blocked={!agreed}
+              onBlocked={() => setError(t('legal_consent_required'))}
+            />
+
+            {/* Разделитель «или»: без него две кнопки подряд читаются
+                как шаги одного действия, а это альтернативы. */}
+            <div className="flex items-center gap-3 py-1">
+              <span className="h-px flex-1 bg-neutral-15" />
+              <span className="text-small text-neutral-60">{t('auth_or')}</span>
+              <span className="h-px flex-1 bg-neutral-15" />
+            </div>
+
             <div>
               <label className="mb-1 block text-caption text-neutral-60">
                 {t('auth_email_label')}
