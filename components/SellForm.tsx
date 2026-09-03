@@ -1466,15 +1466,15 @@ export default function SellForm({
         <div className="space-y-3">
           <h2 className="text-h4 font-semibold">{t('sell_step_details')}</h2>
 
-          {/* Цена продажи и пробег. На телефоне — два коротких поля
-              в одной строке: по отдельности они занимали бы два
-              экранных ряда без пользы. С lg возвращаемся к прежней
-              раскладке: пробег уезжает в отдельную строку, оба поля
-              шириной в половину контейнера. Пустая цена допустима:
-              это «Договорная». */}
+          {/* Цена продажи и пробег — два коротких поля в одной
+              строке на всех ширинах: по отдельности они занимали бы
+              два ряда без пользы. Раскладка та же, что у пар ниже
+              (кузов/коробка, топливо/объём), — шаг формы читается
+              единой сеткой, а не чередованием одиночных и парных
+              строк. Пустая цена допустима: это «Договорная». */}
           {listingType === 'sale' && (
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
-              <div className="lg:w-1/2 lg:pr-1.5">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
                 <label
                   className="mb-1 block text-caption text-neutral-60"
                   htmlFor="sell-price"
@@ -1490,7 +1490,7 @@ export default function SellForm({
                   className={field}
                 />
               </div>
-              <div className="lg:w-1/2 lg:pr-1.5">
+              <div>
                 <label
                   className="mb-1 block text-caption text-neutral-60"
                   htmlFor="sell-mileage"
