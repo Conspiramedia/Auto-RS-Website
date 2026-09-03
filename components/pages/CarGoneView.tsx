@@ -31,6 +31,8 @@
 // исчезнувшей страницы перетёк на живые.
 // ============================================================
 
+import Link from 'next/link';
+
 import CarCard from '@/components/CarCard';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
@@ -77,7 +79,49 @@ export default async function CarGoneView({
         {/* Верхний блок ограничен по ширине и центрирован: это
             сообщение, а не контент. Растянутый на 1152px абзац из двух
             строк выглядел бы потерянным. */}
-        <Card padding="none" className="mx-auto max-w-2xl px-6 py-10 text-center">
+        <Card
+          padding="none"
+          // relative — под крестик в углу: он позиционируется абсолютом
+          // и обязан отсчитываться от карточки, а не от <main>.
+          className="relative mx-auto max-w-2xl px-6 py-10 text-center"
+        >
+          {/* Крестик уводит в каталог — туда же, куда ведёт основная
+              кнопка ниже. Это СТРАНИЦА, а не модальное окно: закрывать
+              нечего, под сообщением нет ничего, кроме похожих
+              объявлений, а у пришедшего из поиска нет и истории, куда
+              возвращаться. Привычный жест «убрать сообщение» ведёт
+              туда, где человеку есть что делать.
+
+              Ссылка, а не CloseButton: тот рендерит <button> с
+              onClick, и ради него страницу пришлось бы делать
+              клиентской. Знак нарисован здесь по тому же образцу, что
+              в FilterChips, — с той же геометрией (viewBox 24, линии
+              6,6→18,18), чтобы правка формы крестика не разошлась
+              между местами. Область нажатия 40px — как у CloseButton.
+
+              aria-label обязателен: у ссылки нет текста, и без него
+              скринридер объявил бы её пустой. */}
+          <Link
+            href={localeHref(locale, catalogPath)}
+            aria-label={t('common_close')}
+            title={t('common_close')}
+            className="absolute right-2 top-2 inline-flex h-10 w-10 items-center justify-center rounded-control text-neutral-60 transition-colors hover:bg-surface-hover hover:text-neutral-100"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              <line x1="6" y1="6" x2="18" y2="18" />
+              <line x1="18" y1="6" x2="6" y2="18" />
+            </svg>
+          </Link>
+
           <Badge tone="neutral">{t('car_gone_badge')}</Badge>
 
           <h1 className="mt-3 text-h2 font-bold sm:text-h1">{t('car_gone_title')}</h1>
