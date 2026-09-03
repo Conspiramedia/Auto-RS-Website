@@ -111,6 +111,7 @@ export default function ListPicker({
   const boxRef = useRef<HTMLDivElement>(null);
   const fieldRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   // Координаты десктопной панели в системе fixed. null — панель ещё
   // не отрисована (первый кадр) либо идёт мобильная раскладка, где
@@ -170,21 +171,53 @@ export default function ListPicker({
       const GUTTER = 8;
       // Отступ панели от поля — тот же, что давал класс sm:mt-1.
       const OFFSET = 4;
-      // Потолок высоты — прежние 20rem класса sm:max-h-80. Панель
-      // выше него не растёт, а вот ужиматься под тесное окно обязана:
-      // иначе список снова уедет за край.
-      const MAX = 320;
+      // Потолок высоты панели. 20rem прежнего класса sm:max-h-80 были
+      // слишком тесными: «Кузов» (десять пунктов плюс «Все») в них не
+      // помещался и получал полосу прокрутки даже там, где на экране
+      // места хватало. Потолок поднят до половины окна — короткие
+      // справочники (кузов, коробка, топливо) теперь показываются
+      // целиком, а длинным (город, марка — сотня с лишним пунктов)
+      // ограничение по-прежнему нужно: без него панель заняла бы
+      // экран от края до края.
+      const MAX = Math.max(320, Math.round(window.innerHeight * 0.5));
 
       const below = window.innerHeight - box.bottom - OFFSET - GUTTER;
       const above = box.top - OFFSET - GUTTER;
 
-      // Раскрываем вверх, только если снизу мало места И сверху его
-      // ощутимо больше. Иначе список у нижних полей прыгал бы вверх
-      // при каждом лишнем пикселе, хотя внизу ещё можно прокрутить.
-      const openAbove = below < Math.min(MAX, 240) && above > below;
+      // ФАКТИЧЕСКАЯ высота, которая нужна списку целиком.
+      //
+      // Меряем НЕ саму панель: на ней уже стоит вычисленный maxHeight
+      // и overflow-hidden, поэтому её scrollHeight вернул бы текущую
+      // обрезанную высоту. Это замкнуло бы расчёт на себя — панель
+      // «доказывала» бы, что ей хватает ровно того, что ей выдали.
+      //
+      // Складываем содержимое: полную высоту прокручиваемого списка
+      // (scrollHeight ленты пунктов) плюс всё, что над ним, — шапку
+      // мобильного шита и строку поиска. Разность offsetHeight
+      // панели и её списка как раз и даёт эту надстройку.
+      const panel = panelRef.current;
+      const list = listRef.current;
+      const chrome =
+        panel && list ? panel.offsetHeight - list.offsetHeight : 0;
+      // На первом открытии рефов ещё нет — исходим из потолка.
+      const needed =
+        list != null
+          ? Math.min(MAX, list.scrollHeight + chrome)
+          : MAX;
+
+      // Вверх раскрываемся, когда снизу список ЦЕЛИКОМ не помещается,
+      // а сверху помещается. Прежний порог сравнивал место с
+      // константой и потому промахивался: у «Кузова» снизу было
+      // больше порога, но меньше самого списка — он раскрывался вниз
+      // и получал полосу прокрутки, хотя сверху вставал целиком.
+      // Если не помещается ни там, ни там — идём в сторону, где
+      // места больше.
+      const fitsBelow = below >= needed;
+      const fitsAbove = above >= needed;
+      const openAbove = fitsBelow ? false : fitsAbove || above > below;
       const space = openAbove ? above : below;
 
-      setAt({
+      const next = {
         top: openAbove ? undefined : box.bottom + OFFSET,
         // Отсчёт снизу окна: так панель растёт вверх от поля, а не
         // от собственной высоты, которую до отрисовки не измерить.
@@ -193,13 +226,39 @@ export default function ListPicker({
           : undefined,
         left: box.left,
         width: box.width,
-        // Панель не выше доступного места: остаток берёт на себя
+        // Панель не выше доступного места и не выше, чем ей реально
+        // нужно: без второго ограничения короткий список растягивал
+        // бы панель на всё свободное пространство пустотой внизу.
+        // Если места меньше, чем нужно, — остаток берёт на себя
         // собственная прокрутка списка.
-        maxHeight: Math.max(120, Math.min(MAX, space)),
-      });
+        maxHeight: Math.max(120, Math.min(MAX, space, needed)),
+      };
+
+      // Сверяем со старым положением: measure висит на скролле, и без
+      // проверки каждый его вызов давал бы новый объект, то есть
+      // рендер на каждый пиксель прокрутки.
+      setAt((prev) =>
+        prev &&
+        prev.top === next.top &&
+        prev.bottom === next.bottom &&
+        prev.left === next.left &&
+        prev.width === next.width &&
+        prev.maxHeight === next.maxHeight
+          ? prev
+          : next,
+      );
     };
 
+    // Первый проход: панели в DOM ещё нет, высота берётся по потолку.
     measure();
+
+    // ВТОРОЙ ПРОХОД — обязателен. На первом ref панели пуст, и высота
+    // списка неизвестна: «Кузов» с его девятью пунктами считался бы
+    // равным потолку и уходил вниз, к обрезке. Здесь панель уже
+    // отрисована, scrollHeight настоящий — направление уточняется.
+    // requestAnimationFrame, а не второй вызов подряд: React
+    // применяет разметку после эффекта, до кадра.
+    const raf = requestAnimationFrame(measure);
 
     // capture: true — прокручивается не окно, а шторка фильтров;
     // её событие scroll не всплывает, и без перехвата панель
@@ -207,6 +266,7 @@ export default function ListPicker({
     window.addEventListener('scroll', measure, true);
     window.addEventListener('resize', measure);
     return () => {
+      cancelAnimationFrame(raf);
       window.removeEventListener('scroll', measure, true);
       window.removeEventListener('resize', measure);
     };
@@ -416,7 +476,10 @@ export default function ListPicker({
                   себя сжать ниже содержимого, и панель на десктопе
                   переросла бы вычисленный maxHeight. Потолок 55vh
                   остаётся для мобильного шита. */}
-              <div className="thin-scrollbar min-h-0 max-h-[55vh] flex-1 overflow-y-auto sm:max-h-none">
+              <div
+                ref={listRef}
+                className="thin-scrollbar min-h-0 max-h-[55vh] flex-1 overflow-y-auto sm:max-h-none"
+              >
                 {/* «Указать своё» — первым пунктом, как в приложении. */}
                 {showCustom && (
                   <button
