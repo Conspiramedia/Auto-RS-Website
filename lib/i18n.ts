@@ -846,6 +846,13 @@ export const dict = {
       'Ovom adresom se prijavljujete. Za promenu nas kontaktirajte.',
     profile_email_invalid: 'Proverite adresu e-pošte',
     profile_email_taken: 'Ova adresa se već koristi na drugom nalogu',
+
+    // Obaveštenja na e-poštu.
+    profile_notifications: 'Obaveštenja',
+    profile_email_on_message: 'E-mail o novim porukama',
+    profile_email_on_message_hint:
+      'Kada vam neko piše u vezi sa oglasom. Obaveštenja o proveri oglasa i kod za prijavu stižu uvek.',
+    profile_email_on_message_error: 'Nije sačuvano. Pokušajte ponovo.',
     profile_avatar: 'Fotografija',
     profile_avatar_change: 'Promeni',
     profile_seller_kind: 'Tip prodavca',
@@ -1210,6 +1217,20 @@ export const dict = {
     // ------------------------------------------------------------
     recent_title: 'Nedavno pregledano',
     recent_clear: 'Obriši',
+
+    // Stranica za odjavu sa e-mail obaveštenja (/unsubscribe).
+    unsub_title: 'Odjava sa obaveštenja',
+    unsub_lead:
+      'Više vam nećemo slati e-mail kada vam neko napiše poruku u vezi sa oglasom.',
+    unsub_confirm: 'Potvrdi odjavu',
+    unsub_done_title: 'Odjavljeni ste',
+    unsub_done_lead:
+      'E-mail o novim porukama vam više ne stiže. Poruke i dalje možete da čitate na sajtu.',
+    unsub_keep_note:
+      'Obaveštenja o proveri oglasa i kod za prijavu i dalje stižu — bez njih nalog ne radi.',
+    unsub_back: 'Nazad na sajt',
+    unsub_settings: 'Podešavanja obaveštenja',
+    unsub_error: 'Nešto nije u redu. Pokušajte ponovo.',
 
     // ------------------------------------------------------------
     // Фотографии в форме подачи.
@@ -2083,6 +2104,13 @@ export const dict = {
       'По этому адресу вы входите на сайт. Для смены напишите нам.',
     profile_email_invalid: 'Проверьте адрес электронной почты',
     profile_email_taken: 'Эта почта уже используется другим аккаунтом',
+
+    // Уведомления на почту.
+    profile_notifications: 'Уведомления',
+    profile_email_on_message: 'Письма о новых сообщениях',
+    profile_email_on_message_hint:
+      'Когда вам пишут по объявлению. Письма о проверке объявления и код для входа приходят всегда.',
+    profile_email_on_message_error: 'Не сохранилось. Попробуйте ещё раз.',
     profile_avatar: 'Фотография',
     profile_avatar_change: 'Изменить',
     profile_seller_kind: 'Тип продавца',
@@ -2364,6 +2392,20 @@ export const dict = {
     // ------------------------------------------------------------
     recent_title: 'Недавно смотрели',
     recent_clear: 'Очистить',
+
+    // Страница отписки от писем (/unsubscribe).
+    unsub_title: 'Отписка от писем',
+    unsub_lead:
+      'Мы перестанем присылать письма, когда вам пишут по объявлению.',
+    unsub_confirm: 'Подтвердить отписку',
+    unsub_done_title: 'Вы отписаны',
+    unsub_done_lead:
+      'Письма о новых сообщениях больше не приходят. Читать переписку можно на сайте.',
+    unsub_keep_note:
+      'Письма о проверке объявления и код для входа продолжат приходить — без них аккаунт не работает.',
+    unsub_back: 'На сайт',
+    unsub_settings: 'Настройки уведомлений',
+    unsub_error: 'Что-то пошло не так. Попробуйте ещё раз.',
 
     // ------------------------------------------------------------
     // Фотографии в форме подачи.

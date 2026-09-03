@@ -53,7 +53,7 @@
 import Image from 'next/image';
 import { useRef, useState, useTransition } from 'react';
 
-import { saveProfile } from '@/app/my/actions';
+import { saveProfile, setEmailOnMessage } from '@/app/my/actions';
 import {
   ACCEPT_ATTR,
   COVER_ASPECT,
@@ -69,6 +69,7 @@ import Alert from './ui/Alert';
 import Button from './ui/Button';
 import Card from './ui/Card';
 import { fieldClass } from './ui/Field';
+import Switch from './ui/Switch';
 import {
   SERBIAN_PHONE_PREFIX,
   buildOpeningHours,
@@ -214,6 +215,34 @@ export default function ProfileForm({
 
   const [pending, startTransition] = useTransition();
   const [uploading, setUploading] = useState(false);
+
+  // Письма о новых сообщениях (миграция 0132). Состояние местное:
+  // переключатель применяется сразу, отдельно от кнопки «Сохранить»
+  // внизу формы, и в общий submit не входит.
+  const [emailOnMessage, setEmailOnMessageState] = useState(
+    profile.email_on_message,
+  );
+  const [emailOnMessagePending, setEmailOnMessagePending] = useState(false);
+  const [emailOnMessageError, setEmailOnMessageError] = useState(false);
+
+  // Переключение писем о сообщениях. Значение меняем СРАЗУ, не
+  // дожидаясь сервера: настройка щёлкается мгновенно, и задержка в
+  // полсекунды читалась бы как «не сработало». При ошибке возвращаем
+  // прежнее состояние и говорим об этом — молча откатывать нельзя,
+  // человек решит, что отписался.
+  async function toggleEmailOnMessage(next: boolean) {
+    setEmailOnMessageState(next);
+    setEmailOnMessageError(false);
+    setEmailOnMessagePending(true);
+
+    const result = await setEmailOnMessage(next);
+
+    setEmailOnMessagePending(false);
+    if (!result.ok) {
+      setEmailOnMessageState(!next);
+      setEmailOnMessageError(true);
+    }
+  }
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
@@ -559,6 +588,42 @@ export default function ProfileForm({
               {t('profile_email_locked')}
             </p>
           </div>
+
+          {/* ------------------------------------------------------------
+              УВЕДОМЛЕНИЯ НА ПОЧТУ (миграция 0132).
+              ------------------------------------------------------------
+              Стоит сразу под адресом, и это не случайность: настройка
+              относится к той же почте, что показана выше, и искать её
+              человек будет именно здесь.
+
+              Переключатель БЕЗ кнопки «Сохранить»: он вызывает
+              setEmailOnMessage сам. Настройка уведомлений, требующая
+              отдельного подтверждения внизу длинной формы, выглядит
+              несработавшей — человек уходит со страницы, не нажав.
+
+              Показывается только при заполненной почте: переключать
+              письма, которые всё равно некуда слать, бессмысленно. */}
+          {profile.email ? (
+            <div className="border-t border-neutral-15 pt-5">
+              <h3 className="mb-3 text-caption font-semibold text-neutral-60">
+                {t('profile_notifications')}
+              </h3>
+
+              <Switch
+                checked={emailOnMessage}
+                onChange={toggleEmailOnMessage}
+                disabled={emailOnMessagePending}
+                label={t('profile_email_on_message')}
+                description={t('profile_email_on_message_hint')}
+              />
+
+              {emailOnMessageError ? (
+                <p className="mt-2 text-small text-brand-red">
+                  {t('profile_email_on_message_error')}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
 
           {/* ------------------------------------------------------------
               ТИП ПРОДАВЦА — БОЛЬШЕ НЕ ПЕРЕКЛЮЧАТЕЛЬ (миграция 0100).

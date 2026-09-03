@@ -123,6 +123,7 @@ const DICT = {
       'Ovu poruku ste dobili jer koristite RS Auto. Ne odgovarajte na nju — sanduče se ne čita.',
     footer_privacy: 'Politika privatnosti',
     footer_contact: 'Kontakt',
+    footer_unsubscribe: 'Odjavi se sa ovih obaveštenja',
     btn_open_listing: 'Pogledaj oglas',
     btn_open_my: 'Moji oglasi',
 
@@ -229,6 +230,7 @@ const DICT = {
       'Вы получили это письмо, потому что пользуетесь RS Auto. Отвечать на него не нужно — ящик не читается.',
     footer_privacy: 'Политика конфиденциальности',
     footer_contact: 'Контакты',
+    footer_unsubscribe: 'Отписаться от таких писем',
     btn_open_listing: 'Открыть объявление',
     btn_open_my: 'Мои объявления',
 
@@ -357,8 +359,14 @@ function layout(params: {
   // для отказа, синий для нейтральных. Единственный цветовой акцент
   // письма — правило «один акцент» действует и здесь.
   accent: string;
+  // Адрес отписки. Передают ТОЛЬКО письма, от которых можно
+  // отписаться, — сейчас это письма о новых сообщениях. У кода входа
+  // и решения модерации ссылки быть не должно: это ответ площадки на
+  // действие самого человека, и отключение таких писем оставило бы
+  // его без доступа к аккаунту и без решения по объявлению.
+  unsubscribeUrl?: string;
 }): string {
-  const { locale, title, bodyHtml, siteUrl, accent } = params;
+  const { locale, title, bodyHtml, siteUrl, accent, unsubscribeUrl } = params;
 
   // Ссылки подвала ведут на сербскую версию для sr и на /ru для ru:
   // человек, читающий письмо по-русски, не должен попадать на сербский
@@ -405,6 +413,11 @@ function layout(params: {
             <a href="${privacyUrl}" style="color:${COLOR.textMuted};text-decoration:underline;">${esc(t(locale, 'footer_privacy'))}</a>
             &nbsp;·&nbsp;
             <a href="${contactUrl}" style="color:${COLOR.textMuted};text-decoration:underline;">${esc(t(locale, 'footer_contact'))}</a>
+            ${
+              unsubscribeUrl
+                ? `&nbsp;·&nbsp;<a href="${unsubscribeUrl}" style="color:${COLOR.textMuted};text-decoration:underline;">${esc(t(locale, 'footer_unsubscribe'))}</a>`
+                : ''
+            }
           </td>
         </tr>
 
@@ -1079,6 +1092,11 @@ function newMessage(
   const prefix = locale === 'ru' ? '/ru' : '';
   const chatUrl = str(payload, 'chat_url') || `${siteUrl}${prefix}/my/messages`;
 
+  // Ссылку отписки собрал триггер: токен есть только у базы. Пустой
+  // адрес (письмо из очереди, поставленное до миграции 0132) просто
+  // не покажет ссылку — подвал останется прежним.
+  const unsubscribeUrl = str(payload, 'unsubscribe_url');
+
   // Имя отправителя в теме: по нему человек сразу понимает, отвечать
   // ли немедленно. Имени нет (профиль не заполнен) — тема остаётся
   // нейтральной, выдумывать имя нельзя.
@@ -1111,11 +1129,21 @@ function newMessage(
     '',
     t(locale, 'message_hint'),
     chatUrl,
+    ...(unsubscribeUrl
+      ? ['', `${t(locale, 'footer_unsubscribe')}: ${unsubscribeUrl}`]
+      : []),
   ].join('\n');
 
   return {
     subject,
-    html: layout({ locale, title: subject, bodyHtml, siteUrl, accent: COLOR.primary }),
+    html: layout({
+      locale,
+      title: subject,
+      bodyHtml,
+      siteUrl,
+      accent: COLOR.primary,
+      unsubscribeUrl,
+    }),
     text,
   };
 }
