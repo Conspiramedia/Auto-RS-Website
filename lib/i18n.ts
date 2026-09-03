@@ -504,7 +504,7 @@ export const dict = {
     picker_custom: 'Unesi',
     picker_custom_hint: 'unesi svoje',
     picker_nothing: 'Nema rezultata',
-    picker_model_no_brand: 'Prvo izaberite marku',
+    picker_model_no_brand: 'Izaberite marku',
     picker_model_empty: 'Nema modela za ovu marku',
     // Подпись пустого поля-списка. Отличается от filter_any: там это
     // пункт «любое значение» внутри списка, здесь — призыв открыть его.
