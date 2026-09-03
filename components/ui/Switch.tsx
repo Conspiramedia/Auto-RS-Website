@@ -25,6 +25,34 @@
 
 import { useId } from 'react';
 
+// ------------------------------------------------------------
+// ДВИЖЕНИЕ ПЕРЕКЛЮЧАТЕЛЯ — СВОЯ КРИВАЯ, А НЕ ОБЩАЯ ease-out.
+// ------------------------------------------------------------
+// Брендовая ease-out (cubic-bezier(0, 0, 0.2, 1)) рассчитана на
+// появление и наведение: элемент срывается с места на полной скорости
+// и тормозит в конце. Для бегунка, который проезжает всего 20px, такой
+// старт читается как рывок — он уже почти доехал, когда глаз успевает
+// его заметить.
+//
+// Здесь нужна кривая с мягким разгоном И мягкой остановкой: бегунок
+// трогается плавно, разгоняется в середине и останавливается без
+// удара. Значения близки к системному переключателю iOS.
+//
+// ПОЧЕМУ ЧЕРЕЗ style, А НЕ КЛАССАМИ TAILWIND. Кривая нужна ровно в
+// одном месте проекта, и заводить ради неё глобальный токен в
+// tailwind.config означало бы предлагать её всему остальному
+// интерфейсу, где верна как раз брендовая ease-out.
+const SWING_EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';
+
+// 260ms: заметно мягче прежних 150, но всё ещё отклик на нажатие, а не
+// анимация. За 300+ переключатель начинает казаться задумчивым.
+const SWING_MS = 260;
+
+// Системная настройка «уменьшить движение» отключает переход целиком:
+// motion-reduce:!transition-none перебивает inline-style, иначе он бы
+// выиграл по приоритету. Переключатель при этом продолжает работать —
+// меняется мгновенно, без проезда.
+
 type Props = {
   checked: boolean;
   onChange: (next: boolean) => void;
@@ -89,9 +117,10 @@ export default function Switch({
         aria-describedby={description ? descId : undefined}
         disabled={disabled}
         onClick={() => onChange(!checked)}
-        className={`relative -mt-1 h-[31px] w-[51px] shrink-0 rounded-pill transition-colors duration-fast ease-out disabled:cursor-not-allowed disabled:opacity-40 ${
+        className={`relative -mt-1 h-[31px] w-[51px] shrink-0 rounded-pill motion-reduce:!transition-none disabled:cursor-not-allowed disabled:opacity-40 ${
           checked ? 'bg-brand-green' : 'bg-neutral-15'
         }`}
+        style={{ transition: `background-color ${SWING_MS}ms ${SWING_EASE}` }}
       >
         {/* Бегунок. translate-x вместо left: анимация трансформацией не
             вызывает пересчёт раскладки на каждом кадре.
@@ -102,10 +131,11 @@ export default function Switch({
             получается: мягкая на светлом фоне не видна, а плотная без
             мягкой выглядит наклейкой. */}
         <span
-          className={`absolute left-0.5 top-0.5 h-[27px] w-[27px] rounded-pill bg-white transition-transform duration-fast ease-out ${
+          className={`absolute left-0.5 top-0.5 h-[27px] w-[27px] rounded-pill bg-white motion-reduce:!transition-none ${
             checked ? 'translate-x-5' : 'translate-x-0'
           }`}
           style={{
+            transition: `transform ${SWING_MS}ms ${SWING_EASE}`,
             boxShadow:
               '0 3px 8px rgba(0,0,0,0.15), 0 1px 1px rgba(0,0,0,0.16)',
           }}
