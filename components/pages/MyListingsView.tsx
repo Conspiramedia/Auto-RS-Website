@@ -126,8 +126,9 @@ export default async function MyListingsView({ locale }: Props) {
               и требуют ширины: круг 32px плюс двузначная цифра плюс
               подпись.
 
-              items-stretch по умолчанию: дельта есть не у каждой
-              метрики, и без растяжения карточки ряда разъехались бы по
+              items-stretch по умолчанию: до lg подпись стоит под
+              цифрой и у длинных названий переносится на вторую строку,
+              а без растяжения карточки ряда разъехались бы по
               высоте. */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Metric
@@ -135,32 +136,24 @@ export default async function MyListingsView({ locale }: Props) {
               icon={<FileTextIcon className="h-4 w-4" />}
               label={t('my_totals_listings')}
               value={totals.listings_count}
-              week={totals.listings_week}
-              t={t}
             />
             <Metric
               tone="views"
               icon={<EyeIcon className="h-4 w-4" />}
               label={t('my_metric_views')}
               value={totals.views}
-              week={totals.views_week}
-              t={t}
             />
             <Metric
               tone="favorites"
               icon={<HeartIcon className="h-4 w-4" />}
               label={t('my_metric_favorites')}
               value={totals.favorites}
-              week={totals.favorites_week}
-              t={t}
             />
             <Metric
               tone="contacts"
               icon={<MessageCircleIcon className="h-4 w-4" />}
               label={t('my_metric_contacts')}
               value={totals.contacts}
-              week={totals.contacts_week}
-              t={t}
             />
           </div>
 
@@ -248,25 +241,16 @@ function Metric({
   icon,
   label,
   value,
-  week,
-  t,
 }: {
   tone: keyof typeof METRIC_TONE;
   icon: React.ReactNode;
   label: string;
   value: number;
-  week: number;
-  t: ReturnType<typeof getT>;
 }) {
-  // Прирост показываем только когда он есть: «+0 за неделю» не
-  // сообщает ничего, а строка под цифрой занимает место в каждой
-  // карточке ряда.
-  const delta = week > 0 ? t('my_totals_week').replace('{n}', String(week)) : null;
-
   return (
     <div
       className="rounded-card border border-neutral-10 bg-white p-4"
-      aria-label={`${label}: ${value}${delta ? `, ${delta}` : ''}`}
+      aria-label={`${label}: ${value}`}
     >
       {/* ГОРИЗОНТАЛЬНАЯ РАСКЛАДКА: значок слева, числа справа.
           ------------------------------------------------------------
@@ -296,7 +280,7 @@ function Metric({
         </span>
 
         <div className="min-w-0">
-          {/* ЦИФРА И ПОДПИСЬ В ОДНУ СТРОКУ — НО ТОЛЬКО С sm.
+          {/* ЦИФРА И ПОДПИСЬ В ОДНУ СТРОКУ — НО ТОЛЬКО С lg.
               ------------------------------------------------------------
               Подпись НЕ убрана намеренно: значок без неё неоднозначен
               (сердце — «избранное» или «лайки», конверт — «контакты»
@@ -339,12 +323,6 @@ function Metric({
               {label}
             </span>
           </div>
-
-          {delta && (
-            <div className="mt-1 text-small font-medium text-success">
-              {delta}
-            </div>
-          )}
         </div>
       </div>
     </div>
