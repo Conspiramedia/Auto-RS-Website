@@ -1566,17 +1566,27 @@ export const dict = {
     //
     // Развести их — единственный способ дать поиску полную фразу, не
     // ломая интерфейс: длинный заголовок в <h1> занял бы три строки на
-    // телефоне, а «Uslovi korišćenja platforme RS Auto» в подвале
-    // повторял бы бренд рядом с самим брендом.
+    // телефоне, а в подвале и в крошках стоял бы вместо короткой
+    // подписи раздела.
     //
     // Суффикс « | RS Auto» добавляет шаблон корневого layout, поэтому
     // сами строки его не содержат — считать длину нужно с ним (+10).
+    //
+    // ИСКЛЮЧЕНИЕ — meta_terms_title. Он намеренно совпадает с
+    // UI-ключом legal_terms_title и в диапазон 30–60 не укладывается
+    // (27 символов с суффиксом). Название документа уже содержит имя
+    // площадки, и развёрнутый вариант давал в разметке «Uslovi
+    // korišćenja platforme RS Auto | RS Auto» — бренд дважды подряд.
+    // Из двух зол дубль бренда в выдаче хуже недобора трёх символов.
+    // Отдельным ключом остаётся ради единообразия: все страницы берут
+    // <title> из meta_*, и одно исключение в вызове buildMetadata
+    // читалось бы как недосмотр.
     meta_sell_title: 'Prodajte automobil u Srbiji',
     meta_dealers_title: 'Autosalonima: vitrina i kupci iz cele Srbije',
     meta_faq_title: 'Česta pitanja o prodaji automobila u Srbiji',
     meta_how_title: 'Kako kupiti ili prodati auto u Srbiji',
     meta_contact_title: 'Kontakt i podrška u Srbiji',
-    meta_terms_title: 'Uslovi korišćenja platforme RS Auto',
+    meta_terms_title: 'Uslovi korišćenja',
     meta_rent_title: 'Automobili za izdavanje u Srbiji',
 
     // ДВА ОПИСАНИЯ ГЛАВНОЙ, И ЭТО НЕ ДУБЛЬ.
@@ -2866,7 +2876,7 @@ export const dict = {
     meta_faq_title: 'Вопросы и ответы о продаже авто в Сербии',
     meta_how_title: 'Как купить или продать авто в Сербии',
     meta_contact_title: 'Контакты и поддержка в Сербии',
-    meta_terms_title: 'Условия использования платформы RS Auto',
+    meta_terms_title: 'Условия использования',
     meta_rent_title: 'Автомобили в аренду в Сербии',
 
     // Два описания главной — см. комментарий в сербском словаре:
