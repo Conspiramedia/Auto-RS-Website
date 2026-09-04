@@ -165,6 +165,9 @@ export default function CatalogView({
     countable.transmission,
     countable.fuel,
     countable.engineVolume,
+    // Показ битых и разборки (0138): применённый фильтр, как и любой
+    // другой, — счётчик на кнопке обязан его учитывать.
+    countable.showDamaged,
   ].filter(Boolean).length;
 
   // JSON-LD ItemList текущей выдачи. Ставится ЗДЕСЬ, а не в каждой

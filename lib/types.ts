@@ -22,6 +22,91 @@ export type ListingType = 'sale' | 'rent' | 'both';
 // сочетание должен жить в типе, а не в проверке.
 export type CarAvailability = 'in_stock' | 'on_order' | 'in_transit';
 
+// Состояние автомобиля. Зеркалит enum car_condition из базы
+// (миграция 0138).
+//
+// ЭТО ДРУГАЯ ОСЬ, НЕ ПУТАТЬ С CarAvailability ВЫШЕ. Доступность —
+// логистика салона («когда я смогу её увидеть»), состояние —
+// физическое и юридическое состояние самой машины («что именно я
+// получу»). Сочетания осмысленны: салон везёт битую машину
+// ('in_transit' + 'damaged') или берёт под заказ донора на разборку
+// ('on_order' + 'parts'), и на карточке оба бейджа стоят рядом.
+//
+// Второе отличие от доступности: состояние доступно ВСЕМ продавцам,
+// а не только салонам. Битую машину продаёт и частник.
+export type CarCondition =
+  | 'normal'
+  | 'damaged'
+  | 'parts'
+  | 'no_docs'
+  | 'salvage'
+  | 'for_export';
+
+// Состояния для селектора в форме подачи и для бейджей каталога.
+// Порядок — от лёгкого к тяжёлому, 'normal' первым как значение по
+// умолчанию.
+//
+// Ключи цвета совпадают с группой condition в lib/brand.ts, а классы
+// перечислены ПОЛНОСТЬЮ, а не собраны из кусков: Tailwind сканирует
+// исходники статически и класс, собранный конкатенацией
+// (`bg-condition-${key}`), в сборку не попадёт.
+//
+// 'normal' цвета и бейджа не имеет намеренно: обычная машина —
+// состояние по умолчанию у подавляющего большинства объявлений, и
+// плашка о нём была бы шумом в каждой карточке.
+export const CAR_CONDITIONS = [
+  { key: 'normal', badge: null, surface: null },
+  {
+    key: 'damaged',
+    badge: 'bg-condition-damaged text-white',
+    surface: 'bg-condition-damaged-soft text-condition-damaged',
+  },
+  {
+    key: 'parts',
+    badge: 'bg-condition-parts text-white',
+    surface: 'bg-condition-parts-soft text-condition-parts',
+  },
+  {
+    key: 'no_docs',
+    badge: 'bg-condition-no_docs text-white',
+    surface: 'bg-condition-no_docs-soft text-condition-no_docs',
+  },
+  {
+    key: 'salvage',
+    badge: 'bg-condition-salvage text-white',
+    surface: 'bg-condition-salvage-soft text-condition-salvage',
+  },
+  {
+    key: 'for_export',
+    badge: 'bg-condition-for_export text-white',
+    surface: 'bg-condition-for_export-soft text-condition-for_export',
+  },
+] as const;
+
+// Состояния, которые каталог скрывает по умолчанию: машина не на ходу
+// либо восстановлению не подлежит. Набор обязан совпадать с условием
+// в search_cars_public (миграция 0138).
+//
+// no_docs и for_export сюда НЕ входят: машина на ходу и в порядке,
+// ограничение чисто юридическое, и прятать её от покупателя, которого
+// это ограничение устраивает, незачем.
+export const DAMAGED_CONDITIONS: readonly CarCondition[] = [
+  'damaged',
+  'parts',
+  'salvage',
+];
+
+// Оформление бейджа и пояснительной плашки. Неизвестное значение и
+// 'normal' дают null — вызывающий просто ничего не рисует.
+export function conditionStyle(value: string | null | undefined): {
+  badge: string;
+  surface: string;
+} | null {
+  const found = CAR_CONDITIONS.find((c) => c.key === value);
+  if (!found || !found.badge || !found.surface) return null;
+  return { badge: found.badge, surface: found.surface };
+}
+
 export type CatalogCar = {
   id: string;
   brand: string;
@@ -59,6 +144,10 @@ export type CatalogCar = {
   // Взаимоисключение обеспечено самим типом — двух пометок сразу не
   // бывает.
   availability: CarAvailability;
+  // Состояние автомобиля (0138). Ось, независимая от availability
+  // выше: у объявления салона могут стоять обе пометки сразу, и
+  // карточка рисует два бейджа рядом.
+  condition: CarCondition;
   created_at: string;
   // Общее число объявлений по текущим фильтрам (одинаково во всех строках).
   total_count: number;
@@ -120,6 +209,8 @@ export type CarDetails = {
   archived_reason: string | null;
   // Доступность автомобиля (0119). См. комментарий у CatalogCar.
   availability: CarAvailability;
+  // Состояние автомобиля (0138). См. комментарий у CatalogCar.
+  condition: CarCondition;
 };
 
 // Фотография объявления. Источник: RPC get_car_images (миграция 0052).

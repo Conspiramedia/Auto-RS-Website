@@ -89,6 +89,11 @@ export default function FilterChips({
       }`,
     );
 
+  // Показ битых и разборки (0138). Чипс нужен наравне с остальными:
+  // фильтр меняет состав выдачи, и человек должен видеть, почему в
+  // списке появились доноры на разборку, — и снять его одним нажатием.
+  if (filters.showDamaged) add('showDamaged', t('filter_show_damaged'));
+
   if (chips.length === 0) return null;
 
   return (

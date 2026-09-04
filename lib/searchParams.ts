@@ -66,6 +66,12 @@ export function parseFilters(sp: SearchParams): CatalogFilters {
     // роняет страницу: мусорный ?engine= в адресе не должен мешать
     // краулеру получить каталог.
     engineVolume: isEngineVolumeKey(engine) ? engine : undefined,
+    // Показ битых и разборки (0138). Включённым считается только
+    // '1' — ровно то, что пишет buildQuery ниже. Любое другое
+    // значение молча трактуется как выключенный флаг: мусорный
+    // ?damaged=maybe не должен подмешивать в выдачу доноров на
+    // разборку, а по умолчанию их там нет.
+    showDamaged: one(sp.damaged) === '1' ? true : undefined,
     // Неизвестное значение сортировки молча заменяется на дефолтное.
     sort: isSortKey(sort) ? sort : 'fresh',
     page: num(sp.page) || 1,
@@ -100,6 +106,10 @@ export function buildQuery(
   if (merged.transmission) params.set('gearbox', merged.transmission);
   if (merged.fuel) params.set('fuel', merged.fuel);
   if (merged.engineVolume) params.set('engine', merged.engineVolume);
+  // Выключенный флаг в адрес не пишется: '/cars' и '/cars?damaged=0'
+  // должны быть одной страницей, а не двумя — то же правило, что у
+  // сортировки ниже и у типа объявления выше.
+  if (merged.showDamaged) params.set('damaged', '1');
   // Сортировка по умолчанию в адрес не пишется: '/cars' и '/cars?sort=fresh'
   // должны быть одной страницей, а не двумя.
   if (merged.sort && merged.sort !== 'fresh') params.set('sort', merged.sort);
@@ -129,6 +139,11 @@ export function hasActiveFilters(filters: CatalogFilters): boolean {
       filters.bodyType ||
       filters.transmission ||
       filters.fuel ||
-      filters.engineVolume,
+      filters.engineVolume ||
+      // Показ битых расширяет выдачу, а не сужает её, но применённым
+      // фильтром считается наравне с остальными: страница с ним — не
+      // тот же документ, что каталог по умолчанию, и отдавать её в
+      // индекс вторым URL с почти тем же содержимым нельзя.
+      filters.showDamaged,
   );
 }

@@ -18,11 +18,12 @@ import {
   labelFuel,
   labelTransmission,
 } from '@/lib/format';
-import type { Locale } from '@/lib/i18n';
+import type { DictKey, Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
 import { fetchCarDetails } from '@/lib/queries';
 import {
   buildCarFallbackDescription,
+  prefixDescriptionWithCondition,
   buildMetadata,
   truncateDescription,
 } from '@/lib/seo';
@@ -85,7 +86,18 @@ export async function generateMetadata({
     ? truncateDescription(car.description)
     : '';
 
-  const description =
+  // СОСТОЯНИЕ В НАЧАЛЕ ОПИСАНИЯ (0138). Применяется и к описанию
+  // продавца, и к собранному запасному: пометка обязана быть в
+  // сниппете независимо от того, откуда взялся текст.
+  //
+  // Доступность («в пути», «под заказ») в описание НЕ идёт — см.
+  // prefixDescriptionWithCondition.
+  const conditionSeoLabel =
+    car.condition && car.condition !== 'normal'
+      ? getT(locale)(`condition_seo_${car.condition}` as DictKey)
+      : null;
+
+  const baseDescription =
     ownDescription.length >= 70
       ? ownDescription
       : buildCarFallbackDescription({
@@ -98,6 +110,11 @@ export async function generateMetadata({
           tail: getT(locale)('car_meta_fallback_tail'),
           extra: getT(locale)('car_meta_fallback_extra'),
         });
+
+  const description = prefixDescriptionWithCondition(
+    baseDescription,
+    conditionSeoLabel,
+  );
 
   return buildMetadata({
     locale,

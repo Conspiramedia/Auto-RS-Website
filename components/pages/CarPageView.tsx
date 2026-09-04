@@ -34,8 +34,11 @@ import {
   labelFuel,
   labelTransmission,
 } from '@/lib/format';
-import type { Locale } from '@/lib/i18n';
+import type { DictKey, Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
+import { conditionStyle } from '@/lib/types';
+import ConditionBadge from '@/components/ui/ConditionBadge';
+import { ConditionIcon } from '@/components/ui/ConditionIcons';
 import {
   fetchCarDetails,
   fetchCarImages,
@@ -117,6 +120,25 @@ export default async function CarPageView({
   const mode: 'sale' | 'rent' = car.is_for_sale ? 'sale' : 'rent';
   const catalogPath = mode === 'rent' ? '/rent' : '/cars';
   const catalogLabel = mode === 'rent' ? t('rent_title') : t('nav_catalog');
+
+  // ПОЯСНЕНИЕ К СОСТОЯНИЮ (0138). Считается здесь, а не в разметке:
+  // ниже оно нужно одним условием, и городить в JSX два вызова подряд
+  // (стиль и текст) незачем.
+  //
+  // null у обычной машины, у неизвестного значения и у проданного:
+  // у последнего состояние уже ни на что не влияет — та же логика,
+  // что у бейджей доступности и состояния возле цены.
+  const conditionNoteStyle =
+    car.status !== 'sold' ? conditionStyle(car.condition) : null;
+  const conditionNote = conditionNoteStyle
+    ? {
+        surface: conditionNoteStyle.surface,
+        // Ключ собирается по имени состояния; набор закрыт
+        // (condition_note_damaged … condition_note_for_export), и
+        // conditionStyle выше уже отсеял всё, чего в нём нет.
+        text: t(`condition_note_${car.condition}` as DictKey),
+      }
+    : null;
 
   // Хлебные крошки для поиска. Повторяют ВИДИМУЮ навигацию страницы
   // (каталог → название объявления) — это требование Google: разметка
@@ -238,6 +260,42 @@ export default async function CarPageView({
               <GalleryCloseButton locale={locale} fallbackPath={catalogPath} />
             </div>
 
+            {/* ПОЯСНЕНИЕ К СОСТОЯНИЮ (0138) — СРАЗУ ПОД ФОТОГРАФИЯМИ.
+                Место выбрано намеренно: человек только что рассмотрел
+                кадры, и именно здесь у него возникает вопрос «почему
+                так дёшево» или «а что с ней не так». Бейдж у цены
+                называет состояние одним словом, эта плашка объясняет,
+                что оно означает и что делать дальше — проверить
+                возможность регистрации, уточнить у продавца.
+
+                Цвет — тот же, что у бейджа, но заливкой 10% с цветным
+                текстом (пара из lib/brand.ts, как у Alert и Badge
+                тона success-soft): плашка занимает всю ширину
+                колонки, и сплошная заливка на таком поле кричала бы
+                громче самой фотографии.
+
+                Компонент Alert здесь не подходит: его три тона
+                (error / success / warning) описывают ИСХОД ДЕЙСТВИЯ
+                пользователя, а тут — свойство товара, и красный
+                «ошибка» на объявлении без документов читался бы как
+                поломка сайта.
+
+                role не задаём: это не сообщение о результате
+                действия, а часть описания объявления, и перебивать
+                чтение страницы ей незачем — скринридер прочтёт её в
+                общем потоке. */}
+            {conditionNote && (
+              <div
+                className={`mt-4 flex items-start gap-2 rounded-control px-3 py-2.5 text-caption font-medium ${conditionNote.surface}`}
+              >
+                <ConditionIcon
+                  condition={car.condition}
+                  className="mt-0.5 h-4 w-4 shrink-0"
+                />
+                <span>{conditionNote.text}</span>
+              </div>
+            )}
+
             {/* ЗАГОЛОВОК И СЕРДЦЕ В ОДНОЙ СТРОКЕ — как на карточке в
                 списке и как в приложении. Раньше избранное жило
                 кнопкой «Сохранить» во всю ширину в блоке контактов:
@@ -311,6 +369,27 @@ export default async function CarPageView({
               <Badge tone="info-soft" size="md" className="mt-2">
                 {t('availability_in_transit')}
               </Badge>
+            )}
+
+            {/* СОСТОЯНИЕ (0138) — ВТОРАЯ, НЕЗАВИСИМАЯ ОСЬ. Стоит сразу
+                за доступностью и по тем же причинам: это то, что
+                покупатель обязан узнать до звонка, а не после.
+
+                У проданного не показываем — как и доступность выше:
+                сделка закрыта, и состояние машины уже ни на что не
+                влияет.
+
+                Ниже, под фотографиями, то же состояние объясняется
+                плашкой целой фразой. Здесь — короткий бейдж у цены:
+                бейдж ловит взгляд, плашка отвечает «и что это значит
+                для меня». */}
+            {car.status !== 'sold' && (
+              <ConditionBadge
+                locale={locale}
+                condition={car.condition}
+                size="md"
+                className="mt-2"
+              />
             )}
 
             <section className="mt-6">

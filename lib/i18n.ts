@@ -484,6 +484,40 @@ export const dict = {
     availability_in_stock: 'Na stanju',
     availability_on_order: 'Po porudžbini',
     availability_in_transit: 'U dolasku',
+    // Состояние автомобиля (0138). ДРУГАЯ ОСЬ, не путать с
+    // доступностью выше: та про логистику салона, эта — про саму
+    // машину. Поле показывается ВСЕМ продавцам, а не только салону.
+    sell_condition: 'Stanje vozila',
+    sell_condition_hint:
+      'Kupac vidi oznaku u oglasu i u pretrazi. Iskren opis stanja štedi vreme i vama i kupcu.',
+    condition_normal: 'Običan automobil',
+    condition_damaged: 'Oštećen / havarisan',
+    condition_parts: 'Za delove / rastavljanje',
+    condition_no_docs: 'Bez dokumenata',
+    condition_salvage: 'Totalna šteta (ne popravlja se)',
+    condition_for_export: 'Samo za izvoz',
+    // Пояснения под фотографиями на странице объявления. Отдельные
+    // строки, а не те же подписи: на бейдже нужно короткое имя
+    // состояния, а здесь — предупреждение с указанием, что делать.
+    condition_note_damaged:
+      'Pažnja: automobil je oštećen. Proverite stanje kod prodavca.',
+    condition_note_parts: 'Automobil za delove, nije u voznom stanju.',
+    condition_note_no_docs:
+      'Automobil nema dokumenta. Proverite mogućnost registracije.',
+    condition_note_salvage: 'Totalna šteta, ne popravlja se.',
+    condition_note_for_export:
+      'Automobil se prodaje samo za izvoz iz Srbije.',
+    // Фильтр каталога. По умолчанию выключен.
+    filter_show_damaged: 'Prikaži oštećene i za delove',
+    // Состояние ОДНИМ СЛОВОМ — для начала meta description. Подписи
+    // бейджей сюда не годятся: «Za delove / rastavljanje Volkswagen
+    // Golf» не читается как фраза, а сниппет обязан быть связным
+    // текстом. У 'normal' такой строки нет — описание не меняется.
+    condition_seo_damaged: 'Oštećen',
+    condition_seo_parts: 'Za delove',
+    condition_seo_no_docs: 'Bez dokumenata',
+    condition_seo_salvage: 'Totalna šteta',
+    condition_seo_for_export: 'Samo za izvoz',
     sell_type_sale: 'Prodajem',
     sell_type_rent: 'Izdajem',
     sell_type_both: 'Prodajem i izdajem',
@@ -1936,6 +1970,31 @@ export const dict = {
     availability_in_stock: 'В наличии',
     availability_on_order: 'На заказ',
     availability_in_transit: 'В пути',
+    // См. комментарий в сербском словаре.
+    sell_condition: 'Состояние автомобиля',
+    sell_condition_hint:
+      'Покупатель увидит пометку в объявлении и в поиске. Честно указанное состояние экономит время и вам, и покупателю.',
+    condition_normal: 'Обычное авто',
+    condition_damaged: 'Битый / повреждённый',
+    condition_parts: 'На запчасти / разборку',
+    condition_no_docs: 'Без документов',
+    condition_salvage: 'Тотал (не восстанавливается)',
+    condition_for_export: 'Только на экспорт',
+    condition_note_damaged:
+      'Внимание: автомобиль битый. Уточните состояние у продавца.',
+    condition_note_parts: 'Автомобиль на запчасти, не на ходу.',
+    condition_note_no_docs:
+      'У автомобиля нет документов. Проверьте возможность регистрации.',
+    condition_note_salvage: 'Тотальная гибель, не восстанавливается.',
+    condition_note_for_export:
+      'Автомобиль продаётся только на экспорт из Сербии.',
+    filter_show_damaged: 'Показать битые и разборку',
+    // См. комментарий в сербском словаре.
+    condition_seo_damaged: 'Битый',
+    condition_seo_parts: 'На запчасти',
+    condition_seo_no_docs: 'Без документов',
+    condition_seo_salvage: 'Тотал',
+    condition_seo_for_export: 'Только на экспорт',
     sell_type_sale: 'Продаю',
     sell_type_rent: 'Сдаю',
     sell_type_both: 'Продаю и сдаю',

@@ -44,8 +44,10 @@ import {
   hasAcceptedPolicyHere,
   migrateGuestConsent,
 } from '@/lib/consent';
-import type { CarAvailability } from '@/lib/types';
-import type { Locale } from '@/lib/i18n';
+import type { CarAvailability, CarCondition } from '@/lib/types';
+import { CAR_CONDITIONS } from '@/lib/types';
+import { ConditionIcon } from './ui/ConditionIcons';
+import type { DictKey, Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { BRANDS, CITIES, YEAR_MIN, yearMax } from '@/lib/referenceData';
 import {
@@ -203,6 +205,16 @@ export default function SellForm({
   // не за правила.
   const [availability, setAvailability] =
     useState<CarAvailability>('in_stock');
+
+  // СОСТОЯНИЕ АВТОМОБИЛЯ (0138) — ВТОРАЯ, НЕЗАВИСИМАЯ ОСЬ.
+  // В отличие от доступности выше, поле показывается ВСЕМ продавцам:
+  // битую машину или донора на разборку продаёт и частник, для него
+  // это обычный сценарий, а не привилегия салона. Триггера,
+  // ограничивающего значения, в базе нет намеренно.
+  //
+  // Оси не пересекаются и на уровне формы: у салона видны оба
+  // селектора сразу, и «в пути» + «битый» — допустимое сочетание.
+  const [condition, setCondition] = useState<CarCondition>('normal');
   // null — тип продавца ещё не прочитан. До этого момента поле не
   // рисуется вовсе: мелькнувший и исчезнувший переключатель хуже, чем
   // его появление на долю секунды позже.
@@ -542,6 +554,10 @@ export default function SellForm({
       setAvailability(
         (car.availability as CarAvailability | undefined) ?? 'in_stock',
       );
+      // Состояние (0138). Отсутствующее значение — 'normal': так же
+      // ведёт себя база, и объявление, поданное до миграции, не
+      // получит в форме правки чужую пометку.
+      setCondition((car.condition as CarCondition | undefined) ?? 'normal');
 
       setBrand((car.brand as string) ?? '');
       setModel((car.model as string) ?? '');
@@ -1109,6 +1125,10 @@ export default function SellForm({
         // У аренды доступность не имеет смысла: сдают ту машину,
         // которая есть, — поэтому туда всегда уходит 'in_stock'.
         p_availability: listingType === 'sale' ? availability : 'in_stock',
+        // Состояние уходит ВСЕГДА и для любой витрины: сдают в аренду
+        // тоже не всякую машину, а условие «без документов» для
+        // арендатора значит ровно то же, что для покупателя.
+        p_condition: condition,
         p_brand: brand.trim(),
         p_model: model.trim(),
         p_year: Number(year),
@@ -1520,6 +1540,89 @@ export default function SellForm({
               </p>
             </div>
           )}
+
+          {/* СОСТОЯНИЕ АВТОМОБИЛЯ (0138).
+              ------------------------------------------------------------
+              БЕЗ ГЕЙТА isDealer, в отличие от доступности выше: битую
+              машину, донора на разборку или машину без документов
+              продаёт прежде всего частник, и прятать от него это поле
+              значило бы заставлять писать «БИТАЯ!!!» в описании
+              капслоком — то есть терять фильтруемые данные.
+
+              У салона оба селектора стоят друг под другом, и это
+              осознанно: оси независимы, «в пути» + «битый» —
+              допустимое и вполне обычное сочетание.
+
+              РАСКЛАДКА, А НЕ ТРИ КОЛОНКИ КАК У ДОСТУПНОСТИ: вариантов
+              шесть, и подписи у них длинные («Тотал (не
+              восстанавливается)»). В три колонки на 360px такая
+              подпись переносится в четыре строки и кнопки разъезжаются
+              по высоте. Поэтому одна колонка на мобильном и две от sm:
+              строка на всю ширину читается как список, а не как сетка
+              обрубков.
+
+              ЗНАЧОК В КАЖДОМ ВАРИАНТЕ — тот же, что потом появится на
+              бейдже в каталоге. Продавец выбирает пометку и сразу
+              видит, как она будет выглядеть покупателю.
+
+              Цвет варианта — цвет его состояния, но заливкой 10%:
+              выбранный вариант обведён своим цветом, невыбранные
+              нейтральны. Сплошная заливка шести цветов превратила бы
+              шаг формы в светофор. */}
+          <div>
+            <label className="mb-1 block text-caption text-neutral-60">
+              {t('sell_condition')}
+            </label>
+
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {CAR_CONDITIONS.map((option) => {
+                const active = condition === option.key;
+                // Оформление выбранного варианта. У 'normal' своего
+                // цвета нет (обычная машина бейджа не получает), и он
+                // выделяется тем же тёмным, что переключатель
+                // доступности выше.
+                const activeClass = option.surface
+                  ? `${option.surface} font-semibold`
+                  : 'bg-brand-dark text-white font-semibold';
+
+                return (
+                  <button
+                    key={option.key}
+                    type="button"
+                    onClick={() => setCondition(option.key)}
+                    aria-pressed={active}
+                    className={`flex items-center gap-2 rounded-control px-3 py-2.5 text-left text-caption ${
+                      active
+                        ? activeClass
+                        : 'border border-neutral-15 hover:bg-surface-hover'
+                    }`}
+                  >
+                    {/* У 'normal' значка нет (обычная машина бейджа не
+                        получает), и ConditionIcon вернёт null. Пустая
+                        клетка того же размера держит подписи всех
+                        шести вариантов на одной вертикали — иначе
+                        первый пункт списка съехал бы влево
+                        относительно остальных. */}
+                    {option.badge ? (
+                      <ConditionIcon
+                        condition={option.key}
+                        className="h-4 w-4 shrink-0"
+                      />
+                    ) : (
+                      <span aria-hidden="true" className="h-4 w-4 shrink-0" />
+                    )}
+                    <span className="min-w-0">
+                      {t(`condition_${option.key}` as DictKey)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <p className="mt-1 text-small text-neutral-50">
+              {t('sell_condition_hint')}
+            </p>
+          </div>
 
           {/* Марка и модель — пара связанных полей, на десктопе стоят
               в одной строке: модель каскадом зависит от марки, и видеть

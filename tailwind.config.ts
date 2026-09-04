@@ -56,6 +56,18 @@ const config: Config = {
         'on-dark': brand.onDark,
         // Подложки статусных сообщений: bg-status-error.
         status: brand.statusSurface,
+        // Состояние автомобиля (0138): bg-condition-damaged на бейдже,
+        // bg-condition-damaged-soft под пояснительной плашкой.
+        // Две группы в одной, потому что имя состояния у них общее и
+        // разъезжаться они не должны.
+        condition: {
+          ...brand.condition,
+          'damaged-soft': brand.conditionSurface.damaged,
+          'parts-soft': brand.conditionSurface.parts,
+          'no_docs-soft': brand.conditionSurface.no_docs,
+          'salvage-soft': brand.conditionSurface.salvage,
+          'for_export-soft': brand.conditionSurface.for_export,
+        },
         // Заливки и состояния наведения.
         surface: brand.surface,
         // Палитра экрана переписки. Отдельная группа, потому что цвет

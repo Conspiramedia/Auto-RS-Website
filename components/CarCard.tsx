@@ -17,6 +17,7 @@ import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import type { ListingType } from '@/lib/types';
 import Badge from './ui/Badge';
+import ConditionBadge from './ui/ConditionBadge';
 import CardActions from './CardActions';
 import Card from './ui/Card';
 import ViewedBadge from './ViewedBadge';
@@ -51,6 +52,9 @@ type Props = {
     // seller_kind выше: карточка показывается и там, где поле не
     // читается, и бейдж тогда просто не рисуется.
     availability?: string | null;
+    // Состояние (0138). Независимо от availability выше: у объявления
+    // салона могут стоять обе пометки сразу, и тогда бейджа два.
+    condition?: string | null;
   };
   // Витрина, в которой показана карточка.
   //   'sale' | 'rent' — специализированный раздел: показываем цену
@@ -164,11 +168,14 @@ export default function CarCard({
             сами не могут и налезли бы друг на друга — та же ошибка,
             что уже была в верхнем ряду.
 
-            Пометка доступности справа: это свойство предложения, а продвижение
-            — купленное место, и смешивать их в одну кучу слева не
-            стоит. justify-between разводит их по углам, а когда плашка
-            одна, ml-auto у второй прижимает её к своему краю. */}
-        {(car.is_promoted || (car.availability && car.availability !== 'in_stock')) && (
+            Пометки о самой машине (доступность и состояние) — справа,
+            продвижение — слева: первое — свойство предложения, второе
+            — купленное место, и смешивать их в одну кучу не стоит.
+            ml-auto на правой группе прижимает её к своему краю, когда
+            слева пусто. */}
+        {(car.is_promoted ||
+          (car.availability && car.availability !== 'in_stock') ||
+          (car.condition && car.condition !== 'normal')) && (
           <div className="pointer-events-none absolute inset-x-2 bottom-2 flex flex-wrap items-end gap-1.5">
             {car.is_promoted && (
               <Badge tone="promoted" size="xs">
@@ -176,20 +183,45 @@ export default function CarCard({
               </Badge>
             )}
 
-            {/* «В наличии» бейджа не получает: это состояние по
-                умолчанию у подавляющего большинства объявлений, и
-                плашка о нём была бы шумом в каждой карточке. */}
-            {car.availability === 'on_order' && (
-              <Badge tone="info-soft" size="xs" className="ml-auto">
-                {t('availability_on_order')}
-              </Badge>
-            )}
+            {/* ДОСТУПНОСТЬ И СОСТОЯНИЕ — ДВЕ НЕЗАВИСИМЫЕ ОСИ (0138), и
+                бейджи стоят РЯДОМ, а не вместо друг друга: у салона
+                бывает «в пути» + «битый» одновременно, и покупатель
+                обязан увидеть обе пометки. Порядок закреплён —
+                сначала доступность, следом состояние.
 
-            {car.availability === 'in_transit' && (
-              <Badge tone="info-soft" size="xs" className="ml-auto">
-                {t('availability_in_transit')}
-              </Badge>
-            )}
+                ml-auto стоит на группе, а не на каждом бейдже: так
+                пара уезжает вправо целиком и не разрывается, когда
+                слева стоит промо. Раньше ml-auto висел на самом
+                бейдже доступности, и со вторым бейджем пара
+                разъехалась бы по разным углам.
+
+                flex-wrap на родителе оставлен: три плашки в ряд на
+                360px не помещаются, и лишняя переносится на строку
+                ниже, а не вылезает за карточку. */}
+            <div className="ml-auto flex flex-wrap items-end justify-end gap-1.5">
+              {/* «В наличии» бейджа не получает: это состояние по
+                  умолчанию у подавляющего большинства объявлений, и
+                  плашка о нём была бы шумом в каждой карточке. */}
+              {car.availability === 'on_order' && (
+                <Badge tone="info-soft" size="xs">
+                  {t('availability_on_order')}
+                </Badge>
+              )}
+
+              {car.availability === 'in_transit' && (
+                <Badge tone="info-soft" size="xs">
+                  {t('availability_in_transit')}
+                </Badge>
+              )}
+
+              {/* «Обычное авто» бейджа не получает по той же причине.
+                  Компонент сам возвращает null для 'normal'. */}
+              <ConditionBadge
+                locale={locale}
+                condition={car.condition}
+                size="xs"
+              />
+            </div>
           </div>
         )}
       </div>
