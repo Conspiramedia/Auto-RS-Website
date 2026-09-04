@@ -229,6 +229,8 @@ export function buildVehicleJsonLd(params: {
     // Необязательное: карточки, собранные до миграции 0133, поля не
     // имеют, и требовать его значило бы ломать их вызовы.
     engine_volume?: number | null;
+    // Состояние (0138/0139). Необязательное по той же причине.
+    condition?: string | null;
     sale_price: number | null;
     rent_price_daily?: number | null;
     is_for_sale?: boolean;
@@ -242,6 +244,30 @@ export function buildVehicleJsonLd(params: {
   images: string[];
 }) {
   const { car, url, images } = params;
+
+  // ------------------------------------------------------------
+  // СОСТОЯНИЕ ТОВАРА В РАЗМЕТКЕ (0138/0139).
+  // ------------------------------------------------------------
+  // OfferItemCondition — ЗАКРЫТЫЙ список schema.org, и наши шесть
+  // состояний в него не переносятся один к одному. Сопоставление
+  // такое:
+  //
+  //   damaged, parts   → DamagedCondition. Машина повреждена или
+  //     разбирается на детали — ровно то, что этот тип и описывает.
+  //   no_docs, for_export → UsedCondition. САМА МАШИНА ИСПРАВНА:
+  //     ограничение юридическое (нет документов) или
+  //     административное (только вывоз), а itemCondition описывает
+  //     ФИЗИЧЕСКОЕ состояние товара. Пометить их повреждёнными
+  //     значило бы соврать поисковику о предмете сделки.
+  //   normal и всё остальное → UsedCondition, как было.
+  //
+  // NewCondition не используется НИКОГДА: площадка торгует
+  // подержанными машинами, и даже нулевой пробег у нас означает
+  // перепродажу, а не салонную новую машину.
+  const itemCondition =
+    car.condition === 'damaged' || car.condition === 'parts'
+      ? 'https://schema.org/DamagedCondition'
+      : 'https://schema.org/UsedCondition';
 
   // Объявление, выставленное ТОЛЬКО в аренду, описывается как аренда:
   // цена за сутки в Offer с unitCode DAY. Помечать суточную ставку как
@@ -259,7 +285,7 @@ export function buildVehicleJsonLd(params: {
       car.status === 'sold'
         ? 'https://schema.org/SoldOut'
         : 'https://schema.org/InStock',
-    itemCondition: 'https://schema.org/UsedCondition',
+    itemCondition,
     areaServed: car.city,
   };
 
@@ -276,7 +302,9 @@ export function buildVehicleJsonLd(params: {
       unitCode: 'DAY',
     },
     availability: 'https://schema.org/InStock',
-    itemCondition: 'https://schema.org/UsedCondition',
+    // Тот же признак, что у продажи: состояние — свойство машины, а
+    // не сделки, и в аренду битую машину сдают ровно такой же.
+    itemCondition,
     areaServed: car.city,
   };
 

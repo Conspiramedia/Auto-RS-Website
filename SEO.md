@@ -87,6 +87,7 @@
 | index | index | index |
 | JSON-LD | — (снята вместе со списком шагов) | — (снята вместе со списком шагов) |
 | robots.txt | фильтрующие параметры закрыты, включая `engine=` и `damaged=` | то же |
+| JSON-LD карточки | `itemCondition`: `DamagedCondition` у битых и на запчасти, `UsedCondition` у остальных | то же |
 | og:title / og:description | = title / = description | = title / = description |
 
 ### Каталог салонов
