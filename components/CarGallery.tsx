@@ -80,10 +80,14 @@ export default function CarGallery({ images, alt, locale }: Props) {
     const viewLeft = strip.scrollLeft;
     const viewRight = viewLeft + strip.clientWidth;
 
+    // Запас в 16px, а не прежние 8: активная миниатюра увеличена
+    // трансформацией, а offsetLeft/offsetWidth считаются по габариту
+    // ДО неё — без запаса выехавший за свой прямоугольник край круга
+    // с кольцом упирался бы в границу видимой части ленты.
     if (left < viewLeft) {
-      strip.scrollTo({ left: left - 8, behavior: 'smooth' });
+      strip.scrollTo({ left: left - 16, behavior: 'smooth' });
     } else if (right > viewRight) {
-      strip.scrollTo({ left: right - strip.clientWidth + 8, behavior: 'smooth' });
+      strip.scrollTo({ left: right - strip.clientWidth + 16, behavior: 'smooth' });
     }
   }, [active]);
 
@@ -230,26 +234,46 @@ export default function CarGallery({ images, alt, locale }: Props) {
       )}
 
       {images.length > 1 && (
-        /* py-1 и px-1 — место для кольца активной миниатюры: оно
-           выходит за габарит кнопки на 4px, а overflow-x-auto подрезал
-           бы его сверху, снизу и у первой/последней миниатюры.
-           Компенсируем это -mx-1, чтобы лента визуально осталась ровно
-           по краю кадра, а mt-2 сокращаем на съеденный py-1. */
+        /* Запас по краям — место для увеличенной активной миниатюры.
+           Она вырастает на 35% ЧЕРЕЗ transform, то есть выходит за
+           свой габарит примерно на 9px по вертикали и столько же по
+           горизонтали, а overflow-x-auto срезал бы всё, что вышло:
+           сверху, снизу и у первой/последней миниатюры.
+
+           Поэтому у ленты появились px-3 py-3, скомпенсированные
+           -mx-3 по горизонтали, — визуально лента стоит там же, где
+           стояла, а mt сокращён на съеденный вертикальный отступ.
+
+           items-center обязателен: увеличенная кнопка растёт от
+           своего центра, и без выравнивания по центру она уезжала бы
+           вниз относительно соседей. */
         <div
           ref={stripRef}
-          className="no-scrollbar -mx-1 mt-1 flex gap-2 overflow-x-auto px-1 py-1"
+          className="no-scrollbar -mx-3 flex items-center gap-2 overflow-x-auto px-3 py-3"
         >
           {images.map((img, i) => (
-            /* Выделение активной миниатюры — только тень-кольцо и
-               прозрачность. Ни border, ни размеры не меняются: рамка
-               в потоке сдвигала бы соседей и давала бы CLS, а тень
-               рисуется поверх и места не занимает.
+            /* Активный кадр — КРУГ, крупнее соседей, в толстом кольце;
+               соседние остаются прямоугольниками со скруглением 12px.
+               Разница формы читается мгновенно, ещё до того как глаз
+               заметит разницу яркости, — это и делает выделение
+               заметным в ленте из пятнадцати одинаковых кадров.
 
-               ring-2 + ring-offset-2 = box-shadow из двух колец:
-               сначала белый зазор в 2px, за ним синий контур ещё в 2px.
-               Белая полоса отделяет контур от самого фото — тот же
-               приём, что паспарту у картины: без зазора синий ложится
-               встык к пикселям снимка и читается как обводка
+               Ни один размер В ПОТОКЕ не меняется: кнопка всегда
+               h-12 w-12 (sm:h-16 w-16), а увеличение даёт transform
+               scale-[1.35]. Трансформация раскладку не пересчитывает,
+               поэтому соседи стоят на месте, лента не «дышит» при
+               каждом переключении кадра и CLS остаётся нулевым.
+               Увеличенный круг при этом слегка накрывает соседей —
+               ровно как в макете; z-10 держит его поверх них.
+
+               Квадрат в потоке, а не 4:3 как раньше: у прямоугольной
+               кнопки rounded-full дал бы эллипс, а не круг.
+
+               ring-4 + ring-offset-4 = box-shadow из двух колец:
+               сначала зазор в 4px цветом фона, за ним синий контур
+               ещё в 4px. Светлая полоса отделяет контур от снимка —
+               приём паспарту у картины: без зазора синий ложится
+               встык к пикселям фотографии и читается как обводка
                изображения, а не как отметка выбора.
 
                В тёмной теме зазор берёт цвет тёмной подложки
@@ -264,11 +288,11 @@ export default function CarGallery({ images, alt, locale }: Props) {
               onClick={() => setActive(i)}
               aria-current={i === active}
               className={[
-                'relative h-12 w-16 shrink-0 cursor-pointer overflow-hidden rounded-control sm:h-16 sm:w-20',
-                'transition-[opacity,box-shadow] duration-150 ease-out',
+                'relative h-12 w-12 shrink-0 cursor-pointer overflow-hidden sm:h-16 sm:w-16',
+                'transition-[opacity,box-shadow,border-radius,transform] duration-150 ease-out',
                 i === active
-                  ? 'opacity-100 ring-2 ring-brand-primary ring-offset-2 ring-offset-white dark:ring-offset-brand-dark'
-                  : 'opacity-[0.65] hover:opacity-100',
+                  ? 'z-10 scale-[1.35] rounded-full opacity-100 ring-4 ring-brand-primary ring-offset-4 ring-offset-white dark:ring-offset-brand-dark'
+                  : 'rounded-control opacity-[0.65] hover:opacity-100',
               ].join(' ')}
               aria-label={`${alt} — ${i + 1}`}
             >
