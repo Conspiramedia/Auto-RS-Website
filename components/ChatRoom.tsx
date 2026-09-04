@@ -32,9 +32,13 @@
 // правка одной строки в tailwind.config.ts, разметку трогать не нужно.
 // ============================================================
 
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 
 import { markChatRead, sendMessage } from '@/app/my/actions';
+import {
+  isMessageAllowed,
+  splitMessageByContacts,
+} from '@/lib/contactGuard';
 import Alert from './ui/Alert';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
@@ -70,6 +74,17 @@ export default function ChatRoom({
   const [text, setText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  // КОНТАКТЫ И ССЫЛКИ В СООБЩЕНИИ (lib/contactGuard.ts, миграция 0137).
+  //
+  // Считаем через useMemo: правила прогоняются на каждое нажатие
+  // клавиши, а лента при этом перерисовывается ещё и по приходу чужих
+  // сообщений — пересчитывать одно и то же на каждый ререндер незачем.
+  //
+  // Это ВЕРХНИЙ слой, подсказка. Жёсткий барьер — в триггере базы:
+  // сообщения пишутся обычным INSERT под RLS, и запрос можно послать
+  // мимо формы.
+  const blocked = useMemo(() => !isMessageAllowed(text), [text]);
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -133,6 +148,13 @@ export default function ChatRoom({
     const clean = text.trim();
     if (clean === '' || pending) return;
 
+    // Проверка здесь, а не только в canSend: отправку запускает ещё и
+    // Enter, а он до disabled-состояния кнопки не доходит. Без этой
+    // строки сообщение со ссылкой уходило бы на сервер по нажатию
+    // Enter и возвращалось оттуда отказом — лишний круг вместо
+    // мгновенного ответа.
+    if (!isMessageAllowed(clean)) return;
+
     setError(null);
     // Поле очищаем сразу: ждать ответа сервера, держа текст в поле,
     // выглядит как незасчитанное нажатие.
@@ -141,14 +163,22 @@ export default function ChatRoom({
     startTransition(async () => {
       const result = await sendMessage(chatId, clean);
       if (!result.ok) {
-        setError(t('chat_send_failed'));
+        // Отказ по контактам объясняем причиной, а не общим «не
+        // удалось отправить»: до этой ветки доходят те, кто обошёл
+        // проверку при вводе, и им тем более нужно объяснение.
+        setError(
+          result.error === 'contacts_in_message'
+            ? t('chat_err_contacts')
+            : t('chat_send_failed'),
+        );
         // Возвращаем текст, чтобы не заставлять набирать заново.
         setText(clean);
       }
     });
   }
 
-  const canSend = text.trim() !== '' && !pending;
+  // Кнопка отправки гаснет, пока в тексте есть ссылка или контакт.
+  const canSend = text.trim() !== '' && !pending && !blocked;
 
   return (
     <>
@@ -208,11 +238,49 @@ export default function ChatRoom({
                   словом кнопка съедала треть узкого экрана. Круглая
                   кнопка со стрелкой занимает 40px, и ломать строку
                   больше незачем — поле остаётся во всю ширину. */}
+              {/* ПРЕДУПРЕЖДЕНИЕ О КОНТАКТАХ.
+                  Стоит НАД полем: под ним живёт клавиатура телефона, и
+                  сообщение об ошибке там не увидят. Появляется по мере
+                  набора — раньше, чем человек потянется к кнопке.
+
+                  Подсветка отдельным блоком, а не поверх input: input
+                  не умеет красить куски своего текста, а накладывать
+                  позиционированный слой — приём, который ломается на
+                  прокрутке длинной строки. */}
+              {blocked && (
+                <div id="chat-contacts" className="mb-2">
+                  <Alert tone="error">{t('chat_err_contacts')}</Alert>
+                  <p className="mt-2 text-caption text-neutral-60">
+                    {t('chat_contacts_found')}
+                  </p>
+                  <p className="mt-1 break-words text-caption">
+                    {splitMessageByContacts(text).map((chunk, i) =>
+                      chunk.match ? (
+                        <mark
+                          key={i}
+                          className="rounded-control bg-status-error px-0.5 text-brand-red"
+                        >
+                          {chunk.text}
+                        </mark>
+                      ) : (
+                        // Чистые куски приглушены: внимание должно
+                        // уходить на подсвеченное.
+                        <span key={i} className="text-neutral-50">
+                          {chunk.text}
+                        </span>
+                      ),
+                    )}
+                  </p>
+                </div>
+              )}
+
               <div className="flex items-center gap-2">
                 <input
                   type="text"
                   value={text}
                   onChange={(e) => setText(e.target.value)}
+                  aria-invalid={blocked || undefined}
+                  aria-describedby={blocked ? 'chat-contacts' : undefined}
                   // Enter отправляет: в переписке это ожидаемое
                   // поведение, а тянуться к кнопке после каждой реплики
                   // утомительно.

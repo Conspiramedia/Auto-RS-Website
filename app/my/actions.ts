@@ -23,6 +23,7 @@ import { redirect } from 'next/navigation';
 import type { Locale } from '@/lib/i18n';
 import { localeHref } from '@/lib/i18n';
 import { getServerClient } from '@/lib/supabaseServer';
+import { isMessageAllowed } from '@/lib/contactGuard';
 
 export async function signOut(locale: Locale): Promise<void> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -248,6 +249,19 @@ export async function sendMessage(
   const clean = text.trim();
   if (clean === '') return { ok: false };
 
+  // ССЫЛКИ И КОНТАКТЫ (миграция 0137). Проверка повторяет ту, что
+  // делает форма, и ту, что делает триггер в базе. Средний слой нужен,
+  // чтобы отказ пришёл понятным кодом, а не текстом исключения
+  // Postgres: Server Action видит ошибку INSERT строкой, и разбирать
+  // её здесь пришлось бы всё равно.
+  //
+  // Последнее слово всё равно за базой: этот код выполняется на
+  // сервере, но таблица messages пишется под RLS, и запрос можно
+  // послать мимо Server Action вовсе.
+  if (!isMessageAllowed(clean)) {
+    return { ok: false, error: 'contacts_in_message' };
+  }
+
   const supabase = await getServerClient();
 
   const { data: auth } = await supabase.auth.getUser();
@@ -260,7 +274,15 @@ export async function sendMessage(
     text: clean,
   });
 
-  if (error) return { ok: false, error: error.message };
+  if (error) {
+    // Отказ триггера (0137) доносим тем же кодом, что и проверка выше:
+    // клиенту нужен один признак причины, а не два разных написания
+    // одного и того же.
+    if (error.hint === 'contacts_in_message') {
+      return { ok: false, error: 'contacts_in_message' };
+    }
+    return { ok: false, error: error.message };
+  }
 
   // Список диалогов: изменились превью и порядок сортировки.
   revalidatePath('/my/messages');

@@ -478,6 +478,63 @@ export function splitByContacts(text: string): DescriptionChunk[] {
 }
 
 // ------------------------------------------------------------
+// СООБЩЕНИЯ В ЧАТЕ.
+// ------------------------------------------------------------
+// Те же правила, что у описания, но БЕЗ длины и без деления причин:
+// в переписке запрещено всё контактное разом — ссылки, телефоны,
+// почта, никнеймы.
+//
+// ЗАЧЕМ ЗАПРЕЩАТЬ В ЧАТЕ, ЕСЛИ ТЕЛЕФОН ПРОДАВЦА И ТАК ВИДЕН В
+// ОБЪЯВЛЕНИИ. Правило защищает не от обмена контактами как таковыми, а
+// от УВОДА переписки из чата — это типовая схема мошенничества:
+// «продолжим в вайбере», дальше ссылка на поддельную страницу оплаты
+// или доставки, и никаких следов на площадке. Честной сделке запрет не
+// мешает: номер продавца показан в карточке по кнопке «Позвонить», и
+// покупателю не нужно просить его в переписке.
+//
+// РАЗМЕТКУ В ЧАТЕ НЕ ПРОВЕРЯЕМ. Сообщения выводятся как текст, без
+// dangerouslySetInnerHTML, поэтому теги в них безобидны — а вот
+// разговор «поставь <b> для жирного» вполне возможен. Правило, которое
+// не защищает, но мешает, заводить незачем.
+export function findMessageContacts(text: string): ContactMatch[] {
+  return findContacts(text).filter((m) => m.kind !== 'html');
+}
+
+/**
+ * Можно ли отправить сообщение. false — в тексте есть контакты или
+ * ссылка.
+ */
+export function isMessageAllowed(text: string): boolean {
+  return findMessageContacts(text).length === 0;
+}
+
+/**
+ * Разбивка сообщения на куски для подсветки — как splitByContacts, но
+ * по правилам чата (без разметки).
+ */
+export function splitMessageByContacts(text: string): DescriptionChunk[] {
+  const matches = findMessageContacts(text);
+  if (matches.length === 0) return [{ text, match: null }];
+
+  const chunks: DescriptionChunk[] = [];
+  let cursor = 0;
+
+  for (const m of matches) {
+    if (m.start > cursor) {
+      chunks.push({ text: text.slice(cursor, m.start), match: null });
+    }
+    chunks.push({ text: text.slice(m.start, m.end), match: m });
+    cursor = m.end;
+  }
+
+  if (cursor < text.length) {
+    chunks.push({ text: text.slice(cursor), match: null });
+  }
+
+  return chunks;
+}
+
+// ------------------------------------------------------------
 // ЧЕГО ЭТОТ МОДУЛЬ НЕ ЛОВИТ — И ЭТО ОСОЗНАННО.
 // ------------------------------------------------------------
 //   • номер словами («ноль шесть ноль…») и заведомо изощрённые обходы.

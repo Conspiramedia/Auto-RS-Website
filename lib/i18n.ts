@@ -823,6 +823,14 @@ export const dict = {
     chat_send: 'Pošalji',
     chat_sending: 'Šaljemo…',
     chat_send_failed: 'Slanje nije uspelo',
+    // Zabrana linkova i kontakata u porukama (migracija 0137).
+    // Poruka objašnjava RAZLOG: bez toga zabrana izgleda kao hir
+    // platforme, a radi se o zaštiti od prevare — odvlačenje
+    // prepiske van ćaskanja je tipičan prvi korak.
+    chat_err_contacts:
+      'Iz bezbednosnih razloga u porukama nije dozvoljeno slati linkove i kontakt podatke. Sva komunikacija ostaje u RS Auto ćaskanju.',
+    // Naslov iznad istaknutih mesta u tekstu poruke.
+    chat_contacts_found: 'Pronađeno u poruci:',
     chat_blocked: 'Sagovornik je blokiran. Slanje poruka nije moguće.',
     chat_no_messages: 'Još nema poruka. Napišite prvu.',
     chat_about: 'Oglas',
@@ -2140,6 +2148,14 @@ export const dict = {
     chat_send: 'Отправить',
     chat_sending: 'Отправляем…',
     chat_send_failed: 'Не удалось отправить',
+    // Запрет ссылок и контактов в сообщениях (миграция 0137).
+    // Сообщение объясняет ПРИЧИНУ: без неё запрет выглядит прихотью
+    // площадки, а речь о защите от мошенничества — увод переписки
+    // из чата типичный первый шаг.
+    chat_err_contacts:
+      'В сообщениях нельзя отправлять ссылки и контактные данные — это защита от мошенничества. Вся переписка остаётся в чате RS Auto.',
+    // Заголовок над подсвеченными местами в тексте сообщения.
+    chat_contacts_found: 'Найдено в сообщении:',
     chat_blocked: 'Собеседник заблокирован. Отправка сообщений недоступна.',
     chat_no_messages: 'Сообщений пока нет. Напишите первое.',
     chat_about: 'Объявление',
