@@ -61,20 +61,34 @@ type Props = {
   hasUnread: boolean;
 };
 
-// Ключи быстрых вопросов. Списком, а не шестью обращениями подряд в
-// разметке: добавить седьмой вопрос — дописать ключ в словарь и сюда,
-// а не копировать очередную кнопку.
+// Быстрые вопросы: пара «короткая подпись на чипе → полный текст в
+// поле». Списком, а не шестью обращениями подряд в разметке: добавить
+// седьмой вопрос — дописать пару ключей в словарь и строку сюда, а не
+// копировать очередную кнопку.
 //
-// `as const` обязателен: без него тип элемента расширился бы до
-// string, и t() перестал бы принимать его как ключ словаря — ошибку
-// в имени ключа поймает компилятор, а не пустая кнопка в чате.
-const QUICK_QUESTION_KEYS = [
-  'quick_q1',
-  'quick_q2',
-  'quick_q3',
-  'quick_q4',
-  'quick_q5',
-  'quick_q6',
+// ЗАЧЕМ ДВА ТЕКСТА НА ОДИН ВОПРОС. Все шесть полных вопросов
+// начинаются с одинакового «Здравствуйте!»: в сообщении продавцу
+// приветствие уместно, а на чипе — это ~40% ширины, потраченные на
+// то, что не отличает один чип от другого.
+//
+// Замер в браузере (13px, системный шрифт), ширина всего ряда и
+// сколько чипов видно целиком:
+//   полные тексты  — 1723px: 360→1, 768→2, 1280→4 из шести;
+//   короткие (RU)  —  750px: 360→2, 768→5, 1280→6;
+//   короткие (SR)  —  687px: 360→2, 768→6, 1280→6.
+// На десктопе ряд перестал прокручиваться вовсе, на телефоне
+// сократился вдвое.
+//
+// `as const` обязателен: без него тип ключей расширился бы до string,
+// и t() перестал бы принимать их как ключи словаря — опечатку поймает
+// компилятор, а не пустая кнопка в чате.
+const QUICK_QUESTIONS = [
+  { label: 'quick_q1_label', full: 'quick_q1' },
+  { label: 'quick_q2_label', full: 'quick_q2' },
+  { label: 'quick_q3_label', full: 'quick_q3' },
+  { label: 'quick_q4_label', full: 'quick_q4' },
+  { label: 'quick_q5_label', full: 'quick_q5' },
+  { label: 'quick_q6_label', full: 'quick_q6' },
 ] as const;
 
 export default function ChatRoom({
@@ -324,29 +338,54 @@ export default function ChatRoom({
 
                   no-scrollbar — та же утилита, что у ленты сортировки
                   (SortSelect): полоса прокрутки над клавиатурой лишний
-                  шум, а обрезанный на краю чип и так показывает, что
-                  список продолжается. */}
+                  шум.
+
+                  Вместо неё — градиент у правого края (второй div,
+                  absolute). Он и есть признак прокрутки: без него
+                  обрезанный чип читается как поломанная вёрстка, а не
+                  как «здесь есть продолжение». pointer-events-none
+                  обязателен — иначе полоска перехватывала бы нажатие
+                  на крайний чип. */}
               {showQuickQuestions && (
-                <div className="no-scrollbar -mx-3 mb-2 overflow-x-auto px-3">
-                  <div className="flex w-max gap-2">
-                    {QUICK_QUESTION_KEYS.map((key) => (
-                      <button
-                        key={key}
-                        type="button"
-                        // Вставляем текст в поле и уводим фокус туда:
-                        // вопрос — заготовка, а не готовая реплика, и
-                        // покупатель должен видеть, что его можно
-                        // дополнить перед отправкой.
-                        onClick={() => {
-                          setText(t(key));
-                          inputRef.current?.focus();
-                        }}
-                        className="shrink-0 rounded-pill bg-chat-input px-3 py-1.5 text-caption text-neutral-70 transition-colors duration-fast ease-out hover:bg-surface-muted"
-                      >
-                        {t(key)}
-                      </button>
-                    ))}
+                <div className="relative">
+                  <div className="no-scrollbar -mx-3 mb-2 overflow-x-auto px-3">
+                    <div className="flex w-max gap-2">
+                      {QUICK_QUESTIONS.map(({ label, full }) => (
+                        <button
+                          key={label}
+                          type="button"
+                          // Вставляем ПОЛНЫЙ текст с приветствием и
+                          // уводим фокус в поле: вопрос — заготовка, а
+                          // не готовая реплика, и покупатель должен
+                          // видеть, что его можно дополнить перед
+                          // отправкой.
+                          onClick={() => {
+                            setText(t(full));
+                            inputRef.current?.focus();
+                          }}
+                          // title и aria-label — полный текст: на чипе
+                          // стоит сокращение, и обещание кнопки должно
+                          // быть понятно и на наведении, и скринридеру.
+                          title={t(full)}
+                          aria-label={t(full)}
+                          className="shrink-0 rounded-pill bg-chat-input px-3 py-1.5 text-caption text-neutral-70 transition-colors duration-fast ease-out hover:bg-surface-muted"
+                        >
+                          {t(label)}
+                        </button>
+                      ))}
+                    </div>
                   </div>
+
+                  {/* Затухание у правого края — признак того, что ряд
+                      прокручивается. Ширина 6 достаточно узкая, чтобы
+                      не съедать крайний чип, и достаточно заметная,
+                      чтобы обрез читался как продолжение списка.
+                      Градиент от прозрачного к белому — цвету панели
+                      ввода, на которой лежит ряд. */}
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute bottom-2 right-0 top-0 w-6 bg-gradient-to-l from-white to-transparent"
+                  />
                 </div>
               )}
 

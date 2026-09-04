@@ -847,6 +847,19 @@ export const dict = {
     quick_q4: 'Dobar dan! Koliko je vlasnika imao auto?',
     quick_q5: 'Dobar dan! Da li su dokumenti spremni za kupovinu?',
     quick_q6: 'Dobar dan! Da li je moguća dostava u drugi grad?',
+    // KRATKI NATPISI NA ČIPOVIMA.
+    // U polje ide pun tekst iznad, sa pozdravom; na samom čipu stoji
+    // samo suština. Razlog: svih šest punih pitanja počinje istim
+    // «Dobar dan!», koji zauzima oko 40% širine čipa i ne razlikuje
+    // ih ni po čemu — na telefonu je zbog toga i drugi čip već bio
+    // odsečen. Po merenju u pregledaču red se skratio sa 1723px na
+    // 687px: na 1280 sada staje ceo i uopšte se ne pomera.
+    quick_q1_label: 'Još u prodaji?',
+    quick_q2_label: 'Kada da pogledam?',
+    quick_q3_label: 'Dogovor oko cene?',
+    quick_q4_label: 'Broj vlasnika?',
+    quick_q5_label: 'Dokumenti?',
+    quick_q6_label: 'Dostava?',
     chat_blocked: 'Sagovornik je blokiran. Slanje poruka nije moguće.',
     chat_no_messages: 'Još nema poruka. Napišite prvu.',
     chat_about: 'Oglas',
@@ -2188,6 +2201,20 @@ export const dict = {
     quick_q4: 'Здравствуйте! Сколько владельцев было у авто?',
     quick_q5: 'Здравствуйте! Документы готовы к сделке?',
     quick_q6: 'Здравствуйте! Возможна доставка в другой город?',
+    // КОРОТКИЕ ПОДПИСИ НА ЧИПАХ.
+    // В поле ввода уходит полный текст выше, с приветствием; на самом
+    // чипе — только суть. Причина: все шесть полных вопросов
+    // начинаются с одинакового «Здравствуйте!», который занимает
+    // около 40% ширины чипа и ничем их не различает — из-за этого на
+    // телефоне обрезался уже второй чип. По замеру в браузере ряд
+    // сократился с 1723px до 750px: на 1280 он теперь помещается
+    // целиком и не прокручивается вовсе.
+    quick_q1_label: 'Ещё продаётся?',
+    quick_q2_label: 'Когда посмотреть?',
+    quick_q3_label: 'Возможен торг?',
+    quick_q4_label: 'Сколько владельцев?',
+    quick_q5_label: 'Документы?',
+    quick_q6_label: 'Доставка?',
     chat_blocked: 'Собеседник заблокирован. Отправка сообщений недоступна.',
     chat_no_messages: 'Сообщений пока нет. Напишите первое.',
     chat_about: 'Объявление',
