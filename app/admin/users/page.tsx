@@ -36,6 +36,33 @@ const DATE = new Intl.DateTimeFormat('ru-RU', {
   year: '2-digit',
 });
 
+// Время отдельным форматтером, а не одной строкой с датой: колонка
+// узкая (104px), и «4 сент. 26 г., 11:24» в неё не помещается — дата
+// переносилась бы по словам как попало. Поэтому время встаёт ВТОРОЙ
+// СТРОКОЙ под датой и приглушённым цветом: сначала читается день,
+// время уточняет его при необходимости.
+//
+// ГОД ОСТАЁТСЯ, в отличие от очереди модерации (app/admin/queue), где
+// им пожертвовали ради времени в одной строке. Здесь он нужен:
+// регистрация бывает и прошлогодней, а «4 сент.» без года в списке
+// пользователей читается как «в этом году».
+const TIME = new Intl.DateTimeFormat('ru-RU', {
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+// Дата над временем. Общая ячейка для обеих колонок — так формат
+// правится в одном месте, а не в двух.
+function DateTimeCell({ value }: { value: string }) {
+  const d = new Date(value);
+  return (
+    <span className="block leading-tight">
+      {DATE.format(d)}
+      <span className="block text-micro text-neutral-40">{TIME.format(d)}</span>
+    </span>
+  );
+}
+
 const TYPES = [
   { value: 'admin', label: 'Администраторы' },
   { value: 'dealer', label: 'Автосалоны' },
@@ -125,7 +152,7 @@ const columns: Column<AdminUserRow>[] = [
     width: '104px',
     align: 'right',
     hideBelow: 'lg',
-    render: (row) => DATE.format(new Date(row.created_at)),
+    render: (row) => <DateTimeCell value={row.created_at} />,
   },
   {
     key: 'last_sign_in_at',
@@ -135,7 +162,7 @@ const columns: Column<AdminUserRow>[] = [
     hideBelow: 'lg',
     render: (row) =>
       row.last_sign_in_at ? (
-        DATE.format(new Date(row.last_sign_in_at))
+        <DateTimeCell value={row.last_sign_in_at} />
       ) : (
         <span className="text-neutral-30">—</span>
       ),
