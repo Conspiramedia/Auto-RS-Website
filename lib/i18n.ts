@@ -831,6 +831,22 @@ export const dict = {
       'Iz bezbednosnih razloga u porukama nije dozvoljeno slati linkove i kontakt podatke. Sva komunikacija ostaje u RS Auto ćaskanju.',
     // Naslov iznad istaknutih mesta u tekstu poruke.
     chat_contacts_found: 'Pronađeno u poruci:',
+    // ------------------------------------------------------------
+    // Brza pitanja: čipovi iznad polja za unos.
+    // ------------------------------------------------------------
+    // Vide se samo dok kupac nije napisao nijednu poruku: posle prve
+    // reklame prepiska je već svoja, i gotovi tekstovi samo smetaju.
+    // Dodir NE šalje poruku — tekst se ubacuje u polje da kupac može
+    // da ga dopuni pre slanja.
+    //
+    // Svako pitanje počinje pozdravom: to je prva poruka prodavcu, i
+    // suvo pitanje bez pozdrava zvuči grubo.
+    quick_q1: 'Dobar dan! Da li je automobil još u prodaji?',
+    quick_q2: 'Dobar dan! Kada mogu da pogledam auto?',
+    quick_q3: 'Dobar dan! Da li je moguć dogovor oko cene?',
+    quick_q4: 'Dobar dan! Koliko je vlasnika imao auto?',
+    quick_q5: 'Dobar dan! Da li su dokumenti spremni za kupovinu?',
+    quick_q6: 'Dobar dan! Da li je moguća dostava u drugi grad?',
     chat_blocked: 'Sagovornik je blokiran. Slanje poruka nije moguće.',
     chat_no_messages: 'Još nema poruka. Napišite prvu.',
     chat_about: 'Oglas',
@@ -2156,6 +2172,22 @@ export const dict = {
       'В сообщениях нельзя отправлять ссылки и контактные данные — это защита от мошенничества. Вся переписка остаётся в чате RS Auto.',
     // Заголовок над подсвеченными местами в тексте сообщения.
     chat_contacts_found: 'Найдено в сообщении:',
+    // ------------------------------------------------------------
+    // Быстрые вопросы: чипы над полем ввода.
+    // ------------------------------------------------------------
+    // Видны, только пока покупатель не написал ни одного сообщения:
+    // после первой реплики переписка уже своя, и заготовки мешают.
+    // Нажатие НЕ отправляет — текст попадает в поле, чтобы покупатель
+    // мог дополнить его перед отправкой.
+    //
+    // Каждый вопрос начинается с приветствия: это первое сообщение
+    // продавцу, и сухой вопрос без «здравствуйте» звучит грубо.
+    quick_q1: 'Здравствуйте! Автомобиль ещё продаётся?',
+    quick_q2: 'Здравствуйте! Когда можно посмотреть?',
+    quick_q3: 'Здравствуйте! Возможен торг?',
+    quick_q4: 'Здравствуйте! Сколько владельцев было у авто?',
+    quick_q5: 'Здравствуйте! Документы готовы к сделке?',
+    quick_q6: 'Здравствуйте! Возможна доставка в другой город?',
     chat_blocked: 'Собеседник заблокирован. Отправка сообщений недоступна.',
     chat_no_messages: 'Сообщений пока нет. Напишите первое.',
     chat_about: 'Объявление',

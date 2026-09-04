@@ -61,6 +61,22 @@ type Props = {
   hasUnread: boolean;
 };
 
+// Ключи быстрых вопросов. Списком, а не шестью обращениями подряд в
+// разметке: добавить седьмой вопрос — дописать ключ в словарь и сюда,
+// а не копировать очередную кнопку.
+//
+// `as const` обязателен: без него тип элемента расширился бы до
+// string, и t() перестал бы принимать его как ключ словаря — ошибку
+// в имени ключа поймает компилятор, а не пустая кнопка в чате.
+const QUICK_QUESTION_KEYS = [
+  'quick_q1',
+  'quick_q2',
+  'quick_q3',
+  'quick_q4',
+  'quick_q5',
+  'quick_q6',
+] as const;
+
 export default function ChatRoom({
   locale,
   chatId,
@@ -86,7 +102,27 @@ export default function ChatRoom({
   // мимо формы.
   const blocked = useMemo(() => !isMessageAllowed(text), [text]);
 
+  // БЫСТРЫЕ ВОПРОСЫ: заготовки для первого сообщения продавцу.
+  //
+  // Условие показа — «покупатель ещё ничего не написал», а не «лента
+  // пуста»: продавец мог написать первым (например, ответить на другой
+  // чат и перейти сюда), и подсовывать покупателю «Здравствуйте!
+  // Автомобиль ещё продаётся?» в уже начатом разговоре незачем.
+  //
+  // Считается по messages, а не приходит с сервера: список обновляется
+  // realtime-подпиской, поэтому чипы гаснут сразу после отправки — без
+  // отдельного состояния, которое пришлось бы гасить вручную и держать
+  // в согласии с лентой.
+  const showQuickQuestions = useMemo(
+    () => !messages.some((m) => m.sender_id === currentUserId),
+    [messages, currentUserId],
+  );
+
   const bottomRef = useRef<HTMLDivElement>(null);
+  // Поле ввода: после нажатия на быстрый вопрос фокус уходит туда,
+  // чтобы курсор стоял в конце вставленного текста и его можно было
+  // сразу дополнить.
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Подписка на новые сообщения диалога.
   useEffect(() => {
@@ -274,8 +310,49 @@ export default function ChatRoom({
                 </div>
               )}
 
+              {/* БЫСТРЫЕ ВОПРОСЫ.
+                  Одна строка с горизонтальной прокруткой на любой
+                  ширине: перенос в несколько рядов на телефоне съел бы
+                  половину экрана над клавиатурой, а на десктопе
+                  шестёрка чипов и так помещается в ряд — отдельная
+                  раскладка ради этого не нужна.
+
+                  -mx-3 + px-3: полоса прокрутки идёт от края до края
+                  карточки, но первый и последний чип не прилипают к
+                  краю. Без этого обрезанный чип у границы выглядит как
+                  вёрстка, а не как «прокрути дальше».
+
+                  no-scrollbar — та же утилита, что у ленты сортировки
+                  (SortSelect): полоса прокрутки над клавиатурой лишний
+                  шум, а обрезанный на краю чип и так показывает, что
+                  список продолжается. */}
+              {showQuickQuestions && (
+                <div className="no-scrollbar -mx-3 mb-2 overflow-x-auto px-3">
+                  <div className="flex w-max gap-2">
+                    {QUICK_QUESTION_KEYS.map((key) => (
+                      <button
+                        key={key}
+                        type="button"
+                        // Вставляем текст в поле и уводим фокус туда:
+                        // вопрос — заготовка, а не готовая реплика, и
+                        // покупатель должен видеть, что его можно
+                        // дополнить перед отправкой.
+                        onClick={() => {
+                          setText(t(key));
+                          inputRef.current?.focus();
+                        }}
+                        className="shrink-0 rounded-pill bg-chat-input px-3 py-1.5 text-caption text-neutral-70 transition-colors duration-fast ease-out hover:bg-surface-muted"
+                      >
+                        {t(key)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center gap-2">
                 <input
+                  ref={inputRef}
                   type="text"
                   value={text}
                   onChange={(e) => setText(e.target.value)}
