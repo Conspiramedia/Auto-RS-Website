@@ -851,17 +851,19 @@ export const dict = {
     // U polje ide pun tekst iznad, sa pozdravom; na samom čipu stoji
     // samo suština. Razlog: svih šest punih pitanja počinje istim
     // «Dobar dan!», koji zauzima oko 40% širine čipa i ne razlikuje
-    // ih ni po čemu.
+    // ih ni po čemu: na dugmetu je važno samo pitanje, a pozdrav treba
+    // u poruci prodavcu.
     //
+    // Natpis je zato tačno pun tekst MINUS «Dobar dan!», reč u reč.
     // Čipovi stoje u PRAZNOJ listi i prelamaju se u više redova, pa
-    // širina više nije ograničenje — nema horizontalnog pomeranja ni na
+    // širina nije ograničenje — nema horizontalnog pomeranja ni na
     // 360px.
-    quick_q1_label: 'Još u prodaji?',
-    quick_q2_label: 'Kada da pogledam?',
-    quick_q3_label: 'Dogovor oko cene?',
-    quick_q4_label: 'Broj vlasnika?',
-    quick_q5_label: 'Dokumenti?',
-    quick_q6_label: 'Dostava?',
+    quick_q1_label: 'Da li je automobil još u prodaji?',
+    quick_q2_label: 'Kada mogu da pogledam auto?',
+    quick_q3_label: 'Da li je moguć dogovor oko cene?',
+    quick_q4_label: 'Koliko je vlasnika imao auto?',
+    quick_q5_label: 'Da li su dokumenti spremni za kupovinu?',
+    quick_q6_label: 'Da li je moguća dostava u drugi grad?',
     chat_blocked: 'Sagovornik je blokiran. Slanje poruka nije moguće.',
     chat_no_messages: 'Još nema poruka. Napišite prvu.',
     // Potpis ispod brzih pitanja u praznom ćaskanju. Poziv na akciju,
@@ -2211,19 +2213,22 @@ export const dict = {
     // В поле ввода уходит полный текст выше, с приветствием; на самом
     // чипе — только суть. Причина: все шесть полных вопросов
     // начинаются с одинакового «Здравствуйте!», который занимает
-    // около 40% ширины чипа и ничем их не различает.
+    // около 40% ширины чипа и ничем их не различает: на кнопке важен
+    // сам вопрос, а приветствие нужно в сообщении продавцу.
     //
-    // Чипы живут в ПУСТОЙ ЛЕНТЕ и переносятся по строкам, поэтому в
-    // ширину они больше не упираются: замер показал одинаковое число
-    // рядов (3 на 360px, 2 на 768 и 1280) и для этих подписей, и для
-    // более коротких. Раз длина ничего не стоит — оставлены более
-    // внятные формулировки.
-    quick_q1_label: 'Ещё продаётся?',
-    quick_q2_label: 'Когда посмотреть?',
+    // Поэтому подпись — это ровно полный вопрос МИНУС «Здравствуйте!»,
+    // слово в слово. Расхождение здесь читалось бы как подмена: человек
+    // нажал одно, в поле появилось другое.
+    //
+    // В ширину они не упираются: чипы живут в ПУСТОЙ ЛЕНТЕ и
+    // переносятся по строкам, горизонтальной прокрутки нет ни на одном
+    // брейкпоинте.
+    quick_q1_label: 'Автомобиль ещё продаётся?',
+    quick_q2_label: 'Когда можно посмотреть?',
     quick_q3_label: 'Возможен торг?',
-    quick_q4_label: 'Сколько владельцев?',
-    quick_q5_label: 'Документы?',
-    quick_q6_label: 'Доставка?',
+    quick_q4_label: 'Сколько владельцев было у авто?',
+    quick_q5_label: 'Документы готовы к сделке?',
+    quick_q6_label: 'Возможна доставка в другой город?',
     chat_blocked: 'Собеседник заблокирован. Отправка сообщений недоступна.',
     chat_no_messages: 'Сообщений пока нет. Напишите первое.',
     // Подпись под быстрыми вопросами в пустом чате. Призыв к действию,
