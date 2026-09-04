@@ -94,7 +94,14 @@ export default async function CatalogPageView({
       parsed.priceTo ||
       parsed.bodyType ||
       parsed.transmission ||
-      parsed.fuel,
+      parsed.fuel ||
+      // Объём двигателя (0133) и показ битых (0138) сужают выдачу так
+      // же, как кузов или коробка: человек, попросивший показать
+      // доноров на разборку, ищет конкретное, и плитка салона посреди
+      // его результатов — помеха. Пропуск этих двух полей означал бы,
+      // что плитка выныривает ровно там, где она мешает.
+      parsed.engineVolume ||
+      parsed.showDamaged,
   );
 
   const showDealer =

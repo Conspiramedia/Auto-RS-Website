@@ -528,12 +528,20 @@ export function buildCarFallbackDescription(params: {
 // «проходит»: битая машина битой и остаётся.
 //
 // 'normal' и неизвестное значение возвращают описание нетронутым.
+//
+// РЕЗУЛЬТАТ ОБРЕЗАЕТСЯ ПОВТОРНО, и это обязательно. Описание продавца
+// уже прошло truncateDescription и заняло ровно 160 символов — предел
+// сниппета Google. Приписав к нему «Только на экспорт », мы получили
+// бы 178, и поисковик срезал бы ХВОСТ: пометка осталась бы, а конец
+// фразы пропал. Обрезка после склейки отдаёт те же 160 с состоянием
+// в начале — то есть за пометку платит хвост описания, а не длина
+// сниппета.
 export function prefixDescriptionWithCondition(
   description: string,
   conditionLabel: string | null,
 ): string {
   if (!conditionLabel) return description;
-  return `${conditionLabel} ${description}`;
+  return truncateDescription(`${conditionLabel} ${description}`);
 }
 
 // ------------------------------------------------------------

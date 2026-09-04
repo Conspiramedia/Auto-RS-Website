@@ -86,6 +86,7 @@
 | hreflang | `sr-Latn` → `/sell`, `ru` → `/ru/sell`, `x-default` → `/sell` | то же |
 | index | index | index |
 | JSON-LD | — (снята вместе со списком шагов) | — (снята вместе со списком шагов) |
+| robots.txt | фильтрующие параметры закрыты, включая `engine=` и `damaged=` | то же |
 | og:title / og:description | = title / = description | = title / = description |
 
 ### Каталог салонов
