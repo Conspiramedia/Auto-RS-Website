@@ -135,9 +135,13 @@ const DICT = {
     approved_hint:
       'Kupci vam mogu pisati direktno sa oglasa. Odgovorite brzo — prvi odgovor najviše utiče na prodaju.',
 
-    // Отклонено.
-    rejected_subject: 'Oglas nije odobren',
-    rejected_title: 'Oglas nije odobren',
+    // Отклонено. «Odbijen», а не «nije odobren»: тем же корнем статус
+    // назван в кабинете (my_status_rejected — «Odbijeno»), и человек,
+    // перешедший из письма по кнопке, обязан увидеть в списке то же
+    // слово. Род мужской по подлежащему «oglas»; в списке кабинета
+    // стоит средний, потому что там подпись безличная.
+    rejected_subject: 'Oglas je odbijen',
+    rejected_title: 'Oglas je odbijen',
     rejected_lead: 'Nažalost, vaš oglas nije prošao proveru.',
     rejected_reason_label: 'Razlog',
     rejected_no_reason: 'Razlog nije naveden.',
