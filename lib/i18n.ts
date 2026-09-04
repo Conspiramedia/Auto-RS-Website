@@ -853,9 +853,9 @@ export const dict = {
     // «Dobar dan!», koji zauzima oko 40% širine čipa i ne razlikuje
     // ih ni po čemu.
     //
-    // Granica nije širina ekrana nego max-w-chat = 720px: red raspolaže
-    // sa 696px na svakom monitoru. Srpski natpisi staju u 687px i nisu
-    // morali da se dodatno skraćuju — ruski jesu (vidi komentar tamo).
+    // Čipovi stoje u PRAZNOJ listi i prelamaju se u više redova, pa
+    // širina više nije ograničenje — nema horizontalnog pomeranja ni na
+    // 360px.
     quick_q1_label: 'Još u prodaji?',
     quick_q2_label: 'Kada da pogledam?',
     quick_q3_label: 'Dogovor oko cene?',
@@ -864,6 +864,10 @@ export const dict = {
     quick_q6_label: 'Dostava?',
     chat_blocked: 'Sagovornik je blokiran. Slanje poruka nije moguće.',
     chat_no_messages: 'Još nema poruka. Napišite prvu.',
+    // Potpis ispod brzih pitanja u praznom ćaskanju. Poziv na akciju,
+    // a ne konstatacija: «Još nema poruka» samo opisuje prazan ekran,
+    // dok ovo govori šta da se uradi.
+    chat_start_hint: 'Započnite razgovor sa prodavcem',
     chat_about: 'Oglas',
     chat_today: 'Danas',
     chat_yesterday: 'Juče',
@@ -2209,22 +2213,23 @@ export const dict = {
     // начинаются с одинакового «Здравствуйте!», который занимает
     // около 40% ширины чипа и ничем их не различает.
     //
-    // ГРАНИЦА ЗДЕСЬ НЕ ШИРИНА ЭКРАНА, А max-w-chat = 720px: лента и
-    // панель ввода ограничены ею на любом мониторе, и за вычетом
-    // отступов панели ряду достаётся 696px. Поэтому «влезает на
-    // десктоп» означает «ряд короче 696px», а не «короче 1280px».
-    //
-    // Замер в браузере (13px, системный шрифт): полные тексты — 1723px,
-    // первый вариант сокращений — 750px (не влезал, обрезался шестой
-    // чип), нынешний — 671px, помещается целиком с запасом.
-    quick_q1_label: 'Продаётся?',
+    // Чипы живут в ПУСТОЙ ЛЕНТЕ и переносятся по строкам, поэтому в
+    // ширину они больше не упираются: замер показал одинаковое число
+    // рядов (3 на 360px, 2 на 768 и 1280) и для этих подписей, и для
+    // более коротких. Раз длина ничего не стоит — оставлены более
+    // внятные формулировки.
+    quick_q1_label: 'Ещё продаётся?',
     quick_q2_label: 'Когда посмотреть?',
     quick_q3_label: 'Возможен торг?',
-    quick_q4_label: 'Владельцев?',
+    quick_q4_label: 'Сколько владельцев?',
     quick_q5_label: 'Документы?',
     quick_q6_label: 'Доставка?',
     chat_blocked: 'Собеседник заблокирован. Отправка сообщений недоступна.',
     chat_no_messages: 'Сообщений пока нет. Напишите первое.',
+    // Подпись под быстрыми вопросами в пустом чате. Призыв к действию,
+    // а не констатация: «Сообщений пока нет» лишь описывает пустой
+    // экран, а это говорит, что делать.
+    chat_start_hint: 'Начните диалог с продавцом',
     chat_about: 'Объявление',
     chat_today: 'Сегодня',
     chat_yesterday: 'Вчера',
