@@ -851,9 +851,11 @@ export const dict = {
     // U polje ide pun tekst iznad, sa pozdravom; na samom čipu stoji
     // samo suština. Razlog: svih šest punih pitanja počinje istim
     // «Dobar dan!», koji zauzima oko 40% širine čipa i ne razlikuje
-    // ih ni po čemu — na telefonu je zbog toga i drugi čip već bio
-    // odsečen. Po merenju u pregledaču red se skratio sa 1723px na
-    // 687px: na 1280 sada staje ceo i uopšte se ne pomera.
+    // ih ni po čemu.
+    //
+    // Granica nije širina ekrana nego max-w-chat = 720px: red raspolaže
+    // sa 696px na svakom monitoru. Srpski natpisi staju u 687px i nisu
+    // morali da se dodatno skraćuju — ruski jesu (vidi komentar tamo).
     quick_q1_label: 'Još u prodaji?',
     quick_q2_label: 'Kada da pogledam?',
     quick_q3_label: 'Dogovor oko cene?',
@@ -2205,14 +2207,20 @@ export const dict = {
     // В поле ввода уходит полный текст выше, с приветствием; на самом
     // чипе — только суть. Причина: все шесть полных вопросов
     // начинаются с одинакового «Здравствуйте!», который занимает
-    // около 40% ширины чипа и ничем их не различает — из-за этого на
-    // телефоне обрезался уже второй чип. По замеру в браузере ряд
-    // сократился с 1723px до 750px: на 1280 он теперь помещается
-    // целиком и не прокручивается вовсе.
-    quick_q1_label: 'Ещё продаётся?',
+    // около 40% ширины чипа и ничем их не различает.
+    //
+    // ГРАНИЦА ЗДЕСЬ НЕ ШИРИНА ЭКРАНА, А max-w-chat = 720px: лента и
+    // панель ввода ограничены ею на любом мониторе, и за вычетом
+    // отступов панели ряду достаётся 696px. Поэтому «влезает на
+    // десктоп» означает «ряд короче 696px», а не «короче 1280px».
+    //
+    // Замер в браузере (13px, системный шрифт): полные тексты — 1723px,
+    // первый вариант сокращений — 750px (не влезал, обрезался шестой
+    // чип), нынешний — 671px, помещается целиком с запасом.
+    quick_q1_label: 'Продаётся?',
     quick_q2_label: 'Когда посмотреть?',
     quick_q3_label: 'Возможен торг?',
-    quick_q4_label: 'Сколько владельцев?',
+    quick_q4_label: 'Владельцев?',
     quick_q5_label: 'Документы?',
     quick_q6_label: 'Доставка?',
     chat_blocked: 'Собеседник заблокирован. Отправка сообщений недоступна.',
