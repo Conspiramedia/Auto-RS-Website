@@ -54,32 +54,43 @@ export type CarCondition =
 // 'normal' цвета и бейджа не имеет намеренно: обычная машина —
 // состояние по умолчанию у подавляющего большинства объявлений, и
 // плашка о нём была бы шумом в каждой карточке.
+//
+// Поле icon — цвет ОДНОГО ЗНАЧКА на нейтральном фоне: им покрашены
+// иконки в селекторе формы подачи. Там сам вариант выделяется
+// акцентной рамкой (ui/segmented.ts), а цвет состояния несёт только
+// значок — иначе сетка из шести цветных плашек читалась бы как
+// светофор.
 export const CAR_CONDITIONS = [
-  { key: 'normal', badge: null, surface: null },
+  { key: 'normal', badge: null, surface: null, icon: null },
   {
     key: 'damaged',
     badge: 'bg-condition-damaged text-white',
     surface: 'bg-condition-damaged-soft text-condition-damaged',
+    icon: 'text-condition-damaged',
   },
   {
     key: 'parts',
     badge: 'bg-condition-parts text-white',
     surface: 'bg-condition-parts-soft text-condition-parts',
+    icon: 'text-condition-parts',
   },
   {
     key: 'no_docs',
     badge: 'bg-condition-no_docs text-white',
     surface: 'bg-condition-no_docs-soft text-condition-no_docs',
+    icon: 'text-condition-no_docs',
   },
   {
     key: 'salvage',
     badge: 'bg-condition-salvage text-white',
     surface: 'bg-condition-salvage-soft text-condition-salvage',
+    icon: 'text-condition-salvage',
   },
   {
     key: 'for_export',
     badge: 'bg-condition-for_export text-white',
     surface: 'bg-condition-for_export-soft text-condition-for_export',
+    icon: 'text-condition-for_export',
   },
 ] as const;
 

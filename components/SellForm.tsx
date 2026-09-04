@@ -47,6 +47,7 @@ import {
 import type { CarAvailability, CarCondition } from '@/lib/types';
 import { CAR_CONDITIONS } from '@/lib/types';
 import { ConditionIcon } from './ui/ConditionIcons';
+import { segmentedClass } from './ui/segmented';
 import type { DictKey, Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { BRANDS, CITIES, YEAR_MIN, yearMax } from '@/lib/referenceData';
@@ -1477,11 +1478,8 @@ export default function SellForm({
                   key={value}
                   type="button"
                   onClick={() => setListingType(value)}
-                  className={
-                    listingType === value
-                      ? 'rounded-control bg-brand-dark px-3 py-2.5 text-caption font-semibold text-white'
-                      : 'rounded-control border border-neutral-15 px-3 py-2.5 text-caption hover:bg-surface-hover'
-                  }
+                  className={segmentedClass(listingType === value)}
+                  aria-pressed={listingType === value}
                 >
                   {label}
                 </button>
@@ -1524,11 +1522,8 @@ export default function SellForm({
                     key={value}
                     type="button"
                     onClick={() => setAvailability(value)}
-                    className={
-                      availability === value
-                        ? 'rounded-control bg-brand-dark px-3 py-2.5 text-caption font-semibold text-white'
-                        : 'rounded-control border border-neutral-15 px-3 py-2.5 text-caption hover:bg-surface-hover'
-                    }
+                    className={segmentedClass(availability === value)}
+                    aria-pressed={availability === value}
                   >
                     {label}
                   </button>
@@ -1562,13 +1557,19 @@ export default function SellForm({
               обрубков.
 
               ЗНАЧОК В КАЖДОМ ВАРИАНТЕ — тот же, что потом появится на
-              бейдже в каталоге. Продавец выбирает пометку и сразу
-              видит, как она будет выглядеть покупателю.
+              бейдже в каталоге, И В СВОЁМ ЦВЕТЕ: оранжевый молоток у
+              битого, красный лист у «без документов». Продавец выбирает
+              пометку и сразу видит, как она будет выглядеть покупателю.
 
-              Цвет варианта — цвет его состояния, но заливкой 10%:
-              выбранный вариант обведён своим цветом, невыбранные
-              нейтральны. Сплошная заливка шести цветов превратила бы
-              шаг формы в светофор. */}
+              ВЫБРАННЫЙ ВАРИАНТ — АКЦЕНТНОЙ РАМКОЙ, а не заливкой
+              своего цвета (см. ui/segmented.ts). Красить сам вариант в
+              цвет состояния заманчиво, но тогда «выбрано» и «вот такой
+              будет бейдж» говорятся одним и тем же средством, и на
+              сетке из шести вариантов шаг формы превращается в
+              светофор. Цвет состояния несёт значок — этого хватает,
+              чтобы связь читалась, — а рамка отвечает только за выбор.
+              Правило бренда «один акцент на экране» при этом
+              соблюдается: селектор подсвечен ровно один. */}
           <div>
             <label className="mb-1 block text-caption text-neutral-60">
               {t('sell_condition')}
@@ -1577,13 +1578,6 @@ export default function SellForm({
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {CAR_CONDITIONS.map((option) => {
                 const active = condition === option.key;
-                // Оформление выбранного варианта. У 'normal' своего
-                // цвета нет (обычная машина бейджа не получает), и он
-                // выделяется тем же тёмным, что переключатель
-                // доступности выше.
-                const activeClass = option.surface
-                  ? `${option.surface} font-semibold`
-                  : 'bg-brand-dark text-white font-semibold';
 
                 return (
                   <button
@@ -1591,11 +1585,9 @@ export default function SellForm({
                     type="button"
                     onClick={() => setCondition(option.key)}
                     aria-pressed={active}
-                    className={`flex items-center gap-2 rounded-control px-3 py-2.5 text-left text-caption ${
-                      active
-                        ? activeClass
-                        : 'border border-neutral-15 hover:bg-surface-hover'
-                    }`}
+                    className={`flex items-center gap-2 text-left ${segmentedClass(
+                      active,
+                    )}`}
                   >
                     {/* У 'normal' значка нет (обычная машина бейджа не
                         получает), и ConditionIcon вернёт null. Пустая
@@ -1606,7 +1598,7 @@ export default function SellForm({
                     {option.badge ? (
                       <ConditionIcon
                         condition={option.key}
-                        className="h-4 w-4 shrink-0"
+                        className={`h-4 w-4 shrink-0 ${option.icon}`}
                       />
                     ) : (
                       <span aria-hidden="true" className="h-4 w-4 shrink-0" />
