@@ -38,6 +38,15 @@ const SUBMITTED = new Intl.DateTimeFormat('ru-RU', {
   year: '2-digit',
 });
 
+// Время отдельным форматтером и второй строкой под датой — так же,
+// как в списке пользователей (app/admin/users): колонка узкая
+// (104px), и «4 сент. 26 г., 11:24» в неё не помещается, дата
+// переносилась бы по словам как попало.
+const SUBMITTED_TIME = new Intl.DateTimeFormat('ru-RU', {
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
 // Статусы для фильтра. draft не показываем: черновик не публиковался
 // и модератору не адресован — он даже в счётчики объявлений продавца
 // не идёт (см. 0080).
@@ -111,7 +120,21 @@ const columns: Column<AdminCarRow>[] = [
     width: '104px',
     align: 'right',
     hideBelow: 'md',
-    render: (row) => SUBMITTED.format(new Date(row.created_at)),
+    // Время приглушено: сначала читается день подачи, время уточняет
+    // его при необходимости. Порядок объявлений в очереди задаётся
+    // именно им, и на глаз различить два объявления одного дня
+    // без него нельзя.
+    render: (row) => {
+      const d = new Date(row.created_at);
+      return (
+        <span className="block leading-tight">
+          {SUBMITTED.format(d)}
+          <span className="block text-micro text-neutral-40">
+            {SUBMITTED_TIME.format(d)}
+          </span>
+        </span>
+      );
+    },
   },
   {
     key: 'actions',

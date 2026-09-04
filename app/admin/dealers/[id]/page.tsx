@@ -45,6 +45,21 @@ const DATE = new Intl.DateTimeFormat('ru-RU', {
   year: 'numeric',
 });
 
+// Дата с временем — для МОМЕНТА (регистрация салона). Здесь, в
+// отличие от узких колонок списков, время встаёт в одну строку: поле
+// стоит в сетке профиля и ширины хватает.
+//
+// DATE выше остаётся и используется для КАЛЕНДАРНОЙ ДАТЫ договора:
+// у неё времени нет по смыслу, и печатать «00:00» значило бы
+// выдумывать точность, которой в данных не было.
+const DATE_TIME = new Intl.DateTimeFormat('ru-RU', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
 // Поле профиля. Незаполненные не печатаются заглушками вида «—»:
 // поля города, контактного лица и даты договора появились в 0085, и у
 // существующих салонов они пусты. Ряд прочерков выглядит как
@@ -244,7 +259,7 @@ export default async function AdminDealerPage({
               />
               <Field
                 label="Регистрация"
-                value={DATE.format(new Date(dealer.created_at))}
+                value={DATE_TIME.format(new Date(dealer.created_at))}
               />
             </dl>
 
