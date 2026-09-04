@@ -491,6 +491,20 @@ export const dict = {
     sell_rent_price: 'Cena po danu',
     sell_deposit: 'Depozit',
     sell_err_rent_price: 'Za izdavanje je obavezna cena po danu.',
+    // OBAVEZNA POLJA KORAKA «Detalji».
+    // Poruke stoje UZ POLJE, ne u jednoj traci na dnu: kada se traži
+    // pet stvari odjednom, jedna zajednička rečenica ne kaže koju od
+    // njih treba popuniti.
+    // Cena je NEOBAVEZNA (prazno = «Po dogovoru»), ali uneta mora da
+    // bude u razumnim granicama: ispod 100 € nema ni auta za delove.
+    sell_err_price_range: 'Cena mora biti između 100 i 1 000 000 €.',
+    sell_err_mileage: 'Navedite kilometražu',
+    sell_err_body: 'Izaberite tip karoserije',
+    sell_err_transmission: 'Izaberite menjač',
+    sell_err_fuel: 'Izaberite gorivo',
+    // Zapremina je uslovno obavezna: električni auto nema motor sa
+    // unutrašnjim sagorevanjem, pa poruka nudi oba izlaza.
+    sell_err_engine: 'Navedite zapreminu ili izaberite „električni“',
     sell_err_price_positive: 'Cena mora biti veća od nule.',
     sell_err_deposit: 'Depozit ne može biti negativan.',
 
@@ -1855,6 +1869,20 @@ export const dict = {
     sell_rent_price: 'Цена за сутки',
     sell_deposit: 'Залог',
     sell_err_rent_price: 'Для аренды обязательна цена за сутки.',
+    // ОБЯЗАТЕЛЬНЫЕ ПОЛЯ ШАГА «Детали».
+    // Сообщения стоят РЯДОМ С ПОЛЕМ, а не одной строкой внизу: когда
+    // требуется пять вещей сразу, общая фраза не говорит, какую именно
+    // надо заполнить.
+    // Цена НЕОБЯЗАТЕЛЬНА (пусто = «Договорная»), но указанная должна
+    // быть в разумных границах: дешевле 100 € не бывает даже на разбор.
+    sell_err_price_range: 'Цена должна быть от 100 до 1 000 000 €.',
+    sell_err_mileage: 'Укажите пробег',
+    sell_err_body: 'Выберите тип кузова',
+    sell_err_transmission: 'Выберите коробку',
+    sell_err_fuel: 'Выберите топливо',
+    // Объём условно обязателен: у электромобиля ДВС нет, поэтому
+    // сообщение предлагает оба выхода.
+    sell_err_engine: 'Укажите объём или выберите „электро“',
     sell_err_price_positive: 'Цена должна быть больше нуля.',
     sell_err_deposit: 'Залог не может быть отрицательным.',
 

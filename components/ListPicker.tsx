@@ -81,6 +81,13 @@ type Props = {
   size?: 'form' | 'compact';
   // Вызывается при выборе. Нужен для каскада «марка → модель».
   onChange?: (value: string) => void;
+  // Поле не заполнено, а обязано быть: красим границу. Аддитивно —
+  // по умолчанию false, и все существующие вызовы ведут себя как
+  // раньше. Сам текст ошибки рисует вызывающая форма: пикер не знает
+  // ни правил, ни локали сообщения.
+  invalid?: boolean;
+  // Связь с текстом ошибки для скринридера (aria-describedby).
+  describedBy?: string;
 };
 
 // useLayoutEffect на сервере печатает предупреждение — там его просто
@@ -102,6 +109,8 @@ export default function ListPicker({
   searchable = true,
   size = 'form',
   onChange,
+  invalid = false,
+  describedBy,
 }: Props) {
   const t = getT(locale);
 
@@ -380,8 +389,13 @@ export default function ListPicker({
           } ` +
           (disabled
             ? 'cursor-not-allowed bg-surface-hover text-neutral-30'
-            : 'transition-colors duration-fast ease-out hover:border-neutral-30')
+            : 'transition-colors duration-fast ease-out hover:border-neutral-30') +
+          // Красная граница поверх обычной: класс идёт последним,
+          // поэтому перебивает border-neutral-15 выше.
+          (invalid ? ' border-error' : '')
         }
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
       >
         <span className={selected ? 'truncate' : 'truncate text-neutral-40'}>
           {disabled && emptyHint ? emptyHint : currentLabel}

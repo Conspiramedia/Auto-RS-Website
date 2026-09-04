@@ -113,6 +113,37 @@ type Props = {
 // Синхронизация приложения — отдельная задача на его стороне.
 const MAX_PHOTOS = 15;
 
+// ГРАНИЦЫ ЧИСЛОВЫХ ПОЛЕЙ ШАГА «Детали».
+//
+// Задаются здесь, а не берутся из MAX_MILEAGE / MAX_PRICE
+// (lib/inputFormat): те — защита от опечатки в десять знаков и потому
+// намеренно щедрые (9 999 999). Это же — продуктовые границы, они уже.
+//
+// Пробег: миллион километров переживает разве что грузовик, и для
+// легкового объявления такое число почти наверняка опечатка.
+// Подпись об ошибке под полем. Отдельный компонент, потому что
+// повторяется у пяти полей, и разъехавшиеся отступы или цвет читались
+// бы как разные по важности сообщения.
+//
+// Ничего не рисует, когда ошибки нет: вызывающий код не обязан писать
+// условие на каждое поле. role="alert" — сообщение появляется после
+// действия человека (нажал «Далее»), и скринридер обязан его прочесть.
+function FieldError({ id, text }: { id: string; text: string | null }) {
+  if (!text) return null;
+  return (
+    <p id={id} role="alert" className="mt-1 text-small text-error">
+      {text}
+    </p>
+  );
+}
+
+const MILEAGE_MAX = 1_000_000;
+// Цена: ниже сотни евро машин не бывает даже на разбор, выше миллиона
+// — не тот рынок. Цена НЕОБЯЗАТЕЛЬНА: пустое поле означает
+// «Договорная», и границы проверяются только у заполненного.
+const PRICE_MIN = 100;
+const PRICE_MAX = 1_000_000;
+
 // Годы выпуска для пикера: свежие сверху, как в приложении.
 // Считается один раз при загрузке модуля — список не меняется в течение
 // сессии, и пересобирать его на каждый рендер незачем.
@@ -216,6 +247,53 @@ export default function SellForm({
     [description],
   );
   const hasDescriptionContacts = descriptionContacts.length > 0;
+
+  // ОБЯЗАТЕЛЬНЫЕ ПОЛЯ ШАГА «Детали».
+  //
+  // Показываем ошибки не сразу, а после первой попытки уйти дальше:
+  // краснеющая форма, которую человек ещё не начал заполнять, ругается
+  // на него за то, чего он не делал. После первой попытки флаг остаётся
+  // поднятым, и подсветка гаснет по мере заполнения полей.
+  const [detailsTouched, setDetailsTouched] = useState(false);
+
+  // Ключи словаря или null. Считаются всегда — флаг выше решает только
+  // то, показывать ли их.
+  const fieldErrors = useMemo(() => {
+    const km = parseThousands(mileage);
+
+    return {
+      // Пробег обязателен. Ноль допустим (новая машина), поэтому
+      // проверяем на null, а не на «ложность»: parseThousands('') даёт
+      // null, а parseThousands('0') — ноль.
+      mileage:
+        km === null || km < 0 || km > MILEAGE_MAX
+          ? ('sell_err_mileage' as const)
+          : null,
+      bodyType: bodyType ? null : ('sell_err_body' as const),
+      transmission: transmission ? null : ('sell_err_transmission' as const),
+      fuel: fuel ? null : ('sell_err_fuel' as const),
+      // Объём УСЛОВНО обязателен: у электромобиля ДВС нет, и требовать
+      // литры значило бы заставлять продавца выдумывать число. Пока
+      // топливо не выбрано, объём не требуем — иначе форма ругалась бы
+      // на поле, ответ по которому ещё не определён.
+      engineVolume:
+        fuel && fuel !== 'electric' && !engineVolume
+          ? ('sell_err_engine' as const)
+          : null,
+    };
+  }, [mileage, bodyType, transmission, fuel, engineVolume]);
+
+  // Показывать ли конкретную ошибку: только после попытки перейти
+  // дальше. Отдельная функция, чтобы условие не повторялось в разметке
+  // пять раз.
+  const errorFor = (key: keyof typeof fieldErrors) =>
+    detailsTouched ? fieldErrors[key] : null;
+
+  // Готовый текст на языке продавца — им пользуется разметка.
+  const errText = (key: keyof typeof fieldErrors) => {
+    const problem = errorFor(key);
+    return problem ? t(problem) : null;
+  };
 
   // Общая проверка описания: длина, ссылки, разметка, контакты.
   // Возвращает КЛЮЧ словаря или null — перевод подставляем здесь,
@@ -1228,12 +1306,24 @@ export default function SellForm({
     }
 
     // Цена продажи может отсутствовать («Договорная»), но если указана —
-    // должна быть положительной. Отрицательной она быть не может в
-    // принципе: поле принимает только цифры.
+    // должна быть в допустимых границах. Отрицательной она быть не может
+    // в принципе: поле принимает только цифры.
     if (listingType === 'sale') {
       const sale = parseThousands(price);
-      if (sale !== null && sale <= 0) return t('sell_err_price_positive');
+      if (sale !== null && (sale < PRICE_MIN || sale > PRICE_MAX)) {
+        return t('sell_err_price_range');
+      }
     }
+
+    // Обязательные поля шага. Возвращаем ПЕРВУЮ ошибку сверху вниз, в
+    // порядке полей на экране: подсвечены будут все незаполненные
+    // (fieldErrors ниже), а общая плашка называет ту, до которой глаз
+    // дойдёт первой.
+    if (fieldErrors.mileage) return t(fieldErrors.mileage);
+    if (fieldErrors.bodyType) return t(fieldErrors.bodyType);
+    if (fieldErrors.transmission) return t(fieldErrors.transmission);
+    if (fieldErrors.fuel) return t(fieldErrors.fuel);
+    if (fieldErrors.engineVolume) return t(fieldErrors.engineVolume);
 
     // ОПИСАНИЕ ЦЕЛИКОМ: длина, ссылки, разметка, контакты. Проверка
     // стоит здесь, на переходе со второго шага, а не в момент отправки:
@@ -1260,6 +1350,10 @@ export default function SellForm({
 
   // Переход со второго шага с проверкой.
   function goToPhotos() {
+    // Поднимаем флаг ДО проверки: даже если человек уйдёт дальше,
+    // вернувшись на шаг он увидит подсветку незаполненного.
+    setDetailsTouched(true);
+
     const problem = validateDetails();
     if (problem) {
       setError(problem);
@@ -1549,15 +1643,20 @@ export default function SellForm({
                   className="mb-1 block text-caption text-neutral-60"
                   htmlFor="sell-mileage"
                 >
-                  {t('car_mileage')}, {t('common_km')}
+                  {t('car_mileage')}, {t('common_km')} *
                 </label>
                 <NumberInput
                   id="sell-mileage"
                   value={mileage}
                   onChange={setMileage}
                   maxDigits={MAX_MILEAGE_DIGITS}
-                  className={field}
+                  required
+                  className={`${field}${errorFor('mileage') ? ' border-error' : ''}`}
+                  aria-describedby={
+                    errorFor('mileage') ? 'err-mileage' : undefined
+                  }
                 />
+                <FieldError id="err-mileage" text={errText('mileage')} />
               </div>
             </div>
           )}
@@ -1610,15 +1709,20 @@ export default function SellForm({
                 className="mb-1 block text-caption text-neutral-60"
                 htmlFor="sell-mileage-rent"
               >
-                {t('car_mileage')}, {t('common_km')}
+                {t('car_mileage')}, {t('common_km')} *
               </label>
               <NumberInput
                 id="sell-mileage-rent"
                 value={mileage}
                 onChange={setMileage}
                 maxDigits={MAX_MILEAGE_DIGITS}
-                className={field}
+                required
+                className={`${field}${errorFor('mileage') ? ' border-error' : ''}`}
+                aria-describedby={
+                  errorFor('mileage') ? 'err-mileage-rent' : undefined
+                }
               />
+              <FieldError id="err-mileage-rent" text={errText('mileage')} />
             </div>
           )}
 
@@ -1632,7 +1736,7 @@ export default function SellForm({
               locale={locale}
               name="body_type"
               placeholder={t('picker_choose')}
-              label={t('filter_body')}
+              label={`${t('filter_body')} *`}
               options={Object.entries(BODY_TYPES).map(
                 ([key, labels]): PickerOption => ({
                   value: key,
@@ -1642,13 +1746,16 @@ export default function SellForm({
               value={bodyType}
               searchable={false}
               onChange={setBodyType}
+              invalid={Boolean(errorFor('bodyType'))}
+              describedBy={errorFor('bodyType') ? 'err-body' : undefined}
             />
+            <FieldError id="err-body" text={errText('bodyType')} />
 
             <ListPicker
               locale={locale}
               name="transmission"
               placeholder={t('picker_choose')}
-              label={t('filter_transmission')}
+              label={`${t('filter_transmission')} *`}
               options={Object.entries(TRANSMISSIONS).map(
                 ([key, labels]): PickerOption => ({
                   value: key,
@@ -1658,13 +1765,21 @@ export default function SellForm({
               value={transmission}
               searchable={false}
               onChange={setTransmission}
+              invalid={Boolean(errorFor('transmission'))}
+              describedBy={
+                errorFor('transmission') ? 'err-transmission' : undefined
+              }
+            />
+            <FieldError
+              id="err-transmission"
+              text={errText('transmission')}
             />
 
             <ListPicker
               locale={locale}
               name="fuel"
               placeholder={t('picker_choose')}
-              label={t('filter_fuel')}
+              label={`${t('filter_fuel')} *`}
               options={Object.entries(FUELS).map(
                 ([key, labels]): PickerOption => ({
                   value: key,
@@ -1674,7 +1789,10 @@ export default function SellForm({
               value={fuel}
               searchable={false}
               onChange={setFuel}
+              invalid={Boolean(errorFor('fuel'))}
+              describedBy={errorFor('fuel') ? 'err-fuel' : undefined}
             />
+            <FieldError id="err-fuel" text={errText('fuel')} />
 
             {/* Объём необязателен: у электромобиля ДВС нет, и
                 подсказка говорит об этом прямо, чтобы продавец не
@@ -1696,7 +1814,10 @@ export default function SellForm({
                 )}
                 value={engineVolume}
                 onChange={setEngineVolume}
+                invalid={Boolean(errorFor('engineVolume'))}
+                describedBy={errorFor('engineVolume') ? 'err-engine' : undefined}
               />
+              <FieldError id="err-engine" text={errText('engineVolume')} />
               <p className="mt-1 text-small text-neutral-50">
                 {t('sell_engine_hint')}
               </p>
