@@ -94,7 +94,7 @@ export default function ChatList({ locale, chats, activeChatId }: Props) {
                       что у главного действия: это единственное место
                       строки, требующее внимания. */}
                   {chat.unread_count > 0 && (
-                    <span className="shrink-0 rounded-pill bg-brand-green px-1.5 text-small font-semibold leading-5 text-white">
+                    <span className="shrink-0 rounded-pill bg-brand-green-ink px-1.5 text-small font-semibold leading-5 text-white">
                       {chat.unread_count > 99 ? '99+' : chat.unread_count}
                     </span>
                   )}

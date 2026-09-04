@@ -46,7 +46,7 @@ export default function RentBadge({
       role="img"
       aria-label={label}
       title={label}
-      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-brand-blue text-white ${className}`}
+      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-brand-blue-ink text-white ${className}`}
     >
       {/* Calendar из lucide. aria-hidden: подпись несёт родитель, и
           озвучивать значок отдельно значило бы прочитать метку

@@ -40,7 +40,7 @@ export default function AdminBackBar({ current, parent }: Props) {
         href="/admin"
         className="
           -ml-2 flex min-h-[44px] shrink-0 items-center rounded-control px-2
-          text-caption font-medium text-brand-blue
+          text-caption font-medium text-brand-blue-ink
           transition-colors duration-fast hover:bg-surface-hover
         "
       >

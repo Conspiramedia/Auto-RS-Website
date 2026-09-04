@@ -239,7 +239,7 @@ export default async function AdminLogPage({
       {target && (
         <p className="mt-2 text-caption text-neutral-60">
           Показаны действия по одному объекту.{' '}
-          <Link href="/admin/log" className="text-brand-blue hover:underline">
+          <Link href="/admin/log" className="text-brand-blue-ink hover:underline">
             Показать все
           </Link>
         </p>
@@ -338,13 +338,13 @@ export default async function AdminLogPage({
                         <div className="mt-3 flex flex-wrap gap-3">
                           <Link
                             href={`/admin/queue/${row.target_id}`}
-                            className="text-caption text-brand-blue hover:underline"
+                            className="text-caption text-brand-blue-ink hover:underline"
                           >
                             Открыть объявление →
                           </Link>
                           <Link
                             href={`/admin/log?target=${row.target_id}`}
-                            className="text-caption text-brand-blue hover:underline"
+                            className="text-caption text-brand-blue-ink hover:underline"
                           >
                             Все действия по нему →
                           </Link>

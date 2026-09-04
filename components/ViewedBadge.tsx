@@ -81,7 +81,7 @@ export default function ViewedBadge({
     <span
       role="img"
       aria-label={t('car_viewed')}
-      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-brand-blue text-white ${className}`}
+      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-brand-blue-ink text-white ${className}`}
     >
       {/* Каркас тот же, что у остальных наборов значков проекта
           (ui/ConditionIcons, ui/MetricIcons, ui/NavIcons): viewBox 24,

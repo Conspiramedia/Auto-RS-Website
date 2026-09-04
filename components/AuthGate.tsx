@@ -424,7 +424,7 @@ export default function AuthGate({
                   href={localeHref(locale, '/terms')}
                   target="_blank"
                   rel="noopener"
-                  className="font-semibold text-brand-blue underline"
+                  className="font-semibold text-brand-blue-ink underline"
                 >
                   {t('legal_consent_terms')}
                 </Link>
@@ -433,7 +433,7 @@ export default function AuthGate({
                   href={localeHref(locale, '/privacy')}
                   target="_blank"
                   rel="noopener"
-                  className="font-semibold text-brand-blue underline"
+                  className="font-semibold text-brand-blue-ink underline"
                 >
                   {t('legal_consent_privacy')}
                 </Link>
@@ -490,7 +490,7 @@ export default function AuthGate({
                 type="button"
                 onClick={changeNumber}
                 disabled={busy}
-                className="font-semibold text-brand-blue disabled:opacity-40"
+                className="font-semibold text-brand-blue-ink disabled:opacity-40"
               >
                 {t(
                   'auth_email_change',
@@ -502,7 +502,7 @@ export default function AuthGate({
                   sendEmailCode(true)
                 }
                 disabled={busy || resendIn > 0}
-                className="font-semibold text-brand-blue disabled:opacity-40"
+                className="font-semibold text-brand-blue-ink disabled:opacity-40"
               >
                 {resendIn > 0
                   ? `${t('otp_resend_in')} (${resendIn})`

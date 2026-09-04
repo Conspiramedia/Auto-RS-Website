@@ -308,7 +308,7 @@ export default function CarCard({
             собственной ценой. Просто слово «Аренда» без суммы заставляло
             бы открывать карточку, чтобы узнать ставку. */}
         {car.is_for_sale && car.is_for_rent && car.rent_price_daily != null && (
-          <div className="mt-0.5 text-caption font-medium text-brand-blue">
+          <div className="mt-0.5 text-caption font-medium text-brand-blue-ink">
             {showRent
               ? formatPrice(car.sale_price, car.currency, locale)
               : formatRentPrice(car.rent_price_daily, car.currency, locale)}
@@ -318,7 +318,7 @@ export default function CarCard({
         {/* В специализированном разделе — короткая пометка о второй
             витрине без цены: она уже показана выше. */}
         {mode === 'sale' && car.is_for_rent && car.rent_price_daily == null && (
-          <div className="mt-0.5 text-caption font-medium text-brand-blue">
+          <div className="mt-0.5 text-caption font-medium text-brand-blue-ink">
             {t('mode_rent')}
           </div>
         )}

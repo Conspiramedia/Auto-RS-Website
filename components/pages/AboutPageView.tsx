@@ -169,7 +169,7 @@ export default function AboutPageView({ locale }: { locale: Locale }) {
                   {/* Маркер — не list-style, а отдельный элемент:
                       так он выравнивается по первой строке при переносе
                       длинного пункта. */}
-                  <span aria-hidden="true" className="text-brand-green">
+                  <span aria-hidden="true" className="text-brand-green-ink">
                     •
                   </span>
                   <span>{t(item)}</span>

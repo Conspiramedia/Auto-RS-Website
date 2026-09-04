@@ -248,7 +248,7 @@ export default function MyListingCard({ locale, listing }: Props) {
       {/* Срок продвижения — зелёным, рядом с действиями: продавцу нужно
           понимать, до какого числа объявление стоит в начале выдачи. */}
       {listing.is_promoted && listing.boosted_until && (
-        <p className="mt-2 flex items-center gap-1.5 text-small text-brand-green">
+        <p className="mt-2 flex items-center gap-1.5 text-small text-brand-green-ink">
           <IconRocket />
           {t('my_promoted_until')} {formatDate(listing.boosted_until, locale)}
         </p>

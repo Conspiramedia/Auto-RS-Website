@@ -52,7 +52,7 @@ export default function MarkAllReadButton({ locale, disabled = false }: Props) {
           await markAllNotificationsRead();
         });
       }}
-      className="shrink-0 text-caption font-semibold text-brand-blue transition-colors duration-fast ease-out hover:underline disabled:cursor-not-allowed disabled:opacity-40"
+      className="shrink-0 text-caption font-semibold text-brand-blue-ink transition-colors duration-fast ease-out hover:underline disabled:cursor-not-allowed disabled:opacity-40"
     >
       {pending ? t('notif_marking') : t('notif_mark_all')}
     </button>

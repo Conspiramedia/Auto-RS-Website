@@ -170,7 +170,7 @@ export default async function AdminUserPage({
             </p>
             <Link
               href={`/admin/listings?user=${user.user_id}`}
-              className="mt-2 inline-block text-caption text-brand-blue hover:underline"
+              className="mt-2 inline-block text-caption text-brand-blue-ink hover:underline"
             >
               Открыть в списке объявлений →
             </Link>

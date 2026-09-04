@@ -252,10 +252,14 @@ export default function DealerForm({ locale }: Props) {
           Требование проверяет сервер (0103), атрибут required и
           звёздочка здесь только называют его заранее. */}
       <div>
-        <label className="mb-1 block text-caption text-neutral-60">
+        <label
+            className="mb-1 block text-caption text-neutral-60"
+            htmlFor="dealer-company"
+          >
           {t('dealers_company')} *
         </label>
         <input
+          id="dealer-company"
           type="text"
           value={company}
           onChange={(e) => setCompany(e.target.value)}
@@ -327,10 +331,14 @@ export default function DealerForm({ locale }: Props) {
         />
 
         <div>
-          <label className="mb-1 block text-caption text-neutral-60">
+          <label
+            className="mb-1 block text-caption text-neutral-60"
+            htmlFor="dealer-person"
+          >
             {t('dealer_app_person')} *
           </label>
           <input
+            id="dealer-person"
             type="text"
             value={contact}
             onChange={(e) => setContact(e.target.value)}
@@ -343,13 +351,17 @@ export default function DealerForm({ locale }: Props) {
 
       <div className="grid items-start gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-caption text-neutral-60">
+          <label
+            className="mb-1 block text-caption text-neutral-60"
+            htmlFor="dealer-phone"
+          >
             {t('dealer_app_phone')} *
           </label>
           {/* Та же маска, что в форме подачи и в приложении: заявка
               салона уходит в submit_dealer_lead, где номер проверяется
               сервером, и присылать туда произвольный текст незачем. */}
           <input
+            id="dealer-phone"
             type="tel"
             inputMode="tel"
             value={phone}
@@ -363,10 +375,14 @@ export default function DealerForm({ locale }: Props) {
         </div>
 
         <div>
-          <label className="mb-1 block text-caption text-neutral-60">
+          <label
+            className="mb-1 block text-caption text-neutral-60"
+            htmlFor="dealer-email"
+          >
             {t('dealer_app_email')} *
           </label>
           <input
+            id="dealer-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -381,10 +397,14 @@ export default function DealerForm({ locale }: Props) {
           строке: в паре с обязательным звёздочка у соседа читалась бы
           как относящаяся к обоим. */}
       <div>
-        <label className="mb-1 block text-caption text-neutral-60">
+        <label
+            className="mb-1 block text-caption text-neutral-60"
+            htmlFor="dealer-website"
+          >
           {t('dealer_app_website')}
         </label>
         <input
+          id="dealer-website"
           type="url"
           inputMode="url"
           value={siteUrl}
@@ -395,10 +415,14 @@ export default function DealerForm({ locale }: Props) {
       </div>
 
       <div>
-        <label className="mb-1 block text-caption text-neutral-60">
+        <label
+            className="mb-1 block text-caption text-neutral-60"
+            htmlFor="dealer-comment"
+          >
           {t('dealers_comment')}
         </label>
         <textarea
+          id="dealer-comment"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           rows={4}

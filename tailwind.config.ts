@@ -44,6 +44,13 @@ const config: Config = {
           primary: brand.colors.primary,
           green: brand.colors.green,
           blue: brand.colors.blue,
+          // Затемнённые пары под белый текст: bg-brand-green-ink на
+          // кнопке, text-brand-blue-ink на ссылке. Подробности —
+          // в комментарии у самих токенов в lib/brand.ts.
+          'green-ink': brand.colors.greenInk,
+          'blue-ink': brand.colors.blueInk,
+          'red-ink': brand.colors.redInk,
+          'gold-ink': brand.colors.goldInk,
           red: brand.colors.red,
           dark: brand.colors.dark,
           gold: brand.colors.gold,

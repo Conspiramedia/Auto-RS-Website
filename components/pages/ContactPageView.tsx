@@ -142,7 +142,7 @@ export default function ContactPageView({ locale }: { locale: Locale }) {
               <dd className="font-medium">
                 <a
                   href={`mailto:${OPERATOR.email}`}
-                  className="text-brand-blue hover:underline"
+                  className="text-brand-blue-ink hover:underline"
                 >
                   {OPERATOR.email}
                 </a>
@@ -157,7 +157,7 @@ export default function ContactPageView({ locale }: { locale: Locale }) {
                 <dd className="font-medium">
                   <a
                     href={`tel:${OPERATOR.phone.replace(/\s/g, '')}`}
-                    className="text-brand-blue hover:underline"
+                    className="text-brand-blue-ink hover:underline"
                   >
                     {OPERATOR.phone}
                   </a>
@@ -197,7 +197,7 @@ export default function ContactPageView({ locale }: { locale: Locale }) {
             {t('contact_dealers_hint')}{' '}
             <Link
               href={localeHref(locale, '/dealers')}
-              className="font-semibold text-brand-blue hover:underline"
+              className="font-semibold text-brand-blue-ink hover:underline"
             >
               {t('nav_dealers')}
             </Link>

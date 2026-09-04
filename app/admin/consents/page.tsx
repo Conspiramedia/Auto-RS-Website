@@ -83,7 +83,7 @@ const columns: Column<CookieConsent>[] = [
         // профиля один переход, а не копирование uuid в поиск.
         <Link
           href={`/admin/users/${row.user_id}`}
-          className="block truncate font-mono text-micro text-brand-blue hover:underline"
+          className="block truncate font-mono text-micro text-brand-blue-ink hover:underline"
         >
           {row.user_id}
         </Link>
@@ -292,7 +292,7 @@ export default async function AdminConsentsPage({
                 компонента ради одного действия. */}
             <a
               href={exportHref}
-              className="rounded-control border border-neutral-15 px-3 py-2 text-caption font-semibold text-brand-blue transition-colors duration-fast hover:bg-surface-hover"
+              className="rounded-control border border-neutral-15 px-3 py-2 text-caption font-semibold text-brand-blue-ink transition-colors duration-fast hover:bg-surface-hover"
             >
               Выгрузить CSV
             </a>

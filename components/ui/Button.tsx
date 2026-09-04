@@ -51,13 +51,21 @@ type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 const BASE =
   'inline-flex items-center justify-center rounded-control font-semibold transition-colors duration-fast ease-out disabled:cursor-not-allowed disabled:opacity-40';
 
+// ЗАЛИВКИ ПОД БЕЛЫМ ТЕКСТОМ — затемнённые пары brand-*-ink, а не
+// brand-green / brand-blue. Светлые брендовые тона не добирали
+// обязательных по WCAG 1.4.3 контрастных 4.5:1: белым по зелёному
+// выходило 2.39:1, по синему 3.03:1. Сами брендовые токены при этом
+// не тронуты — они остались там, где работают акцентом, а не
+// подложкой под текст (см. lib/brand.ts).
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-brand-green text-white hover:brightness-95',
+  primary: 'bg-brand-green-ink text-white hover:brightness-95',
   secondary: 'border border-neutral-15 bg-white hover:bg-surface-hover',
-  ghost: 'text-brand-blue hover:bg-surface-hover',
+  // ghost — текст без заливки, то есть синий ложится прямо на белый
+  // фон страницы: тот же порог 4.5:1 и та же затемнённая пара.
+  ghost: 'text-brand-blue-ink hover:bg-surface-hover',
   destructive: 'bg-brand-red text-white hover:brightness-95',
   dark: 'bg-brand-dark text-white hover:brightness-110',
-  info: 'bg-brand-blue text-white hover:brightness-95',
+  info: 'bg-brand-blue-ink text-white hover:brightness-95',
 };
 
 // Размеры. md — размер по умолчанию, совпадает с прежним px-4 py-3.

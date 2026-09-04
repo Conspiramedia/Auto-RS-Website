@@ -69,16 +69,30 @@ type Tone =
 
 type Size = 'xs' | 'sm' | 'md';
 
+// ЗАЛИВКИ ПОД БЕЛЫМ ТЕКСТОМ — затемнённые пары brand-*-ink.
+// Светлые брендовые тона не добирали обязательных 4.5:1 (WCAG 1.4.3):
+// белым по зелёному 2.39:1, по синему 3.03:1. Брендовые токены при
+// этом не тронуты — они остались акцентом там, где под ними нет
+// текста (см. lib/brand.ts).
 const TONES: Record<Tone, string> = {
-  rent: 'bg-brand-blue text-white',
-  sold: 'bg-brand-green text-white',
-  new: 'bg-brand-green text-white',
+  rent: 'bg-brand-blue-ink text-white',
+  sold: 'bg-brand-green-ink text-white',
+  new: 'bg-brand-green-ink text-white',
   // Статусы объявления в кабинете.
-  warning: 'bg-warning text-white',
-  success: 'bg-success text-white',
+  //
+  // WARNING — ЕДИНСТВЕННЫЙ ТОН С ТЁМНЫМ ТЕКСТОМ, и это не
+  // исключение ради исключения. Золотой (#E8A73C) — светлый цвет,
+  // белым по нему выходит 2.09:1, и затемнять его до прохождения
+  // порога значило бы получить коричневый: предупреждение перестало
+  // бы читаться предупреждением. Тёмный текст решает ту же задачу,
+  // не трогая сам цвет, — 6.74:1.
+  warning: 'bg-warning text-brand-dark',
+  success: 'bg-brand-green-ink text-white',
   // Разбавленная зелень с зелёным текстом — та же пара, что у Alert
   // тона success: единая трактовка «зелёный на своём светлом фоне».
-  'success-soft': 'bg-status-success text-brand-green',
+  // Текст затемнён: светлый брендовый зелёный на 10-процентной
+  // подложке того же цвета давал 2.3:1.
+  'success-soft': 'bg-status-success text-brand-green-ink',
   // Разбавленный primary с primary-текстом — та же пара, что у
   // success-soft: цвет на своей светлой подложке.
   'info-soft': 'bg-status-info text-brand-primary',

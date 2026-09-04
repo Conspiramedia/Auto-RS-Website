@@ -36,10 +36,19 @@ type Tone = 'error' | 'success' | 'warning';
 
 // Заливка и цвет текста одной парой: тон меняется целиком, разъехаться
 // цвету текста и подложке нельзя.
+//
+// ТЕКСТ — ЗАТЕМНЁННЫЕ ПАРЫ brand-*-ink, заливка осталась прежней.
+// Плашка кладёт цвет на подложку ИЗ ТОГО ЖЕ ЦВЕТА при 10%, и в такой
+// паре светлые брендовые тона не читались: золотой по золотому давал
+// 1.95:1, зелёный по зелёному 2.19:1, красный по красному 4.10:1 —
+// все ниже обязательных 4.5:1 (WCAG 1.4.3).
+//
+// Менялся ТОЛЬКО текст: заливки узнаваемы и остались нетронутыми,
+// поэтому плашки выглядят прежними — читается лучше именно надпись.
 const TONES: Record<Tone, string> = {
-  error: 'bg-status-error text-brand-red',
-  success: 'bg-status-success text-brand-green',
-  warning: 'bg-status-warning text-brand-gold',
+  error: 'bg-status-error text-brand-red-ink',
+  success: 'bg-status-success text-brand-green-ink',
+  warning: 'bg-status-warning text-brand-gold-ink',
 };
 
 type Props = {

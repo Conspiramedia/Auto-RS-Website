@@ -535,7 +535,7 @@ export default async function CarPageView({
                   <div
                     className={
                       car.is_for_sale
-                        ? 'text-h3 font-semibold text-brand-blue'
+                        ? 'text-h3 font-semibold text-brand-blue-ink'
                         : 'text-h1 font-bold text-brand-primary'
                     }
                   >

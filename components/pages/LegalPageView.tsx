@@ -96,7 +96,7 @@ export default function LegalPageView({
                     {t('contact_email')}:{' '}
                     <a
                       href={`mailto:${section.email}`}
-                      className="text-brand-blue hover:underline"
+                      className="text-brand-blue-ink hover:underline"
                     >
                       {section.email}
                     </a>

@@ -243,7 +243,7 @@ export default async function AdminHomePage() {
           </p>
           <Link
             href="/admin"
-            className="mt-2 inline-block text-caption text-brand-blue hover:underline"
+            className="mt-2 inline-block text-caption text-brand-blue-ink hover:underline"
           >
             Обновить
           </Link>
@@ -356,7 +356,7 @@ export default async function AdminHomePage() {
         {queue.length > 0 && (
           <Link
             href="/admin/queue"
-            className="shrink-0 text-caption text-brand-blue hover:underline"
+            className="shrink-0 text-caption text-brand-blue-ink hover:underline"
           >
             Вся очередь →
           </Link>

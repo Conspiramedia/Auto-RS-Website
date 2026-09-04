@@ -501,7 +501,7 @@ export default function ListPicker({
                     onClick={() => pick(trimmed)}
                     className="flex w-full items-center gap-2 border-b border-neutral-10 px-4 py-3 text-left text-caption hover:bg-surface-hoverStrong"
                   >
-                    <span className="text-brand-green">+</span>
+                    <span className="text-brand-green-ink">+</span>
                     <span>
                       {t('picker_custom')} «{trimmed}»
                     </span>

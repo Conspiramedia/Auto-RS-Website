@@ -52,7 +52,7 @@ export default function MyHeaderBack({ locale }: Props) {
   return (
     <Link
       href={localeHref(locale, '/my/messages')}
-      className="shrink-0 text-caption font-semibold text-brand-blue transition-opacity duration-fast ease-out hover:opacity-80 lg:hidden"
+      className="shrink-0 text-caption font-semibold text-brand-blue-ink transition-opacity duration-fast ease-out hover:opacity-80 lg:hidden"
     >
       ← {t('chat_back')}
     </Link>

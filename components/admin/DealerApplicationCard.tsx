@@ -216,7 +216,7 @@ export default function DealerApplicationCard({ application }: Props) {
             <a
               href={`tel:${application.account_phone}`}
               dir="ltr"
-              className="text-brand-blue hover:underline"
+              className="text-brand-blue-ink hover:underline"
             >
               {application.account_phone}
             </a>
@@ -227,7 +227,7 @@ export default function DealerApplicationCard({ application }: Props) {
             <span className="w-[136px] shrink-0 text-neutral-50">Почта</span>
             <a
               href={`mailto:${application.account_email}`}
-              className="min-w-0 break-all text-brand-blue hover:underline"
+              className="min-w-0 break-all text-brand-blue-ink hover:underline"
             >
               {application.account_email}
             </a>

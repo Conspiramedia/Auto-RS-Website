@@ -264,7 +264,7 @@ export default async function AdminListingsPage({
       {userId && (
         <p className="mt-2 text-caption text-neutral-60">
           Показаны объявления одного продавца.{' '}
-          <Link href="/admin/listings" className="text-brand-blue hover:underline">
+          <Link href="/admin/listings" className="text-brand-blue-ink hover:underline">
             Показать все
           </Link>
         </p>

@@ -88,7 +88,7 @@ const columns: Column<DealerLead>[] = [
             href={row.website}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="block truncate text-micro text-brand-blue hover:underline"
+            className="block truncate text-micro text-brand-blue-ink hover:underline"
           >
             {row.website}
           </a>
@@ -110,7 +110,7 @@ const columns: Column<DealerLead>[] = [
         <a
           href={`tel:${row.phone}`}
           dir="ltr"
-          className="block truncate text-micro text-brand-blue hover:underline"
+          className="block truncate text-micro text-brand-blue-ink hover:underline"
         >
           {row.phone}
         </a>
@@ -129,7 +129,7 @@ const columns: Column<DealerLead>[] = [
       row.email ? (
         <a
           href={`mailto:${row.email}`}
-          className="block truncate text-brand-blue hover:underline"
+          className="block truncate text-brand-blue-ink hover:underline"
         >
           {row.email}
         </a>

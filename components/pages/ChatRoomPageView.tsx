@@ -207,7 +207,7 @@ export default async function ChatRoomPageView({ locale, chatId }: Props) {
                     прочерка — обещать цену, которой не видно, хуже, чем
                     промолчать; ссылка при этом остаётся рабочей. */}
                 {price && (
-                  <span className="block truncate text-caption font-semibold text-brand-green">
+                  <span className="block truncate text-caption font-semibold text-brand-green-ink">
                     {price}
                   </span>
                 )}

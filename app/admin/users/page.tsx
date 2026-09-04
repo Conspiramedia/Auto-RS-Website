@@ -268,7 +268,7 @@ export default async function AdminUsersPage({
         <p className="mt-2 text-caption text-neutral-60">
           Показаны зарегистрированные за последние {newDays}{' '}
           {newDays === 1 ? 'день' : newDays < 5 ? 'дня' : 'дней'}.{' '}
-          <Link href="/admin/users" className="text-brand-blue hover:underline">
+          <Link href="/admin/users" className="text-brand-blue-ink hover:underline">
             Показать всех
           </Link>
         </p>

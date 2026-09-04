@@ -228,7 +228,7 @@ export default async function AdminDealerPage({
                   dealer.contact_phone ? (
                     <a
                       href={`tel:${dealer.contact_phone.replace(/\s/g, '')}`}
-                      className="text-brand-blue hover:underline"
+                      className="text-brand-blue-ink hover:underline"
                     >
                       {dealer.contact_phone}
                     </a>
@@ -242,7 +242,7 @@ export default async function AdminDealerPage({
                   dealer.email ? (
                     <a
                       href={`mailto:${dealer.email}`}
-                      className="text-brand-blue hover:underline"
+                      className="text-brand-blue-ink hover:underline"
                     >
                       {dealer.email}
                     </a>
@@ -329,7 +329,7 @@ export default async function AdminDealerPage({
             <h2 className="text-h4 font-semibold">Объявления</h2>
             <Link
               href={listingsHref}
-              className="shrink-0 text-caption text-brand-blue hover:underline"
+              className="shrink-0 text-caption text-brand-blue-ink hover:underline"
             >
               В общем списке →
             </Link>

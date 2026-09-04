@@ -164,7 +164,7 @@ export default async function AdminQueuePage() {
           </p>
           <Link
             href="/admin/queue"
-            className="mt-2 inline-block text-caption text-brand-blue hover:underline"
+            className="mt-2 inline-block text-caption text-brand-blue-ink hover:underline"
           >
             Обновить
           </Link>

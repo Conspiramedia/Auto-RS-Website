@@ -153,7 +153,7 @@ export default function NotificationRow({
           <StatusTag locale={locale} type={item.type} />
 
           {href && (
-            <span className="text-small font-semibold text-brand-blue">
+            <span className="text-small font-semibold text-brand-blue-ink">
               {ctaLabel(item.type, t)}
             </span>
           )}
