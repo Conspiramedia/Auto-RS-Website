@@ -7,14 +7,30 @@
 // это личные данные о том, что человек смотрел, и держать их на сервере
 // без входа было бы и лишним, и неприятным.
 //
-// ПОЧЕМУ СНИМОК КАРТОЧКИ, А НЕ СПИСОК ID: если хранить только
-// идентификаторы, для отрисовки блока пришлось бы запрашивать данные
-// с сервера при каждом заходе — то есть добавить сетевой запрос ради
-// второстепенного блока. Вместо этого сохраняем минимум полей для
-// карточки (марка, модель, цена, фото) прямо при просмотре.
+// ЗАЧЕМ СНИМОК КАРТОЧКИ: он даёт блоку отрисоваться сразу после
+// гидратации, без ожидания сети. Но снимок — это только первый кадр:
+// он устаревает с той секунды, как записан.
 //
-// Устаревание данных допустимо: цена в блоке может отстать от реальной,
-// поэтому карточка ведёт на страницу объявления, где всё актуально.
+// ПОЧЕМУ ОДНОГО СНИМКА НЕ ХВАТАЛО. Раньше блок показывал сохранённые
+// данные и никогда не сверялся с базой. Из-за этого снятое продавцом
+// объявление продолжало висеть в «Недавно смотрели» — с прежней ценой,
+// прежним фото и ссылкой на страницу «не найдено». То же с проданными,
+// отклонёнными, просроченными и просто подешевевшими объявлениями.
+//
+// КАК ЧИНИМ: при монтировании блок спрашивает у базы, какие из
+// сохранённых id ещё активны (RPC cars_by_ids_public, миграция 0142),
+// и рисует ПРИШЕДШИЕ С СЕРВЕРА данные в порядке своей истории. Чего в
+// ответе нет — из блока пропадает. Один запрос на четыре id.
+//
+// ХРАНИЛИЩЕ ПРИ ЭТОМ НЕ ЧИСТИМ, и это важно: тот же ключ читает метка
+// «Просмотрено» на карточках каталога (ViewedBadge). Объявление может
+// вернуться в каталог (продление, возврат из архива — 0070), и стирать
+// факт «я это уже открывал» из-за временного состояния чужого
+// объявления неправильно. Скрываем в блоке — да; забываем — нет.
+//
+// ОШИБКА СЕТИ НЕ ОБНУЛЯЕТ БЛОК: если запрос не удался, показываем
+// снимки из хранилища. Устаревшая карточка лучше пустого места, а
+// сверка повторится при следующем заходе.
 //
 // SSR НЕ ЛОМАЕТСЯ: до монтирования компонент возвращает null, поэтому
 // серверная разметка и первый клиентский рендер совпадают (иначе React
@@ -27,6 +43,7 @@ import CarCard from './CarCard';
 import Button from './ui/Button';
 import type { Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n';
+import { getBrowserClient } from '@/lib/supabaseClient';
 
 const STORAGE_KEY = 'rsauto_recent_cars';
 
@@ -37,6 +54,26 @@ const MAX_ITEMS = 4;
 // Снимок карточки. Набор полей совпадает с тем, что нужно CarCard:
 // добавлять сюда лишнее — значит раздувать localStorage без пользы.
 export type RecentCar = {
+  id: string;
+  brand: string;
+  model: string;
+  year: number;
+  mileage: number | null;
+  currency: string;
+  sale_price: number | null;
+  rent_price_daily: number | null;
+  is_for_sale: boolean;
+  is_for_rent: boolean;
+  city: string;
+  photo_url: string | null;
+};
+
+// Строка ответа RPC cars_by_ids_public (миграция 0142). Функция
+// отдаёт больше полей, чем нужно карточке (status, condition,
+// availability, seller_kind): набор повторяет карточку каталога, и
+// сужать его на бэкенде ради одного блока незачем. Здесь берём то,
+// что рисует CarCard.
+type FreshCar = {
   id: string;
   brand: string;
   model: string;
@@ -114,16 +151,18 @@ export default function RecentlyViewed({ locale, excludeId }: Props) {
   useEffect(() => {
     setMounted(true);
 
+    // Снимки из хранилища: порядок здесь — это история просмотров,
+    // и именно он определяет порядок блока.
+    let saved: RecentCar[] = [];
+
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
 
       const list = JSON.parse(raw) as RecentCar[];
-      setItems(
-        Array.isArray(list)
-          ? list.filter((item) => item && item.id !== excludeId)
-          : [],
-      );
+      saved = Array.isArray(list)
+        ? list.filter((item) => item && item.id && item.id !== excludeId)
+        : [];
     } catch {
       // Битый JSON в хранилище (ручная правка, обрыв записи) — чистим,
       // чтобы блок не оставался сломанным навсегда.
@@ -132,7 +171,66 @@ export default function RecentlyViewed({ locale, excludeId }: Props) {
       } catch {
         // Хранилище недоступно — делать нечего.
       }
+      return;
     }
+
+    if (saved.length === 0) return;
+
+    // Снимки показываем сразу: блок появляется без ожидания сети.
+    setItems(saved);
+
+    // Отменённый запрос не должен трогать состояние размонтированного
+    // компонента: человек может уйти со страницы раньше ответа.
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const { data, error } = await getBrowserClient().rpc(
+          'cars_by_ids_public',
+          { p_ids: saved.map((item) => item.id) },
+        );
+
+        // Ошибка запроса — оставляем снимки (см. шапку файла).
+        if (cancelled || error || !Array.isArray(data)) return;
+
+        // Ответ приходит без порядка (функция его намеренно не задаёт),
+        // поэтому раскладываем по id и обходим СВОЮ историю: сверху
+        // остаётся то, что человек смотрел последним.
+        const fresh = new Map<string, RecentCar>();
+        for (const row of data as FreshCar[]) {
+          fresh.set(row.id, {
+            id: row.id,
+            brand: row.brand,
+            model: row.model,
+            year: row.year,
+            mileage: row.mileage,
+            currency: row.currency,
+            sale_price: row.sale_price,
+            rent_price_daily: row.rent_price_daily,
+            is_for_sale: row.is_for_sale,
+            is_for_rent: row.is_for_rent,
+            city: row.city,
+            photo_url: row.photo_url,
+          });
+        }
+
+        // Объявления, которых в ответе нет, — сняты, проданы, удалены
+        // или ушли на модерацию: из блока они пропадают. Хранилище при
+        // этом не трогаем — метка «Просмотрено» должна пережить и
+        // снятие, и возврат объявления в каталог.
+        setItems(
+          saved
+            .map((item) => fresh.get(item.id))
+            .filter((item): item is RecentCar => item !== undefined),
+        );
+      } catch {
+        // Сеть недоступна — блок остаётся на снимках.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [excludeId]);
 
   function clear() {
