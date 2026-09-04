@@ -313,16 +313,6 @@ export default function SellForm({
   // «29 символов + пробел» выглядели бы как 30 допустимых.
   const descriptionLen = descriptionLength(description);
 
-  // Счётчик краснеет, когда длина нарушена. Пустое поле — тоже
-  // нарушение (описание обязательно), но краснеет оно ТОЛЬКО после
-  // попытки уйти дальше: до неё человек ещё не начал писать, и красный
-  // счётчик у нетронутого поля ругался бы на него за то, чего он не
-  // делал. То же правило, что у остальных обязательных полей шага.
-  const descriptionLenBad =
-    descriptionLen > DESCRIPTION_MAX ||
-    (descriptionLen > 0 && descriptionLen < DESCRIPTION_MIN) ||
-    (detailsTouched && descriptionLen === 0);
-
   // Шаг 3: фотографии. Набор смешанный: при подаче это только выбранные
   // файлы, при правке — ещё и уже загруженные снимки объявления
   // (см. PhotoItem в PhotoPicker).
@@ -1880,11 +1870,12 @@ export default function SellForm({
                   ? t('sell_err_desc_short')
                   : ''}
               </p>
-              <p
-                className={`shrink-0 text-small tabular-nums ${
-                  descriptionLenBad ? 'text-error' : 'text-neutral-50'
-                }`}
-              >
+              {/* Счётчик — нейтральный факт, а не приговор, поэтому
+                  цвет обычный и не меняется. Красным он дублировал
+                  ошибку, которая и так сказана словами над кнопкой
+                  «Далее», и на пустом поле «0 / 6000» выглядел
+                  обвинением там, где человек ещё ничего не сделал. */}
+              <p className="shrink-0 text-small tabular-nums text-neutral-60">
                 {descriptionLen} / {DESCRIPTION_MAX} {t('sell_desc_counter')}
               </p>
             </div>
