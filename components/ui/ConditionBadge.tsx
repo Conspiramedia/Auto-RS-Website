@@ -53,6 +53,17 @@ type Props = {
   condition: CarCondition | string | null | undefined;
   size?: Size;
   className?: string;
+  // Круг со значком без подписи — для плитки каталога.
+  //
+  // ЗАЧЕМ ОТДЕЛЬНЫЙ ВИД. На карточке 360px фотография выходит ~156px,
+  // и полный бейдж «Битый / повреждённый» занимал заметную её часть.
+  // В углу кадра значок работает как пометка, которую видно при
+  // беглом просмотре ленты, а подробности человек читает уже на
+  // странице объявления, где бейдж стоит с подписью у цены.
+  //
+  // Подпись при этом не пропадает: она уходит в aria-label и title,
+  // то есть остаётся у скринридера и по наведению курсора.
+  iconOnly?: boolean;
 };
 
 export default function ConditionBadge({
@@ -60,6 +71,7 @@ export default function ConditionBadge({
   condition,
   size = 'sm',
   className = '',
+  iconOnly = false,
 }: Props) {
   // Неизвестное значение и 'normal' дают null — не рисуем ничего.
   // Мусор в поле возможен только в обход формы, и падать из-за него
@@ -72,6 +84,31 @@ export default function ConditionBadge({
   // (condition_damaged … condition_for_export), и conditionStyle выше
   // уже отсеял всё, чего в нём нет.
   const label = t(`condition_${condition}` as DictKey);
+
+  // КРУГ ТОЛЬКО СО ЗНАЧКОМ. Геометрия повторяет метку «просмотрено»
+  // (ViewedBadge): те же 24px и rounded-pill — в углу фотографии они
+  // стоят рядом, и разный размер или скругление сразу выдали бы, что
+  // элементы рисовались порознь.
+  //
+  // role="img" с aria-label: текста внутри нет, и без подписи пометка
+  // осталась бы доступна только зрячим. title даёт её же по
+  // наведению — значок молотка сам по себе не объясняет, битая машина
+  // или разбирается на детали.
+  if (iconOnly) {
+    return (
+      <span
+        role="img"
+        aria-label={label}
+        title={label}
+        className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-pill ${style.badge} ${className}`}
+      >
+        <ConditionIcon
+          condition={condition as CarCondition}
+          className="h-3.5 w-3.5"
+        />
+      </span>
+    );
+  }
 
   return (
     <span
