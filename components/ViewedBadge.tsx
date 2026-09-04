@@ -76,13 +76,19 @@ export default function ViewedBadge({
       aria-label={t('car_viewed')}
       className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-neutral-60 text-white ${className}`}
     >
-      {/* aria-hidden: подпись несёт родитель, и озвучивать значок
+      {/* Каркас тот же, что у остальных наборов значков проекта
+          (ui/ConditionIcons, ui/MetricIcons, ui/NavIcons): viewBox 24,
+          обводка 2, скруглённые концы и стыки. Значки из разных
+          наборов встречаются на одном экране, и разная толщина линии
+          сразу выдавала бы, что они нарисованы порознь.
+
+          aria-hidden: подпись несёт родитель, и озвучивать значок
           отдельно значило бы прочитать метку дважды. */}
       <svg
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth={1.75}
+        strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
         aria-hidden="true"
