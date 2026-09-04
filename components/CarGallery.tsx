@@ -230,8 +230,31 @@ export default function CarGallery({ images, alt, locale }: Props) {
       )}
 
       {images.length > 1 && (
-        <div ref={stripRef} className="no-scrollbar mt-2 flex gap-2 overflow-x-auto">
+        /* py-1 и px-1 — место для кольца активной миниатюры: оно
+           выходит за габарит кнопки на 4px, а overflow-x-auto подрезал
+           бы его сверху, снизу и у первой/последней миниатюры.
+           Компенсируем это -mx-1, чтобы лента визуально осталась ровно
+           по краю кадра, а mt-2 сокращаем на съеденный py-1. */
+        <div
+          ref={stripRef}
+          className="no-scrollbar -mx-1 mt-1 flex gap-2 overflow-x-auto px-1 py-1"
+        >
           {images.map((img, i) => (
+            /* Выделение активной миниатюры — только тень-кольцо и
+               прозрачность. Ни border, ни размеры не меняются: рамка
+               в потоке сдвигала бы соседей и давала бы CLS, а тень
+               рисуется поверх и места не занимает.
+
+               ring-2 + ring-offset-2 = box-shadow из двух колец:
+               сначала белый зазор в 2px, за ним синий контур ещё в 2px.
+               Белая полоса отделяет контур от самого фото — тот же
+               приём, что паспарту у картины: без зазора синий ложится
+               встык к пикселям снимка и читается как обводка
+               изображения, а не как отметка выбора.
+
+               В тёмной теме зазор берёт цвет тёмной подложки
+               (brand.colors.dark): белая полоса на тёмном фоне
+               светилась бы сама по себе. */
             <button
               key={img.id}
               ref={(el) => {
@@ -240,11 +263,13 @@ export default function CarGallery({ images, alt, locale }: Props) {
               type="button"
               onClick={() => setActive(i)}
               aria-current={i === active}
-              className={
+              className={[
+                'relative h-12 w-16 shrink-0 cursor-pointer overflow-hidden rounded-control sm:h-16 sm:w-20',
+                'transition-[opacity,box-shadow] duration-150 ease-out',
                 i === active
-                  ? 'relative h-12 w-16 shrink-0 overflow-hidden rounded-control ring-2 ring-brand-primary sm:h-16 sm:w-20'
-                  : 'relative h-12 w-16 shrink-0 overflow-hidden rounded-control opacity-70 sm:h-16 sm:w-20'
-              }
+                  ? 'opacity-100 ring-2 ring-brand-primary ring-offset-2 ring-offset-white dark:ring-offset-brand-dark'
+                  : 'opacity-[0.65] hover:opacity-100',
+              ].join(' ')}
               aria-label={`${alt} — ${i + 1}`}
             >
               <Image
