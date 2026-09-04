@@ -11,8 +11,18 @@
 // ровно те данные, по которым нарушение видно, — фотографии крупно,
 // описание целиком (в нём прячут контакты и рекламу), телефон,
 // заявленная цена и контекст доверия по продавцу. Всё остальное
-// (пробег, кузов, коробка) идёт компактной таблицей: оно нужно, чтобы
-// сверить с фото, но само по себе решения не определяет.
+// (пробег, кузов, коробка, объём) идёт компактной таблицей: оно нужно,
+// чтобы сверить с фото, но само по себе решения не определяет.
+//
+// СОСТОЯНИЕ И ДОСТУПНОСТЬ (0140) стоят ОТДЕЛЬНОЙ ПЛАШКОЙ над
+// таблицей, а не строкой в ней. Это заявление продавца о предмете
+// сделки, и проверяется оно по описанию и фотографиям: «новая
+// машина» в тексте при пометке «без документов» — типовой отказ, а
+// «в пути» у частника — повод разобраться. Утонув в таблице рядом с
+// коробкой передач, такое заявление осталось бы незамеченным.
+//
+// Обычная машина плашки не получает: 'normal' и 'in_stock' — значения
+// по умолчанию, и сообщать о них нечего.
 //
 // Фотографии вынесены в ModerationGallery (Client): просмотр всего
 // набора крупно требует переключения кадра, а это интерактив.
@@ -33,6 +43,27 @@ import {
 // Админка одноязычна — русская. Форматтеры сайта требуют локаль,
 // передаём её одним местом, чтобы не рассыпать 'ru' по всему файлу.
 const L = 'ru' as const;
+
+// Состояние автомобиля (0138, 0139). Подписи свои, а не из i18n
+// сайта: админка одноязычна, и тянуть в неё словарь обеих локалей
+// ради четырёх строк незачем.
+//
+// 'normal' в словаре НЕТ намеренно: обычная машина плашки не
+// получает, и отсутствие ключа — это и есть признак «показывать
+// нечего».
+const CONDITION_LABEL: Record<string, string> = {
+  damaged: 'Битый / повреждённый',
+  parts: 'На запчасти / тотал',
+  no_docs: 'Без документов',
+  for_export: 'Только на экспорт',
+};
+
+// Доступность у салона (0119). 'in_stock' отсутствует по той же
+// причине, что и 'normal' выше.
+const AVAILABILITY_LABEL: Record<string, string> = {
+  on_order: 'Под заказ',
+  in_transit: 'В пути',
+};
 
 const DATE_TIME = new Intl.DateTimeFormat('ru-RU', {
   day: 'numeric',
@@ -70,6 +101,16 @@ export default function ModerationCard({ car }: { car: AdminCar }) {
   // кто подаёт впервые. Порог в одно отклонение намеренно низкий:
   // это подсказка «присмотритесь», а не обвинение.
   const risky = car.owner_rejected_count > 0;
+
+  // Подписи заявленных состояний (0140). Значения по умолчанию
+  // ('normal', 'in_stock') и неизвестные строки дают undefined —
+  // плашка тогда не рисуется вовсе.
+  const conditionLabel = car.condition
+    ? CONDITION_LABEL[car.condition]
+    : undefined;
+  const availabilityLabel = car.availability
+    ? AVAILABILITY_LABEL[car.availability]
+    : undefined;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(320px,2fr)]">
@@ -153,12 +194,43 @@ export default function ModerationCard({ car }: { car: AdminCar }) {
           )}
         </div>
 
+        {/* ЗАЯВЛЕНИЕ ПРОДАВЦА О ПРЕДМЕТЕ СДЕЛКИ (0140) — см. шапку
+            файла. Плашка янтарная, а не красная: это не нарушение,
+            а факт, который модератор обязан сверить с описанием и
+            фотографиями. Красный читался бы как «уже отклонено». */}
+        {(conditionLabel || availabilityLabel) && (
+          <div className="mt-4 rounded-card border border-warning bg-status-warning p-3">
+            {conditionLabel && (
+              <p className="font-semibold text-neutral-100">
+                Состояние: {conditionLabel}
+              </p>
+            )}
+            {availabilityLabel && (
+              <p
+                className={`${conditionLabel ? 'mt-1 ' : ''}font-semibold text-neutral-100`}
+              >
+                Наличие: {availabilityLabel}
+              </p>
+            )}
+            <p className="mt-1 text-micro text-neutral-60">
+              Сверьте с описанием и фотографиями.
+            </p>
+          </div>
+        )}
+
         {/* Характеристики — компактной сеткой. */}
         <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3 lg:grid-cols-2">
           <Field label="Пробег" value={formatMileage(car.mileage, L)} />
           <Field label="Кузов" value={labelBodyType(car.body_type, L)} />
           <Field label="Коробка" value={labelTransmission(car.transmission, L)} />
           <Field label="Топливо" value={labelFuel(car.fuel, L)} />
+          {/* Объём (0133): у электромобилей его нет, и прочерк здесь
+              честнее пропуска — модератор видит, что поле пустое, а
+              не забытое. */}
+          <Field
+            label="Объём двигателя"
+            value={car.engine_volume != null ? `${car.engine_volume} л` : '—'}
+          />
           <Field
             label="Телефон в объявлении"
             value={car.contact_phone ?? '—'}
