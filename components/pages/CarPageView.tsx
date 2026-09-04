@@ -11,6 +11,7 @@ import CarCard from '@/components/CarCard';
 import CarGoneView from '@/components/pages/CarGoneView';
 import RecentlyViewed from '@/components/RecentlyViewed';
 import Badge from '@/components/ui/Badge';
+import VipBadge from '@/components/ui/VipBadge';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import CarGallery from '@/components/CarGallery';
@@ -340,9 +341,7 @@ export default async function CarPageView({
             )}
 
             {car.is_promoted && car.status !== 'sold' && (
-              <Badge tone="promoted" size="md" className="mt-2">
-                {t('car_promoted')}
-              </Badge>
+              <VipBadge size="md" className="mt-2" />
             )}
 
             {/* ДОСТУПНОСТЬ (0119). Плашка стоит рядом с ценой, а не в

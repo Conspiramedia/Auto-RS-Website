@@ -19,6 +19,7 @@ import type { ListingType } from '@/lib/types';
 import Badge from './ui/Badge';
 import ConditionBadge from './ui/ConditionBadge';
 import RentBadge from './ui/RentBadge';
+import VipBadge from './ui/VipBadge';
 import CardActions from './CardActions';
 import Card from './ui/Card';
 import ViewedBadge from './ViewedBadge';
@@ -175,11 +176,7 @@ export default function CarCard({
           (car.availability && car.availability !== 'in_stock') ||
           (car.condition && car.condition !== 'normal')) && (
           <div className="pointer-events-none absolute inset-x-2 bottom-2 flex flex-wrap items-end gap-1.5">
-            {car.is_promoted && (
-              <Badge tone="promoted" size="xs">
-                {t('car_promoted')}
-              </Badge>
-            )}
+            {car.is_promoted && <VipBadge />}
 
             {/* ДОСТУПНОСТЬ И СОСТОЯНИЕ — ДВЕ НЕЗАВИСИМЫЕ ОСИ (0138), и
                 бейджи стоят РЯДОМ, а не вместо друг друга: у салона

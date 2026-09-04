@@ -34,6 +34,7 @@ import StatusBadge from './StatusBadge';
 import Alert from './ui/Alert';
 import Badge from './ui/Badge';
 import Card from './ui/Card';
+import VipBadge from './ui/VipBadge';
 import { formatDate, formatPrice, formatRentPrice } from '@/lib/format';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
@@ -130,9 +131,7 @@ export default function MyListingCard({ locale, listing }: Props) {
             ) : (
               <StatusBadge locale={locale} status={listing.status} />
             )}
-            {listing.is_promoted && (
-              <Badge tone="promoted">{t('car_promoted')}</Badge>
-            )}
+            {listing.is_promoted && <VipBadge />}
             {/* «Скоро истечёт» — только у активного и только внутри
                 окна предупреждения. У истёкшего эту роль уже играет
                 сам бейдж статуса, дублировать его нечем. */}
