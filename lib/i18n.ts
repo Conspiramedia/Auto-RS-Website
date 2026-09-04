@@ -839,6 +839,13 @@ export const dict = {
     // Zbirna statistika (get_my_stats_totals).
     my_totals_title: 'Ukupno',
     my_totals_listings: 'Oglasi',
+    // Prirast za 7 dana (0141). {n} zamenjuje broj; prikazuje se samo
+    // kada je veći od nule — «+0 nedeljno» ne govori ništa.
+    my_totals_week: '+{n} nedeljno',
+    // Savet ispod bloka: nula pregleda uz objavljen oglas znači da ga
+    // niko ne otvara, a najčešći razlog su loše fotografije.
+    my_totals_no_views_hint:
+      'Dodajte 3+ fotografija i opis — takvi oglasi se češće gledaju.',
 
     // Prazno stanje.
     my_empty_title: 'Još nemate oglase',
@@ -2308,6 +2315,10 @@ export const dict = {
     // Сводная статистика (get_my_stats_totals).
     my_totals_title: 'Всего',
     my_totals_listings: 'Объявления',
+    // См. комментарий в сербском словаре.
+    my_totals_week: '+{n} за неделю',
+    my_totals_no_views_hint:
+      'Добавьте 3+ фото и описание — такие объявления смотрят чаще.',
 
     // Пустое состояние.
     my_empty_title: 'У вас пока нет объявлений',

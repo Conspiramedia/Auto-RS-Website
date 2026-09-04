@@ -16,10 +16,18 @@
 // обязаны остаться рабочими.
 // ============================================================
 
+import Link from 'next/link';
+
 import ExpiryBanner from '@/components/ExpiryBanner';
 import MyListingCard from '@/components/MyListingCard';
 import Button from '@/components/ui/Button';
 import StateCard from '@/components/ui/StateCard';
+import {
+  EyeIcon,
+  FileTextIcon,
+  HeartIcon,
+  MessageCircleIcon,
+} from '@/components/ui/MetricIcons';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { getServerClient } from '@/lib/supabaseServer';
@@ -50,6 +58,12 @@ export default async function MyListingsView({ locale }: Props) {
   const totals = (
     totalsResult.error ? null : ((totalsResult.data ?? [])[0] ?? null)
   ) as MyStatsTotals | null;
+
+  // Первое опубликованное объявление — цель ссылки в подсказке о нуле
+  // просмотров. Именно 'active': объявление на модерации просмотров не
+  // набирает по определению, и советовать там нечего.
+  const firstActiveId =
+    listings.find((l) => l.status === 'active')?.car_id ?? null;
 
   // ---------- Пусто ----------
   // Не переиспользуем components/EmptyState: тот завязан на сброс
@@ -97,16 +111,83 @@ export default async function MyListingsView({ locale }: Props) {
       />
 
       {totals && (
-        // Плашка итогов на приглушённой подложке — как в приложении
-        // (surfaceMuted): сводка вторична по отношению к списку и не
-        // должна спорить с карточками за внимание. Стоит отдельной
-        // строкой над сеткой, а не в боковой колонке: так она читается
-        // одним движением глаз, а карточки получают всю ширину.
-        <div className="grid grid-cols-2 items-start gap-3 rounded-card bg-surface-muted p-4 sm:grid-cols-4">
-          <Total label={t('my_totals_listings')} value={totals.listings_count} />
-          <Total label={t('my_metric_views')} value={totals.views} />
-          <Total label={t('my_metric_favorites')} value={totals.favorites} />
-          <Total label={t('my_metric_contacts')} value={totals.contacts} />
+        <div>
+          {/* ЧЕТЫРЕ КАРТОЧКИ ВМЕСТО ОДНОЙ СЕРОЙ ПЛАШКИ.
+              ------------------------------------------------------------
+              Раньше метрики стояли сеткой 2×2 на приглушённой подложке
+              и читались как один блок «всего понемногу». Разделённые
+              карточки дают каждой метрике собственную границу, и взгляд
+              находит нужную цифру сразу, а не пересчитывает четыре
+              числа в общем поле.
+
+              Раскладка: на мобильном 2×2 (четыре карточки в строку на
+              360px дали бы по 80px — цифра 28px и подпись туда не
+              помещаются), с sm — в ряд.
+
+              items-stretch по умолчанию: у карточек с дельтой и без
+              разная высота содержимого, и без растяжения ряд получил бы
+              ступеньку. */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Metric
+              tone="listings"
+              icon={<FileTextIcon className="h-4 w-4" />}
+              label={t('my_totals_listings')}
+              value={totals.listings_count}
+              week={totals.listings_week}
+              t={t}
+            />
+            <Metric
+              tone="views"
+              icon={<EyeIcon className="h-4 w-4" />}
+              label={t('my_metric_views')}
+              value={totals.views}
+              week={totals.views_week}
+              t={t}
+            />
+            <Metric
+              tone="favorites"
+              icon={<HeartIcon className="h-4 w-4" />}
+              label={t('my_metric_favorites')}
+              value={totals.favorites}
+              week={totals.favorites_week}
+              t={t}
+            />
+            <Metric
+              tone="contacts"
+              icon={<MessageCircleIcon className="h-4 w-4" />}
+              label={t('my_metric_contacts')}
+              value={totals.contacts}
+              week={totals.contacts_week}
+              t={t}
+            />
+          </div>
+
+          {/* ПОДСКАЗКА ПРИ НУЛЕ ПРОСМОТРОВ.
+              ------------------------------------------------------------
+              Ноль просмотров при опубликованном объявлении — это не
+              «мало», а «его не открывают вовсе», и самая частая причина
+              — одна плохая фотография без описания. Подсказка ведёт
+              прямо в правку конкретного объявления, а не в общий
+              список: иначе продавцу пришлось бы искать нужное самому.
+
+              Показывается ТОЛЬКО когда есть что чинить: у объявления на
+              модерации просмотров нет по определению, и советовать
+              там нечего — совет читался бы как упрёк за чужую
+              задержку.
+
+              Ссылка одна, на первое активное объявление: у продавца с
+              нулём просмотров их обычно одно-два, а список ссылок
+              превратил бы подсказку в ещё один блок навигации. */}
+          {totals.views === 0 && firstActiveId && (
+            <p className="mt-3 text-caption text-neutral-60">
+              <Link
+                href={localeHref(locale, `/my/listing/${firstActiveId}/edit`)}
+                className="text-brand-primary underline underline-offset-2 hover:no-underline"
+              >
+                {t('my_totals_no_views_hint')}
+              </Link>
+            </p>
+          )}
         </div>
       )}
 
@@ -137,16 +218,79 @@ export default async function MyListingsView({ locale }: Props) {
 // ------------------------------------------------------------
 // Одна цифра сводки: крупное число + подпись под ним.
 // ------------------------------------------------------------
-function Total({ label, value }: { label: string; value: number }) {
+// Цвет метрики. Классы перечислены ПОЛНОСТЬЮ, а не собраны
+// конкатенацией (`bg-metric-${tone}-soft`): Tailwind сканирует
+// исходники статически, и собранный из кусков класс в сборку не
+// попадёт.
+const METRIC_TONE = {
+  listings: 'bg-metric-listings-soft text-metric-listings',
+  views: 'bg-metric-views-soft text-metric-views',
+  favorites: 'bg-metric-favorites-soft text-metric-favorites',
+  contacts: 'bg-metric-contacts-soft text-metric-contacts',
+} as const;
+
+// Карточка одной метрики.
+//
+// НЕ КЛИКАБЕЛЬНА И НЕ РЕАГИРУЕТ НА НАВЕДЕНИЕ — это витрина чисел, а
+// не навигация. Тень при наведении и курсор-палец обещали бы переход,
+// которого нет: продавец нажал бы и ничего не произошло. Отсюда
+// обычный div вместо ссылки и отсутствие hover-классов.
+//
+// aria-label собирает метрику в одну фразу («Просмотры: 340»): без
+// него скринридер читает «340» и «Просмотры» как два несвязанных
+// куска, а порядок обхода не гарантирует, что они окажутся рядом.
+// Внутренности при этом скрыты от чтения (aria-hidden), иначе всё
+// прозвучало бы дважды.
+function Metric({
+  tone,
+  icon,
+  label,
+  value,
+  week,
+  t,
+}: {
+  tone: keyof typeof METRIC_TONE;
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  week: number;
+  t: ReturnType<typeof getT>;
+}) {
+  // Прирост показываем только когда он есть: «+0 за неделю» не
+  // сообщает ничего, а строка под цифрой занимает место в каждой
+  // карточке ряда.
+  const delta = week > 0 ? t('my_totals_week').replace('{n}', String(week)) : null;
+
   return (
-    <div>
-      <div className="text-h3 font-bold">{value}</div>
-      {/* min-h в две строки caption (20px × 2): подписи метрик разной
-          длины, и без резерва под перенос соседние ячейки ряда
-          получают разную высоту. С sm: подписи снова умещаются в
-          строку — резерв там не нужен и оставил бы пустой зазор. */}
-      <div className="min-h-10 text-caption text-neutral-60 sm:min-h-0">
-        {label}
+    <div
+      className="rounded-card border border-neutral-10 bg-white p-4"
+      aria-label={`${label}: ${value}${delta ? `, ${delta}` : ''}`}
+    >
+      <div aria-hidden="true">
+        {/* Круг 32px: значок в цветной подложке — единственное цветное
+            пятно карточки. Цифра и подпись остаются нейтральными,
+            иначе четыре карточки в ряд читались бы как светофор. */}
+        <span
+          className={`inline-flex h-8 w-8 items-center justify-center rounded-pill ${METRIC_TONE[tone]}`}
+        >
+          {icon}
+        </span>
+
+        <div className="mt-3 text-h3 font-bold text-neutral-100">{value}</div>
+
+        {/* min-h в две строки caption (20px × 2): подписи метрик разной
+            длины, и без резерва под перенос соседние карточки ряда
+            получают разную высоту. С sm: подписи снова умещаются в
+            строку — резерв там не нужен и оставил бы пустой зазор. */}
+        <div className="min-h-10 text-caption text-neutral-60 sm:min-h-0">
+          {label}
+        </div>
+
+        {delta && (
+          <div className="mt-0.5 text-small font-medium text-success">
+            {delta}
+          </div>
+        )}
       </div>
     </div>
   );

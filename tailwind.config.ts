@@ -56,6 +56,16 @@ const config: Config = {
         'on-dark': brand.onDark,
         // Подложки статусных сообщений: bg-status-error.
         status: brand.statusSurface,
+        // Метрики кабинета (0141): text-metric-views на значке,
+        // bg-metric-views-soft на круге под ним. Две группы в одной —
+        // имя метрики у них общее и разъезжаться не должно.
+        metric: {
+          ...brand.metric,
+          'listings-soft': brand.metricSurface.listings,
+          'views-soft': brand.metricSurface.views,
+          'favorites-soft': brand.metricSurface.favorites,
+          'contacts-soft': brand.metricSurface.contacts,
+        },
         // Выбранное состояние (вкладка, страница пагинации, вариант
         // сортировки, язык, состояние авто): border-selection,
         // bg-selection-surface, text-selection. Один приём на весь
