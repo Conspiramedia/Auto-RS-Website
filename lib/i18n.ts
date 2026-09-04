@@ -497,11 +497,11 @@ export const dict = {
     // njih treba popuniti.
     // Cena je NEOBAVEZNA (prazno = «Po dogovoru»), ali uneta mora da
     // bude u razumnim granicama: ispod 100 € nema ni auta za delove.
-    sell_err_price_range: 'Cena mora biti između 100 i 1 000 000 €.',
+    sell_err_price_range: 'Cena mora biti između 100 i 100 000 000 €.',
     sell_err_mileage: 'Navedite kilometražu',
     sell_err_body: 'Izaberite tip karoserije',
-    sell_err_transmission: 'Izaberite menjač',
-    sell_err_fuel: 'Izaberite gorivo',
+    sell_err_transmission: 'Navedite tip menjača',
+    sell_err_fuel: 'Navedite tip goriva',
     // Zapremina je uslovno obavezna: električni auto nema motor sa
     // unutrašnjim sagorevanjem, pa poruka nudi oba izlaza.
     sell_err_engine: 'Navedite zapreminu ili izaberite „električni“',
@@ -1875,11 +1875,11 @@ export const dict = {
     // надо заполнить.
     // Цена НЕОБЯЗАТЕЛЬНА (пусто = «Договорная»), но указанная должна
     // быть в разумных границах: дешевле 100 € не бывает даже на разбор.
-    sell_err_price_range: 'Цена должна быть от 100 до 1 000 000 €.',
+    sell_err_price_range: 'Цена должна быть от 100 до 100 000 000 €.',
     sell_err_mileage: 'Укажите пробег',
     sell_err_body: 'Выберите тип кузова',
-    sell_err_transmission: 'Выберите коробку',
-    sell_err_fuel: 'Выберите топливо',
+    sell_err_transmission: 'Укажите тип коробки',
+    sell_err_fuel: 'Укажите тип топлива',
     // Объём условно обязателен: у электромобиля ДВС нет, поэтому
     // сообщение предлагает оба выхода.
     sell_err_engine: 'Укажите объём или выберите „электро“',
