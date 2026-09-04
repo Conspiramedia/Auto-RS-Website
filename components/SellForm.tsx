@@ -291,8 +291,20 @@ export default function SellForm({
   // Общая проверка описания: длина, ссылки, разметка, контакты.
   // Возвращает КЛЮЧ словаря или null — перевод подставляем здесь,
   // модуль про локали не знает.
+  //
+  // required: true — ОПИСАНИЕ ОБЯЗАТЕЛЬНО НА САЙТЕ. Оно часто
+  // единственное место, где сказано про состояние и комплектацию:
+  // характеристики есть у сорока одинаковых объявлений, а текст
+  // продавца — нет. Объявление без него плохо и покупателю, и
+  // модератору, которому нечего смотреть.
+  //
+  // Правило живёт ТОЛЬКО ЗДЕСЬ, не в базе. Барьер в триггере сработал
+  // бы и для мобильного приложения, которое шлёт p_description
+  // необязательным, — подача там начала бы падать. База остаётся с
+  // прежним правилом «пустое допустимо, непустое от 30 символов»
+  // (0136), и сайт лишь строже неё.
   const descriptionProblem = useMemo(
-    () => validateDescription(description),
+    () => validateDescription(description, { required: true }),
     [description],
   );
 
@@ -301,11 +313,15 @@ export default function SellForm({
   // «29 символов + пробел» выглядели бы как 30 допустимых.
   const descriptionLen = descriptionLength(description);
 
-  // Счётчик краснеет только когда длина ДЕЙСТВИТЕЛЬНО нарушена.
-  // Пустое поле не ошибка: описание необязательное.
+  // Счётчик краснеет, когда длина нарушена. Пустое поле — тоже
+  // нарушение (описание обязательно), но краснеет оно ТОЛЬКО после
+  // попытки уйти дальше: до неё человек ещё не начал писать, и красный
+  // счётчик у нетронутого поля ругался бы на него за то, чего он не
+  // делал. То же правило, что у остальных обязательных полей шага.
   const descriptionLenBad =
-    descriptionLen > 0 &&
-    (descriptionLen < DESCRIPTION_MIN || descriptionLen > DESCRIPTION_MAX);
+    descriptionLen > DESCRIPTION_MAX ||
+    (descriptionLen > 0 && descriptionLen < DESCRIPTION_MIN) ||
+    (detailsTouched && descriptionLen === 0);
 
   // Шаг 3: фотографии. Набор смешанный: при подаче это только выбранные
   // файлы, при правке — ещё и уже загруженные снимки объявления
@@ -1812,7 +1828,7 @@ export default function SellForm({
 
           <div>
             <label className="mb-1 block text-caption text-neutral-60">
-              {t('car_description')}
+              {t('car_description')} *
             </label>
             <textarea
               value={description}
@@ -1834,7 +1850,11 @@ export default function SellForm({
               className={`${fieldTextarea}${
                 hasDescriptionContacts ||
                 descriptionProblem === 'sell_err_desc_links' ||
-                descriptionProblem === 'sell_err_desc_html'
+                descriptionProblem === 'sell_err_desc_html' ||
+                // Пустое обязательное поле — но только после попытки
+                // уйти дальше, как и у остальных полей шага.
+                (detailsTouched &&
+                  descriptionProblem === 'sell_err_desc_required')
                   ? ' border-error'
                   : ''
               }`}
@@ -1849,9 +1869,17 @@ export default function SellForm({
                 «сколько ещё нужно»: это подсказка, а не упрёк. */}
             <div className="mt-1 flex items-start justify-between gap-3">
               <p className="text-small text-neutral-50">
-                {descriptionLen > 0 && descriptionLen < DESCRIPTION_MIN
-                  ? t('sell_err_desc_short')
-                  : ''}
+                {/* Пустое поле объясняем только после попытки уйти
+                    дальше — до неё подсказка выглядела бы упрёком.
+                    Начатое, но короткое описание подсказываем сразу:
+                    человек уже пишет, и ему полезно знать порог. */}
+                {descriptionLen === 0
+                  ? detailsTouched
+                    ? t('sell_err_desc_required')
+                    : ''
+                  : descriptionLen < DESCRIPTION_MIN
+                    ? t('sell_err_desc_short')
+                    : ''}
               </p>
               <p
                 className={`shrink-0 text-small tabular-nums ${

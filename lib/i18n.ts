@@ -647,6 +647,11 @@ export const dict = {
     sell_err_desc_short:
       'Opis je prekratak. Opišite stanje i opremu automobila — najmanje 30 znakova.',
     sell_err_desc_long: 'Opis je predugačak — najviše 6000 znakova.',
+    // Prazan opis. Odvojena poruka od «prekratak»: praznom polju reći
+    // «ima 0 od 30 znakova» znači objašnjavati ono što se i vidi,
+    // umesto da se traži da se popuni.
+    sell_err_desc_required:
+      'Opišite automobil — stanje i opremu, najmanje 30 znakova.',
     // Brojač ispod polja: «124 / 6000».
     sell_desc_counter: 'znakova',
     // Naslov iznad istaknutih mesta kada razlog nije kontakt.
@@ -2020,6 +2025,11 @@ export const dict = {
     sell_err_desc_short:
       'Описание слишком короткое. Опишите состояние и комплектацию автомобиля — не менее 30 символов.',
     sell_err_desc_long: 'Описание слишком длинное — не более 6000 символов.',
+    // Пустое описание. Отдельное сообщение от «слишком короткого»:
+    // пустому полю говорить «в нём 0 символов из 30» значит объяснять
+    // очевидное вместо того, чтобы попросить заполнить.
+    sell_err_desc_required:
+      'Опишите автомобиль — состояние и комплектацию, не менее 30 символов.',
     // Счётчик под полем: «124 / 6000».
     sell_desc_counter: 'символов',
     // Заголовок над подсветкой, когда причина не в контактах.

@@ -431,3 +431,61 @@ test('splitMessageByContacts собирается обратно в исходн
     'контакт не выделен в отдельный кусок',
   );
 });
+
+// ============================================================
+// 11. ОБЯЗАТЕЛЬНОЕ ОПИСАНИЕ (режим сайта).
+// ============================================================
+// Два режима одной функции, и разница между ними не косметическая:
+// по умолчанию она повторяет БАЗУ (0136: пустое описание допустимо), а
+// с required:true — правило САЙТА, который строже. Проверяем оба,
+// потому что расхождение режимов и есть то, ради чего флаг заведён.
+test('по умолчанию пустое описание допустимо — как в базе', () => {
+  // Это поведение обязано совпадать с триггером 0136: там проверки
+  // длины стоят внутри `if new.description is not null`.
+  assert.equal(validateDescription(''), null);
+  assert.equal(validateDescription('   \n  '), null);
+});
+
+test('required: пустое описание отклоняется', () => {
+  assert.equal(
+    validateDescription('', { required: true }),
+    'sell_err_desc_required',
+  );
+  // Пробелы — то же самое: строка из пробелов описанием не является.
+  assert.equal(
+    validateDescription('   \n  ', { required: true }),
+    'sell_err_desc_required',
+  );
+});
+
+test('required: короткое описание остаётся «слишком коротким»', () => {
+  // У пустого и у короткого РАЗНЫЕ сообщения: пустому полю говорить
+  // «в нём 0 символов из 30» — объяснять очевидное вместо просьбы
+  // заполнить.
+  assert.equal(
+    validateDescription('Продаю Golf', { required: true }),
+    'sell_err_desc_short',
+  );
+  assert.equal(
+    validateDescription('a'.repeat(29), { required: true }),
+    'sell_err_desc_short',
+  );
+});
+
+test('required: нормальное описание проходит', () => {
+  const text =
+    'Автомобиль в отличном состоянии, один хозяин, гаражное хранение.';
+  assert.equal(validateDescription(text, { required: true }), null);
+  assert.equal(validateDescription('a'.repeat(30), { required: true }), null);
+});
+
+test('required не отменяет проверку содержания', () => {
+  // Флаг добавляет правило, а не заменяет остальные: телефон в
+  // непустом описании по-прежнему важнее длины.
+  assert.equal(
+    validateDescription('Отличная машина, звоните 064 123 4567 в любое время', {
+      required: true,
+    }),
+    'sell_err_contacts',
+  );
+});
