@@ -18,6 +18,7 @@ import { getT, localeHref } from '@/lib/i18n';
 import type { ListingType } from '@/lib/types';
 import Badge from './ui/Badge';
 import ConditionBadge from './ui/ConditionBadge';
+import RentBadge from './ui/RentBadge';
 import CardActions from './CardActions';
 import Card from './ui/Card';
 import ViewedBadge from './ViewedBadge';
@@ -133,21 +134,16 @@ export default function CarCard({
             items-start обязателен — иначе растянутые по высоте плашки
             выглядели бы разной толщины при переносе. */}
         <div className="pointer-events-none absolute inset-x-2 top-2 flex flex-wrap items-start gap-1.5">
-          {/* Бейдж аренды в смешанном фиде: рядом стоят продажа и
+          {/* Метка аренды в смешанном фиде: рядом стоят продажа и
               аренда, и различить их только по «€ / dan» в строке цены
-              трудно — цвет и слово читаются с первого взгляда. В самом
-              разделе аренды бейдж не нужен: там все объявления одного
-              типа.
-              Стоит ПЕРВЫМ в ряду, хотя визуально был справа: это
-              свойство самого объявления, тогда как «Просмотрено» —
+              трудно. В самом разделе аренды метка не нужна: там все
+              объявления одного типа.
+              Стоит ПЕРВОЙ в ряду, то есть у левого края: это свойство
+              самого объявления, тогда как «просмотрено» справа —
               личная метка конкретного посетителя. При таком порядке
-              позиция бейджа аренды не зависит от того, открывал ли
+              позиция метки аренды не зависит от того, открывал ли
               человек карточку, и не прыгает после гидратации. */}
-          {mode === 'both' && car.is_for_rent && (
-            <Badge tone="rent" size="xs">
-              {t('badge_rent')}
-            </Badge>
-          )}
+          {mode === 'both' && car.is_for_rent && <RentBadge locale={locale} />}
 
           {/* «Просмотрено» — клиентская метка: история открытых
               объявлений лежит в localStorage, серверу она недоступна.
