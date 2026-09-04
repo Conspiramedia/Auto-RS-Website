@@ -223,7 +223,6 @@ export const brand = {
   //   parts      — серый: уже не машина, а набор деталей;
   //   no_docs    — красный: юридический тупик, самый дорогой сюрприз
   //                для покупателя;
-  //   salvage    — тёмно-серый: тот же донор, но необратимо;
   //   for_export — синий: с машиной всё в порядке, ограничение
   //                административное, и пугать цветом нечем.
   // 'normal' в наборе НЕТ намеренно: обычная машина бейджа не
@@ -232,7 +231,6 @@ export const brand = {
     damaged: '#f97316',
     parts: '#64748b',
     'no_docs': '#dc2626',
-    salvage: '#475569',
     'for_export': '#2563eb',
   },
 
@@ -244,7 +242,6 @@ export const brand = {
     damaged: 'rgba(249,115,22,0.1)',   // = condition.damaged при 10%
     parts: 'rgba(100,116,139,0.1)',    // = condition.parts при 10%
     'no_docs': 'rgba(220,38,38,0.1)',  // = condition.no_docs при 10%
-    salvage: 'rgba(71,85,105,0.1)',    // = condition.salvage при 10%
     'for_export': 'rgba(37,99,235,0.1)',// = condition.for_export при 10%
   },
 

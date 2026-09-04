@@ -492,19 +492,18 @@ export const dict = {
       'Ako je sa automobilom sve u redu, ne birajte ništa. Ponovnim klikom na izabranu opciju uklanjate oznaku.',
     condition_normal: 'Običan automobil',
     condition_damaged: 'Oštećen / havarisan',
-    condition_parts: 'Za delove / rastavljanje',
+    condition_parts: 'Za delove / totalna šteta',
     condition_no_docs: 'Bez dokumenata',
-    condition_salvage: 'Totalna šteta (ne popravlja se)',
     condition_for_export: 'Samo za izvoz',
     // Пояснения под фотографиями на странице объявления. Отдельные
     // строки, а не те же подписи: на бейдже нужно короткое имя
     // состояния, а здесь — предупреждение с указанием, что делать.
     condition_note_damaged:
       'Pažnja: automobil je oštećen. Proverite stanje kod prodavca.',
-    condition_note_parts: 'Automobil za delove, nije u voznom stanju.',
+    condition_note_parts:
+      'Automobil za delove, nije u voznom stanju i ne popravlja se.',
     condition_note_no_docs:
       'Automobil nema dokumenta. Proverite mogućnost registracije.',
-    condition_note_salvage: 'Totalna šteta, ne popravlja se.',
     condition_note_for_export:
       'Automobil se prodaje samo za izvoz iz Srbije.',
     // Фильтр каталога. По умолчанию выключен.
@@ -516,7 +515,6 @@ export const dict = {
     condition_seo_damaged: 'Oštećen',
     condition_seo_parts: 'Za delove',
     condition_seo_no_docs: 'Bez dokumenata',
-    condition_seo_salvage: 'Totalna šteta',
     condition_seo_for_export: 'Samo za izvoz',
     sell_type_sale: 'Prodajem',
     sell_type_rent: 'Izdajem',
@@ -1976,16 +1974,15 @@ export const dict = {
       'Если с машиной всё в порядке — не выбирайте ничего. Повторное нажатие на выбранный вариант снимает пометку.',
     condition_normal: 'Обычное авто',
     condition_damaged: 'Битый / повреждённый',
-    condition_parts: 'На запчасти / разборку',
+    condition_parts: 'На запчасти / тотал',
     condition_no_docs: 'Без документов',
-    condition_salvage: 'Тотал (не восстанавливается)',
     condition_for_export: 'Только на экспорт',
     condition_note_damaged:
       'Внимание: автомобиль битый. Уточните состояние у продавца.',
-    condition_note_parts: 'Автомобиль на запчасти, не на ходу.',
+    condition_note_parts:
+      'Автомобиль на запчасти, не на ходу и восстановлению не подлежит.',
     condition_note_no_docs:
       'У автомобиля нет документов. Проверьте возможность регистрации.',
-    condition_note_salvage: 'Тотальная гибель, не восстанавливается.',
     condition_note_for_export:
       'Автомобиль продаётся только на экспорт из Сербии.',
     filter_show_damaged: 'Показать битые и разборку',
@@ -1993,7 +1990,6 @@ export const dict = {
     condition_seo_damaged: 'Битый',
     condition_seo_parts: 'На запчасти',
     condition_seo_no_docs: 'Без документов',
-    condition_seo_salvage: 'Тотал',
     condition_seo_for_export: 'Только на экспорт',
     sell_type_sale: 'Продаю',
     sell_type_rent: 'Сдаю',

@@ -39,7 +39,6 @@ export type CarCondition =
   | 'damaged'
   | 'parts'
   | 'no_docs'
-  | 'salvage'
   | 'for_export';
 
 // ПОЛНЫЙ набор состояний — источник оформления для бейджей и плашек.
@@ -85,12 +84,6 @@ export const CAR_CONDITIONS = [
     icon: 'text-condition-no_docs',
   },
   {
-    key: 'salvage',
-    badge: 'bg-condition-salvage text-white',
-    surface: 'bg-condition-salvage-soft text-condition-salvage',
-    icon: 'text-condition-salvage',
-  },
-  {
     key: 'for_export',
     badge: 'bg-condition-for_export text-white',
     surface: 'bg-condition-for_export-soft text-condition-for_export',
@@ -124,10 +117,12 @@ export const SELECTABLE_CONDITIONS = CAR_CONDITIONS.filter(
 // no_docs и for_export сюда НЕ входят: машина на ходу и в порядке,
 // ограничение чисто юридическое, и прятать её от покупателя, которого
 // это ограничение устраивает, незачем.
+//
+// В 'parts' с миграции 0139 входит и бывший 'salvage' (тотал): для
+// покупателя это один случай — машина не поедет, годится на детали.
 export const DAMAGED_CONDITIONS: readonly CarCondition[] = [
   'damaged',
   'parts',
-  'salvage',
 ];
 
 // Оформление бейджа и пояснительной плашки. Неизвестное значение и

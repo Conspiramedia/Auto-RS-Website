@@ -4,12 +4,16 @@
 // Иконочного пакета в проекте нет (см. package.json: только next,
 // react, supabase и qrcode), поэтому набор нарисован здесь по образцу
 // уже существующих — ui/NavIcons.tsx и ui/InstallIcons.tsx. Ставить
-// lucide-react ради пяти значков значило бы тянуть зависимость в
+// lucide-react ради четырёх значков значило бы тянуть зависимость в
 // сборку клиента там, где хватает нескольких сотен байт разметки.
 //
-// Формы повторяют lucide под именами Hammer, Cog, FileX, Ban, Plane —
-// ровно те, что заданы требованием. Бейдж состояния читается на бегу,
-// и узнаваемость значка здесь важнее оригинальности.
+// Формы повторяют lucide под именами Hammer, Cog, FileX, Plane. Бейдж
+// состояния читается на бегу, и узнаваемость значка здесь важнее
+// оригинальности.
+//
+// Значка Ban («тотал») здесь больше нет: с миграции 0139 это состояние
+// слито с «на запчасти» — для покупателя оба означают одно, машина не
+// поедет. Донора на разборку обозначает шестерня.
 //
 // ЕДИНЫЙ КАРКАС: viewBox 24, обводка currentColor, толщина 2,
 // скруглённые концы и стыки — тот же контракт, что у NavIcons.
@@ -91,16 +95,6 @@ export function FileXIcon({ className }: IconProps) {
   );
 }
 
-// Ban — тотал: перечёркнутый круг, знак необратимости.
-export function BanIcon({ className }: IconProps) {
-  return (
-    <Icon className={className}>
-      <circle cx="12" cy="12" r="10" />
-      <path d="m4.9 4.9 14.2 14.2" />
-    </Icon>
-  );
-}
-
 // Plane — только на экспорт: самолёт как знак вывоза из страны.
 export function PlaneIcon({ className }: IconProps) {
   return (
@@ -126,8 +120,6 @@ export function ConditionIcon({
       return <CogIcon className={className} />;
     case 'no_docs':
       return <FileXIcon className={className} />;
-    case 'salvage':
-      return <BanIcon className={className} />;
     case 'for_export':
       return <PlaneIcon className={className} />;
     default:

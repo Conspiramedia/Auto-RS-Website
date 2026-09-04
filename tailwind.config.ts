@@ -65,7 +65,6 @@ const config: Config = {
           'damaged-soft': brand.conditionSurface.damaged,
           'parts-soft': brand.conditionSurface.parts,
           'no_docs-soft': brand.conditionSurface.no_docs,
-          'salvage-soft': brand.conditionSurface.salvage,
           'for_export-soft': brand.conditionSurface.for_export,
         },
         // Заливки и состояния наведения.
