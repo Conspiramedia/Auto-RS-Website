@@ -621,6 +621,22 @@ export const dict = {
       'U opisu nije dozvoljeno navoditi telefon, email ni linkove ka messengerima. Kupci će vas kontaktirati preko ćaskanja i telefona navedenog u oglasu.',
     // Naslov iznad istaknutih mesta u tekstu opisa.
     sell_contacts_found: 'Pronađeni kontakt podaci u opisu:',
+    // Spoljni linkovi i HTML u opisu (migracija 0136). Razlog je isti
+    // kao kod kontakata: link vodi kupca sa platforme, a oznake dolaze
+    // iz kopiranja sa drugog sajta i kvare prikaz.
+    sell_err_desc_links:
+      'U opisu nije dozvoljeno navoditi linkove ka drugim sajtovima. Opišite automobil — fotografije i podaci već stoje u oglasu.',
+    sell_err_desc_html:
+      'U opisu nije dozvoljeno koristiti HTML oznake i skripte. Unesite običan tekst.',
+    // Minimum od 30 znakova. Poruka ne samo da zabranjuje, nego i kaže
+    // šta da se napiše — inače prodavac dopiše bilo šta do brojke.
+    sell_err_desc_short:
+      'Opis je prekratak. Opišite stanje i opremu automobila — najmanje 30 znakova.',
+    sell_err_desc_long: 'Opis je predugačak — najviše 6000 znakova.',
+    // Brojač ispod polja: «124 / 6000».
+    sell_desc_counter: 'znakova',
+    // Naslov iznad istaknutih mesta kada razlog nije kontakt.
+    sell_desc_found: 'Pronađeno u opisu:',
 
     // ------------------------------------------------------------
     // Kabinet prodavca (/my). Sve stranice su noindex.
@@ -1919,6 +1935,22 @@ export const dict = {
       'В описании нельзя указывать телефон, email и ссылки на мессенджеры. Покупатели свяжутся с вами через чат и по телефону, указанному в объявлении.',
     // Заголовок над подсвеченными местами в тексте описания.
     sell_contacts_found: 'Найденные контактные данные в описании:',
+    // Внешние ссылки и HTML в описании (миграция 0136). Причина та же,
+    // что у контактов: ссылка уводит покупателя с площадки, а теги
+    // приезжают при копировании с другого сайта и ломают вёрстку.
+    sell_err_desc_links:
+      'В описании нельзя указывать ссылки на другие сайты. Опишите автомобиль — фотографии и характеристики уже есть в объявлении.',
+    sell_err_desc_html:
+      'В описании нельзя использовать HTML-теги и скрипты. Введите обычный текст.',
+    // Минимум 30 символов. Сообщение не просто запрещает, а говорит,
+    // что написать, — иначе продавец допишет что угодно до числа.
+    sell_err_desc_short:
+      'Описание слишком короткое. Опишите состояние и комплектацию автомобиля — не менее 30 символов.',
+    sell_err_desc_long: 'Описание слишком длинное — не более 6000 символов.',
+    // Счётчик под полем: «124 / 6000».
+    sell_desc_counter: 'символов',
+    // Заголовок над подсветкой, когда причина не в контактах.
+    sell_desc_found: 'Найдено в описании:',
 
     // ------------------------------------------------------------
     // Кабинет продавца (/my). Все страницы — noindex.

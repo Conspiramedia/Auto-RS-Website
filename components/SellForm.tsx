@@ -59,7 +59,14 @@ import {
   validateYear,
 } from '@/lib/inputFormat';
 import { usePhoneCaret } from '@/lib/usePhoneCaret';
-import { findContacts, splitByContacts } from '@/lib/contactGuard';
+import {
+  DESCRIPTION_MAX,
+  DESCRIPTION_MIN,
+  descriptionLength,
+  findContacts,
+  splitByContacts,
+  validateDescription,
+} from '@/lib/contactGuard';
 import {
   BODY_TYPES,
   ENGINE_VOLUME_VALUES,
@@ -209,6 +216,25 @@ export default function SellForm({
     [description],
   );
   const hasDescriptionContacts = descriptionContacts.length > 0;
+
+  // Общая проверка описания: длина, ссылки, разметка, контакты.
+  // Возвращает КЛЮЧ словаря или null — перевод подставляем здесь,
+  // модуль про локали не знает.
+  const descriptionProblem = useMemo(
+    () => validateDescription(description),
+    [description],
+  );
+
+  // Длина без крайних пробелов — та же, что проверяют валидатор и
+  // констрейнт базы. Счётчик обязан показывать именно её, иначе
+  // «29 символов + пробел» выглядели бы как 30 допустимых.
+  const descriptionLen = descriptionLength(description);
+
+  // Счётчик краснеет только когда длина ДЕЙСТВИТЕЛЬНО нарушена.
+  // Пустое поле не ошибка: описание необязательное.
+  const descriptionLenBad =
+    descriptionLen > 0 &&
+    (descriptionLen < DESCRIPTION_MIN || descriptionLen > DESCRIPTION_MAX);
 
   // Шаг 3: фотографии. Набор смешанный: при подаче это только выбранные
   // файлы, при правке — ещё и уже загруженные снимки объявления
@@ -1209,14 +1235,15 @@ export default function SellForm({
       if (sale !== null && sale <= 0) return t('sell_err_price_positive');
     }
 
-    // КОНТАКТЫ В ОПИСАНИИ. Проверка стоит здесь, на переходе со второго
-    // шага, а не в момент отправки: дальше идут загрузка фотографий и
-    // (для гостя) SMS-код, и узнавать о запрете после них — самое
-    // дорогое, что можно предложить продавцу.
+    // ОПИСАНИЕ ЦЕЛИКОМ: длина, ссылки, разметка, контакты. Проверка
+    // стоит здесь, на переходе со второго шага, а не в момент отправки:
+    // дальше идут загрузка фотографий и (для гостя) SMS-код, и узнавать
+    // о запрете после них — самое дорогое, что можно предложить
+    // продавцу.
     //
-    // Сервер проверит это ещё раз и откажет жёстко (миграция 0135):
-    // здесь мы экономим время, а не обеспечиваем правило.
-    if (hasDescriptionContacts) return t('sell_err_contacts');
+    // Сервер проверит это ещё раз и откажет жёстко (миграции 0135 и
+    // 0136): здесь мы экономим время, а не обеспечиваем правило.
+    if (descriptionProblem) return t(descriptionProblem);
 
     return null;
   }
@@ -1684,19 +1711,49 @@ export default function SellForm({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={5}
-              maxLength={6000}
+              // maxLength обрезает ввод на верхней границе, но правилом
+              // является констрейнт базы (0136): поле можно обойти.
+              maxLength={DESCRIPTION_MAX}
               placeholder={t('car_description_hint')}
               // Рамка краснеет сразу, как только в тексте появился
-              // номер: продавец видит связь между тем, что печатает, и
-              // отказом, — а не узнаёт о запрете на последнем шаге.
+              // номер, ссылка или тег: продавец видит связь между тем,
+              // что печатает, и отказом, — а не узнаёт о запрете на
+              // последнем шаге.
+              //
+              // Короткое описание рамку НЕ красит: пока человек
+              // печатает, оно короткое по определению, и краснеть с
+              // первого символа значит ругаться на процесс письма.
+              // Про минимум сообщает счётчик и проверка при переходе.
               className={`${fieldTextarea}${
-                hasDescriptionContacts ? ' border-error' : ''
+                hasDescriptionContacts ||
+                descriptionProblem === 'sell_err_desc_links' ||
+                descriptionProblem === 'sell_err_desc_html'
+                  ? ' border-error'
+                  : ''
               }`}
-              aria-invalid={hasDescriptionContacts || undefined}
+              aria-invalid={descriptionProblem !== null || undefined}
               aria-describedby={
-                hasDescriptionContacts ? 'description-contacts' : undefined
+                descriptionProblem ? 'description-problem' : undefined
               }
             />
+
+            {/* СЧЁТЧИК. Показывает длину без крайних пробелов — ту же,
+                что проверяют валидатор и база. До минимума показываем
+                «сколько ещё нужно»: это подсказка, а не упрёк. */}
+            <div className="mt-1 flex items-start justify-between gap-3">
+              <p className="text-small text-neutral-50">
+                {descriptionLen > 0 && descriptionLen < DESCRIPTION_MIN
+                  ? t('sell_err_desc_short')
+                  : ''}
+              </p>
+              <p
+                className={`shrink-0 text-small tabular-nums ${
+                  descriptionLenBad ? 'text-error' : 'text-neutral-50'
+                }`}
+              >
+                {descriptionLen} / {DESCRIPTION_MAX} {t('sell_desc_counter')}
+              </p>
+            </div>
 
             {/* ПОДСВЕТКА НАЙДЕННОГО.
                 Textarea не умеет красить куски своего текста, а
@@ -1706,11 +1763,18 @@ export default function SellForm({
                 ОТДЕЛЬНЫМ списком под полем. Продавцу нужно понять, что
                 именно убрать, и точная позиция в тексте для этого не
                 обязательна — достаточно увидеть сам номер. */}
-            {hasDescriptionContacts && (
-              <div id="description-contacts" className="mt-2">
-                <Alert tone="error">{t('sell_err_contacts')}</Alert>
+            {descriptionProblem !== null &&
+              descriptionProblem !== 'sell_err_desc_short' &&
+              descriptionProblem !== 'sell_err_desc_long' && (
+              <div id="description-problem" className="mt-2">
+                <Alert tone="error">{t(descriptionProblem)}</Alert>
+                {/* Заголовок над подсветкой зависит от причины: при
+                    ссылке или разметке говорить «контактные данные»
+                    было бы неверно. */}
                 <p className="mt-2 text-caption text-neutral-60">
-                  {t('sell_contacts_found')}
+                  {descriptionProblem === 'sell_err_contacts'
+                    ? t('sell_contacts_found')
+                    : t('sell_desc_found')}
                 </p>
                 <p className="mt-1 break-words text-caption">
                   {/* Слитный текст описания с покрашенными находками:

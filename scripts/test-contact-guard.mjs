@@ -34,9 +34,15 @@ import assert from 'node:assert/strict';
 // Отсюда же следует правило для будущих правок: если импорт вдруг
 // упадёт с ошибкой синтаксиса, значит в модуль добавили конструкцию,
 // требующую компилятора — и решать надо там, а не здесь.
-const { findContacts, hasContacts, splitByContacts } = await import(
-  '../lib/contactGuard.ts'
-);
+const {
+  findContacts,
+  hasContacts,
+  splitByContacts,
+  validateDescription,
+  descriptionLength,
+  DESCRIPTION_MIN,
+  DESCRIPTION_MAX,
+} = await import('../lib/contactGuard.ts');
 
 // ============================================================
 // 1. ДЕСЯТЬ ОПИСАНИЙ С КОНТАКТАМИ — ВСЕ ОТКЛОНЯЮТСЯ.
@@ -152,4 +158,176 @@ test('повторный вызов возвращает тот же резул�
 
   assert.deepEqual(second, first, 'результат второго вызова отличается');
   assert.ok(first.length >= 2, `ожидалось минимум два совпадения: ${first.length}`);
+});
+
+// ============================================================
+// 5. ВНЕШНИЕ ССЫЛКИ — ДЕСЯТЬ ОПИСАНИЙ, ВСЕ ОТКЛОНЯЮТСЯ.
+// ============================================================
+// Ссылка уводит покупателя с площадки так же, как телефон в тексте,
+// только через чужой сайт. Проверяем все записи: со схемой, с www,
+// голый домен, домен с путём, поддомен, ftp.
+const MUST_REJECT_LINKS = [
+  ['https со схемой', 'Pogledajte na https://avito.ru/12345 vise slika automobila'],
+  ['http со схемой', 'Detaljan opis i slike na http://mojauto.rs/oglas/998877'],
+  ['www без схемы', 'Vise informacija na www.mojauto.rs o ovom vozilu i ceni'],
+  ['голый домен .rs', 'Detalji: mojauto.rs/oglas/12345 pogledajte slike i opis'],
+  ['голый домен .com', 'Slike na imgur.com/abc123 ima ih dosta za pregled kupcima'],
+  ['поддомен', 'Sve slike na slike.mojauto.rs u punoj rezoluciji za kupce'],
+  ['домен .net', 'Kompletna istorija servisa na autoistorija.net za proveru'],
+  ['домен .io', 'Izvestaj o vozilu dostupan na carcheck.io pogledajte sami'],
+  ['ftp', 'Dokumentacija na ftp://files.example.com dostupna svima vama'],
+  ['youtube', 'Video snimak motora na youtube.com/watch pogledajte obavezno'],
+];
+
+for (const [name, text] of MUST_REJECT_LINKS) {
+  test(`ссылка отклоняется: ${name}`, () => {
+    assert.equal(
+      validateDescription(text),
+      'sell_err_desc_links',
+      `ссылка не поймана или названа другой причиной: ${JSON.stringify(text)}`,
+    );
+  });
+}
+
+// ============================================================
+// 6. HTML И СКРИПТЫ — ДЕСЯТЬ ОПИСАНИЙ, ВСЕ ОТКЛОНЯЮТСЯ.
+// ============================================================
+// Разметка приезжает при копировании с другой площадки и ломает и
+// карточку, и письма, и JSON-LD. Отклоняем, а НЕ вычищаем молча:
+// подменять авторский текст без ведома продавца нельзя.
+const MUST_REJECT_HTML = [
+  ['парный тег b', 'Opis <b>odlicno</b> stanje auta i kompletna oprema vozila'],
+  ['одиночный br', 'Prvi vlasnik<br/>Garaziran primerak, nije nikada udaran'],
+  ['div с атрибутом', '<div class=x>Prodajem auto</div> u odlicnom stanju danas'],
+  ['script', 'Auto <script>alert(1)</script> u odlicnom stanju bez ostecenja'],
+  ['незакрытый script', 'Odlicno stanje <script src=x.js nije nikada udaran auto'],
+  ['iframe', 'Pogledajte <iframe src=x></iframe> i procenite stanje vozila'],
+  ['обработчик onclick', 'onclick=alert(1) odlicno stanje automobila, garaziran'],
+  ['javascript:', 'javascript:void(0) prodajem auto u odlicnom stanju, nov'],
+  ['HTML-сущности', 'Tekst sa &lt;br&gt; oznakama i ostalim stvarima iz oglasa'],
+  ['закрывающий тег', 'Prodajem auto</p> u odlicnom stanju, prvi vlasnik, klima'],
+];
+
+for (const [name, text] of MUST_REJECT_HTML) {
+  test(`разметка отклоняется: ${name}`, () => {
+    assert.equal(
+      validateDescription(text),
+      'sell_err_desc_html',
+      `разметка не поймана или названа другой причиной: ${JSON.stringify(text)}`,
+    );
+  });
+}
+
+// ============================================================
+// 7. ДЛИНА ОПИСАНИЯ.
+// ============================================================
+// Десять слишком коротких: от одного слова до двадцати с небольшим
+// символов. Границу проверяем отдельным тестом с обеих сторон.
+const TOO_SHORT = [
+  'Auto',
+  'Prodajem',
+  'Prodajem auto',
+  'Odlicno stanje',
+  'Продаю машину',
+  'Golf 7 dizel',
+  'Hitno prodajem!',
+  'Prvi vlasnik auta',
+  'Срочно продам авто!',
+  'Odlicno stanje auta hit',
+];
+
+for (const text of TOO_SHORT) {
+  test(`слишком короткое (${text.trim().length}): ${text}`, () => {
+    assert.ok(
+      text.trim().length < DESCRIPTION_MIN,
+      'тест составлен неверно: описание не короче минимума',
+    );
+    assert.equal(validateDescription(text), 'sell_err_desc_short');
+  });
+}
+
+test('граница минимума: 29 отклоняется, 30 принимается', () => {
+  // Ровно на границе — то место, где ошибаются чаще всего.
+  const at29 = 'a'.repeat(29);
+  const at30 = 'a'.repeat(30);
+
+  assert.equal(validateDescription(at29), 'sell_err_desc_short');
+  assert.equal(validateDescription(at30), null);
+});
+
+test('длина считается без крайних пробелов', () => {
+  // Двадцать пробелов вокруг двадцати букв: визуально «длинно»,
+  // по смыслу — двадцать символов.
+  const padded = `          ${'a'.repeat(20)}          `;
+
+  assert.equal(descriptionLength(padded), 20);
+  assert.equal(validateDescription(padded), 'sell_err_desc_short');
+});
+
+test('граница максимума: 6000 принимается, 6001 отклоняется', () => {
+  const at6000 = 'a'.repeat(DESCRIPTION_MAX);
+  const at6001 = 'a'.repeat(DESCRIPTION_MAX + 1);
+
+  assert.equal(validateDescription(at6000), null);
+  assert.equal(validateDescription(at6001), 'sell_err_desc_long');
+});
+
+test('пустое описание допустимо — поле необязательное', () => {
+  // Описание необязательно с 0034. Требовать текст от всех значило бы
+  // менять правила подачи, а не добавлять проверку.
+  assert.equal(validateDescription(''), null);
+  assert.equal(validateDescription('   \n  '), null);
+});
+
+// ============================================================
+// 8. ДЕСЯТЬ ЧИСТЫХ ОПИСАНИЙ ПРОХОДЯТ ВСЮ ВАЛИДАЦИЮ ЦЕЛИКОМ.
+// ============================================================
+// Не только правила по отдельности, но и validateDescription как одно
+// целое: длина, ссылки, разметка и контакты вместе. Все описания не
+// короче тридцати символов и содержат числа, из-за которых наивные
+// фильтры дают ложные срабатывания.
+const CLEAN_FULL = [
+  'Motor 1.9 TDI, potrosnja 5.5 litara na 100 km, odlicno stanje.',
+  'Veliki servis uradjen na 120000 km, 15.03.2024. Sve je uredno.',
+  'Alu felne 17 cola, gume 225/45 R17 iz 2022. godine, kao nove.',
+  'Automobil 2020. godiste, prvi vlasnik, garaziran, nije udaran.',
+  'Dizel 2.0, 140 konjskih snaga, menjac automatik, tempomat, klima.',
+  'Predjeno 86 500 km, redovno servisiran u ovlascenom servisu.',
+  'Цена 12 500 евро. Машина 2015 года, пробег 90 000 км, один хозяин.',
+  'Klima, ABS, ESP, 6 vazdusnih jastuka, parking senzori napred.',
+  'Звоните после 18 часов. Машина 2015 года, пробег 90 000 км, торг.',
+  'Auto je nov.Me interesuje samo ozbiljan kupac za ovaj automobil.',
+];
+
+for (const text of CLEAN_FULL) {
+  test(`чистое описание принимается целиком: ${text.slice(0, 40)}…`, () => {
+    assert.equal(
+      validateDescription(text),
+      null,
+      `ЛОЖНОЕ СРАБАТЫВАНИЕ: ${JSON.stringify(text)}`,
+    );
+  });
+}
+
+// ============================================================
+// 9. ПРИОРИТЕТ ПРИЧИН.
+// ============================================================
+// Порядок обязан совпадать с триггером в базе (0136): иначе форма
+// назовёт одну причину, а сервер при обходе — другую.
+test('разметка важнее ссылки и контакта', () => {
+  const text = '<b>Zovite</b> na 064 123 4567 ili mojauto.rs za detalje sada';
+  assert.equal(validateDescription(text), 'sell_err_desc_html');
+});
+
+test('контакт важнее общей ссылки', () => {
+  // t.me — и мессенджер, и ссылка. Причина про контакты точнее.
+  const text = 'Pisite na t.me/prodavac ili pogledajte mojauto.rs za slike';
+  assert.equal(validateDescription(text), 'sell_err_contacts');
+});
+
+test('нарушение содержания важнее короткой длины', () => {
+  // Текст короче тридцати символов И содержит номер. Продавцу
+  // полезнее узнать про номер: дописать текст он и так собирался.
+  const text = 'Zovi 064 123 4567';
+  assert.equal(validateDescription(text), 'sell_err_contacts');
 });

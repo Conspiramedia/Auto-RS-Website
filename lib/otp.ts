@@ -13,7 +13,7 @@
 // состояние остаются в компонентах — они разные.
 // ============================================================
 
-import type { Translate } from '@/lib/i18n';
+import type { DictKey, Translate } from '@/lib/i18n';
 
 // Задержка перед повторной отправкой кода, секунды. Значение из
 // приложения (login_screen.dart): без таймера продавец выжжет суточную
@@ -174,6 +174,24 @@ export function humanOtpError(e: unknown, t: Translate): string {
     message.includes('contacts_in_description')
   ) {
     return t('sell_err_contacts');
+  }
+
+  // Остальные отказы того же барьера (миграция 0136): ссылки и
+  // разметка, слишком короткое и слишком длинное описание. Различаем
+  // их так же — по hint, а не по коду 23514.
+  //
+  // До сервера они доходят редко: форма проверяет то же самое при
+  // вводе. Но клиент обходится, и тогда текст должен остаться
+  // человеческим на обеих локалях.
+  const DESCRIPTION_HINTS: Record<string, DictKey> = {
+    links_in_description: 'sell_err_desc_links',
+    markup_in_description: 'sell_err_desc_html',
+    description_too_short: 'sell_err_desc_short',
+    description_too_long: 'sell_err_desc_long',
+  };
+
+  for (const [needle, key] of Object.entries(DESCRIPTION_HINTS)) {
+    if (hint === needle || message.includes(needle)) return t(key);
   }
 
   if (message.includes('expired')) return t('otp_err_expired');
