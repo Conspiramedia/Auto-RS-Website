@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata({
     locale,
     path: '/dealers',
-    title: t('dealers_title'),
+    title: t('meta_dealers_title'),
     description: t('meta_dealers_desc'),
   });
 }

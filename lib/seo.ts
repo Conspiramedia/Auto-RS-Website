@@ -70,13 +70,36 @@ export function buildMetadata(params: {
   // Страницы фильтров и пагинации не должны попадать в индекс: они
   // порождают тысячи почти одинаковых URL.
   noindex?: boolean;
+  // Полный запрет обхода: страница не только вне индекса, но и ссылки
+  // с неё не обходятся. Отдельный флаг, а не значение noindex, потому
+  // что случаи разные: отфильтрованная выдача обязана оставаться
+  // follow (краулер идёт по ней к карточкам), а несуществующий адрес
+  // вести никуда не должен.
+  nofollow?: boolean;
+  // Пометка «страница описывает товар». Включает теги product:price:*
+  // рядом с обычной OG-разметкой. Сам og:type при этом остаётся
+  // website — почему, подробно разобрано у productMeta ниже.
+  ogType?: 'website' | 'product';
+  // Цена для product-разметки OG. Пишется в product:price:amount и
+  // product:price:currency — без них тип product неполон.
+  price?: { amount: number; currency: string };
   // У страницы есть СВОЙ файловый роут opengraph-image.tsx (карточка
   // объявления рисует превью с фотографией и ценой). Тогда ключ images
   // не выставляется вовсе — подробнее ниже, у самого ключа.
   ownOgImage?: boolean;
 }): Metadata {
-  const { locale, path, title, description, image, noindex, ownOgImage } =
-    params;
+  const {
+    locale,
+    path,
+    title,
+    description,
+    image,
+    noindex,
+    nofollow,
+    ogType,
+    price,
+    ownOgImage,
+  } = params;
 
   // Картинка превью. Приоритет: явно переданная → своя динамическая →
   // брендовая корневая.
@@ -103,31 +126,79 @@ export function buildMetadata(params: {
   const ogImage =
     image ?? `${siteBaseUrl}${locale === 'ru' ? '/ru' : ''}/opengraph-image`;
 
+  // ------------------------------------------------------------
+  // Цена товара в OG-разметке.
+  // ------------------------------------------------------------
+  // ПРО og:type=product — ЕГО ЗДЕСЬ НЕТ, И ЭТО НЕ УПУЩЕНИЕ.
+  // Next 16 не позволяет его выставить ни одним из двух способов:
+  //
+  //   openGraph.type — рендерер перебирает допустимые значения
+  //     switch'ем и на неизвестном БРОСАЕТ «Invalid OpenGraph type»
+  //     (node_modules/next/dist/lib/metadata/metadata.js, ветка
+  //     default). Приведение типа обманывает компилятор, но страница
+  //     падает при рендере — проверено на отдаваемом HTML. Список
+  //     закрыт: website, article, book, profile, music.*, video.*.
+  //
+  //   metadata.other — печатает теги через name=, а не property=.
+  //     Open Graph читается только по property, поэтому такой тег
+  //     соцсети игнорируют, а рядом остаётся противоречащий ему
+  //     property="og:type" content="website" из блока openGraph.
+  //
+  // Поэтому og:type карточки остаётся website. Цена при этом всё
+  // равно полезна: product:price:* понимают агрегаторы товаров,
+  // читающие микроразметку по name, а полноценные данные о товаре
+  // (цена, наличие, состояние) карточка отдаёт в JSON-LD — Offer
+  // внутри Vehicle, который и есть основной источник для поиска.
+  //
+  // Пишется только при известной цене: договорная (null) сюда не
+  // доходит, а product:price:amount без числа читается как ошибка.
+  const productMeta =
+    ogType === 'product' && price
+      ? {
+          'product:price:amount': String(price.amount),
+          'product:price:currency': price.currency || 'EUR',
+        }
+      : undefined;
+
+  // Общая часть OG — всё, кроме type: его подставляет сам объект ниже
+  // литералом (тип OpenGraph у Next — размеченное объединение по этому
+  // полю, и переменная вместо литерала ломает его дискриминацию).
+  const ogCommon = {
+    title,
+    description,
+    url: `${siteBaseUrl}${localeHref(locale, path)}`,
+    siteName: 'RS Auto',
+    locale: locale === 'sr' ? 'sr_RS' : 'ru_RU',
+    // У страницы со СВОИМ файловым роутом ключ images не выставляется
+    // вовсе. Записать сюда undefined нельзя: для Next это всё равно
+    // означает «автор сам управляет картинками», и тогда роут
+    // opengraph-image.tsx перестаёт подставляться автоматически —
+    // карточка уходит в соцсети вообще без og:image. Проверено на
+    // /car/{id}: с undefined тега не было, без ключа он появляется.
+    //
+    // Остальные страницы получают картинку явно (ogImage выше):
+    // наследовать корневой роут они не могут.
+    ...(ownOgImage
+      ? {}
+      : { images: [{ url: ogImage, width: 1200, height: 630 }] }),
+  };
+
   return {
     title,
     description,
     alternates: buildAlternates(locale, path),
-    robots: noindex ? { index: false, follow: true } : undefined,
-    openGraph: {
-      title,
-      description,
-      url: `${siteBaseUrl}${localeHref(locale, path)}`,
-      siteName: 'RS Auto',
-      locale: locale === 'sr' ? 'sr_RS' : 'ru_RU',
-      type: 'website',
-      // У страницы со СВОИМ файловым роутом ключ images не выставляется
-      // вовсе. Записать сюда undefined нельзя: для Next это всё равно
-      // означает «автор сам управляет картинками», и тогда роут
-      // opengraph-image.tsx перестаёт подставляться автоматически —
-      // карточка уходит в соцсети вообще без og:image. Проверено на
-      // /car/{id}: с undefined тега не было, без ключа он появляется.
-      //
-      // Остальные страницы получают картинку явно (ogImage выше):
-      // наследовать корневой роут они не могут.
-      ...(ownOgImage
-        ? {}
-        : { images: [{ url: ogImage, width: 1200, height: 630 }] }),
-    },
+    // nofollow важен только вместе с noindex: страница, которую не
+    // индексируют, но по ссылкам которой ходят, — это отфильтрованная
+    // выдача, и она передаёт follow.
+    robots: noindex
+      ? { index: false, follow: !nofollow }
+      : undefined,
+    ...(productMeta ? { other: productMeta } : {}),
+    // og:type всегда 'website'. Для товарных страниц нужный тег
+    // ставится отдельно, через other выше: 'product' роняет рендерер
+    // Next (см. комментарий там), поэтому здесь остаётся значение из
+    // разрешённого списка.
+    openGraph: { ...ogCommon, type: 'website' },
     twitter: {
       // summary_large_image даёт крупное превью — именно оно продаёт
       // объявление в ленте при репосте.
@@ -382,6 +453,63 @@ export function truncateDescription(text: string, limit = 160): string {
 
   // Знаки препинания на срезе выглядят как опечатка («в отличном,…»).
   return `${body.replace(/[\s,;:.!?-]+$/, '')}…`;
+}
+
+// ------------------------------------------------------------
+// Запасное описание карточки объявления.
+// ------------------------------------------------------------
+// Когда продавец описания не написал или написал слишком коротко,
+// сниппет собирается из характеристик машины. Прежний запасной вариант
+// («{марка} {модель}, {год}, {город}. {пробег}.») давал около 45
+// символов — вдвое ниже нижней границы сниппета, и Google дописывал
+// его обрывками текста со страницы.
+//
+// ПОРОГ 70 СИМВОЛОВ. Короткое описание продавца («Prodajem hitno»)
+// проигрывает собранному из характеристик: в нём нет ни года, ни
+// пробега, ни города — того, по чему объявление находят. Поэтому такое
+// описание тоже заменяется, а не дополняется: склейка чужого текста с
+// нашим шаблоном читалась бы как две несвязанные фразы.
+//
+// ПРОЧЕРКОВ НЕ БЫВАЕТ. labelFuel и labelTransmission возвращают «—»
+// для незаполненного поля — в сниппете это выглядит как поломка,
+// поэтому пустые характеристики не подставляются вовсе, а не
+// печатаются прочерком. Строка остаётся грамматически целой при любом
+// наборе заполненных полей.
+export function buildCarFallbackDescription(params: {
+  title: string;
+  city: string;
+  mileage: string | null;
+  fuel: string | null;
+  transmission: string | null;
+  price: string;
+  tail: string;
+  // Добавка на случай скудной карточки — см. ниже.
+  extra: string;
+}): string {
+  const { title, city, mileage, fuel, transmission, price, tail, extra } =
+    params;
+
+  // Характеристики через запятую — только заполненные.
+  const specs = [mileage, fuel, transmission].filter(
+    (v): v is string => typeof v === 'string' && v.length > 0 && v !== '—',
+  );
+
+  const parts = [`${title}, ${city}.`];
+  if (specs.length > 0) parts.push(`${specs.join(', ')}.`);
+  parts.push(`${price}.`, tail);
+
+  const base = parts.join(' ');
+
+  // ДОБОР ДО НИЖНЕЙ ГРАНИЦЫ СНИППЕТА. У самой скудной карточки —
+  // пробег, топливо и коробка не заполнены, цена договорная — строка
+  // выходила 66 символов («Fiat Punto, 2005, Niš. Po dogovoru. Kontakt
+  // direktno sa prodavcem.»), то есть ниже тех 70, ради которых
+  // запасное описание и заводилось.
+  //
+  // Добавка идёт ТОЛЬКО в этом случае: у заполненной карточки строка и
+  // так за 90 символов, и лишняя фраза съедала бы место, которое
+  // занимают характеристики машины.
+  return base.length >= 70 ? base : `${base} ${extra}`;
 }
 
 // ------------------------------------------------------------

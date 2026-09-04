@@ -27,7 +27,7 @@ export async function generateMetadata({
   return buildMetadata({
     locale,
     path: '/rent',
-    title: t('rent_title'),
+    title: t('meta_rent_title'),
     description: t('meta_rent_desc'),
     noindex: hasActiveFilters(filters) || (filters.page ?? 1) > 1,
   });

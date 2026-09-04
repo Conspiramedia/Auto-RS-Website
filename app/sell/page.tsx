@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata({
     locale,
     path: '/sell',
-    title: t('sell_title'),
+    title: t('meta_sell_title'),
     description: t('meta_sell_desc'),
   });
 }

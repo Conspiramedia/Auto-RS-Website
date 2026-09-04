@@ -1,17 +1,31 @@
 // ============================================================
 // RS AUTO — Карточка объявления /ru/car/{id}, русская версия. SSR.
 // ============================================================
-// Canonical указывает на сербскую версию (/car/{id}) — правило проекта
-// «одно объявление — один canonical-URL». Связь версий даёт hreflang.
+// Canonical — self-canonical: страница канонизирует сама себя
+// (/ru/car/{id}), сербская версия — себя. Связь версий даёт hreflang;
+// подробности и история правки — в шапке lib/seo.ts.
+//
+// Разметка живёт в components/pages/CarPageView — она общая с /car/{id}.
 // ============================================================
 
 import type { Metadata } from 'next';
 
 import CarPageView from '@/components/pages/CarPageView';
-import { carTitle, formatMileage, formatPrice } from '@/lib/format';
+import {
+  carTitle,
+  formatMileage,
+  formatPrice,
+  labelFuel,
+  labelTransmission,
+} from '@/lib/format';
 import type { Locale } from '@/lib/i18n';
+import { getT } from '@/lib/i18n';
 import { fetchCarDetails } from '@/lib/queries';
-import { buildMetadata, truncateDescription } from '@/lib/seo';
+import {
+  buildCarFallbackDescription,
+  buildMetadata,
+  truncateDescription,
+} from '@/lib/seo';
 
 export const revalidate = 300;
 
@@ -27,11 +41,17 @@ export async function generateMetadata({
   const { id } = await params;
   const car = await fetchCarDetails(id);
 
+  // Объявления нет — см. комментарий в сербской версии: canonical и
+  // hreflang нужны и здесь, robots остаётся прежним.
   if (!car) {
-    return {
+    return buildMetadata({
+      locale,
+      path: `/car/${id}`,
       title: 'Объявление не найдено',
-      robots: { index: false, follow: false },
-    };
+      description: getT(locale)('nf_text'),
+      noindex: true,
+      nofollow: true,
+    });
   }
 
   // Снятое с публикации: RPC отдаёт урезанную карточку (миграция 0072),
@@ -43,25 +63,53 @@ export async function generateMetadata({
   // админу объявление приходит целиком, и для них это обычная
   // карточка со своими метаданными.
   if (car.status !== 'active' && car.status !== 'sold' && !car.seller_name) {
-    return {
+    return buildMetadata({
+      locale,
+      path: `/car/${id}`,
       title: `${car.brand} ${car.model}, ${car.year} — Объявление недоступно`,
-      robots: { index: false, follow: true },
-    };
+      description: getT(locale)('nf_text'),
+      // follow остаётся — см. комментарий выше.
+      noindex: true,
+    });
   }
 
   const title = `${carTitle(car)} — ${formatPrice(car.sale_price, car.currency, locale)}`;
   // Описание режется по границе слова и укладывается в 160 символов —
   // столько показывает Google. Раньше здесь стоял slice(0, 200), и
   // текст продавца обрывался посреди слова.
-  const description = car.description
+  // Описание продавца короче 70 символов для сниппета бесполезно: в нём
+  // нет ни года, ни пробега, ни города — того, по чему объявление
+  // находят. Такое описание заменяется собранным из характеристик, а не
+  // дополняется (см. buildCarFallbackDescription).
+  const ownDescription = car.description
     ? truncateDescription(car.description)
-    : `${carTitle(car)}, ${car.city}. ${formatMileage(car.mileage, locale)}.`;
+    : '';
+
+  const description =
+    ownDescription.length >= 70
+      ? ownDescription
+      : buildCarFallbackDescription({
+          title: carTitle(car),
+          city: car.city,
+          mileage: formatMileage(car.mileage, locale),
+          fuel: labelFuel(car.fuel, locale),
+          transmission: labelTransmission(car.transmission, locale),
+          price: formatPrice(car.sale_price, car.currency, locale),
+          tail: getT(locale)('car_meta_fallback_tail'),
+          extra: getT(locale)('car_meta_fallback_extra'),
+        });
 
   return buildMetadata({
     locale,
     path: `/car/${id}`,
     title,
     description,
+    // Карточка — товар: og:type product и product:price:* (см.
+    // комментарий в сербской версии).
+    ogType: 'product',
+    ...(car.sale_price != null
+      ? { price: { amount: car.sale_price, currency: car.currency } }
+      : {}),
     // Своя динамическая OG-картинка (см. соседний opengraph-image).
     ownOgImage: true,
   });

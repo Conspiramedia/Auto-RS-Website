@@ -75,6 +75,22 @@ const NOUNS = {
     sr: { one: 'oglas', few: 'oglasa', many: 'oglasa' },
     ru: { one: 'объявление', few: 'объявления', many: 'объявлений' },
   },
+  // «Активное объявление» — отдельная запись, а не listing с
+  // приклеенным прилагательным: в сербском согласуется и оно
+  // («1 aktivan oglas», но «2 aktivna oglasa» и «5 aktivnih oglasa»),
+  // и собрать это конкатенацией с listing нельзя.
+  activeListing: {
+    sr: {
+      one: 'aktivan oglas',
+      few: 'aktivna oglasa',
+      many: 'aktivnih oglasa',
+    },
+    ru: {
+      one: 'активное объявление',
+      few: 'активных объявления',
+      many: 'активных объявлений',
+    },
+  },
 } as const;
 
 export type NounKey = keyof typeof NOUNS;

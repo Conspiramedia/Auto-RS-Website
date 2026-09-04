@@ -29,6 +29,7 @@ export default function RuPrivacyPage() {
       locale={locale}
       path="/privacy"
       title={getT(locale)('legal_privacy_title')}
+      description={getT(locale)('meta_privacy_desc')}
       sections={PRIVACY_POLICY[locale]}
     />
   );

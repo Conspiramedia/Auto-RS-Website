@@ -17,6 +17,10 @@ const locale: Locale = 'ru';
 
 export const metadata: Metadata = {
   title: getT(locale)('nf_title'),
+  // Описание сайта здесь гасится: без null страница «не найдено»
+  // наследовала бы от корневого layout текст про покупку и продажу
+  // автомобилей — и показывала бы его в превью при пересылке ссылки.
+  description: null,
   robots: { index: false, follow: true },
 };
 

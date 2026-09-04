@@ -15,69 +15,10 @@ import Card from '@/components/ui/Card';
 import BackCloseButton from '@/components/BackCloseButton';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
-import type { DictKey, Locale } from '@/lib/i18n';
+import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
+import { SCENARIOS, SELLER_SCENARIO } from '@/lib/scenarios';
 import { buildHowToJsonLd, buildPageJsonLd } from '@/lib/seo';
-
-type Scenario = {
-  title: DictKey;
-  steps: { title: DictKey; text: DictKey }[];
-  // Действие в конце сценария: куда ведём человека дальше.
-  ctaLabel: DictKey;
-  ctaPath: string;
-  // Акцентная кнопка только у сценария продавца: подача объявления —
-  // главная бизнес-цель сайта, и второго яркого CTA на экране быть
-  // не должно (правило бренда).
-  ctaPrimary?: boolean;
-};
-
-const SCENARIOS: Scenario[] = [
-  {
-    title: 'how_buyer_title',
-    steps: [
-      { title: 'how_buyer_1_title', text: 'how_buyer_1_text' },
-      { title: 'how_buyer_2_title', text: 'how_buyer_2_text' },
-      { title: 'how_buyer_3_title', text: 'how_buyer_3_text' },
-    ],
-    ctaLabel: 'home_all_cars',
-    ctaPath: '/cars',
-  },
-  {
-    title: 'how_seller_title',
-    steps: [
-      { title: 'how_seller_1_title', text: 'how_seller_1_text' },
-      { title: 'how_seller_2_title', text: 'how_seller_2_text' },
-      { title: 'how_seller_3_title', text: 'how_seller_3_text' },
-    ],
-    ctaLabel: 'home_hero_cta',
-    ctaPath: '/sell',
-    ctaPrimary: true,
-  },
-  // Аренда идёт ПОСЛЕ продажи: подача та же формой, отличается только
-  // переключателем типа на первом шаге, — и человеку, прочитавшему
-  // сценарий продавца, здесь остаётся понять одну разницу, а не
-  // разбирать процесс заново.
-  {
-    title: 'how_rent_title',
-    steps: [
-      { title: 'how_rent_1_title', text: 'how_rent_1_text' },
-      { title: 'how_rent_2_title', text: 'how_rent_2_text' },
-      { title: 'how_rent_3_title', text: 'how_rent_3_text' },
-    ],
-    ctaLabel: 'how_rent_cta',
-    ctaPath: '/sell',
-  },
-  {
-    title: 'how_dealer_title',
-    steps: [
-      { title: 'how_dealer_1_title', text: 'how_dealer_1_text' },
-      { title: 'how_dealer_2_title', text: 'how_dealer_2_text' },
-      { title: 'how_dealer_3_title', text: 'how_dealer_3_text' },
-    ],
-    ctaLabel: 'dealers_cta',
-    ctaPath: '/dealers',
-  },
-];
 
 export default function HowItWorksPageView({ locale }: { locale: Locale }) {
   const t = getT(locale);
@@ -91,7 +32,8 @@ export default function HowItWorksPageView({ locale }: { locale: Locale }) {
   // сайта, и расширенный сниппет со списком шагов нужен именно ей.
   // Шаги берутся из того же SCENARIOS, что рендерится ниже: требование
   // Google — совпадение разметки с видимым текстом.
-  const sellerScenario = SCENARIOS.find((s) => s.ctaPath === '/sell');
+  // Сам сценарий — из общего модуля: тот же массив рендерит /sell.
+  const sellerScenario = SELLER_SCENARIO;
 
   const howToJsonLd = sellerScenario
     ? buildHowToJsonLd({

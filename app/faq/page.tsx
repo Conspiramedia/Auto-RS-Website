@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata({
     locale,
     path: '/faq',
-    title: t('faq_title'),
+    title: t('meta_faq_title'),
     description: t('faq_meta_desc'),
   });
 }

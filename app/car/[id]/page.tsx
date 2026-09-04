@@ -10,10 +10,21 @@
 import type { Metadata } from 'next';
 
 import CarPageView from '@/components/pages/CarPageView';
-import { carTitle, formatMileage, formatPrice } from '@/lib/format';
+import {
+  carTitle,
+  formatMileage,
+  formatPrice,
+  labelFuel,
+  labelTransmission,
+} from '@/lib/format';
 import type { Locale } from '@/lib/i18n';
+import { getT } from '@/lib/i18n';
 import { fetchCarDetails } from '@/lib/queries';
-import { buildMetadata, truncateDescription } from '@/lib/seo';
+import {
+  buildCarFallbackDescription,
+  buildMetadata,
+  truncateDescription,
+} from '@/lib/seo';
 
 // Объявления меняются (цена, статус, фото), поэтому страница
 // перегенерируется раз в 5 минут вместо статической сборки навсегда.
@@ -31,11 +42,21 @@ export async function generateMetadata({
   const { id } = await params;
   const car = await fetchCarDetails(id);
 
+  // Объявления нет — адрес неверен или карточка удалена. Метаданные
+  // всё равно собираем через buildMetadata: canonical и hreflang нужны
+  // и здесь. Без них адрес выпадал из языкового графа сайта, и пара
+  // sr/ru для него рвалась — Google требует взаимности hreflang на
+  // всех адресах, где связка заявлена. robots прежний: ни индекса, ни
+  // обхода.
   if (!car) {
-    return {
+    return buildMetadata({
+      locale,
+      path: `/car/${id}`,
       title: 'Oglas nije pronađen',
-      robots: { index: false, follow: false },
-    };
+      description: getT(locale)('nf_text'),
+      noindex: true,
+      nofollow: true,
+    });
   }
 
   // Снятое с публикации: RPC отдаёт урезанную карточку (миграция 0072),
@@ -47,25 +68,57 @@ export async function generateMetadata({
   // админу объявление приходит целиком, и для них это обычная
   // карточка со своими метаданными.
   if (car.status !== 'active' && car.status !== 'sold' && !car.seller_name) {
-    return {
+    return buildMetadata({
+      locale,
+      path: `/car/${id}`,
       title: `${car.brand} ${car.model}, ${car.year} — Oglas nije dostupan`,
-      robots: { index: false, follow: true },
-    };
+      description: getT(locale)('nf_text'),
+      // follow остаётся: ссылки на каталог и похожие должны
+      // обходиться, чтобы вес исчезнувшей страницы перетёк на живые.
+      noindex: true,
+    });
   }
 
   const title = `${carTitle(car)} — ${formatPrice(car.sale_price, car.currency, locale)}`;
   // Описание режется по границе слова и укладывается в 160 символов —
   // столько показывает Google. Раньше здесь стоял slice(0, 200), и
   // текст продавца обрывался посреди слова.
-  const description = car.description
+  // Описание продавца короче 70 символов для сниппета бесполезно: в нём
+  // нет ни года, ни пробега, ни города — того, по чему объявление
+  // находят. Такое описание заменяется собранным из характеристик, а не
+  // дополняется (см. buildCarFallbackDescription).
+  const ownDescription = car.description
     ? truncateDescription(car.description)
-    : `${carTitle(car)}, ${car.city}. ${formatMileage(car.mileage, locale)}.`;
+    : '';
+
+  const description =
+    ownDescription.length >= 70
+      ? ownDescription
+      : buildCarFallbackDescription({
+          title: carTitle(car),
+          city: car.city,
+          mileage: formatMileage(car.mileage, locale),
+          fuel: labelFuel(car.fuel, locale),
+          transmission: labelTransmission(car.transmission, locale),
+          price: formatPrice(car.sale_price, car.currency, locale),
+          tail: getT(locale)('car_meta_fallback_tail'),
+          extra: getT(locale)('car_meta_fallback_extra'),
+        });
 
   return buildMetadata({
     locale,
     path: `/car/${id}`,
     title,
     description,
+    // Карточка — это ТОВАР, а не страница сайта: og:type product и
+    // теги product:price:* дают соцсетям и агрегаторам цену отдельным
+    // полем, а не только внутри заголовка.
+    ogType: 'product',
+    // Договорная цена (null) не подставляется: product:price:amount без
+    // числа соцсеть читает как ошибку разметки.
+    ...(car.sale_price != null
+      ? { price: { amount: car.sale_price, currency: car.currency } }
+      : {}),
     // OG-картинка генерируется динамически соседним роутом
     // opengraph-image: фотография объявления с ценой. Флаг говорит
     // buildMetadata не подставлять брендовую картинку по умолчанию —

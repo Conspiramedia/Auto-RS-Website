@@ -18,6 +18,9 @@
 // пустую витрину.
 // ============================================================
 
+import type { Locale } from './i18n';
+import { getT } from './i18n';
+import { countNoun } from './plural';
 import type { SearchParams } from './searchParams';
 
 export function parseDealerPage(sp: SearchParams): number {
@@ -28,4 +31,43 @@ export function parseDealerPage(sp: SearchParams): number {
   // страница, а не ошибка.
   if (!Number.isFinite(parsed) || parsed < 1) return 1;
   return Math.floor(parsed);
+}
+
+// ------------------------------------------------------------
+// Описание витрины продавца для <meta name="description">.
+// ------------------------------------------------------------
+// Здесь, а не в самих страницах, по той же причине, что и разбор
+// номера выше: вызывается ЧЕТЫРЕ раза (generateMetadata в sr и ru, и
+// оба зеркала), и четыре копии шаблона разошлись бы при первой правке
+// текста — сниппеты двух локалей начали бы описывать витрину
+// по-разному.
+//
+// Счётчик склоняется (lib/plural, форма activeListing): «1 aktivan
+// oglas», но «5 aktivnih oglasa». Вид продавца различается по
+// seller_kind — назвать частное лицо «Auto-salon» в выдаче нельзя.
+//
+// Длина: при коротком имени салона («BG Auto», 7 символов) сербский
+// вариант даёт 96 символов, русский — 99; при длинном имени она
+// растёт, оставаясь заметно ниже верхней границы в 160. Нижняя
+// граница в 70 выдержана при любом имени, включая пустое.
+export function buildDealerMetaDescription(params: {
+  locale: Locale;
+  displayName: string;
+  activeCars: number;
+  sellerKind: string;
+}): string {
+  const { locale, displayName, activeCars, sellerKind } = params;
+  const t = getT(locale);
+
+  const isDealer = sellerKind === 'dealer';
+  const prefix = isDealer
+    ? t('dealer_meta_desc_dealer_prefix')
+    : t('dealer_meta_desc_private_prefix');
+  const tail = isDealer
+    ? t('dealer_meta_desc_dealer_tail')
+    : t('dealer_meta_desc_private_tail');
+
+  const count = countNoun(activeCars, 'activeListing', locale);
+
+  return `${prefix} ${displayName}: ${count} ${tail}`;
 }

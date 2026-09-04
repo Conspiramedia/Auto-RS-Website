@@ -117,7 +117,10 @@ export default async function DealerPageView({
               '@type': 'Car',
               name: `${car.brand} ${car.model}, ${car.year}`,
             },
-            url: car.site_url,
+            // Адрес текущей локали, а не car.site_url из БД: тот всегда
+            // сербский, и на /ru/dealer/{id} витрина перечисляла бы
+            // машины по сербским адресам (см. CarPageView).
+            url: `${siteBaseUrl}${localeHref(locale, `/car/${car.id}`)}`,
           })),
         }
       : null;

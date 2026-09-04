@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata({
     locale,
     path: '/terms',
-    title: t('legal_terms_title'),
+    title: t('meta_terms_title'),
     description: t('meta_terms_desc'),
   });
 }
@@ -29,6 +29,7 @@ export default function RuTermsPage() {
       locale={locale}
       path="/terms"
       title={getT(locale)('legal_terms_title')}
+      description={getT(locale)('meta_terms_desc')}
       sections={TERMS_OF_USE[locale]}
     />
   );

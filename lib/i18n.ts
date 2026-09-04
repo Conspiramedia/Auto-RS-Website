@@ -536,6 +536,17 @@ export const dict = {
     nf_catalog: 'Idi na katalog',
     nf_home: 'Na početnu',
 
+    // Хвост запасного описания карточки — см. buildCarFallbackDescription
+    // (lib/seo). Ставится, когда продавец не написал описания или оно
+    // слишком короткое для сниппета.
+    car_meta_fallback_tail: 'Kontakt direktno sa prodavcem.',
+    // Добавка для скудных карточек: когда пробег, gorivo и menjač не
+    // заполнены, а цена договорная, описание не дотягивало до нижней
+    // границы сниппета (66 символов). Текст правдив при любом
+    // объявлении — это описание площадки, а не машины.
+    car_meta_fallback_extra:
+      'Pogledajte fotografije, opremu i detalje oglasa na RS Auto.',
+
     // Страница ошибки (500). Текст намеренно не объясняет причину:
     // посетителю нужен выход, а не диагноз. Техническая информация
     // остаётся в логах, в интерфейс не попадает.
@@ -1328,7 +1339,29 @@ export const dict = {
     dealer_page_empty_title: 'Nema aktivnih oglasa',
     dealer_page_empty_text:
       'Ovaj prodavac trenutno nema objavljenih automobila. Pogledajte druge oglase u katalogu.',
-    dealer_page_meta_desc_prefix: 'Automobili prodavca',
+    // ------------------------------------------------------------
+    // Описание витрины для выдачи.
+    // ------------------------------------------------------------
+    // Собирается из трёх частей, а не одной строкой: между префиксом и
+    // хвостом стоит счётчик объявлений, а он склоняется
+    // («1 aktivan oglas», «2 aktivna oglasa», «5 aktivnih oglasa» —
+    // lib/plural, форма activeListing). Готовая строка с {N} внутри
+    // склонять не умеет.
+    //
+    // Прежний ключ dealer_page_meta_desc_prefix давал описание вида
+    // «Automobili prodavca X: 24.» — 44 символа, вдвое ниже нижней
+    // границы сниппета, без города, без вида продавца и с числом без
+    // единицы измерения.
+    //
+    // ДВА НАБОРА, ПОТОМУ ЧТО ВИТРИНА ОБСЛУЖИВАЕТ ДВА ВИДА ПРОДАВЦОВ.
+    // seller_kind различает салон и частное лицо, и назвать человека
+    // «Auto-salon» в сниппете — фактическая ошибка в выдаче.
+    dealer_meta_desc_dealer_prefix: 'Auto-salon',
+    dealer_meta_desc_dealer_tail:
+      'na RS Auto. Kupci iz cele Srbije, direktna veza sa salonom.',
+    dealer_meta_desc_private_prefix: 'Prodavac',
+    dealer_meta_desc_private_tail:
+      'na RS Auto. Kupci iz cele Srbije, direktna veza sa prodavcem.',
 
     // ------------------------------------------------------------
     // Недавно просмотренные объявления.
@@ -1520,6 +1553,32 @@ export const dict = {
     // «RS Auto — kupite…», с брендом дважды подряд. В выдаче Google
     // имя сайта тоже подставляется само.
     meta_home_title: 'Kupite, prodajte ili iznajmite auto u Srbiji',
+
+    // ------------------------------------------------------------
+    // ЗАГОЛОВКИ ДЛЯ <title>, ОТДЕЛЬНЫЕ ОТ ЗАГОЛОВКОВ НА СТРАНИЦЕ.
+    // ------------------------------------------------------------
+    // Раньше <title> брался из тех же ключей, что и <h1> с пунктами
+    // меню: sell_title, faq_title, rent_title и прочих. Для интерфейса
+    // они правильные — короткие и без повторов («Česta pitanja» над
+    // списком вопросов). Для выдачи короткие: с суффиксом « | RS Auto»
+    // почти все не дотягивали до 30 символов и не содержали ни одного
+    // слова, по которому эту страницу ищут («Srbija», «auto»).
+    //
+    // Развести их — единственный способ дать поиску полную фразу, не
+    // ломая интерфейс: длинный заголовок в <h1> занял бы три строки на
+    // телефоне, а «Uslovi korišćenja platforme RS Auto» в подвале
+    // повторял бы бренд рядом с самим брендом.
+    //
+    // Суффикс « | RS Auto» добавляет шаблон корневого layout, поэтому
+    // сами строки его не содержат — считать длину нужно с ним (+10).
+    meta_sell_title: 'Prodajte automobil u Srbiji',
+    meta_dealers_title: 'Autosalonima: vitrina i kupci iz cele Srbije',
+    meta_faq_title: 'Česta pitanja o prodaji automobila u Srbiji',
+    meta_how_title: 'Kako kupiti ili prodati auto u Srbiji',
+    meta_contact_title: 'Kontakt i podrška u Srbiji',
+    meta_terms_title: 'Uslovi korišćenja platforme RS Auto',
+    meta_rent_title: 'Automobili za izdavanje u Srbiji',
+
     // ДВА ОПИСАНИЯ ГЛАВНОЙ, И ЭТО НЕ ДУБЛЬ.
     //
     // meta_home_desc_short идёт в <meta name="description">, длинный
@@ -1912,6 +1971,13 @@ export const dict = {
       'Возможно, объявление продано и снято, либо адрес указан неверно. Посмотрите другие автомобили в каталоге.',
     nf_catalog: 'Перейти в каталог',
     nf_home: 'На главную',
+
+    // Хвост запасного описания карточки — см. комментарий в сербском
+    // словаре.
+    car_meta_fallback_tail: 'Свяжитесь с продавцом напрямую.',
+    // Добавка для скудных карточек — см. комментарий в сербском словаре.
+    car_meta_fallback_extra:
+      'Смотрите фотографии, комплектацию и детали объявления на RS Auto.',
 
     // Страница ошибки (500). Текст намеренно не объясняет причину:
     // посетителю нужен выход, а не диагноз. Техническая информация
@@ -2616,7 +2682,13 @@ export const dict = {
     dealer_page_empty_title: 'Нет активных объявлений',
     dealer_page_empty_text:
       'У этого продавца сейчас нет опубликованных автомобилей. Посмотрите другие объявления в каталоге.',
-    dealer_page_meta_desc_prefix: 'Автомобили продавца',
+    // Описание витрины для выдачи — см. комментарий в сербском словаре.
+    dealer_meta_desc_dealer_prefix: 'Автосалон',
+    dealer_meta_desc_dealer_tail:
+      'на RS Auto. Покупатели со всей Сербии, прямая связь с салоном.',
+    dealer_meta_desc_private_prefix: 'Продавец',
+    dealer_meta_desc_private_tail:
+      'на RS Auto. Покупатели со всей Сербии, прямая связь с продавцом.',
 
     // ------------------------------------------------------------
     // Недавно просмотренные объявления.
@@ -2786,6 +2858,17 @@ export const dict = {
     // См. комментарий в сербском словаре: бренд убран из начала,
     // потому что соцсеть показывает его отдельной строкой сама.
     meta_home_title: 'Купить, продать или арендовать авто в Сербии',
+
+    // Заголовки для <title>, отдельные от заголовков на странице, —
+    // см. развёрнутый комментарий в сербском словаре.
+    meta_sell_title: 'Продайте автомобиль в Сербии',
+    meta_dealers_title: 'Автосалонам: витрина и покупатели со всей Сербии',
+    meta_faq_title: 'Вопросы и ответы о продаже авто в Сербии',
+    meta_how_title: 'Как купить или продать авто в Сербии',
+    meta_contact_title: 'Контакты и поддержка в Сербии',
+    meta_terms_title: 'Условия использования платформы RS Auto',
+    meta_rent_title: 'Автомобили в аренду в Сербии',
+
     // Два описания главной — см. комментарий в сербском словаре:
     // короткое для выдачи Google, длинное для мессенджеров.
     meta_home_desc_short:

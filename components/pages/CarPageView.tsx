@@ -92,9 +92,18 @@ export default async function CarPageView({
   ]);
 
   const title = carTitle(car);
-  // Канонический адрес берём из БД (site_url) — это единая точка сборки
-  // ссылки, совпадающая с тем, что отдаёт приложение при шаринге.
-  const canonicalUrl = car.site_url || `${siteBaseUrl}/car/${id}`;
+  // Адрес страницы для разметки — ТЕКУЩЕЙ ЛОКАЛИ, а не из БД.
+  //
+  // Раньше здесь стоял car.site_url. Он собран базой (f_car_site_url) и
+  // всегда сербский: на /ru/car/{id} разметка Vehicle, Offer и
+  // последняя крошка BreadcrumbList объявляли объект по адресу
+  // https://rsauto.rs/car/{id} — то есть русская страница описывала
+  // сама себя чужим адресом, расходясь с собственным canonical в
+  // <head> (тот self-canonical, см. lib/seo.ts).
+  //
+  // Для сербского зеркала значение то же самое, что и раньше, — это
+  // ровно тот адрес, который отдаёт f_car_site_url.
+  const canonicalUrl = `${siteBaseUrl}${localeHref(locale, `/car/${id}`)}`;
 
   const jsonLd = buildVehicleJsonLd({
     car,
