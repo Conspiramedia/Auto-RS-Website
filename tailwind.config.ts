@@ -56,6 +56,9 @@ const config: Config = {
         'on-dark': brand.onDark,
         // Подложки статусных сообщений: bg-status-error.
         status: brand.statusSurface,
+        // Ступени платной метки (ui/VipBadge): bg-vip-surface на
+        // капсуле, text-vip-gold на короне и подписи.
+        vip: brand.vip,
         // Метрики кабинета (0141): text-metric-views на значке,
         // bg-metric-views-soft на круге под ним. Две группы в одной —
         // имя метрики у них общее и разъезжаться не должно.
