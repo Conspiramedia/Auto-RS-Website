@@ -407,39 +407,68 @@ export default async function CarPageView({
 
             {/* Условия аренды — только у арендных объявлений. Отвечает на
                 вопросы, которые иначе ушли бы в переписку: залог, срок,
-                что входит. */}
+                что входит.
+
+                ПОЧЕМУ ПЛИТКИ, А НЕ СПИСОК ОПРЕДЕЛЕНИЙ. Три числа —
+                цена за сутки, залог и минимальный срок — решают,
+                поедет человек смотреть машину или нет. В обычном <dl>
+                они выглядели как остальные характеристики (год,
+                пробег, кузов) и терялись среди них. Плитка с крупным
+                числом вытаскивает их на уровень цены.
+
+                ЦВЕТ. Заливка одна — фирменный primary, различается
+                только насыщенность: цена берёт сплошную заливку,
+                залог и срок — ту же краску при 10% (bg-status-info).
+                Так держится правило «один акцент»: иерархия задаётся
+                плотностью, а не тремя разными цветами, которые
+                читались бы как три разных статуса.
+
+                РАСКЛАДКА. До sm плитки идут столбиком во всю ширину —
+                на 360px две колонки дали бы 150px под число с
+                валютой и переносом. С sm цена занимает левую колонку
+                на обе строки (её число самое важное и получает больше
+                воздуха), залог и срок стоят справа друг под другом.
+                Блок живёт в узкой колонке страницы, поэтому на
+                десктопе действует та же раскладка, что и на
+                планшете. */}
             {car.is_for_rent && (
               <Card padding="lg" className="mt-6">
                 <h2 className="mb-3 text-h3 font-semibold">{t('rent_terms')}</h2>
 
-                <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
-                  <div>
-                    <dt className="text-caption text-neutral-50">{t('rent_price')}</dt>
-                    <dd className="font-medium">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:grid-rows-2">
+                  {/* Цена за сутки — главное число блока: сплошная
+                      заливка и высота в две строки сетки. */}
+                  <div className="flex flex-col justify-center rounded-card bg-brand-primary p-4 text-white sm:row-span-2">
+                    <div className="text-h2 font-bold leading-tight">
                       {formatRentPrice(
                         car.rent_price_daily,
                         car.currency,
                         locale,
                       )}
-                    </dd>
+                    </div>
+                    <div className="mt-1 text-caption text-white/80">
+                      {t('rent_price')}
+                    </div>
                   </div>
-                  <div>
-                    <dt className="text-caption text-neutral-50">
-                      {t('rent_deposit')}
-                    </dt>
-                    <dd className="font-medium">
+
+                  <div className="rounded-card bg-status-info p-4">
+                    <div className="text-h3 font-bold leading-tight text-brand-primary">
                       {formatDeposit(car.deposit_amount, car.currency, locale)}
-                    </dd>
+                    </div>
+                    <div className="mt-1 text-caption text-neutral-60">
+                      {t('rent_deposit')}
+                    </div>
                   </div>
-                  <div>
-                    <dt className="text-caption text-neutral-50">
-                      {t('rent_min_period')}
-                    </dt>
-                    <dd className="font-medium">
+
+                  <div className="rounded-card bg-status-info p-4">
+                    <div className="text-h3 font-bold leading-tight text-brand-primary">
                       {t('rent_min_period_value')}
-                    </dd>
+                    </div>
+                    <div className="mt-1 text-caption text-neutral-60">
+                      {t('rent_min_period')}
+                    </div>
                   </div>
-                </dl>
+                </div>
 
                 <p className="mt-3 text-caption text-neutral-60">
                   {t('rent_terms_text')}
