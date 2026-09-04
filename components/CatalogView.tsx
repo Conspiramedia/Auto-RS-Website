@@ -429,7 +429,13 @@ export default function CatalogView({
                     кэширована и отрендерена без сессии, поэтому
                     серверная фильтрация скрытого на ней не
                     срабатывает (подробнее — HideableCard). */}
-                <HideableCard carId={car.id} city={car.city}>
+                {/* index задаёт каскад появления: карточки ниже
+                    первого ряда проявляются по очереди, когда
+                    доходят до кадра. Первые четыре анимации не
+                    получают — они над сгибом и участвуют в LCP, тот
+                    же порог, что у priority ниже (подробности в
+                    HideableCard). */}
+                <HideableCard carId={car.id} city={car.city} index={i}>
                   <CarCard
                     locale={locale}
                     car={car}

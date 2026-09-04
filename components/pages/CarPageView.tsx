@@ -639,8 +639,18 @@ export default async function CarPageView({
           <section className="mt-10">
             <h2 className="mb-4 text-h3 font-semibold">{t('car_similar')}</h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
-              {similar.map((s) => (
-                <CarCard key={s.id} locale={locale} car={s} mode={mode} />
+              {similar.map((s, i) => (
+                // Каскад появления: блок «похожие» стоит в самом низу
+                // страницы объявления, кандидатов в LCP среди этих
+                // карточек нет, поэтому анимируются все. Механика та
+                // же, что в выдаче каталога, — см. HideableCard.
+                <div
+                  key={s.id}
+                  className="reveal-on-scroll"
+                  style={{ '--reveal-index': i } as React.CSSProperties}
+                >
+                  <CarCard locale={locale} car={s} mode={mode} />
+                </div>
               ))}
             </div>
           </section>

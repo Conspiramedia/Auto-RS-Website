@@ -46,6 +46,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { useCardActions } from './CardActionsProvider';
+import FavoriteBurst from './FavoriteBurst';
 import { HeartIcon, MoreHorizontalIcon } from './ui/NavIcons';
 import { trackEvent } from '@/lib/analytics';
 import type { Locale } from '@/lib/i18n';
@@ -90,6 +91,15 @@ export default function CardActions({ locale, carId, city, kind }: Props) {
     null,
   );
   const menuOpen = menuAt !== null;
+
+  // Счётчик добавлений в избранное — ключ перезапуска всплеска
+  // (FavoriteBurst). Растёт только при СОХРАНЕНИИ: снятие закладки
+  // анимации не получает, праздновать отказ незачем.
+  //
+  // Ноль означает «всплеска ещё не было», и это важно при загрузке
+  // страницы избранного: там все карточки сохранены, и без такого
+  // начального значения искры разлетелись бы разом у каждой.
+  const [burstKey, setBurstKey] = useState(0);
 
   // Координаты считаются от кнопки в момент открытия. При прокрутке и
   // изменении размера окна меню закрывается, а не едет следом:
@@ -155,10 +165,18 @@ export default function CardActions({ locale, carId, city, kind }: Props) {
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
+          // Всплеск запускается ДО ответа сервера, по текущему
+          // состоянию: закладка в CardActionsProvider обновляется
+          // оптимистично, и ждать сети значило бы показать искры
+          // через полсекунды после нажатия — то есть уже не в ответ
+          // на него.
+          if (!saved) setBurstKey((n) => n + 1);
           void toggleFavorite(carId);
         }}
       >
-        <HeartIcon className="h-5 w-5" filled={saved} />
+        <FavoriteBurst burstKey={burstKey}>
+          <HeartIcon className="h-5 w-5" filled={saved} />
+        </FavoriteBurst>
       </button>
     );
   }

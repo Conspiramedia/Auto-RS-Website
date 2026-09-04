@@ -42,6 +42,19 @@
 // фотографии (ui/RentBadge, ui/ViewedBadge, ui/ConditionBadge с
 // iconOnly). Соседи по кадру — круги 24px, и метка обязана стоять с
 // ними на одной линии.
+//
+// БЛИК РАЗ В ШЕСТЬ СЕКУНД. По тёмной капсуле проходит светлая
+// полоса — так ведёт себя металл, и метка читается платной, а не
+// просто тёмной. Интервал редкий намеренно: в сетке каталога таких
+// меток может стоять несколько сразу, и частый проблеск превратил бы
+// выдачу в мигающую гирлянду.
+//
+// Блик — ОТДЕЛЬНЫЙ СЛОЙ поверх капсулы, а не фон самой капсулы.
+// Иначе градиент подменил бы bg-vip-surface, и в паузе между
+// проходами метка осталась бы без подложки. Слой absolute inset-0 с
+// теми же скруглениями, вне потока и без событий мыши: габаритов не
+// добавляет, нажатия не перехватывает, CLS не создаёт — двигается
+// только background-position.
 // ============================================================
 
 type VipTier = 'gold' | 'silver' | 'bronze';
@@ -92,8 +105,23 @@ export default function VipBadge({
       // словами программы, а не цветом металла.
       aria-label="VIP"
       title="VIP"
-      className={`inline-flex shrink-0 items-center rounded-pill bg-vip-surface ${TIERS[tier]} ${s.box} ${className}`}
+      className={`relative inline-flex shrink-0 items-center overflow-hidden rounded-pill bg-vip-surface ${TIERS[tier]} ${s.box} ${className}`}
     >
+      {/* Блик. Тон приглушён до 0.14: на тёмной капсуле полная
+          белая полоса (значение по умолчанию у .shimmer-surface)
+          читалась бы засветкой, а не отблеском металла.
+          Останавливается сам при prefers-reduced-motion — общее
+          правило в globals.css. */}
+      <span
+        aria-hidden="true"
+        className="shimmer-surface animate-vip-shimmer pointer-events-none absolute inset-0 rounded-pill"
+        style={
+          {
+            '--shimmer-tint': 'rgba(255, 255, 255, 0.14)',
+          } as React.CSSProperties
+        }
+      />
+
       {/* Корона. Заливка, а не обводка: на 14px контурный значок с
           толщиной 2 сливается в пятно, а сплошной силуэт остаётся
           короной. Пять зубцов на общей подошве — форма из макета. */}
@@ -101,7 +129,10 @@ export default function VipBadge({
         viewBox="0 0 24 24"
         fill="currentColor"
         aria-hidden="true"
-        className={s.icon}
+        // relative обязателен: без позиционирования корона осталась бы
+        // в общем потоке ПОД абсолютным слоем блика и потеряла бы
+        // часть яркости на каждом его проходе.
+        className={`relative ${s.icon}`}
       >
         <path d="M3 18.5h18v2H3z" />
         <path d="M2.6 6.2l4.1 3.4 4.2-6.1a1.3 1.3 0 0 1 2.2 0l4.2 6.1 4.1-3.4a1 1 0 0 1 1.6 1l-2.1 8.3H3.1L1 7.2a1 1 0 0 1 1.6-1z" />
@@ -109,7 +140,7 @@ export default function VipBadge({
 
       {/* tracking-wide повторяет letter-spacing макета: три заглавные
           подряд без разрядки читаются как слипшийся блок. */}
-      <span className={`font-bold leading-none tracking-wide ${s.text}`}>
+      <span className={`relative font-bold leading-none tracking-wide ${s.text}`}>
         VIP
       </span>
     </span>

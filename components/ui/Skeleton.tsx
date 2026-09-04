@@ -11,17 +11,44 @@
 //   * высоты текстовых строк равны высоте строки соответствующего
 //     размера шрифта (h-5 ≈ body, h-4 ≈ caption).
 //
-// Анимация — animate-pulse Tailwind: она не двигает элементы, только
-// меняет прозрачность, поэтому не создаёт ощущения «прыгающего» UI.
+// АНИМАЦИЯ — БЕГУЩИЙ БЛИК (shimmer), а не пульсация прозрачности.
+// Разница не косметическая: у пульсации нет направления, и заглушка
+// одинаково выглядит и когда данные идут, и когда запрос завис.
+// Блик движется слева направо — то же направление, в котором
+// заполняется страница, — и читается как «идёт загрузка», а не как
+// «здесь что-то мигает».
+//
+// Двигается ТОЛЬКО background-position: габариты заглушки постоянны,
+// поэтому подмена скелетона реальным содержимым не даёт сдвига, и
+// CLS остаётся нулевым — то самое главное требование из шапки файла.
+//
+// Блик лежит ОТДЕЛЬНЫМ слоем поверх подложки bg-surface-muted:
+// градиент в том же background подменил бы саму подложку, и в паузе
+// между проходами заглушка стала бы прозрачной.
 // ============================================================
 
-// Базовый прямоугольник-заглушка.
+// Базовый прямоугольник-заглушка. Подложка + бегущий блик поверх неё.
 export function SkeletonBox({ className = '' }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded-control bg-surface-muted ${className}`}
+      className={`relative overflow-hidden rounded-control bg-surface-muted ${className}`}
       aria-hidden="true"
-    />
+    >
+      <span className="shimmer-surface animate-shimmer absolute inset-0" />
+    </div>
+  );
+}
+
+// Крупная заглушка под изображение: та же механика, но пропорции и
+// скругление задаёт вызывающая сторона (галерея 3:2, карточка 4:3).
+function SkeletonSurface({ className = '' }: { className?: string }) {
+  return (
+    <div
+      className={`relative overflow-hidden bg-surface-muted ${className}`}
+      aria-hidden="true"
+    >
+      <span className="shimmer-surface animate-shimmer absolute inset-0" />
+    </div>
   );
 }
 
@@ -35,7 +62,7 @@ export function SkeletonCarCard() {
     <div className="overflow-hidden rounded-card border border-neutral-10">
       {/* aspect-[4/3] — та же пропорция, что у изображения в CarCard.
           Именно она держит высоту карточки до загрузки фотографии. */}
-      <div className="aspect-[4/3] animate-pulse bg-surface-muted" />
+      <SkeletonSurface className="aspect-[4/3]" />
 
       <div className="p-3">
         <SkeletonBox className="h-5 w-3/4" />
@@ -118,7 +145,7 @@ export function SkeletonCarPage() {
           {/* Галерея: те же пропорции, что у CarGallery, — 3:2 на
               телефоне и 4:3 с sm. Расхождение сдвинуло бы страницу
               в момент подмены скелетона реальной галереей. */}
-          <div className="aspect-[3/2] animate-pulse rounded-card bg-surface-muted sm:aspect-[4/3]" />
+          <SkeletonSurface className="aspect-[3/2] rounded-card sm:aspect-[4/3]" />
 
           {/* Лента миниатюр под галереей. */}
           <div className="mt-2 flex gap-2">

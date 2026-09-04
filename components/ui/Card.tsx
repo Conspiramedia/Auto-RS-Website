@@ -64,11 +64,27 @@ export default function Card({
     // как «страница поехала» и мешает отличить нажатие от начала
     // прокрутки. Заливка сообщает то же самое, оставаясь на месте.
     //
-    // transition только по shadow и background: перечислены явно,
-    // потому что transition-all на карточке ленты анимировал бы и
-    // размеры при перерисовке списка.
+    // ПОДЪЁМ ПРИ НАВЕДЕНИИ. Карточка отрывается от полотна на 4px и
+    // получает тень — вместе они читаются как «её можно взять», тогда
+    // как одна тень без движения выглядит просто подсветкой.
+    //
+    // Сдвиг делается transform, а НЕ отступами и не top: transform
+    // считается на композиторе и не трогает раскладку, поэтому
+    // соседние карточки в сетке остаются на местах и CLS не растёт.
+    // Тот же сдвиг через margin-top перекроил бы весь ряд.
+    //
+    // ПОД МЫШЬЮ И ТОЛЬКО. hoverOnlyWhenSupported (tailwind.config.ts)
+    // оборачивает hover-утилиты в @media (hover: hover), поэтому на
+    // телефоне карточка не подпрыгивает от прикосновения при
+    // прокрутке. Пальцу остаётся свой отклик — active:bg-*, заливка
+    // без движения: любой сдвиг геометрии при касании читается как
+    // «страница поехала» и мешает отличить нажатие от начала скролла.
+    //
+    // transition перечисляет свойства поимённо. transition-all на
+    // карточке ленты анимировал бы и размеры при перерисовке списка —
+    // отсюда явный список из трёх.
     hoverable
-      ? 'overflow-hidden transition-[box-shadow,background-color] duration-fast ease-out hover:shadow-card active:bg-surface-hover'
+      ? 'overflow-hidden transition-[box-shadow,background-color,transform] duration-hover ease-out hover:-translate-y-1 hover:shadow-card active:bg-surface-hover'
       : '',
     className,
   ]

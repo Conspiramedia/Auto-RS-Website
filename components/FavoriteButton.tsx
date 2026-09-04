@@ -29,7 +29,10 @@
 // потерянным, а места на странице объявления достаточно.
 // ============================================================
 
+import { useState } from 'react';
+
 import { useCardActions } from './CardActionsProvider';
+import FavoriteBurst from './FavoriteBurst';
 import { HeartIcon } from './ui/NavIcons';
 import { trackEvent } from '@/lib/analytics';
 import type { Locale } from '@/lib/i18n';
@@ -49,6 +52,11 @@ const HIT_AREA =
 export default function FavoriteButton({ locale, carId, sellerId }: Props) {
   const t = getT(locale);
   const { signedIn, userId, isFavorite, toggleFavorite } = useCardActions();
+
+  // Ключ перезапуска всплеска — тот же приём, что на карточке списка
+  // (см. FavoriteBurst и CardActions). Объявлен ДО ранних выходов
+  // ниже: порядок хуков обязан быть одинаковым на каждом рендере.
+  const [burstKey, setBurstKey] = useState(0);
 
   // Сессия ещё проверяется: пустое сердце, мелькнувшее у того, кто
   // объявление сохранил, читается как потеря закладки.
@@ -90,9 +98,15 @@ export default function FavoriteButton({ locale, carId, sellerId }: Props) {
       }
       title={saved ? t('car_favorite_aria_remove') : t('car_favorite_aria_add')}
       className={`${HIT_AREA} ${saved ? 'text-brand-red' : 'text-neutral-60'}`}
-      onClick={() => void toggleFavorite(carId)}
+      onClick={() => {
+        // Только на сохранение: снятие закладки анимации не получает.
+        if (!saved) setBurstKey((n) => n + 1);
+        void toggleFavorite(carId);
+      }}
     >
-      <HeartIcon className="h-6 w-6" filled={saved} />
+      <FavoriteBurst burstKey={burstKey}>
+        <HeartIcon className="h-6 w-6" filled={saved} />
+      </FavoriteBurst>
     </button>
   );
 }

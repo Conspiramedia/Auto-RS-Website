@@ -153,6 +153,106 @@ const config: Config = {
       transitionDuration: {
         fast: brand.motion.fast,
         normal: brand.motion.normal,
+        // Наведение на карточку каталога (подъём + тень + фото).
+        hover: brand.motion.hover,
+        // Появление блока при скролле и каскад героя.
+        reveal: brand.motion.reveal,
+      },
+
+      // ------------------------------------------------------------
+      // АНИМАЦИИ ПОЯВЛЕНИЯ И МИКРОИНТЕРАКЦИЙ.
+      // ------------------------------------------------------------
+      // ВСЕ кадры ниже трогают ТОЛЬКО transform и opacity — свойства,
+      // которые браузер считает на композиторе, не пересчитывая
+      // раскладку. Поэтому ни один из них не даёт layout shift: CLS
+      // остаётся нулевым независимо от того, сколько элементов
+      // анимируется одновременно.
+      //
+      // Исключение по форме, а не по сути — shimmer и road: там
+      // двигается background-position, свойство фона. Оно тоже не
+      // влияет на геометрию соседей, а перерисовку держит в пределах
+      // самого элемента.
+      //
+      // Отключение при prefers-reduced-motion сделано ОДНИМ правилом
+      // в app/globals.css, а не флагом у каждой утилиты: любая новая
+      // анимация подпадает под запрет автоматически.
+      keyframes: {
+        // Появление снизу вверх. Конечное состояние — «как в вёрстке»,
+        // поэтому элемент, у которого анимация не запустилась (скрипт
+        // отвалился, старый браузер), обязан остаться видимым: это
+        // обеспечивает fill-mode both вместе со стартовой прозрачностью
+        // в самом keyframe, а не в базовом классе.
+        'fade-up': {
+          from: {
+            opacity: '0',
+            transform: `translate3d(0, ${brand.motion.revealShift}, 0)`,
+          },
+          to: { opacity: '1', transform: 'translate3d(0, 0, 0)' },
+        },
+
+        // Перекрёстное затухание страницы при смене маршрута.
+        'fade-in': {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
+        },
+
+        // Блик по метке VIP и по скелетону. Двигается только фон —
+        // размеры элемента остаются прежними.
+        shimmer: {
+          from: { backgroundPosition: '-150% 0' },
+          to: { backgroundPosition: '250% 0' },
+        },
+
+        // «Дорога» прогресс-бара: пунктир бежит слева направо.
+        // Сдвиг ровно на период пунктира (см. .route-road в globals.css),
+        // поэтому стык кадров невиден.
+        road: {
+          from: { backgroundPosition: '0 0' },
+          to: { backgroundPosition: '24px 0' },
+        },
+
+        // Всплеск у сердечка: сама иконка коротко подрастает и
+        // возвращается. Кривая задана раскладкой ключей, а не
+        // timing-function, — так контролируется «перелёт» на 70%.
+        'heart-pop': {
+          '0%': { transform: 'scale(1)' },
+          '35%': { transform: 'scale(0.86)' },
+          '70%': { transform: 'scale(1.18)' },
+          '100%': { transform: 'scale(1)' },
+        },
+
+        // Частица всплеска: вылетает из центра и гаснет. Направление
+        // задаёт --burst-angle, расстояние — --burst-distance
+        // (см. components/FavoriteBurst).
+        'heart-particle': {
+          '0%': {
+            opacity: '1',
+            transform:
+              'rotate(var(--burst-angle)) translateX(0) scale(0.4)',
+          },
+          '60%': { opacity: '1' },
+          '100%': {
+            opacity: '0',
+            transform:
+              'rotate(var(--burst-angle)) translateX(var(--burst-distance)) scale(0.9)',
+          },
+        },
+      },
+
+      animation: {
+        'fade-up': `fade-up ${brand.motion.reveal} ${brand.motion.easing} both`,
+        'fade-in': `fade-in ${brand.motion.routeFade} ${brand.motion.easing} both`,
+        // Скелетон: медленнее метки, потому что живёт дольше и не
+        // должен мельтешить под текстом, который вот-вот появится.
+        shimmer: `shimmer ${brand.motion.shimmer} ${brand.motion.easing} infinite`,
+        // Раз в 6 секунд — блик, а не мигалка: метка стоит на карточке
+        // рядом с десятком других, и частый проблеск читался бы шумом.
+        'vip-shimmer': `shimmer ${brand.motion.vipShimmer} ${brand.motion.easing} infinite`,
+        // linear обязателен: любое замедление на концах превратило бы
+        // равномерное движение дороги в пульсацию.
+        road: `road ${brand.motion.road} linear infinite`,
+        'heart-pop': `heart-pop ${brand.motion.reveal} ${brand.motion.easing} both`,
+        'heart-particle': `heart-particle ${brand.motion.reveal} ${brand.motion.easing} both`,
       },
 
       transitionTimingFunction: {

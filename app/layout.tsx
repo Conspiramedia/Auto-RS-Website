@@ -10,10 +10,14 @@
 import type { Metadata, Viewport } from 'next';
 import { Montserrat } from 'next/font/google';
 
+import { Suspense } from 'react';
+
 import Analytics from '@/components/Analytics';
 import CardActionsProvider from '@/components/CardActionsProvider';
 import CookieBanner from '@/components/CookieBanner';
 import GoogleAnalyticsGate from '@/components/GoogleAnalytics';
+import RevealOnScroll from '@/components/RevealOnScroll';
+import RouteProgress from '@/components/RouteProgress';
 import { brand } from '@/lib/brand';
 import { siteBaseUrl } from '@/lib/supabase';
 import './globals.css';
@@ -97,6 +101,31 @@ export default function RootLayout({
   return (
     <html lang="sr-Latn" className={montserrat.variable}>
       <body>
+        {/* ПОЛОСА ЗАГРУЗКИ МАРШРУТА — «дорога», бегущая поверх шапки.
+            В корневом layout'е: переход возможен с любой страницы
+            сайта, и дублировать индикатор по разделам значило бы
+            забыть про следующий.
+
+            Suspense обязателен. Внутри компонента вызывается
+            useSearchParams — им ловится конец перехода, — а он
+            переводит всё дерево вокруг себя в динамический рендер.
+            Без границы статическая генерация отвалилась бы у КАЖДОЙ
+            страницы сайта разом, вместе с SEO. Граница локализует
+            динамику одним этим элементом.
+
+            fallback пустой: до гидратации показывать нечего —
+            переходов ещё не было. */}
+        <Suspense fallback={null}>
+          <RouteProgress />
+        </Suspense>
+
+        {/* Наблюдатель появления блоков при прокрутке. Ставит на
+            <html> класс, разрешающий CSS прятать элементы с
+            .reveal-on-scroll, — и он же их показывает. Разметке
+            достаточно класса, импортировать сюда ничего не нужно
+            (подробности — в самом компоненте). */}
+        <RevealOnScroll />
+
         {/* Состояние значков карточки (избранное, скрытые объявления) —
             на весь сайт, а не на отдельный список. Карточки стоят в
             каталоге, на витринах марок и моделей, на главной, у

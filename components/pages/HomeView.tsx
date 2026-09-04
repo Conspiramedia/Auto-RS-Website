@@ -31,6 +31,7 @@ import Link from 'next/link';
 
 import AppQr from '@/components/AppQr';
 import CarCard from '@/components/CarCard';
+import CountUp from '@/components/CountUp';
 import RecentlyViewed from '@/components/RecentlyViewed';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
@@ -255,10 +256,41 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                   по себе в 14 символов, и уложить фразу в две строки
                   на 360px нельзя без ущерба смыслу. Это его штатный
                   вид, а не поломка вёрстки. */}
+              {/* КАСКАД ПЕРВОГО ЭКРАНА: подзаголовок → счётчики →
+                  кнопки, шаг 60мс (--reveal-step из globals.css).
+                  Задержку каждому даёт .reveal-stagger по номеру в
+                  очереди (--reveal-index) — величина шага живёт в
+                  одном месте, а разметка называет только порядок.
+
+                  ЗАГОЛОВОК В КАСКАДЕ НЕ УЧАСТВУЕТ, и это не
+                  недоделка. Он и изображение рядом — кандидаты в
+                  LCP, а любая анимация с opacity: 0 в первом кадре
+                  откладывает момент, когда браузер считает элемент
+                  отрисованным: метрика выросла бы ровно на
+                  длительность анимации плюс задержку. Заголовок
+                  появляется сразу, а поднимается всё, что под ним, —
+                  каскад читается тем же, а бюджет LCP не тронут.
+
+                  КНОПКА ПОДАЧИ — ПОСЛЕДНЯЯ В ОЧЕРЕДИ, хотя в потоке
+                  стоит выше счётчиков. Каскад заканчивается на том,
+                  ради чего страница существует: движение приводит
+                  взгляд к единственному акцентному CTA, а не уводит
+                  от него к цифрам. Порядок задают номера очереди
+                  (--reveal-index), а не перестановка разметки —
+                  смысловая последовательность и порядок чтения для
+                  скринридера остаются прежними.
+
+                  Здесь именно animate-fade-up, а не reveal-on-scroll:
+                  блок и так в первом экране, ждать его появления из
+                  за края нечего, а наблюдатель добавил бы кадр
+                  задержки после гидратации. */}
               <h1 className="max-w-2xl text-[25px] font-bold leading-tight sm:text-h1 lg:text-display">
                 {t('home_hero_title')}
               </h1>
-              <p className="mt-3 max-w-xl text-h4 text-neutral-60">
+              <p
+                className="reveal-stagger mt-3 max-w-xl animate-fade-up text-h4 text-neutral-60"
+                style={{ '--reveal-index': 0 } as React.CSSProperties}
+              >
                 {t('home_hero_text')}
               </p>
 
@@ -268,7 +300,10 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                   вёрстки. На десктопе они встают в ряд, и ширину задаёт
                   более длинная подпись (basis-0 + flex-1 внутри
                   ограниченного контейнера), поэтому обе равны. */}
-              <div className="mt-6 flex max-w-md flex-col gap-3 sm:flex-row">
+              <div
+                className="reveal-stagger mt-6 flex max-w-md animate-fade-up flex-col gap-3 sm:flex-row"
+                style={{ '--reveal-index': 2 } as React.CSSProperties}
+              >
                 <Button
                   size="xl"
                   href={localeHref(locale, '/sell')}
@@ -354,7 +389,10 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                   whitespace-nowrap, и без него min-content самой
                   длинной подписи распёр бы сетку шире контейнера. */}
               {stats.cars_total >= MIN_STATS_CARS && (
-                <div className="mt-8 grid max-w-md grid-cols-[repeat(2,minmax(0,1fr))] gap-2 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
+                <div
+                  className="reveal-stagger mt-8 grid max-w-md animate-fade-up grid-cols-[repeat(2,minmax(0,1fr))] gap-2 sm:grid-cols-[repeat(3,minmax(0,1fr))]"
+                  style={{ '--reveal-index': 1 } as React.CSSProperties}
+                >
                   {(
                     [
                       { icon: CarIcon, value: stats.cars_total, noun: 'car' },
@@ -384,7 +422,23 @@ export default async function HomeView({ locale }: { locale: Locale }) {
                       } ${noun === 'city' ? 'order-first sm:order-none' : ''}`}
                     >
                       <Icon className="h-4 w-4 shrink-0 text-brand-primary" />
-                      <span className="font-semibold text-brand-dark">{value}</span>
+                      {/* ЧИСЛО ДОКРУЧИВАЕТСЯ ОТ НУЛЯ за 600мс, когда
+                          блок впервые попал в поле зрения. Ширину
+                          цифры держат заранее — под конечное
+                          значение, — иначе растущее число толкало бы
+                          вправо подпись рядом и весь ряд чипсов
+                          (подробнее в самом CountUp).
+
+                          ПОДПИСЬ НЕ ДОКРУЧИВАЕТСЯ ВМЕСТЕ С ЧИСЛОМ и
+                          сразу стоит в форме конечного значения:
+                          «142 автомобиля». Склонять её по бегущей
+                          цифре значило бы гонять «автомобиль →
+                          автомобиля → автомобилей» шестьдесят раз за
+                          секунду — мельтешение, которое читается
+                          сбоем шрифта, а не счётчиком. */}
+                      <span className="font-semibold text-brand-dark">
+                        <CountUp value={value} />
+                      </span>
                       <span className="truncate">{nounFor(value, noun, locale)}</span>
                     </Chip>
                   ))}
@@ -451,12 +505,30 @@ export default async function HomeView({ locale }: { locale: Locale }) {
           {fresh.cars.length > 0 ? (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
               {fresh.cars.map((car, i) => (
-                <CarCard
+                // КАСКАД ПОЯВЛЕНИЯ — тот же приём, что в выдаче
+                // каталога (HideableCard): карточка проявляется,
+                // когда попала в кадр, с задержкой по номеру в ряду.
+                //
+                // Первый ряд из каскада исключён: над сгибом стоят
+                // кандидаты в LCP, и анимация с opacity: 0 отодвинула
+                // бы метрику ровно на свою длительность. Порог тот
+                // же, что у priority ниже, — это один и тот же первый
+                // экран.
+                //
+                // Обёртка становится ячейкой сетки на месте карточки,
+                // а карточка внутри занимает её целиком: габариты те
+                // же, сдвига вёрстки нет.
+                <div
                   key={car.id}
-                  locale={locale}
-                  car={car}
-                  priority={i < 4}
-                />
+                  className={i < 4 ? undefined : 'reveal-on-scroll'}
+                  style={
+                    i < 4
+                      ? undefined
+                      : ({ '--reveal-index': i - 4 } as React.CSSProperties)
+                  }
+                >
+                  <CarCard locale={locale} car={car} priority={i < 4} />
+                </div>
               ))}
             </div>
           ) : (
@@ -656,22 +728,51 @@ export default async function HomeView({ locale }: { locale: Locale }) {
             <h2 className="text-h3 font-semibold">{t('home_why_title')}</h2>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {WHY_CARDS.map((card) => {
+              {WHY_CARDS.map((card, i) => {
                 const Icon = card.icon;
 
                 return (
                   // Карточки лежат на серой подложке, поэтому им задан
                   // белый фон: без него граница на bg-surface-subtle
                   // читается как пустая рамка.
-                  <Card key={card.title} className="bg-surface">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-control bg-brand-primary/10 text-brand-primary">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <h3 className="mt-3 font-semibold">{t(card.title)}</h3>
-                    <p className="mt-1 text-caption text-neutral-60">
-                      {t(card.text)}
-                    </p>
-                  </Card>
+                  //
+                  // ОБЁРТКА РАДИ ЗАДЕРЖКИ КАСКАДА. Класс появления
+                  // Card приняла бы и сама (className она
+                  // поддерживает), а вот номер в очереди задаётся
+                  // переменной --reveal-index через style, и style
+                  // Card не принимает. Дописывать ей проп ради
+                  // четырёх карточек одной секции — менять общий
+                  // компонент под частный случай.
+                  //
+                  // Утилита-класс с интерполяцией
+                  // ([--reveal-index:${i}]) тут не годится
+                  // принципиально: Tailwind собирает классы
+                  // сканированием исходников, а собранное шаблонной
+                  // строкой имя в файле не встречается, и правило
+                  // просто не попало бы в сборку.
+                  //
+                  // Обёртка становится ячейкой сетки на месте
+                  // карточки, а Card внутри занимает её целиком —
+                  // габариты те же, сдвига нет.
+                  <div
+                    key={card.title}
+                    className="reveal-on-scroll"
+                    style={{ '--reveal-index': i } as React.CSSProperties}
+                  >
+                    {/* h-full возвращает карточкам общую высоту ряда:
+                        раньше её давал сам grid (align-items: stretch
+                        растягивал Card как ячейку), теперь ячейка —
+                        обёртка, и растягивается она. */}
+                    <Card className="h-full bg-surface">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-control bg-brand-primary/10 text-brand-primary">
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <h3 className="mt-3 font-semibold">{t(card.title)}</h3>
+                      <p className="mt-1 text-caption text-neutral-60">
+                        {t(card.text)}
+                      </p>
+                    </Card>
+                  </div>
                 );
               })}
             </div>
@@ -782,13 +883,17 @@ export default async function HomeView({ locale }: { locale: Locale }) {
             </div>
 
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
-              {rent.cars.map((car) => (
-                <CarCard
+              {rent.cars.map((car, i) => (
+                // Витрина аренды целиком лежит ниже сгиба, поэтому
+                // в каскаде участвуют ВСЕ её карточки: кандидатов в
+                // LCP среди них нет.
+                <div
                   key={car.id}
-                  locale={locale}
-                  car={car}
-                  mode="rent"
-                />
+                  className="reveal-on-scroll"
+                  style={{ '--reveal-index': i } as React.CSSProperties}
+                >
+                  <CarCard locale={locale} car={car} mode="rent" />
+                </div>
               ))}
             </div>
           </section>
