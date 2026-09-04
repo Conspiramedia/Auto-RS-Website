@@ -15,6 +15,8 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { SELECTED } from './segmented';
+
 type Props = {
   children: ReactNode;
   // Ссылка. Для варианта «удаляемый фильтр» ведёт на выдачу без него.
@@ -57,7 +59,7 @@ export default function Chip({
     BASE,
     SIZES[size],
     active
-      ? 'bg-brand-dark font-semibold text-white'
+      ? SELECTED
       : `border border-neutral-15 text-neutral-60${
           href ? ' hover:bg-surface-hover' : ''
         }`,

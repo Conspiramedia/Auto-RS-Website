@@ -20,6 +20,7 @@
 
 import type { Locale } from '@/lib/i18n';
 import { LOCALES, localeSwitchHref } from '@/lib/i18n';
+import { SELECTED } from './ui/segmented';
 
 const LABEL: Record<Locale, string> = {
   sr: 'SR',
@@ -48,8 +49,8 @@ export default function LocaleSwitch({ locale, pathname }: Props) {
             hrefLang={code}
             className={
               active
-                ? 'rounded-control bg-brand-dark px-2 py-1 text-white'
-                : 'rounded-control px-2 py-1 text-neutral-55 hover:text-brand-dark'
+                ? `rounded-control px-2 py-1 ${SELECTED}`
+                : 'rounded-control border border-transparent px-2 py-1 text-neutral-55 hover:text-brand-dark'
             }
             aria-current={active ? 'true' : undefined}
           >

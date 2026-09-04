@@ -22,6 +22,7 @@ import Link from 'next/link';
 
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
+import { SELECTED } from './ui/segmented';
 
 type Props = {
   locale: Locale;
@@ -97,7 +98,7 @@ export default function PagerLinks({
           href={href(p)}
           className={
             p === page
-              ? `${base} bg-brand-dark font-semibold text-white`
+              ? `${base} ${SELECTED}`
               : `${base} border border-neutral-15 hover:bg-surface-hoverStrong`
           }
           aria-current={p === page ? 'page' : undefined}

@@ -176,7 +176,7 @@ export default function RejectDialog({
                   'rounded-control border px-3 py-2 text-left text-caption',
                   'transition-colors duration-fast',
                   active
-                    ? 'border-brand-dark bg-brand-dark text-white'
+                    ? 'border-selection bg-selection-surface font-semibold text-selection'
                     : 'border-neutral-15 hover:bg-surface-hover',
                 ].join(' ')}
               >
@@ -196,7 +196,7 @@ export default function RejectDialog({
               'rounded-control border px-3 py-2 text-left text-caption',
               'transition-colors duration-fast',
               isOther
-                ? 'border-brand-dark bg-brand-dark text-white'
+                ? 'border-selection bg-selection-surface font-semibold text-selection'
                 : 'border-neutral-15 hover:bg-surface-hover',
             ].join(' ')}
           >

@@ -28,6 +28,7 @@ import { getT, localeHref } from '@/lib/i18n';
 import type { CatalogFilters } from '@/lib/queries';
 import { buildQuery } from '@/lib/searchParams';
 import { SORT_OPTIONS } from '@/lib/types';
+import { SELECTED } from './ui/segmented';
 
 type Props = {
   locale: Locale;
@@ -112,8 +113,8 @@ export default function SortSelect({
                   href={hrefFor(opt.key)}
                   className={
                     active
-                      ? 'whitespace-nowrap rounded-control bg-brand-dark px-3 py-1.5 font-semibold text-white'
-                      : 'whitespace-nowrap rounded-control px-3 py-1.5 text-neutral-60 hover:bg-surface-hoverChip'
+                      ? `whitespace-nowrap rounded-control px-3 py-1.5 ${SELECTED}`
+                      : 'whitespace-nowrap rounded-control border border-transparent px-3 py-1.5 text-neutral-60 hover:bg-surface-hoverChip'
                   }
                   // Варианты сортировки — одна и та же выдача в другом
                   // порядке. Индексировать их все не нужно.

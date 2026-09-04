@@ -11,6 +11,7 @@ import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import type { CatalogFilters } from '@/lib/queries';
 import { buildQuery } from '@/lib/searchParams';
+import { SELECTED } from './ui/segmented';
 
 type Props = {
   locale: Locale;
@@ -78,7 +79,7 @@ export default function Pagination({
           href={href(p)}
           className={
             p === page
-              ? `${base} bg-brand-dark font-semibold text-white`
+              ? `${base} ${SELECTED}`
               : `${base} border border-neutral-15 hover:bg-surface-hoverStrong`
           }
           aria-current={p === page ? 'page' : undefined}

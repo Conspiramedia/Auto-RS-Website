@@ -12,10 +12,10 @@
 // работающие «назад», открытие в новой вкладке и предзагрузку Next.
 //
 // ВИД. Тот же паттерн чипсов, что у сортировки каталога
-// (components/SortSelect.tsx): скруглённый контрол, активный —
-// bg-brand-dark, остальные — контурные со светлым наведением. Роль
-// разделов повторяет нижнюю навигацию приложения (my_cars, chats,
-// profile), поэтому и порядок тот же.
+// (components/SortSelect.tsx): скруглённый контрол, активный — общим
+// выделением сайта (ui/segmented), остальные — контурные со светлым
+// наведением. Роль разделов повторяет нижнюю навигацию приложения
+// (my_cars, chats, profile), поэтому и порядок тот же.
 // ============================================================
 
 import Link from 'next/link';
@@ -24,6 +24,7 @@ import { usePathname } from 'next/navigation';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref, stripLocale } from '@/lib/i18n';
 import { isParentSectionActive, isSectionActive } from '@/lib/navigation';
+import { SELECTED } from './ui/segmented';
 
 type Props = {
   locale: Locale;
@@ -111,8 +112,12 @@ export default function MyTabs({ locale }: Props) {
               // «Профиль» иначе прижимался бы влево, и полоса снова
               // читалась бы неровной.
               'whitespace-nowrap rounded-control px-4 py-2.5 text-center text-caption font-semibold transition-colors duration-fast ease-out',
+              // Выбранная вкладка — общий приём выделения сайта
+              // (ui/segmented). Невыбранные держат свою рамку и белый
+              // фон: полоса вкладок читается как ряд кнопок, а не как
+              // текст, и терять контур им нельзя.
               active
-                ? 'bg-brand-dark text-white'
+                ? SELECTED
                 : 'border border-neutral-15 bg-white hover:bg-surface-hover',
             ].join(' ')}
           >

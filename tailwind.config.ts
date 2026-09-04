@@ -56,6 +56,14 @@ const config: Config = {
         'on-dark': brand.onDark,
         // Подложки статусных сообщений: bg-status-error.
         status: brand.statusSurface,
+        // Выбранное состояние (вкладка, страница пагинации, вариант
+        // сортировки, язык, состояние авто): border-selection,
+        // bg-selection-surface, text-selection. Один приём на весь
+        // сайт — см. brand.selection.
+        selection: {
+          DEFAULT: brand.selection.border,
+          surface: brand.selection.surface,
+        },
         // Состояние автомобиля (0138): bg-condition-damaged на бейдже,
         // bg-condition-damaged-soft под пояснительной плашкой.
         // Две группы в одной, потому что имя состояния у них общее и
