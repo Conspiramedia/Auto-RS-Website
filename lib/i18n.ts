@@ -489,7 +489,7 @@ export const dict = {
     // машину. Поле показывается ВСЕМ продавцам, а не только салону.
     sell_condition: 'Stanje vozila',
     sell_condition_hint:
-      'Kupac vidi oznaku u oglasu i u pretrazi. Iskren opis stanja štedi vreme i vama i kupcu.',
+      'Ako je sa automobilom sve u redu, ne birajte ništa. Ponovnim klikom na izabranu opciju uklanjate oznaku.',
     condition_normal: 'Običan automobil',
     condition_damaged: 'Oštećen / havarisan',
     condition_parts: 'Za delove / rastavljanje',
@@ -1973,7 +1973,7 @@ export const dict = {
     // См. комментарий в сербском словаре.
     sell_condition: 'Состояние автомобиля',
     sell_condition_hint:
-      'Покупатель увидит пометку в объявлении и в поиске. Честно указанное состояние экономит время и вам, и покупателю.',
+      'Если с машиной всё в порядке — не выбирайте ничего. Повторное нажатие на выбранный вариант снимает пометку.',
     condition_normal: 'Обычное авто',
     condition_damaged: 'Битый / повреждённый',
     condition_parts: 'На запчасти / разборку',

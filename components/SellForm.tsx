@@ -45,7 +45,7 @@ import {
   migrateGuestConsent,
 } from '@/lib/consent';
 import type { CarAvailability, CarCondition } from '@/lib/types';
-import { CAR_CONDITIONS } from '@/lib/types';
+import { SELECTABLE_CONDITIONS } from '@/lib/types';
 import { ConditionIcon } from './ui/ConditionIcons';
 import { segmentedClass } from './ui/segmented';
 import type { DictKey, Locale } from '@/lib/i18n';
@@ -1565,44 +1565,51 @@ export default function SellForm({
               своего цвета (см. ui/segmented.ts). Красить сам вариант в
               цвет состояния заманчиво, но тогда «выбрано» и «вот такой
               будет бейдж» говорятся одним и тем же средством, и на
-              сетке из шести вариантов шаг формы превращается в
-              светофор. Цвет состояния несёт значок — этого хватает,
-              чтобы связь читалась, — а рамка отвечает только за выбор.
-              Правило бренда «один акцент на экране» при этом
-              соблюдается: селектор подсвечен ровно один. */}
+              сетке вариантов шаг формы превращается в светофор. Цвет
+              состояния несёт значок — этого хватает, чтобы связь
+              читалась, — а рамка отвечает только за выбор.
+
+              ПУНКТА «ОБЫЧНОЕ АВТО» В СПИСКЕ НЕТ (см.
+              SELECTABLE_CONDITIONS в lib/types). Ничего не выбрано —
+              значит машина обычная: это и есть значение по умолчанию,
+              и отдельная кнопка под него была бы кнопкой «оставить как
+              есть», занимающей первое, самое заметное место.
+
+              ОТСЮДА ПОВТОРНОЕ НАЖАТИЕ КАК СПОСОБ СНЯТЬ ПОМЕТКУ. Без
+              пункта «Обычное авто» вернуться в исходное состояние
+              иначе нечем: продавец, отметивший «битый» по ошибке,
+              оказался бы заперт — на подаче помогла бы перезагрузка
+              страницы, а вот в форме ПРАВКИ уже опубликованного
+              объявления снять пометку стало бы невозможно вовсе.
+              Поэтому клик по выбранному варианту возвращает 'normal'.
+              aria-pressed сообщает это состояние скринридеру, а
+              подпись под сеткой — глазами. */}
           <div>
             <label className="mb-1 block text-caption text-neutral-60">
               {t('sell_condition')}
             </label>
 
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {CAR_CONDITIONS.map((option) => {
+              {SELECTABLE_CONDITIONS.map((option) => {
                 const active = condition === option.key;
 
                 return (
                   <button
                     key={option.key}
                     type="button"
-                    onClick={() => setCondition(option.key)}
+                    // Повторный клик по выбранному — снятие пометки.
+                    onClick={() =>
+                      setCondition(active ? 'normal' : option.key)
+                    }
                     aria-pressed={active}
                     className={`flex items-center gap-2 text-left ${segmentedClass(
                       active,
                     )}`}
                   >
-                    {/* У 'normal' значка нет (обычная машина бейджа не
-                        получает), и ConditionIcon вернёт null. Пустая
-                        клетка того же размера держит подписи всех
-                        шести вариантов на одной вертикали — иначе
-                        первый пункт списка съехал бы влево
-                        относительно остальных. */}
-                    {option.badge ? (
-                      <ConditionIcon
-                        condition={option.key}
-                        className={`h-4 w-4 shrink-0 ${option.icon}`}
-                      />
-                    ) : (
-                      <span aria-hidden="true" className="h-4 w-4 shrink-0" />
-                    )}
+                    <ConditionIcon
+                      condition={option.key}
+                      className={`h-4 w-4 shrink-0 ${option.icon}`}
+                    />
                     <span className="min-w-0">
                       {t(`condition_${option.key}` as DictKey)}
                     </span>
