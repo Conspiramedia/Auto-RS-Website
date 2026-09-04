@@ -16,6 +16,7 @@ import Card from '@/components/ui/Card';
 import CarGallery from '@/components/CarGallery';
 import GalleryCloseButton from '@/components/GalleryCloseButton';
 import CallSellerButton from '@/components/CallSellerButton';
+import ContactBlockTitle from '@/components/ContactBlockTitle';
 import ContactSellerButton from '@/components/ContactSellerButton';
 import ShareButton from '@/components/ShareButton';
 import SiteFooter from '@/components/SiteFooter';
@@ -554,9 +555,15 @@ export default async function CarPageView({
 
               {/* Связь с продавцом. Переписка работает на сайте целиком.
                   Кнопка клиентская: сама решает, показать вход гостю,
-                  открыть диалог покупателю или скрыться у владельца. */}
+                  открыть диалог покупателю или скрыться у владельца.
+
+                  ЗАГОЛОВОК ТОЖЕ КЛИЕНТСКИЙ и по той же причине: у
+                  владельца обе кнопки скрываются, и серверная подпись
+                  висела бы над пустым местом — читалось это как
+                  поломка. «Поделиться» ниже при этом остаётся: свою
+                  ссылку владелец отправляет покупателю чаще всего. */}
               <div className="mt-4 border-t border-neutral-10 pt-4">
-                <div className="font-semibold">{t('car_contact_title')}</div>
+                <ContactBlockTitle locale={locale} sellerId={car.user_id} />
 
                 {/* ЗВОНОК ПЕРВЫМ И ЗЕЛЁНЫМ. На авторынке Сербии
                     звонок — более частый способ связи, чем переписка,
