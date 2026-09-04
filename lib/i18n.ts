@@ -1560,9 +1560,9 @@ export const dict = {
     meta_contact_desc:
       'Kontaktirajte tim RS Auto: pitanja o oglasima, prodaji i iznajmljivanju automobila u Srbiji. Odgovaramo radnim danima. Za auto-salone — poseban obrazac.',
     meta_terms_desc:
-      'Uslovi korišćenja platforme RS Auto — oglasi za prodaju i izdavanje automobila u Srbiji.',
+      'Pravila korišćenja platforme RS Auto: objavljivanje oglasa, moderacija, obaveze prodavaca i kupaca.',
     meta_privacy_desc:
-      'Politika privatnosti RS Auto — kako obrađujemo i štitimo lične podatke korisnika.',
+      'Kako RS Auto obrađuje lične podatke: šta prikupljamo, zašto i kako štitimo. Kontakt za pitanja o privatnosti.',
 
     common_all: 'Sve',
     common_more: 'Prikaži još',
@@ -2807,9 +2807,9 @@ export const dict = {
     meta_contact_desc:
       'Свяжитесь с командой RS Auto: вопросы по объявлениям, продаже и аренде авто в Сербии. Отвечаем по будням. Для автосалонов — отдельная форма заявки.',
     meta_terms_desc:
-      'Условия использования платформы RS Auto — объявления о продаже и аренде автомобилей в Сербии.',
+      'Правила использования платформы RS Auto: подача объявлений, модерация, обязанности продавцов и покупателей.',
     meta_privacy_desc:
-      'Политика конфиденциальности RS Auto — как мы обрабатываем и защищаем персональные данные пользователей.',
+      'Как RS Auto обрабатывает персональные данные: что собираем, зачем и как защищаем. Контакты для вопросов о конфиденциальности.',
 
     common_all: 'Все',
     common_more: 'Показать ещё',
