@@ -121,22 +121,6 @@ const MAX_PHOTOS = 15;
 //
 // Пробег: миллион километров переживает разве что грузовик, и для
 // легкового объявления такое число почти наверняка опечатка.
-// Подпись об ошибке под полем. Отдельный компонент, потому что
-// повторяется у пяти полей, и разъехавшиеся отступы или цвет читались
-// бы как разные по важности сообщения.
-//
-// Ничего не рисует, когда ошибки нет: вызывающий код не обязан писать
-// условие на каждое поле. role="alert" — сообщение появляется после
-// действия человека (нажал «Далее»), и скринридер обязан его прочесть.
-function FieldError({ id, text }: { id: string; text: string | null }) {
-  if (!text) return null;
-  return (
-    <p id={id} role="alert" className="mt-1 text-small text-error">
-      {text}
-    </p>
-  );
-}
-
 const MILEAGE_MAX = 1_000_000;
 // Цена: ниже сотни евро машин не бывает даже на разбор, выше миллиона
 // — не тот рынок. Цена НЕОБЯЗАТЕЛЬНА: пустое поле означает
@@ -288,12 +272,6 @@ export default function SellForm({
   // пять раз.
   const errorFor = (key: keyof typeof fieldErrors) =>
     detailsTouched ? fieldErrors[key] : null;
-
-  // Готовый текст на языке продавца — им пользуется разметка.
-  const errText = (key: keyof typeof fieldErrors) => {
-    const problem = errorFor(key);
-    return problem ? t(problem) : null;
-  };
 
   // Общая проверка описания: длина, ссылки, разметка, контакты.
   // Возвращает КЛЮЧ словаря или null — перевод подставляем здесь,
@@ -1653,10 +1631,9 @@ export default function SellForm({
                   required
                   className={`${field}${errorFor('mileage') ? ' border-error' : ''}`}
                   aria-describedby={
-                    errorFor('mileage') ? 'err-mileage' : undefined
+                    errorFor('mileage') ? 'sell-error' : undefined
                   }
                 />
-                <FieldError id="err-mileage" text={errText('mileage')} />
               </div>
             </div>
           )}
@@ -1719,10 +1696,9 @@ export default function SellForm({
                 required
                 className={`${field}${errorFor('mileage') ? ' border-error' : ''}`}
                 aria-describedby={
-                  errorFor('mileage') ? 'err-mileage-rent' : undefined
+                  errorFor('mileage') ? 'sell-error' : undefined
                 }
               />
-              <FieldError id="err-mileage-rent" text={errText('mileage')} />
             </div>
           )}
 
@@ -1747,9 +1723,8 @@ export default function SellForm({
               searchable={false}
               onChange={setBodyType}
               invalid={Boolean(errorFor('bodyType'))}
-              describedBy={errorFor('bodyType') ? 'err-body' : undefined}
+              describedBy={errorFor('bodyType') ? 'sell-error' : undefined}
             />
-            <FieldError id="err-body" text={errText('bodyType')} />
 
             <ListPicker
               locale={locale}
@@ -1767,12 +1742,8 @@ export default function SellForm({
               onChange={setTransmission}
               invalid={Boolean(errorFor('transmission'))}
               describedBy={
-                errorFor('transmission') ? 'err-transmission' : undefined
+                errorFor('transmission') ? 'sell-error' : undefined
               }
-            />
-            <FieldError
-              id="err-transmission"
-              text={errText('transmission')}
             />
 
             <ListPicker
@@ -1790,9 +1761,8 @@ export default function SellForm({
               searchable={false}
               onChange={setFuel}
               invalid={Boolean(errorFor('fuel'))}
-              describedBy={errorFor('fuel') ? 'err-fuel' : undefined}
+              describedBy={errorFor('fuel') ? 'sell-error' : undefined}
             />
-            <FieldError id="err-fuel" text={errText('fuel')} />
 
             {/* Объём необязателен: у электромобиля ДВС нет, и
                 подсказка говорит об этом прямо, чтобы продавец не
@@ -1815,9 +1785,10 @@ export default function SellForm({
                 value={engineVolume}
                 onChange={setEngineVolume}
                 invalid={Boolean(errorFor('engineVolume'))}
-                describedBy={errorFor('engineVolume') ? 'err-engine' : undefined}
+                describedBy={
+                  errorFor('engineVolume') ? 'sell-error' : undefined
+                }
               />
-              <FieldError id="err-engine" text={errText('engineVolume')} />
               <p className="mt-1 text-small text-neutral-50">
                 {t('sell_engine_hint')}
               </p>
@@ -2357,8 +2328,19 @@ export default function SellForm({
         </Alert>
       )}
 
+      {/* ОДНА плашка на всю форму, внизу. Ошибки обязательных полей
+          показываются в ней ПО ОЧЕРЕДИ, сверху вниз по порядку полей:
+          подсвечены при этом все незаполненные сразу (красная граница),
+          а текст называет ту, до которой глаз дойдёт первой.
+
+          Почему не подпись под каждым полем: пикеры кузова, коробки,
+          топлива и объёма лежат в сетке 2×2, и текст ошибки становился
+          в ней ОТДЕЛЬНОЙ ЯЧЕЙКОЙ — поля разъезжались по колонкам, и
+          вёрстка шага ломалась. Вариант с обёрткой на каждое поле
+          вернул бы раскладку, но заставил бы блоки прыгать по высоте
+          при появлении текста. Общая строка внизу не двигает ничего. */}
       {error && (
-        <Alert tone="error" className="mt-4">
+        <Alert id="sell-error" tone="error" className="mt-4">
           {error}
         </Alert>
       )}

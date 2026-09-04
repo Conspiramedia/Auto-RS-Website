@@ -46,11 +46,16 @@ type Props = {
   tone: Tone;
   children: ReactNode;
   className?: string;
+  // Нужен, когда на плашку ссылаются поля через aria-describedby:
+  // форма подачи держит одну общую строку ошибки внизу, и незаполненные
+  // поля указывают на неё. Необязателен — прежние вызовы не трогаем.
+  id?: string;
 };
 
-export default function Alert({ tone, children, className = '' }: Props) {
+export default function Alert({ tone, children, className = '', id }: Props) {
   return (
     <p
+      id={id}
       role={tone === 'error' ? 'alert' : 'status'}
       className={`rounded-control px-3 py-2 text-caption ${TONES[tone]} ${className}`}
     >
