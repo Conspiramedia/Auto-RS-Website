@@ -42,6 +42,7 @@
 // состояние возникает исключительно по клику, то есть в браузере.
 // ============================================================
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -72,6 +73,7 @@ const HIT_AREA =
 
 export default function CardActions({ locale, carId, city, kind }: Props) {
   const t = getT(locale);
+  const router = useRouter();
   const { signedIn, isFavorite, toggleFavorite, hideCar, hideCity } =
     useCardActions();
 
@@ -130,23 +132,50 @@ export default function CardActions({ locale, carId, city, kind }: Props) {
     // Гость: значок ведёт на вход с возвратом в каталог. Не прячем —
     // иначе функция для незалогиненного просто не существует, и он не
     // узнает, что она есть.
+    //
+    // ПОЧЕМУ КНОПКА, А НЕ ССЫЛКА. Карточка целиком — это <a> (Card с
+    // href), и вложенная в неё вторая ссылка невалидна по стандарту
+    // HTML. Браузер такую вложенность не прощает: разбирая документ,
+    // он ВЫНОСИТ внутренний <a> за пределы внешнего, дерево в браузере
+    // перестаёт совпадать с серверным, и React падает с ошибкой
+    // гидратации «<a> cannot be a descendant of <a>».
+    //
+    // Соседний значок «три точки» в этом же файле кнопкой был всегда —
+    // здесь то же самое место и то же ограничение.
+    //
+    // ЧТО ТЕРЯЕТСЯ. Средний клик и «открыть в новой вкладке» на самом
+    // значке. Потеря невелика: это переключатель закладки, а не
+    // навигационная ссылка, и открывать вход во второй вкладке никто
+    // не идёт. Адрес входа при этом не потерян — он в aria-label и в
+    // переходе ниже.
     if (!signedIn) {
+      const loginHref = `${localeHref(
+        locale,
+        '/login',
+      )}?redirect=${encodeURIComponent(localeHref(locale, `/car/${carId}`))}`;
+
       return (
-        <a
-          href={`${localeHref(locale, '/login')}?redirect=${encodeURIComponent(
-            localeHref(locale, `/car/${carId}`),
-          )}`}
+        <button
+          type="button"
           className={`${HIT_AREA} text-neutral-60`}
           aria-label={t('car_favorite_aria_add')}
           title={t('car_favorite_aria_add')}
           onClick={(e) => {
             // Не даём всплыть до ссылки-карточки (см. шапку файла).
+            // preventDefault добавлен к stopPropagation: кнопка стоит
+            // внутри <a>, и без него клик по ней увёл бы на страницу
+            // объявления вместо входа.
             e.stopPropagation();
+            e.preventDefault();
+            // Клик гостя тоже событие: интерес проявлен, а дойдёт ли
+            // он до входа — как раз то, что показывает разница с
+            // событиями вошедших.
             trackEvent('favorite_added', { guest: true });
+            router.push(loginHref);
           }}
         >
           <HeartIcon className="h-5 w-5" />
-        </a>
+        </button>
       );
     }
 
