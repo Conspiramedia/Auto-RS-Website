@@ -758,7 +758,7 @@ export const dict = {
 
     // Metrike oglasa.
     my_metric_views: 'Pregledi',
-    my_metric_favorites: 'U favoritima',
+    my_metric_favorites: 'Omiljeno',
     my_metric_contacts: 'Kontakti',
 
     // Radnje nad oglasom.
@@ -2131,7 +2131,7 @@ export const dict = {
 
     // Метрики объявления.
     my_metric_views: 'Просмотры',
-    my_metric_favorites: 'В избранном',
+    my_metric_favorites: 'Избранное',
     my_metric_contacts: 'Контакты',
 
     // Действия над объявлением.
