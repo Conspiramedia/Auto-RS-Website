@@ -11,6 +11,7 @@ import CarCard from '@/components/CarCard';
 import CarGoneView from '@/components/pages/CarGoneView';
 import RecentlyViewed from '@/components/RecentlyViewed';
 import Badge from '@/components/ui/Badge';
+import TierBadge from '@/components/ui/TierBadge';
 import VipBadge from '@/components/ui/VipBadge';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
@@ -572,10 +573,24 @@ export default async function CarPageView({
                     <span className="block truncate font-semibold group-hover:text-brand-primary group-hover:underline">
                       {car.seller_name}
                     </span>
-                    <span className="block text-caption text-neutral-50">
-                      {car.seller_kind === 'dealer'
-                        ? t('car_seller_dealer')
-                        : t('car_seller_private')}
+                    {/* Уровень продавца (0143). Стоит под именем, а не
+                        рядом с ним: на 360px имя салона занимает строку
+                        целиком, и плашка в той же строке вытолкнула бы
+                        его в многоточие. Здесь же она читается вместе с
+                        подписью «Автосалон / Частное лицо», к которой и
+                        относится по смыслу. */}
+                    <span className="mt-1 flex flex-wrap items-center gap-2">
+                      <span className="text-caption text-neutral-50">
+                        {car.seller_kind === 'dealer'
+                          ? t('car_seller_dealer')
+                          : t('car_seller_private')}
+                      </span>
+                      <TierBadge
+                        locale={locale}
+                        tier={car.seller_tier}
+                        isDealer={car.seller_kind === 'dealer'}
+                        size="sm"
+                      />
                     </span>
                   </span>
                 </Link>

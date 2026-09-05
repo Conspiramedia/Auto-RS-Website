@@ -39,6 +39,7 @@ import Image from 'next/image';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import StateCard from '@/components/ui/StateCard';
+import TierBadge from '@/components/ui/TierBadge';
 import CarCard from '@/components/CarCard';
 import DealerShowcaseTitleBar from '@/components/DealerShowcaseTitleBar';
 import DealerShowcaseHero from '@/components/DealerShowcaseHero';
@@ -184,7 +185,7 @@ export default async function DealerPageView({
             бы как страница салона без витрины. Для частника остаётся
             прежняя компактная карточка. */}
         {isDealer ? (
-          <DealerShowcaseHero profile={profile} />
+          <DealerShowcaseHero locale={locale} profile={profile} />
         ) : (
           <Card className="flex flex-col gap-4 sm:flex-row sm:items-center">
             {/* Аватар продавца. Когда его нет — инициал: пустой
@@ -215,6 +216,17 @@ export default async function DealerPageView({
                 {t('dealer_page_since')}{' '}
                 {formatDate(profile.member_since, locale)}
               </p>
+
+              {/* Уровень продавца (0143). Отдельной строкой под
+                  подписью: плашка выше рядом с именем конкурировала бы
+                  с заголовком h1, а он на этой странице главный. */}
+              <TierBadge
+                locale={locale}
+                tier={profile.seller_tier}
+                isDealer={false}
+                size="sm"
+                className="mt-2"
+              />
             </div>
           </Card>
         )}

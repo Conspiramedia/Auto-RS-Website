@@ -499,6 +499,42 @@ export const dict = {
     condition_parts: 'Za delove / totalna šteta',
     condition_no_docs: 'Bez dokumenata',
     condition_for_export: 'Samo za izvoz',
+
+    // ------------------------------------------------------------
+    // Уровни активности продавца (миграции 0143/0144).
+    // ------------------------------------------------------------
+    // Подпись на плашке у имени продавца. Названия описывают ПРОДАВЦА,
+    // а не механику площадки: «Активный продавец» покупателю говорит
+    // больше, чем «бронзовый уровень».
+    //
+    // У золота два разных названия: салону оно достаётся за проверку
+    // компании администратором, частнику — за объём и продажи. Обещать
+    // покупателю «проверенную компанию» там, где компании нет, нельзя.
+    tier_bronze: 'Aktivan prodavac',
+    tier_silver: 'Pouzdan prodavac',
+    tier_gold_private: 'Ekspert prodavac',
+    tier_gold_dealer: 'Proverena kompanija',
+
+    // Прогресс в кабинете. Числа подставляет клиент из
+    // get_my_tier_progress.
+    tier_next_bronze: 'Do bronze:',
+    tier_next_silver: 'Do srebra:',
+    tier_next_gold: 'Do zlata:',
+    tier_progress_cars: 'još {n} oglasa',
+    tier_progress_sales: 'još {n} prodaja',
+    tier_progress_or: 'ili',
+    // Высшая ступень салона не считается — её назначает площадка.
+    tier_dealer_gold_manual: 'Najviši nivo dodeljuje platforma',
+    tier_max: 'Najviši nivo dostignut',
+    tier_none: 'Bez nivoa',
+    tier_penalty:
+      'Nivo je privremeno snižen zbog uklonjenog oglasa. Vraća se {date}.',
+
+    // Лимит объявлений. Текст показывается вместо ошибки из базы.
+    tier_limit_reached:
+      'Dostigli ste ograničenje od {n} aktivnih oglasa za vaš nivo.',
+    tier_limit_hint:
+      'Prodajte ili arhivirajte neki oglas — ili podignite nivo naloga i dobijte veće ograničenje.',
     // Пояснения под фотографиями на странице объявления. Отдельные
     // строки, а не те же подписи: на бейдже нужно короткое имя
     // состояния, а здесь — предупреждение с указанием, что делать.
@@ -1985,6 +2021,29 @@ export const dict = {
     condition_parts: 'На запчасти / тотал',
     condition_no_docs: 'Без документов',
     condition_for_export: 'Только на экспорт',
+
+    // Уровни активности продавца (0143/0144). См. комментарий в sr.
+    tier_bronze: 'Активный продавец',
+    tier_silver: 'Надёжный продавец',
+    tier_gold_private: 'Эксперт-продавец',
+    tier_gold_dealer: 'Проверенная компания',
+
+    tier_next_bronze: 'До бронзы:',
+    tier_next_silver: 'До серебра:',
+    tier_next_gold: 'До золота:',
+    tier_progress_cars: 'ещё {n} объявлений',
+    tier_progress_sales: 'ещё {n} продаж',
+    tier_progress_or: 'или',
+    tier_dealer_gold_manual: 'Высшую ступень назначает площадка',
+    tier_max: 'Достигнут высший уровень',
+    tier_none: 'Без уровня',
+    tier_penalty:
+      'Уровень временно снижен из-за снятого объявления. Восстановится {date}.',
+
+    tier_limit_reached:
+      'Достигнут лимит в {n} активных объявлений для вашего уровня.',
+    tier_limit_hint:
+      'Продайте или архивируйте какое-нибудь объявление — либо повысьте уровень аккаунта и получите больший лимит.',
     condition_note_damaged:
       'Внимание: автомобиль битый. Уточните состояние у продавца.',
     condition_note_parts:

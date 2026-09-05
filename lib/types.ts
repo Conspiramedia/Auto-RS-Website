@@ -240,6 +240,49 @@ export type CarDetails = {
   availability: CarAvailability;
   // Состояние автомобиля (0138). См. комментарий у CatalogCar.
   condition: CarCondition;
+  // Уровень активности продавца (0143). Приходит по тем же правилам
+  // видимости, что и остальная витрина продавца: у снятого объявления,
+  // показанного постороннему, здесь null.
+  seller_tier: SellerTier | null;
+};
+
+// ------------------------------------------------------------
+// Уровень активности продавца (миграции 0143/0144).
+// ------------------------------------------------------------
+// 0 — уровня нет, 1 — бронза, 2 — серебро, 3 — золото.
+//
+// ЭТО НЕ ПЛАТНОЕ ПРОДВИЖЕНИЕ. Корона «VIP» (cars.is_promoted,
+// ui/VipBadge) означает «за это объявление заплатили»; уровень —
+// «этот продавец давно и честно работает». Оси независимы, и в
+// каталоге уровень намеренно не показывается, чтобы две золотые
+// метки не встретились в одной карточке.
+export type SellerTier = 0 | 1 | 2 | 3;
+
+// Приведение к уровню. Значение приходит из базы числом, но пройти
+// через JSON может чем угодно — а рисовать плашку по мусору нельзя.
+export function toSellerTier(value: unknown): SellerTier {
+  return value === 1 || value === 2 || value === 3 ? value : 0;
+}
+
+// Прогресс до следующей ступени. RPC get_my_tier_progress() (0144).
+//
+// cars_left и sales_left приходят NULL в двух разных случаях, и клиент
+// обязан их различать:
+//   * next_tier = null      — уровень высший, расти некуда;
+//   * оба остатка null при
+//     заданном next_tier     — ступень НАЗНАЧАЕТ площадка (золото
+//                              салона), и счётчика для неё нет.
+export type TierProgress = {
+  tier: SellerTier;
+  next_tier: SellerTier | null;
+  active_cars: number;
+  sales: number;
+  cars_left: number | null;
+  sales_left: number | null;
+  is_dealer: boolean;
+  // Пока эта отметка в будущем, уровень понижен на ступень за снятое
+  // администратором объявление.
+  penalty_until: string | null;
 };
 
 // Фотография объявления. Источник: RPC get_car_images (миграция 0052).
@@ -445,6 +488,9 @@ export type DealerProfile = {
   opening_hours?: string | null;
   cover_url?: string | null;
   tagline?: string | null;
+  // Уровень активности продавца (0143). Отдаётся и салону, и частнику:
+  // страница витрины открывается для обоих.
+  seller_tier?: SellerTier | null;
 };
 
 // Салон для широкой плитки-витрины. RPC get_showcase_dealers (0095).
@@ -684,6 +730,12 @@ export type ChatListItem = {
   // Заблокировал ли ТЕКУЩИЙ пользователь собеседника: при true
   // отправка запрещена политикой messages_insert_participant.
   peer_blocked: boolean;
+  // Уровень СОБЕСЕДНИКА (0144). Свой уровень человек смотрит в
+  // кабинете, в переписке он не нужен.
+  opponent_tier: SellerTier | null;
+  // Тип собеседника — только ради подписи золота: у салона это
+  // «Проверенная компания», у частника «Эксперт-продавец».
+  opponent_kind: string | null;
 };
 
 // Сообщение в ленте. Таблица messages напрямую под RLS.
@@ -1126,6 +1178,14 @@ export type AdminUser = {
   listings_rejected: number;
   listings: AdminUserListing[];
   actions: AdminModerationEvent[];
+  // Уровень продавца и его происхождение (0145). tier_override не
+  // null означает, что уровень назначен вручную и расчёт по данным не
+  // действует; tier_penalty_until в будущем — что расчётный уровень
+  // сейчас понижен на ступень за снятое объявление.
+  seller_tier: SellerTier;
+  tier_override: SellerTier | null;
+  tier_override_reason: string | null;
+  tier_penalty_until: string | null;
 };
 
 // Строка журнала: admin_action_list.

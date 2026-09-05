@@ -518,3 +518,95 @@ export async function reviewDealerApplication(
 
   return { ok: true };
 }
+
+
+// ============================================================
+// УРОВЕНЬ ПРОДАВЦА (0143/0144)
+// ============================================================
+// Обычно уровень считается по данным сам (объявления, продажи, статус
+// салона, нарушения). Эти два действия нужны для случаев, которых
+// формула не знает: договорённость с крупным салоном, разбор жалобы,
+// компенсация за наш же сбой.
+//
+// Логика — в базе: admin_set_seller_tier проверяет права, диапазон и
+// непустую причину, пишет в admin_action_log. Здесь только вызов и
+// сброс кэша, как у остальных действий этого файла.
+export type TierResult =
+  | { ok: true; tier: number }
+  | { ok: false; error: string };
+
+// Уровень виден покупателям на трёх экранах сразу, и все они
+// серверные. Сбрасываем обе локали: страницы витрины и объявления
+// закэшированы отдельно для sr и ru.
+function revalidateTier(userId: string): void {
+  revalidatePath('/admin');
+  revalidatePath(`/admin/users/${userId}`);
+  revalidatePath('/admin/log');
+  revalidatePath(`/dealer/${userId}`);
+  revalidatePath(`/ru/dealer/${userId}`);
+}
+
+export async function setSellerTier(
+  userId: string,
+  tier: number,
+  reason: string,
+): Promise<TierResult> {
+  const supabase = await getServerClient();
+
+  const { data, error } = await supabase.rpc('admin_set_seller_tier', {
+    p_user_id: userId,
+    p_tier: tier,
+    p_reason: reason,
+  });
+
+  if (error) {
+    if (error.code === '42501') {
+      return {
+        ok: false,
+        error: 'Нет прав. Обновите страницу и войдите заново.',
+      };
+    }
+    // 23514 — не прошла проверка: уровень вне 0..3 либо пустая
+    // причина. Оба случая — недосмотр формы, но текст должен
+    // объяснять, что именно поправить.
+    if (error.code === '23514') {
+      return { ok: false, error: 'Укажите уровень от 0 до 3 и причину.' };
+    }
+    if (error.code === 'P0002') {
+      return { ok: false, error: 'Пользователь не найден.' };
+    }
+    return { ok: false, error: 'Не удалось сохранить уровень. Попробуйте ещё раз.' };
+  }
+
+  revalidateTier(userId);
+
+  return { ok: true, tier: Number(data) };
+}
+
+// Снятие ручного назначения: уровень возвращается к расчёту по
+// данным. RPC пересчитывает его сразу и возвращает результат — админ
+// должен увидеть, куда уровень вернулся, а не ждать ночного job.
+export async function clearSellerTier(userId: string): Promise<TierResult> {
+  const supabase = await getServerClient();
+
+  const { data, error } = await supabase.rpc('admin_clear_seller_tier', {
+    p_user_id: userId,
+  });
+
+  if (error) {
+    if (error.code === '42501') {
+      return {
+        ok: false,
+        error: 'Нет прав. Обновите страницу и войдите заново.',
+      };
+    }
+    if (error.code === 'P0002') {
+      return { ok: false, error: 'Пользователь не найден.' };
+    }
+    return { ok: false, error: 'Не удалось снять уровень. Попробуйте ещё раз.' };
+  }
+
+  revalidateTier(userId);
+
+  return { ok: true, tier: Number(data) };
+}

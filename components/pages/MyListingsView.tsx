@@ -20,6 +20,7 @@ import Link from 'next/link';
 
 import ExpiryBanner from '@/components/ExpiryBanner';
 import MyListingCard from '@/components/MyListingCard';
+import TierProgress from '@/components/TierProgress';
 import Button from '@/components/ui/Button';
 import StateCard from '@/components/ui/StateCard';
 import {
@@ -31,7 +32,11 @@ import {
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
 import { getServerClient } from '@/lib/supabaseServer';
-import type { MyListing, MyStatsTotals } from '@/lib/types';
+import type {
+  MyListing,
+  MyStatsTotals,
+  TierProgress as TierProgressData,
+} from '@/lib/types';
 
 type Props = {
   locale: Locale;
@@ -41,9 +46,13 @@ export default async function MyListingsView({ locale }: Props) {
   const t = getT(locale);
   const supabase = await getServerClient();
 
-  const [listingsResult, totalsResult] = await Promise.all([
+  const [listingsResult, totalsResult, tierResult] = await Promise.all([
     supabase.rpc('get_my_listings_stats'),
     supabase.rpc('get_my_stats_totals'),
+    // Прогресс уровня (0144). В общем Promise.all, а не отдельным
+    // запросом ниже: три RPC идут параллельно, и блок уровня не
+    // добавляет странице ни одного последовательного похода в базу.
+    supabase.rpc('get_my_tier_progress'),
   ]);
 
   if (listingsResult.error) {
@@ -58,6 +67,13 @@ export default async function MyListingsView({ locale }: Props) {
   const totals = (
     totalsResult.error ? null : ((totalsResult.data ?? [])[0] ?? null)
   ) as MyStatsTotals | null;
+
+  // Прогресс уровня. Как и сводка, возвращается таблицей из одной
+  // строки; при ошибке блок просто не рисуется — список объявлений
+  // рядом от этого не страдает.
+  const tier = (
+    tierResult.error ? null : ((tierResult.data ?? [])[0] ?? null)
+  ) as TierProgressData | null;
 
   // Первое опубликованное объявление — цель ссылки в подсказке о нуле
   // просмотров. Именно 'active': объявление на модерации просмотров не
@@ -109,6 +125,17 @@ export default async function MyListingsView({ locale }: Props) {
         expiredCount={expiredCount}
         expiringCount={expiringCount}
       />
+
+      {/* Уровень и прогресс до следующего — над сводкой метрик.
+          Метрики отвечают на вопрос «как идут дела у объявлений», а
+          уровень — «что даёт мне площадка и что нужно сделать
+          дальше»; второе крупнее по смыслу и стоит выше.
+
+          Продавцу с пустым списком блок не показывается: до него
+          функция выходит по раннему return с приглашением подать
+          первое объявление, и рассказывать там про ступени рано —
+          сначала нужно объявление. */}
+      <TierProgress locale={locale} data={tier} />
 
       {totals && (
         <div>

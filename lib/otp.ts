@@ -194,6 +194,28 @@ export function humanOtpError(e: unknown, t: Translate): string {
     if (hint === needle || message.includes(needle)) return t(key);
   }
 
+  // ------------------------------------------------------------
+  // Отказ по лимиту активных объявлений (миграции 0143/0144).
+  // ------------------------------------------------------------
+  // f_check_listing_limit бросает check_violation с
+  // hint = 'listing_limit'. Различаем по hint по той же причине, что
+  // и ветки выше: код 23514 у объявления означает ещё и цену, и год.
+  //
+  // ЧИСЛО ВЫНИМАЕМ ИЗ ТЕКСТА СЕРВЕРА. Лимит зависит от уровня
+  // продавца, и знает его только база; спрашивать её вторым запросом
+  // ради одной цифры в сообщении об ошибке — лишний поход туда же,
+  // откуда ошибка только что пришла. Если разобрать не удалось,
+  // показываем подсказку без числа: она остаётся верной и полезной,
+  // а «лимит в NaN объявлений» был бы хуже отсутствия цифры.
+  if (hint === 'listing_limit' || message.includes('listing_limit')) {
+    const found = raw.match(/\d+/);
+    const limitText = found
+      ? t('tier_limit_reached').replace('{n}', found[0])
+      : null;
+
+    return [limitText, t('tier_limit_hint')].filter(Boolean).join(' ');
+  }
+
   if (message.includes('expired')) return t('otp_err_expired');
 
   if (message.includes('invalid') || message.includes('incorrect')) {

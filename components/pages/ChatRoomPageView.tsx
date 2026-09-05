@@ -36,6 +36,7 @@ import { notFound } from 'next/navigation';
 import ChatList, { Avatar } from '@/components/ChatList';
 import ChatRoom from '@/components/ChatRoom';
 import Card from '@/components/ui/Card';
+import TierBadge from '@/components/ui/TierBadge';
 import { formatPrice, formatRentPrice } from '@/lib/format';
 import type { Locale } from '@/lib/i18n';
 import { getT, localeHref } from '@/lib/i18n';
@@ -185,8 +186,20 @@ export default async function ChatRoomPageView({ locale, chatId }: Props) {
             />
 
             <div className="min-w-0 flex-1">
-              <div className="truncate font-semibold">
-                {chat.opponent_name?.trim() || t('car_seller')}
+              {/* Имя собеседника и его уровень (0143) в одной строке.
+                  min-w-0 на имени обязателен: без него длинное имя не
+                  ужмётся многоточием, а вытолкнет плашку за край
+                  шапки. */}
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="min-w-0 truncate font-semibold">
+                  {chat.opponent_name?.trim() || t('car_seller')}
+                </span>
+                <TierBadge
+                  locale={locale}
+                  tier={chat.opponent_tier}
+                  isDealer={chat.opponent_kind === 'dealer'}
+                  size="sm"
+                />
               </div>
 
               {/* Машина и цена — ссылкой на объявление: открывать его из

@@ -21,6 +21,7 @@ import { notFound } from 'next/navigation';
 
 import AdminBackBar from '@/components/admin/AdminBackBar';
 import ActionLabel from '@/components/admin/ActionLabel';
+import SellerTierControl from '@/components/admin/SellerTierControl';
 import StatusChip from '@/components/admin/StatusChip';
 import { getServerClient } from '@/lib/supabaseServer';
 import type { AdminUser } from '@/lib/types';
@@ -174,6 +175,19 @@ export default async function AdminUserPage({
             >
               Открыть в списке объявлений →
             </Link>
+          </div>
+
+          {/* Уровень продавца (0143). Под сводкой по объявлениям
+              намеренно: именно они его и определяют, и админ видит
+              основание рядом с результатом. */}
+          <div className="mt-4">
+            <SellerTierControl
+              userId={user.user_id}
+              tier={user.seller_tier}
+              override={user.tier_override}
+              overrideReason={user.tier_override_reason}
+              penaltyUntil={user.tier_penalty_until}
+            />
           </div>
         </div>
 
